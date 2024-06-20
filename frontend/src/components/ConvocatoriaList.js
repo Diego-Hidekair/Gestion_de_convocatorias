@@ -1,6 +1,7 @@
 // src/components/ConvocatoriaList.js
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const ConvocatoriaList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
@@ -22,8 +23,11 @@ const ConvocatoriaList = () => {
         <div>
             <h2>Lista de Convocatorias</h2>
             <ul>
-                {convocatorias.map(convocatoria => (
-                    <li key={convocatoria.cod_convocatoria}>{convocatoria.nombre_convocatoria}</li>
+                {convocatorias.map((convocatoria) => (
+                    <li key={convocatoria.cod_convocatoria}>
+                        {convocatoria.nombre_convocatoria} 
+                        <Link to={`/convocatorias/editar/${convocatoria.cod_convocatoria}`}>Editar</Link>
+                    </li>
                 ))}
             </ul>
         </div>

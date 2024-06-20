@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const ConvocatoriaEdit = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [nombre_convocatoria, setNombreConvocatoria] = useState('');
     const [cod_carrera, setCodCarrera] = useState('');
     const [cod_facultad, setCodFacultad] = useState('');
@@ -26,10 +27,14 @@ const ConvocatoriaEdit = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:5000/api/convocatorias/${id}`, { nombre_convocatoria, cod_carrera, cod_facultad });
-            console.log(response.data);
+            await axios.put(`http://localhost:5000/api/convocatorias/${id}`, {
+                nombre_convocatoria,
+                cod_carrera,
+                cod_facultad
+            });
+            navigate('/convocatorias');
         } catch (error) {
-            console.error('Error al editar la convocatoria:', error);
+            console.error('Error al actualizar convocatoria:', error);
         }
     };
 
@@ -59,7 +64,7 @@ const ConvocatoriaEdit = () => {
                     onChange={(e) => setCodFacultad(e.target.value)}
                 />
             </label>
-            <button type="submit">Guardar</button>
+            <button type="submit">Actualizar</button>
         </form>
     );
 };

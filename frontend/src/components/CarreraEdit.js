@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const CarreraEdit = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [nombre_carrera, setNombreCarrera] = useState('');
     const [cod_facultad, setCodFacultad] = useState('');
 
@@ -24,12 +25,16 @@ const CarreraEdit = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:5000/api/carreras/${id}`, { nombre_carrera, cod_facultad });
-            console.log(response.data);
+            await axios.put(`http://localhost:5000/api/carreras/${id}`, {
+                nombre_carrera,
+                cod_facultad
+            });
+            navigate('/carreras');
         } catch (error) {
-            console.error('Error al editar la carrera:', error);
+            console.error('Error al actualizar carrera:', error);
         }
     };
+
 
     return (
         <form onSubmit={handleSubmit}>
@@ -49,7 +54,7 @@ const CarreraEdit = () => {
                     onChange={(e) => setCodFacultad(e.target.value)}
                 />
             </label>
-            <button type="submit">Guardar</button>
+            <button type="submit">Actualizar</button>
         </form>
     );
 };

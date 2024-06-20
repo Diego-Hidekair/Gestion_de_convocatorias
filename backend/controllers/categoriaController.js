@@ -4,7 +4,7 @@ const pool = require('../db');
 // CRUD para Facultades
 const getFacultades = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM categoria_facultad');
+        const result = await pool.query('SELECT * FROM categoria_facultad ORDER BY nombre_facultad');
         res.json(result.rows);
     } catch (error) {
         res.status(500).send('Error al obtener facultades');
@@ -59,7 +59,7 @@ const getFacultadById = async (req, res) => {
 // CRUD para Carreras
 const getCarreras = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM categoria_carrera');
+        const result = await pool.query('SELECT * FROM categoria_carrera ORDER BY nombre_carrera');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -132,7 +132,7 @@ const getCarreraById = async (req, res) => {
 // CRUD para Convocatorias
 const getConvocatorias = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM categoria_convocatoria');
+        const result = await pool.query('SELECT * FROM categoria_convocatoria ORDER BY nombre_convocatoria');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });

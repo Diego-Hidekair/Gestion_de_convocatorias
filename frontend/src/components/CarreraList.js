@@ -1,6 +1,7 @@
 // src/components/CarreraList.js
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const CarreraList = () => {
     const [carreras, setCarreras] = useState([]);
@@ -22,8 +23,11 @@ const CarreraList = () => {
         <div>
             <h2>Lista de Carreras</h2>
             <ul>
-                {carreras.map(carrera => (
-                    <li key={carrera.cod_carrera}>{carrera.nombre_carrera}</li>
+                {carreras.map((carrera) => (
+                    <li key={carrera.cod_carrera}>
+                        {carrera.nombre_carrera} 
+                        <Link to={`/carreras/editar/${carrera.cod_carrera}`}>Editar</Link>
+                    </li>
                 ))}
             </ul>
         </div>
