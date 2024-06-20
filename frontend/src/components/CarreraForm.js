@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+// frontend/src/components/CarreraForm.js
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-/*const CarreraForm = () => {
-    const [nombreCarrera, setNombreCarrera] = useState('');
-    const [codFacultad, setCodFacultad] = useState('');
+function CarreraForm() {
+    const [nombre_carrera, setNombreCarrera] = useState('');
+    const [cod_facultad, setCodFacultad] = useState('');
     const [facultades, setFacultades] = useState([]);
 
     useEffect(() => {
@@ -11,59 +12,12 @@ import axios from 'axios';
             try {
                 const response = await axios.get('http://localhost:5000/api/facultades');
                 setFacultades(response.data);
-            } catch (err) {
-                console.error(err);
+            } catch (error) {
+                console.error('Error al obtener facultades:', error);
             }
         };
         fetchFacultades();
     }, []);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('http://localhost:5000/api/carreras', {
-                Nombre_carrera: nombreCarrera,
-                Cod_facultad: codFacultad
-            });
-            console.log(response.data);
-            setNombreCarrera('');
-            setCodFacultad('');
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>Nombre de la Carrera:</label>
-                <input
-                    type="text"
-                    value={nombreCarrera}
-                    onChange={(e) => setNombreCarrera(e.target.value)}
-                />
-            </div>
-            <div>
-                <label>Facultad:</label>
-                <select value={codFacultad} onChange={(e) => setCodFacultad(e.target.value)}>
-                    <option value="">Seleccione una facultad</option>
-                    {facultades.map((facultad) => (
-                        <option key={facultad.Cod_facultad} value={facultad.Cod_facultad}>
-                            {facultad.Nombre_facultad}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <button type="submit">Crear Carrera</button>
-        </form>
-    );
-};
-
-export default CarreraForm;
-*/
-function CarreraForm() {
-    const [nombre_carrera, setNombreCarrera] = useState('');
-    const [cod_facultad, setCodFacultad] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -84,8 +38,15 @@ function CarreraForm() {
                 <input type="text" value={nombre_carrera} onChange={(e) => setNombreCarrera(e.target.value)} required />
             </label>
             <label>
-                Código Facultad:
-                <input type="number" value={cod_facultad} onChange={(e) => setCodFacultad(e.target.value)} required />
+                Facultad:
+                <select value={cod_facultad} onChange={(e) => setCodFacultad(e.target.value)} required>
+                    <option value="">Seleccione una facultad</option>
+                    {facultades.map((facultad) => (
+                        <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
+                            {facultad.nombre_facultad}
+                        </option>
+                    ))}
+                </select>
             </label>
             <button type="submit">Guardar</button>
         </form>

@@ -42,6 +42,20 @@ const deleteFacultad = async (req, res) => {
     }
 };
 
+// Obtener facultad por ID
+const getFacultadById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM categoria_facultad WHERE cod_facultad = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Facultad no encontrada' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // CRUD para Carreras
 const getCarreras = async (req, res) => {
     try {
@@ -52,7 +66,6 @@ const getCarreras = async (req, res) => {
     }
 };
 
-// Crear una nueva carrera
 const createCarrera = async (req, res) => {
     const { nombre_carrera, cod_facultad } = req.body;
     try {
@@ -66,7 +79,6 @@ const createCarrera = async (req, res) => {
     }
 };
 
-// Actualizar una carrera existente
 const updateCarrera = async (req, res) => {
     const { id } = req.params;
     const { nombre_carrera, cod_facultad } = req.body;
@@ -102,7 +114,22 @@ const deleteCarrera = async (req, res) => {
     }
 };
 
-// Funciones para convocatorias
+// Obtener carrera por ID
+const getCarreraById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM categoria_carrera WHERE cod_carrera = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Carrera no encontrada' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+// CRUD para Convocatorias
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM categoria_convocatoria');
@@ -133,6 +160,9 @@ const updateConvocatoria = async (req, res) => {
             'UPDATE categoria_convocatoria SET nombre_convocatoria = $1, cod_carrera = $2, cod_facultad = $3 WHERE cod_convocatoria = $4 RETURNING *',
             [nombre_convocatoria, cod_carrera, cod_facultad, id]
         );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -149,4 +179,19 @@ const deleteConvocatoria = async (req, res) => {
     }
 };
 
-module.exports = {getFacultades, createFacultad, updateFacultad, deleteFacultad, getCarreras, createCarrera, updateCarrera, deleteCarrera, getConvocatorias, createConvocatoria, updateConvocatoria, deleteConvocatoria};
+// Obtener convocatoria por ID
+const getConvocatoriaById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM categoria_convocatoria WHERE cod_convocatoria = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { getFacultades, createFacultad, updateFacultad, deleteFacultad, getFacultadById, getCarreras, createCarrera, updateCarrera, deleteCarrera, getCarreraById, getConvocatorias, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriaById
+};
