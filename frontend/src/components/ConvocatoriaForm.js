@@ -4,8 +4,8 @@ import axios from 'axios';
 
 function ConvocatoriaForm() {
     const [nombre_convocatoria, setNombreConvocatoria] = useState('');
-    const [cod_carrera, setCodCarrera] = useState('');
-    const [cod_facultad, setCodFacultad] = useState('');
+    const [id_carrera, setIdCarrera] = useState('');
+    const [id_facultad, setIdFacultad] = useState('');
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
 
@@ -35,11 +35,11 @@ function ConvocatoriaForm() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/convocatorias', { nombre_convocatoria, cod_carrera, cod_facultad });
+            const response = await axios.post('http://localhost:5000/api/convocatorias', { nombre_convocatoria, id_carrera, id_facultad });
             alert('Convocatoria creada exitosamente');
             setNombreConvocatoria('');
-            setCodCarrera('');
-            setCodFacultad('');
+            setIdCarrera('');
+            setIdFacultad('');
         } catch (error) {
             alert('Error al crear convocatoria: ' + error.message);
         }
@@ -53,22 +53,22 @@ function ConvocatoriaForm() {
             </label>
             <label>
                 Facultad:
-                <select value={cod_facultad} onChange={(e) => setCodFacultad(e.target.value)} required>
+                <select value={id_facultad} onChange={(e) => setIdFacultad(e.target.value)} required>
                     <option value="">Seleccione una facultad</option>
                     {facultades.map((facultad) => (
-                        <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
-                            {facultad.nombre_facultad}
+                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                            {facultad.Nombre_facultad}
                         </option>
                     ))}
                 </select>
             </label>
             <label>
                 Carrera:
-                <select value={cod_carrera} onChange={(e) => setCodCarrera(e.target.value)} required>
+                <select value={id_carrera} onChange={(e) => setIdCarrera(e.target.value)} required>
                     <option value="">Seleccione una carrera</option>
                     {carreras.map((carrera) => (
-                        <option key={carrera.cod_carrera} value={carrera.cod_carrera}>
-                            {carrera.nombre_carrera}
+                        <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                            {carrera.Nombre_carrera}
                         </option>
                     ))}
                 </select>

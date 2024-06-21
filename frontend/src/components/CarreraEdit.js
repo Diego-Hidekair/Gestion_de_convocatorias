@@ -6,14 +6,14 @@ const CarreraEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [nombre_carrera, setNombreCarrera] = useState('');
-    const [cod_facultad, setCodFacultad] = useState('');
+    const [id_facultad, setIdFacultad] = useState('');
 
     useEffect(() => {
         const fetchCarrera = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/api/carreras/${id}`);
-                setNombreCarrera(response.data.nombre_carrera);
-                setCodFacultad(response.data.cod_facultad);
+                setNombreCarrera(response.data.Nombre_carrera);
+                setIdFacultad(response.data.Cod_facultad);
             } catch (error) {
                 console.error('Error al obtener la carrera:', error);
             }
@@ -26,15 +26,14 @@ const CarreraEdit = () => {
         event.preventDefault();
         try {
             await axios.put(`http://localhost:5000/api/carreras/${id}`, {
-                nombre_carrera,
-                cod_facultad
+                Nombre_carrera: nombre_carrera,
+                Cod_facultad: id_facultad
             });
             navigate('/carreras');
         } catch (error) {
             console.error('Error al actualizar carrera:', error);
         }
     };
-
 
     return (
         <form onSubmit={handleSubmit}>
@@ -47,11 +46,11 @@ const CarreraEdit = () => {
                 />
             </label>
             <label>
-                Código Facultad:
+                Facultad:
                 <input
                     type="text"
-                    value={cod_facultad}
-                    onChange={(e) => setCodFacultad(e.target.value)}
+                    value={id_facultad}
+                    onChange={(e) => setIdFacultad(e.target.value)}
                 />
             </label>
             <button type="submit">Actualizar</button>

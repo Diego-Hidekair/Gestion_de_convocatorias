@@ -4,7 +4,7 @@ import axios from 'axios';
 
 function CarreraForm() {
     const [nombre_carrera, setNombreCarrera] = useState('');
-    const [cod_facultad, setCodFacultad] = useState('');
+    const [id_facultad, setIdFacultad] = useState('');
     const [facultades, setFacultades] = useState([]);
 
     useEffect(() => {
@@ -22,10 +22,10 @@ function CarreraForm() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/carreras', { nombre_carrera, cod_facultad });
+            const response = await axios.post('http://localhost:5000/api/carreras', { nombre_carrera, id_facultad });
             alert('Carrera creada exitosamente');
             setNombreCarrera('');
-            setCodFacultad('');
+            setIdFacultad('');
         } catch (error) {
             alert('Error al crear carrera: ' + error.message);
         }
@@ -39,11 +39,11 @@ function CarreraForm() {
             </label>
             <label>
                 Facultad:
-                <select value={cod_facultad} onChange={(e) => setCodFacultad(e.target.value)} required>
+                <select value={id_facultad} onChange={(e) => setIdFacultad(e.target.value)} required>
                     <option value="">Seleccione una facultad</option>
                     {facultades.map((facultad) => (
-                        <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
-                            {facultad.nombre_facultad}
+                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                            {facultad.Nombre_facultad}
                         </option>
                     ))}
                 </select>

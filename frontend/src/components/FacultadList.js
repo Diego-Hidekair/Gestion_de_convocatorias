@@ -1,10 +1,11 @@
 // src/components/FacultadList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const FacultadList = () => {
     const [facultades, setFacultades] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchFacultades = async () => {
@@ -19,6 +20,15 @@ const FacultadList = () => {
         fetchFacultades();
     }, []);
 
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/facultades/${id}`);
+            setFacultades(facultades.filter(facultad => facultad.cod_facultad !== id));
+        } catch (error) {
+            console.error('Error al eliminar la facultad:', error);
+        }
+    };
+
     return (
         <div>
             <h2>Lista de Facultades</h2>
@@ -27,6 +37,7 @@ const FacultadList = () => {
                     <li key={facultad.cod_facultad}>
                         {facultad.nombre_facultad} 
                         <Link to={`/facultades/${facultad.cod_facultad}/edit`}>Editar</Link>
+                        <button onClick={() => handleDelete(facultad.cod_facultad)}>Eliminar</button>
                     </li>
                 ))}
             </ul>

@@ -1,24 +1,18 @@
-// src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
-const ConvocatoriaList = () => {
+const ListaConvocatoria = () => {
     const [convocatorias, setConvocatorias] = useState([]);
 
     useEffect(() => {
         const fetchConvocatorias = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/convocatorias');
-                setConvocatorias(response.data);
-            } catch (error) {
-                console.error('Error al obtener convocatorias:', error);
-            }
+            const res = await axios.get('http://localhost:5000/api/convocatorias');
+            setConvocatorias(res.data);
         };
-
         fetchConvocatorias();
     }, []);
-    
+
     const handleDelete = async (id) => {
         try {
             await axios.delete(`http://localhost:5000/api/convocatorias/${id}`);
@@ -32,16 +26,17 @@ const ConvocatoriaList = () => {
         <div>
             <h2>Lista de Convocatorias</h2>
             <ul>
-                {convocatorias.map((convocatoria) => (
+                {convocatorias.map(convocatoria => (
                     <li key={convocatoria.id_convocatoria}>
-                        {convocatoria.Nombre} 
-                        <Link to={`/convocatorias/${convocatoria.id_convocatoria}/edit`}>Editar</Link>
+                        {convocatoria.nombre} - {convocatoria.fecha_inicio} a {convocatoria.fecha_fin}
+                        <Link to={`/convocatorias/editar/${convocatoria.id_convocatoria}`}>Editar</Link>
                         <button onClick={() => handleDelete(convocatoria.id_convocatoria)}>Eliminar</button>
                     </li>
                 ))}
             </ul>
+            <Link to="/convocatorias/nueva">Crear Convocatoria</Link>
         </div>
     );
 };
 
-export default ConvocatoriaList;
+export default ListaConvocatoria;
