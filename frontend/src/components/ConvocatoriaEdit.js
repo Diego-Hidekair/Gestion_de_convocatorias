@@ -1,37 +1,42 @@
+//frontend/src/components/ConvocatoriaEdit
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const ConvocatoriaEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [nombre_convocatoria, setNombreConvocatoria] = useState('');
-    const [cod_carrera, setCodCarrera] = useState('');
-    const [cod_facultad, setCodFacultad] = useState('');
+    const [convocatoria, setConvocatoria] = useState({
+        cod_convocatoria: '',
+        Nombre: '',
+        Fecha_inicio: '',
+        Fecha_fin: '',
+        id_tipoconvocatoria: '',
+        id_carrera: '',
+        id_facultad: ''
+    });
 
     useEffect(() => {
         const fetchConvocatoria = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/convocatorias/${id}`);
-                setNombreConvocatoria(response.data.nombre_convocatoria);
-                setCodCarrera(response.data.cod_carrera);
-                setCodFacultad(response.data.cod_facultad);
+                const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+                setConvocatoria(response.data);
             } catch (error) {
                 console.error('Error al obtener la convocatoria:', error);
             }
         };
-
         fetchConvocatoria();
     }, [id]);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setConvocatoria({ ...convocatoria, [name]: value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/convocatorias/${id}`, {
-                nombre_convocatoria,
-                cod_carrera,
-                cod_facultad
-            });
+            await axios.put(`http://localhost:5000/convocatorias/${id}`, convocatoria);
             navigate('/convocatorias');
         } catch (error) {
             console.error('Error al actualizar convocatoria:', error);
@@ -41,30 +46,34 @@ const ConvocatoriaEdit = () => {
     return (
         <form onSubmit={handleSubmit}>
             <label>
-                Nombre Convocatoria:
-                <input
-                    type="text"
-                    value={nombre_convocatoria}
-                    onChange={(e) => setNombreConvocatoria(e.target.value)}
-                />
+                Código Convocatoria:
+                <input type="text" name="cod_convocatoria" value={convocatoria.cod_convocatoria} onChange={handleChange} />
             </label>
             <label>
-                Código Carrera:
-                <input
-                    type="text"
-                    value={cod_carrera}
-                    onChange={(e) => setCodCarrera(e.target.value)}
-                />
+                Nombre:
+                <input type="text" name="Nombre" value={convocatoria.Nombre} onChange={handleChange} />
             </label>
             <label>
-                Código Facultad:
-                <input
-                    type="text"
-                    value={cod_facultad}
-                    onChange={(e) => setCodFacultad(e.target.value)}
-                />
+                Fecha Inicio:
+                <input type="date" name="Fecha_inicio" value={convocatoria.Fecha_inicio} onChange={handleChange} />
             </label>
-            <button type="submit">Actualizar</button>
+            <label>
+                Fecha Fin:
+                <input type="date" name="Fecha_fin" value={convocatoria.Fecha_fin} onChange={handleChange} />
+            </label>
+            <label>
+                Tipo Convocatoria:
+                <input type="number" name="id_tipoconvocatoria" value={convocatoria.id_tipoconvocatoria} onChange={handleChange} />
+            </label>
+            <label>
+                Carrera:
+                <input type="number" name="id_carrera" value={convocatoria.id_carrera} onChange={handleChange} />
+            </label>
+            <label>
+                Facultad:
+                <input type="number" name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange} />
+            </label>
+            <button type="submit">Actualizar Convocatoria</button>
         </form>
     );
 };

@@ -1,7 +1,7 @@
 // src/components/CarreraList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const CarreraList = () => {
     const [carreras, setCarreras] = useState([]);
@@ -9,34 +9,24 @@ const CarreraList = () => {
     useEffect(() => {
         const fetchCarreras = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/carreras');
+                const response = await axios.get('http://localhost:5000/carreras');
                 setCarreras(response.data);
             } catch (error) {
-                console.error('Error al obtener carreras:', error);
+                console.error('Error al obtener las carreras:', error);
             }
         };
-
         fetchCarreras();
     }, []);
-    
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/api/carreras/${id}`);
-            setCarreras(carreras.filter(carrera => carrera.id_carrera !== id));
-        } catch (error) {
-            console.error('Error al eliminar la carrera:', error);
-        }
-    };
 
     return (
         <div>
-            <h2>Lista de Carreras</h2>
+            <h1>Lista de Carreras</h1>
+            <Link to="/carreras/new">Crear Nueva Carrera</Link>
             <ul>
-                {carreras.map((carrera) => (
+                {carreras.map(carrera => (
                     <li key={carrera.id_carrera}>
-                        {carrera.Nombre_carrera} 
-                        <Link to={`/carreras/${carrera.id_carrera}/edit`}>Editar</Link>
-                        <button onClick={() => handleDelete(carrera.id_carrera)}>Eliminar</button>
+                        {carrera.nombre_carrera}
+                        <Link to={`/carreras/edit/${carrera.id_carrera}`}>Editar</Link>
                     </li>
                 ))}
             </ul>

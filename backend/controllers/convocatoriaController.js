@@ -1,30 +1,31 @@
+//backend/controllers/convocatoriaController
 const pool = require('../db');
 
-// Obtener todas las convocatorias
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM convocatorias ORDER BY fecha_inicio');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error al obtener convocatorias:', error);
         res.status(500).send('Error al obtener convocatorias');
     }
 };
 
-// Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {
     const { cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad } = req.body;
     try {
+        console.log('Datos recibidos para crear convocatoria:', req.body);
         const result = await pool.query(
             'INSERT INTO convocatorias (cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
             [cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        console.error('Error al crear convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
 };
 
-// Actualizar una convocatoria existente
 const updateConvocatoria = async (req, res) => {
     const { id } = req.params;
     const { cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad } = req.body;
@@ -38,11 +39,11 @@ const updateConvocatoria = async (req, res) => {
         }
         res.json(result.rows[0]);
     } catch (err) {
+        console.error('Error al actualizar convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
 };
 
-// Eliminar una convocatoria
 const deleteConvocatoria = async (req, res) => {
     const { id } = req.params;
     try {
@@ -52,11 +53,11 @@ const deleteConvocatoria = async (req, res) => {
         }
         res.json({ message: 'Convocatoria eliminada' });
     } catch (err) {
+        console.error('Error al eliminar convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
 };
 
-// Obtener una convocatoria por ID
 const getConvocatoriaById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -66,6 +67,7 @@ const getConvocatoriaById = async (req, res) => {
         }
         res.json(result.rows[0]);
     } catch (err) {
+        console.error('Error al obtener convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
 };

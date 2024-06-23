@@ -1,7 +1,7 @@
 // src/components/ConvocatoriaList.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const ConvocatoriaList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
@@ -9,19 +9,19 @@ const ConvocatoriaList = () => {
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/convocatorias');
+                const response = await axios.get('http://localhost:5000/convocatorias');
                 setConvocatorias(response.data);
             } catch (error) {
-                console.error('Error al obtener convocatorias:', error);
+                console.error('Error al obtener las convocatorias:', error);
             }
         };
 
         fetchConvocatorias();
     }, []);
-    
+
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/convocatorias/${id}`);
+            await axios.delete(`http://localhost:5000/convocatorias/${id}`);
             setConvocatorias(convocatorias.filter(convocatoria => convocatoria.id_convocatoria !== id));
         } catch (error) {
             console.error('Error al eliminar la convocatoria:', error);
@@ -30,12 +30,14 @@ const ConvocatoriaList = () => {
 
     return (
         <div>
-            <h2>Lista de Convocatorias</h2>
+            <h1>Lista de Convocatorias</h1>
+            <Link to="/convocatorias/new">
+                <button>Crear Nueva Convocatoria</button>
+            </Link>
             <ul>
-                {convocatorias.map((convocatoria) => (
+                {convocatorias.map(convocatoria => (
                     <li key={convocatoria.id_convocatoria}>
-                        {convocatoria.Nombre} 
-                        <Link to={`/convocatorias/${convocatoria.id_convocatoria}/edit`}>Editar</Link>
+                        {convocatoria.nombre} - {convocatoria.fecha_inicio} a {convocatoria.fecha_fin}
                         <button onClick={() => handleDelete(convocatoria.id_convocatoria)}>Eliminar</button>
                     </li>
                 ))}

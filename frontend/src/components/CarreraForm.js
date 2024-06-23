@@ -1,56 +1,50 @@
 // frontend/src/components/CarreraForm.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-function CarreraForm() {
-    const [nombre_carrera, setNombreCarrera] = useState('');
-    const [id_facultad, setIdFacultad] = useState('');
-    const [facultades, setFacultades] = useState([]);
+const CarreraForm = () => {
+    const navigate = useNavigate();
+    const [carrera, setCarrera] = useState({ nombre_carrera: '', cod_facultad: '' });
 
-    useEffect(() => {
-        const fetchFacultades = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/facultades');
-                setFacultades(response.data);
-            } catch (error) {
-                console.error('Error al obtener facultades:', error);
-            }
-        };
-        fetchFacultades();
-    }, []);
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCarrera({ ...carrera, [name]: value });
+    };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/carreras', { nombre_carrera, id_facultad });
-            alert('Carrera creada exitosamente');
-            setNombreCarrera('');
-            setIdFacultad('');
+            await axios.post('http://localhost:5000/carreras', carrera);
+            navigate('/carreras');
         } catch (error) {
-            alert('Error al crear carrera: ' + error.message);
+            console.error('Error al crear carrera:', error);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <label>
-                Nombre Carrera:
-                <input type="text" value={nombre_carrera} onChange={(e) => setNombreCarrera(e.target.value)} required />
+                Nombre:
+                <input
+                    type="text"
+                    name="nombre_carrera"
+                    value={carrera.nombre_carrera}
+                    onChange={handleChange}
+                />
             </label>
             <label>
                 Facultad:
-                <select value={id_facultad} onChange={(e) => setIdFacultad(e.target.value)} required>
-                    <option value="">Seleccione una facultad</option>
-                    {facultades.map((facultad) => (
-                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                            {facultad.Nombre_facultad}
-                        </option>
-                    ))}
-                </select>
+                <input
+                    type="number"
+                    name="cod_facultad"
+                    value={carrera.cod_facultad}
+                    onChange={handleChange}
+                />
             </label>
-            <button type="submit">Guardar</button>
+            <button type="submit">Crear Carrera</button>
         </form>
     );
-}
+};
 
 export default CarreraForm;

@@ -1,18 +1,12 @@
 const express = require('express');
-const {
-    getConvocatorias,
-    createConvocatoria,
-    updateConvocatoria,
-    deleteConvocatoria,
-    getConvocatoriaById
-} = require('../controllers/convocatoriaController.js');
-
 const router = express.Router();
+const convocatoriaController = require('../controllers/convocatoriaController');
 
-router.get('/convocatorias', getConvocatorias);
-router.post('/convocatorias', createConvocatoria);
-router.put('/convocatorias/:id', updateConvocatoria);
-router.delete('/convocatorias/:id', deleteConvocatoria);
-router.get('/convocatorias/:id', getConvocatoriaById);
+router.get('/', convocatoriaController.getConvocatorias);
+router.post('/', convocatoriaController.createConvocatoria);
+router.put('/:id', convocatoriaController.updateConvocatoria);
+router.delete('/:id', convocatoriaController.deleteConvocatoria);
+router.get('/:id', convocatoriaController.getConvocatoriaById);
 
 module.exports = router;
+

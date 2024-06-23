@@ -1,81 +1,69 @@
 // frontend/src/components/ConvocatoriaForm.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-function ConvocatoriaForm() {
-    const [nombre_convocatoria, setNombreConvocatoria] = useState('');
-    const [id_carrera, setIdCarrera] = useState('');
-    const [id_facultad, setIdFacultad] = useState('');
-    const [facultades, setFacultades] = useState([]);
-    const [carreras, setCarreras] = useState([]);
+const ConvocatoriaForm = () => {
+    const navigate = useNavigate();
+    const [convocatoria, setConvocatoria] = useState({
+        cod_convocatoria: '',
+        nombre: '',
+        fecha_inicio: '',
+        fecha_fin: '',
+        id_tipoconvocatoria: '',
+        id_carrera: '',
+        id_facultad: ''
+    });
 
-    useEffect(() => {
-        const fetchFacultades = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/facultades');
-                setFacultades(response.data);
-            } catch (error) {
-                console.error('Error al obtener facultades:', error);
-            }
-        };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setConvocatoria({ ...convocatoria, [name]: value });
+    };
 
-        const fetchCarreras = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/carreras');
-                setCarreras(response.data);
-            } catch (error) {
-                console.error('Error al obtener carreras:', error);
-            }
-        };
-
-        fetchFacultades();
-        fetchCarreras();
-    }, []);
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/convocatorias', { nombre_convocatoria, id_carrera, id_facultad });
-            alert('Convocatoria creada exitosamente');
-            setNombreConvocatoria('');
-            setIdCarrera('');
-            setIdFacultad('');
+            console.log('Datos enviados al servidor:', convocatoria);
+            await axios.post('http://localhost:5000/convocatorias', convocatoria);
+            navigate('/convocatorias');
         } catch (error) {
-            alert('Error al crear convocatoria: ' + error.message);
+            console.error('Error al crear convocatoria:', error);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <label>
-                Nombre Convocatoria:
-                <input type="text" value={nombre_convocatoria} onChange={(e) => setNombreConvocatoria(e.target.value)} required />
+                Código Convocatoria:
+                <input type="text" name="cod_convocatoria" value={convocatoria.cod_convocatoria} onChange={handleChange} />
             </label>
             <label>
-                Facultad:
-                <select value={id_facultad} onChange={(e) => setIdFacultad(e.target.value)} required>
-                    <option value="">Seleccione una facultad</option>
-                    {facultades.map((facultad) => (
-                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                            {facultad.Nombre_facultad}
-                        </option>
-                    ))}
-                </select>
+                Nombre:
+                <input type="text" name="nombre" value={convocatoria.nombre} onChange={handleChange} />
+            </label>
+            <label>
+                Fecha Inicio:
+                <input type="date" name="fecha_inicio" value={convocatoria.fecha_inicio} onChange={handleChange} />
+            </label>
+            <label>
+                Fecha Fin:
+                <input type="date" name="fecha_fin" value={convocatoria.fecha_fin} onChange={handleChange} />
+            </label>
+            <label>
+                Tipo Convocatoria:
+                <input type="number" name="id_tipoconvocatoria" value={convocatoria.id_tipoconvocatoria} onChange={handleChange} />
             </label>
             <label>
                 Carrera:
-                <select value={id_carrera} onChange={(e) => setIdCarrera(e.target.value)} required>
-                    <option value="">Seleccione una carrera</option>
-                    {carreras.map((carrera) => (
-                        <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                            {carrera.Nombre_carrera}
-                        </option>
-                    ))}
-                </select>
+                <input type="number" name="id_carrera" value={convocatoria.id_carrera} onChange={handleChange} />
             </label>
-            <button type="submit">Guardar</button>
+            <label>
+                Facultad:
+                <input type="number" name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange} />
+            </label>
+            <button type="submit">Crear Convocatoria</button>
         </form>
     );
-}
+};
 
 export default ConvocatoriaForm;

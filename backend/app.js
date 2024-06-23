@@ -1,27 +1,31 @@
-// src/app.js
+// app.js
 const express = require('express');
-const cors = require('cors'); // Importa cors
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
 const app = express();
-const categoriaRoutes = require('./routes/categoriaRoutes'); 
 
-const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
-
-const port = process.env.PORT || 5000;
-
-
-// Configura CORS
 app.use(cors({
-    origin: 'http://localhost:3000' // Permite solicitudes desde localhost:3000
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+app.use(bodyParser.json());
 
-app.use(express.json());
+const facultadRoutes = require('./routes/facultadRoutes');
+const carreraRoutes = require('./routes/carreraRoutes');
+const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
+const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
+const materiaRoutes = require('./routes/materiaRoutes'); // Añadido
 
-app.use('/api', categoriaRoutes);
-/*app.use('/api', convocatoriaRoutes);*/
+app.use('/facultades', facultadRoutes);
+app.use('/carreras', carreraRoutes);
+app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
+app.use('/convocatorias', convocatoriaRoutes);
+app.use('/materias', materiaRoutes); // Añadido
 
-app.listen(port, () => {
-    console.log(`Servidor en ejecución en el puerto ${port}`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
-
-

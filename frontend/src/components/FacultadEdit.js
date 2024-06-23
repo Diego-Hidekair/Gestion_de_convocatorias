@@ -1,46 +1,47 @@
-//src/components/FacultadEdit.js
+// src/components/FacultadEdit.js
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
 
 const FacultadEdit = () => {
     const { id } = useParams();
-    const [nombre_facultad, setNombreFacultad] = useState('');
+    const navigate = useNavigate();
+    const [facultad, setFacultad] = useState({ nombre_facultad: '' });
 
     useEffect(() => {
         const fetchFacultad = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/facultades/${id}`);
-                setNombreFacultad(response.data.nombre_facultad);
+                const response = await axios.get(`http://localhost:5000/facultades/${id}`);
+                setFacultad(response.data);
             } catch (error) {
                 console.error('Error al obtener la facultad:', error);
             }
         };
-
         fetchFacultad();
     }, [id]);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFacultad({ ...facultad, [name]: value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:5000/api/facultades/${id}`, { nombre_facultad });
-            console.log(response.data);
+            await axios.put(`http://localhost:5000/facultades/${id}`, facultad);
+            navigate('/facultades');
         } catch (error) {
-            console.error('Error al editar la facultad:', error);
+            console.error('Error al actualizar facultad:', error);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <label>
-                Nombre Facultad:
-                <input
-                    type="text"
-                    value={nombre_facultad}
-                    onChange={(e) => setNombreFacultad(e.target.value)}
-                />
+                Nombre:
+                <input type="text" name="nombre_facultad" value={facultad.nombre_facultad} onChange={handleChange} />
             </label>
-            <button type="submit">Guardar</button>
+            <button type="submit">Actualizar Facultad</button>
         </form>
     );
 };

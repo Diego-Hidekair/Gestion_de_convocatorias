@@ -1,33 +1,34 @@
 // src/components/FacultadForm.js
 import React, { useState } from 'react';
 import axios from 'axios';
-
-
+import { useNavigate } from 'react-router-dom';
 
 const FacultadForm = () => {
-    const [nombre_facultad, setNombreFacultad] = useState('');
+    const navigate = useNavigate();
+    const [facultad, setFacultad] = useState({ nombre_facultad: '' });
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFacultad({ ...facultad, [name]: value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/facultades', { nombre_facultad });
-            console.log(response.data);
+            await axios.post('http://localhost:5000/facultades', facultad);
+            navigate('/facultades');
         } catch (error) {
-            console.error('Error al crear la facultad:', error);
+            console.error('Error al crear facultad:', error);
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <label>
-                Nombre Facultad:
-                <input
-                    type="text"
-                    value={nombre_facultad}
-                    onChange={(e) => setNombreFacultad(e.target.value)}
-                />
+                Nombre:
+                <input type="text" name="nombre_facultad" value={facultad.nombre_facultad} onChange={handleChange} />
             </label>
-            <button type="submit">Guardar</button>
+            <button type="submit">Crear Facultad</button>
         </form>
     );
 };

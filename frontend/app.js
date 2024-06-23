@@ -1,4 +1,4 @@
-document.getElementById('facultadForm').addEventListener('submit', async function(e) {
+/*document.getElementById('facultadForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const nombre_facultad = document.getElementById('nombre_facultad').value;
@@ -69,3 +69,4 @@ document.getElementById('convocatoriaForm').addEventListener('submit', async fun
         alert('Error al crear convocatoria: ' + data.error);
     }
 });
+*/

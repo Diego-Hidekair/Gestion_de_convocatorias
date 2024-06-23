@@ -1,43 +1,31 @@
-// src/components/FacultadList.js
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
 
 const FacultadList = () => {
     const [facultades, setFacultades] = useState([]);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchFacultades = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/facultades');
+                const response = await axios.get('http://localhost:5000/facultades');
                 setFacultades(response.data);
             } catch (error) {
-                console.error('Error al obtener facultades:', error);
+                console.error('Error al obtener las facultades:', error);
             }
         };
-
         fetchFacultades();
     }, []);
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/api/facultades/${id}`);
-            setFacultades(facultades.filter(facultad => facultad.cod_facultad !== id));
-        } catch (error) {
-            console.error('Error al eliminar la facultad:', error);
-        }
-    };
-
     return (
         <div>
-            <h2>Lista de Facultades</h2>
+            <h1>Lista de Facultades</h1>
+            <Link to="/facultades/new">Crear Nueva Facultad</Link>
             <ul>
-                {facultades.map((facultad) => (
-                    <li key={facultad.cod_facultad}>
-                        {facultad.nombre_facultad} 
-                        <Link to={`/facultades/${facultad.cod_facultad}/edit`}>Editar</Link>
-                        <button onClick={() => handleDelete(facultad.cod_facultad)}>Eliminar</button>
+                {facultades.map(facultad => (
+                    <li key={facultad.id_facultad}>
+                        {facultad.nombre_facultad}
+                        <Link to={`/facultades/edit/${facultad.id_facultad}`}>Editar</Link>
                     </li>
                 ))}
             </ul>
