@@ -9,6 +9,7 @@ const NavBar = () => {
                 <li><Link to="/facultades">Facultades</Link></li>
                 <li><Link to="/carreras">Carreras</Link></li>
                 <li><Link to="/tipoconvocatorias">tipoconvocatorias</Link></li>
+                <li><Link to="/materias">Materias</Link></li>
                 <li><Link to="/convocatorias">Convocatorias</Link></li>
             </ul>
         </nav>

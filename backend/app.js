@@ -17,13 +17,17 @@ const facultadRoutes = require('./routes/facultadRoutes');
 const carreraRoutes = require('./routes/carreraRoutes');
 const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
 const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
-const materiaRoutes = require('./routes/materiaRoutes'); // Añadido
+const materiaRoutes = require('./routes/materiaRoutes'); 
+const convocatoriaMateriaRoutes = require('./routes/convocatoriaMateriaRoutes'); 
+const documentosRoutes = require('./routes/documentosRoutes'); // Añadido
 
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
 app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
 app.use('/convocatorias', convocatoriaRoutes);
-app.use('/materias', materiaRoutes); // Añadido
+app.use('/materias', materiaRoutes);
+app.use('/convocatorias/materias', convocatoriaMateriaRoutes); 
+app.use('/documentos', documentosRoutes); // Añadido
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

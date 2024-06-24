@@ -23,9 +23,8 @@ const ConvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log('Datos enviados al servidor:', convocatoria);
-            await axios.post('http://localhost:5000/convocatorias', convocatoria);
-            navigate('/convocatorias');
+            const response = await axios.post('http://localhost:5000/convocatorias', convocatoria);
+            navigate(`/convocatorias/${response.data.id_convocatoria}/materias`);
         } catch (error) {
             console.error('Error al crear convocatoria:', error);
         }
@@ -61,7 +60,7 @@ const ConvocatoriaForm = () => {
                 Facultad:
                 <input type="number" name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange} />
             </label>
-            <button type="submit">Crear Convocatoria</button>
+            <button type="submit">Siguiente</button>
         </form>
     );
 };
