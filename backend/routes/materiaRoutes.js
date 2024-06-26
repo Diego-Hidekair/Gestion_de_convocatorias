@@ -10,3 +10,4 @@ router.delete('/:id', materiaController.deleteMateria);
 router.get('/:id', materiaController.getMateriaById);
 
 module.exports = router;
+

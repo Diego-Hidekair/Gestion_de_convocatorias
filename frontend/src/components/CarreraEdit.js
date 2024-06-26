@@ -1,4 +1,4 @@
-//backend/src/components/CarreraEdit
+// frontend/src/components/CarreraEdit.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ const CarreraEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [carrera, setCarrera] = useState({ nombre_carrera: '', cod_facultad: '' });
+    const [facultades, setFacultades] = useState([]);
 
     useEffect(() => {
         const fetchCarrera = async () => {
@@ -17,8 +18,20 @@ const CarreraEdit = () => {
                 console.error('Error al obtener la carrera:', error);
             }
         };
+
+        const fetchFacultades = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/facultades');
+                setFacultades(response.data);
+            } catch (error) {
+                console.error('Error al obtener las facultades:', error);
+            }
+        };
+
         fetchCarrera();
+        fetchFacultades();
     }, [id]);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -48,12 +61,18 @@ const CarreraEdit = () => {
             </label>
             <label>
                 Facultad:
-                <input
-                    type="number"
+                <select
                     name="cod_facultad"
                     value={carrera.cod_facultad}
                     onChange={handleChange}
-                />
+                >
+                    <option value="">Seleccione una facultad</option>
+                    {facultades.map(facultad => (
+                        <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
+                            {facultad.nombre}
+                        </option>
+                    ))}
+                </select>
             </label>
             <button type="submit">Actualizar Carrera</button>
         </form>

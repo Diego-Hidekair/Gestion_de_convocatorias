@@ -1,11 +1,24 @@
 // frontend/src/components/CarreraForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const CarreraForm = () => {
     const navigate = useNavigate();
     const [carrera, setCarrera] = useState({ nombre_carrera: '', cod_facultad: '' });
+    const [facultades, setFacultades] = useState([]);
+
+    useEffect(() => {
+        const fetchFacultades = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/facultades');
+                setFacultades(response.data);
+            } catch (error) {
+                console.error('Error al obtener las facultades:', error);
+            }
+        };
+        fetchFacultades();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,12 +48,18 @@ const CarreraForm = () => {
             </label>
             <label>
                 Facultad:
-                <input
-                    type="number"
+                <select
                     name="cod_facultad"
                     value={carrera.cod_facultad}
                     onChange={handleChange}
-                />
+                >
+                    <option value="">Seleccione una facultad</option>
+                    {facultades.map(facultad => (
+                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                            {facultad.nombre_facultad}
+                        </option>
+                    ))}
+                </select>
             </label>
             <button type="submit">Crear Carrera</button>
         </form>

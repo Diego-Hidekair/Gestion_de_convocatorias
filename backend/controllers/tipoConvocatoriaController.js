@@ -3,12 +3,25 @@ const pool = require('../db');
 
 const getTipoConvocatorias = async (req, res) => {
     try {
+        const result = await pool.query(
+            `SELECT tc.*, f.nombre_facultad, c.nombre_carrera
+             FROM tipo_convocatoria tc
+             LEFT JOIN facultad f ON tc.cod_facultad = f.id_facultad
+             LEFT JOIN carrera c ON tc.cod_carrera = c.id_carrera
+             ORDER BY tc.nombre_convocatoria`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};/*const getTipoConvocatorias = async (req, res) => {
+    try {
         const result = await pool.query('SELECT * FROM tipo_convocatoria ORDER BY nombre_convocatoria');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-};
+};*/
 
 const createTipoConvocatoria = async (req, res) => {
     const { nombre_convocatoria, cod_carrera, cod_facultad } = req.body;

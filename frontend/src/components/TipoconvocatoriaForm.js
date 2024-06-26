@@ -37,7 +37,7 @@ const TipoconvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/tipos-convocatorias/tipo_convocatorias', {
+            const response = await axios.post('http://localhost:5000/tipos-convocatorias', {
                 nombre_convocatoria: nombreConvocatoria,
                 cod_facultad: selectedFacultad,
                 cod_carrera: selectedCarrera,
@@ -65,6 +65,7 @@ const TipoconvocatoriaForm = () => {
                     value={selectedFacultad}
                     onChange={(e) => setSelectedFacultad(e.target.value)}
                 >
+                    <option value="">Seleccione una facultad</option>
                     {facultades.map((facultad) => (
                         <option key={facultad.id_facultad} value={facultad.id_facultad}>
                             {facultad.nombre_facultad}
@@ -78,6 +79,7 @@ const TipoconvocatoriaForm = () => {
                     value={selectedCarrera}
                     onChange={(e) => setSelectedCarrera(e.target.value)}
                 >
+                    <option value="">Seleccione una carrera</option>
                     {carreras.map((carrera) => (
                         <option key={carrera.id_carrera} value={carrera.id_carrera}>
                             {carrera.nombre_carrera}

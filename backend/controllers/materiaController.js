@@ -11,11 +11,11 @@ const getMaterias = async (req, res) => {
 };
 
 const createMateria = async (req, res) => {
-    const { nombre } = req.body;
+    const { codigomateria, nombre } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO materia (nombre) VALUES ($1) RETURNING *',
-            [nombre]
+            'INSERT INTO materia (codigomateria, nombre) VALUES ($1, $2) RETURNING *',
+            [codigomateria, nombre]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -25,11 +25,11 @@ const createMateria = async (req, res) => {
 
 const updateMateria = async (req, res) => {
     const { id } = req.params;
-    const { nombre } = req.body;
+    const { codigomateria, nombre } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE materia SET nombre = $1 WHERE id_materia = $2 RETURNING *',
-            [nombre, id]
+            'UPDATE materia SET codigomateria = $1, nombre = $2 WHERE id_materia = $3 RETURNING *',
+            [codigomateria, nombre, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Materia no encontrada' });

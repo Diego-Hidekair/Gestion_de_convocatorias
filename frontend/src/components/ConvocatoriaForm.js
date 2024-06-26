@@ -14,7 +14,7 @@ const ConvocatoriaForm = () => {
         id_carrera: '',
         id_facultad: ''
     });
-
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setConvocatoria({ ...convocatoria, [name]: value });
@@ -24,7 +24,12 @@ const ConvocatoriaForm = () => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/convocatorias', convocatoria);
-            navigate(`/convocatorias/${response.data.id_convocatoria}/materias`);
+            const newConvocatoriaId = response.data.id_convocatoria;
+            if (newConvocatoriaId) {
+                navigate(`/convocatorias/${newConvocatoriaId}/materias`);
+            } else {
+                console.error('No se recibió un ID válido para la nueva convocatoria');
+            }
         } catch (error) {
             console.error('Error al crear convocatoria:', error);
         }

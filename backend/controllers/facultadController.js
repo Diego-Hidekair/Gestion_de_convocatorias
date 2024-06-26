@@ -1,3 +1,4 @@
+//backend/controllers/facultadController.js
 const pool = require('../db');
 
 const getFacultades = async (req, res) => {
@@ -52,11 +53,28 @@ const getFacultadById = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+const getTipoConvocatorias = async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT tc.id_tipoconvocatoria, tc.nombre_convocatoria, 
+                   f.nombre_facultad, c.nombre_carrera
+            FROM tipo_convocatoria tc
+            INNER JOIN facultad f ON tc.cod_facultad = f.id_facultad
+            INNER JOIN carrera c ON tc.cod_carrera = c.id_carrera
+            ORDER BY tc.nombre_convocatoria
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 
 module.exports = {
     getFacultades,
     createFacultad,
     updateFacultad,
     deleteFacultad,
-    getFacultadById
+    getFacultadById,
+    getTipoConvocatorias
 };

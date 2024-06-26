@@ -1,4 +1,4 @@
-// src/components/ConvocatoriaMateriaForm.js
+// src/components/ConvocatoriaMateriasForm.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -33,12 +33,12 @@ const ConvocatoriaMateriaForm = () => {
                 id_convocatoria: id,
                 id_materia: selectedMateria
             });
-            navigate('/convocatorias');
+            navigate(`/pdf-generator/${id}`); // Redirigir al generador de PDF con el ID de la convocatoria
         } catch (error) {
             console.error('Error al agregar materia a la convocatoria:', error);
         }
     };
-
+    
     return (
         <form onSubmit={handleSubmit}>
             <label>

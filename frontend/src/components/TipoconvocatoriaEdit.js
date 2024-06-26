@@ -1,5 +1,4 @@
-// frontend/components/TipoconvocatoriaForm.js
-
+// frontend/components/TipoconvocatoriaEdit.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,9 +7,9 @@ const TipoconvocatoriaEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [tipoConvocatoria, setTipoConvocatoria] = useState({
-        Nombre_convocatoria: '',
-        Cod_facultad: '',
-        Cod_carrera: ''
+        nombre_convocatoria: '',
+        cod_facultad: '',
+        cod_carrera: ''
     });
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
@@ -69,21 +68,22 @@ const TipoconvocatoriaEdit = () => {
                 Nombre de Convocatoria:
                 <input
                     type="text"
-                    name="Nombre_convocatoria"
-                    value={tipoConvocatoria.Nombre_convocatoria}
+                    name="nombre_convocatoria"
+                    value={tipoConvocatoria.nombre_convocatoria}
                     onChange={handleChange}
                 />
             </label>
             <label>
                 Facultad:
                 <select
-                    name="Cod_facultad"
-                    value={tipoConvocatoria.Cod_facultad}
+                    name="cod_facultad"
+                    value={tipoConvocatoria.cod_facultad}
                     onChange={handleChange}
                 >
+                    <option value="">Seleccione una facultad</option>
                     {facultades.map((facultad) => (
                         <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                            {facultad.Nombre_facultad}
+                            {facultad.nombre_facultad}
                         </option>
                     ))}
                 </select>
@@ -91,13 +91,14 @@ const TipoconvocatoriaEdit = () => {
             <label>
                 Carrera:
                 <select
-                    name="Cod_carrera"
-                    value={tipoConvocatoria.Cod_carrera}
+                    name="cod_carrera"
+                    value={tipoConvocatoria.cod_carrera}
                     onChange={handleChange}
                 >
+                    <option value="">Seleccione una carrera</option>
                     {carreras.map((carrera) => (
                         <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                            {carrera.Nombre_carrera}
+                            {carrera.nombre_carrera}
                         </option>
                     ))}
                 </select>

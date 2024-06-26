@@ -18,7 +18,8 @@ const MateriaList = () => {
 
         fetchMaterias();
     }, []);
-
+    
+    
     const handleDelete = async (id) => {
         try {
             await axios.delete(`http://localhost:5000/materias/${id}`);
@@ -35,7 +36,7 @@ const MateriaList = () => {
             <ul>
                 {materias.map(materia => (
                     <li key={materia.id_materia}>
-                        {materia.nombre}
+                        {materia.codigomateria ? `${materia.codigomateria} - ` : ''}{materia.nombre}
                         <Link to={`/materias/edit/${materia.id_materia}`}>Editar</Link>
                         <button onClick={() => handleDelete(materia.id_materia)}>Eliminar</button>
                     </li>
