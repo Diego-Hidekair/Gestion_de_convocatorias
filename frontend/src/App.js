@@ -23,6 +23,7 @@ import UsuarioForm from './components/UsuarioForm';
 import UsuarioList from './components/UsuarioList';
 import Login from './components/Login';
 import Register from './components/Register';
+import FileUpload from './components/FileUpload';
 
 
 const App = () => {
@@ -43,6 +44,7 @@ const App = () => {
         localStorage.removeItem('token');
         setIsAuthenticated(false);
     };
+    
     
     return (
         <Router>
@@ -70,6 +72,7 @@ const App = () => {
                         <Route path="/pdf-generator" element={<PDFGenerator />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios" element={<UsuarioList />} />
+                        <Route path="/file-upload" element={<FileUpload />} /> {/* Añadir la nueva ruta aquí */}
                     </Routes>
                 </>
             ) : (

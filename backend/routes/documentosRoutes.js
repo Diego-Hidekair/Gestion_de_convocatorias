@@ -1,3 +1,4 @@
+// backend/routes/documentosRoutes.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -7,7 +8,7 @@ const path = require('path');
 // Configuración de almacenamiento de Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, 'backend/uploads/');
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}_${file.originalname}`);
@@ -28,20 +29,14 @@ router.get('/', async (req, res) => {
 });
 
 // Crear un nuevo documento
-router.post('/', upload.fields([
-  { name: 'resolucion', maxCount: 1 },
-  { name: 'dictamen', maxCount: 1 },
-  { name: 'carta', maxCount: 1 }
-]), async (req, res) => {
-  const { resolucion, dictamen, carta } = req.files;
-  const resolucionPath = resolucion ? resolucion[0].path : null;
-  const dictamenPath = dictamen ? dictamen[0].path : null;
-  const cartaPath = carta ? carta[0].path : null;
+router.post('/', upload.single('documento'), async (req, res) => {
+  const { resolucion, dictamen } = req.body;
+  const documentoPath = req.file ? req.file.path : null;
 
   try {
     const result = await pool.query(
-      'INSERT INTO documentos (resolucion_path, dictamen_path, carta_path) VALUES ($1, $2, $3) RETURNING *',
-      [resolucionPath, dictamenPath, cartaPath]
+      'INSERT INTO documentos (resolucion, dictamen, documento_path) VALUES ($1, $2, $3) RETURNING *',
+      [resolucion, dictamen, documentoPath]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -66,21 +61,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // Actualizar un documento
-router.put('/:id', upload.fields([
-  { name: 'resolucion', maxCount: 1 },
-  { name: 'dictamen', maxCount: 1 },
-  { name: 'carta', maxCount: 1 }
-]), async (req, res) => {
+router.put('/:id', upload.single('documento'), async (req, res) => {
   const { id } = req.params;
-  const { resolucion, dictamen, carta } = req.files;
-  const resolucionPath = resolucion ? resolucion[0].path : null;
-  const dictamenPath = dictamen ? dictamen[0].path : null;
-  const cartaPath = carta ? carta[0].path : null;
+  const { resolucion, dictamen } = req.body;
+  const documentoPath = req.file ? req.file.path : null;
 
   try {
     const result = await pool.query(
-      'UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3 WHERE id = $4 RETURNING *',
-      [resolucionPath, dictamenPath, cartaPath, id]
+      'UPDATE documentos SET resolucion = $1, dictamen = $2, documento_path = $3 WHERE id = $4 RETURNING *',
+      [resolucion, dictamen, documentoPath, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Documento no encontrado' });
