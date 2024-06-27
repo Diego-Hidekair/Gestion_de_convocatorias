@@ -4,14 +4,16 @@ import axios from 'axios';
 
 const PDFGenerator = () => {
     const [convocatorias, setConvocatorias] = useState([]);
-    const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
     const [formData, setFormData] = useState({
         nombre: '',
         fechaInicio: '',
         fechaFin: '',
         tipoConvocatoria: '',
         carrera: '',
-        facultad: ''
+        facultad: '',
+        materias: [],
+        creadoPor: 'Admin',
+        fechaCreacion: new Date().toISOString().split('T')[0]
     });
     
     useEffect(() => {
@@ -29,18 +31,24 @@ const PDFGenerator = () => {
     const handleConvocatoriaChange = (e) => {
         const selectedId = e.target.value;
         const convocatoria = convocatorias.find(conv => conv.id_convocatoria === parseInt(selectedId));
-        setSelectedConvocatoria(convocatoria);
         if (convocatoria) {
             setFormData({
+                ...formData,
                 nombre: convocatoria.nombre,
-                fechaInicio: convocatoria.fecha_inicio,
-                fechaFin: convocatoria.fecha_fin,
+                fechaInicio: convocatoria.fecha_inicio.split('T')[0],
+                fechaFin: convocatoria.fecha_fin.split('T')[0],
                 tipoConvocatoria: convocatoria.tipo_convocatoria,
                 carrera: convocatoria.carrera,
-                facultad: convocatoria.facultad
+                facultad: convocatoria.facultad,
+                materias: convocatoria.materias || []  // Asumiendo que materias es una lista de strings
             });
         }
     };
+    
+    /*const handleMateriasChange = (e) => {
+        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+        setSelectedMaterias(selectedOptions);
+    };*/
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -96,6 +104,10 @@ const PDFGenerator = () => {
             <label>
                 Facultad:
                 <input type="text" name="facultad" value={formData.facultad} readOnly />
+            </label>
+            <label>
+                Materias:
+                <textarea name="materias" value={formData.materias.join(', ')} readOnly />
             </label>
             <button type="submit">Generar PDF</button>
         </form>

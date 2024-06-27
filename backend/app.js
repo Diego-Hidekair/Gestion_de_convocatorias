@@ -26,7 +26,8 @@ const usuarioRoutes = require('./routes/usuarioRoutes'); // Añadido
 
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
-app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
+//app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
+app.use('/tipoConvocatoria', tipoConvocatoriaRoutes);
 app.use('/convocatorias', convocatoriaRoutes);
 app.use('/materias', materiaRoutes);
 app.use('/convocatorias/materias', convocatoriaMateriaRoutes); 

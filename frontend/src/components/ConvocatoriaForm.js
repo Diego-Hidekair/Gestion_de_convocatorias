@@ -1,5 +1,5 @@
 // frontend/src/components/ConvocatoriaForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +14,25 @@ const ConvocatoriaForm = () => {
         id_carrera: '',
         id_facultad: ''
     });
+    const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
+    const [carreras, setCarreras] = useState([]);
+    const [facultades, setFacultades] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const tiposResponse = await axios.get('http://localhost:5000/tipoConvocatoria');
+                setTiposConvocatoria(tiposResponse.data);
+                const carrerasResponse = await axios.get('http://localhost:5000/carreras');
+                setCarreras(carrerasResponse.data);
+                const facultadesResponse = await axios.get('http://localhost:5000/facultades');
+                setFacultades(facultadesResponse.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
+    }, []);
     
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -55,15 +74,36 @@ const ConvocatoriaForm = () => {
             </label>
             <label>
                 Tipo Convocatoria:
-                <input type="number" name="id_tipoconvocatoria" value={convocatoria.id_tipoconvocatoria} onChange={handleChange} />
+                <select name="id_tipoconvocatoria" value={convocatoria.id_tipoconvocatoria} onChange={handleChange}>
+                    <option value="">Seleccione un tipo</option>
+                    {tiposConvocatoria.map(tipo => (
+                        <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
+                            {tipo.nombre_convocatoria}
+                        </option>
+                    ))}
+                </select>
             </label>
             <label>
                 Carrera:
-                <input type="number" name="id_carrera" value={convocatoria.id_carrera} onChange={handleChange} />
+                <select name="id_carrera" value={convocatoria.id_carrera} onChange={handleChange}>
+                    <option value="">Seleccione una carrera</option>
+                    {carreras.map(carrera => (
+                        <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                            {carrera.nombre_carrera}
+                        </option>
+                    ))}
+                </select>
             </label>
             <label>
                 Facultad:
-                <input type="number" name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange} />
+                <select name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange}>
+                    <option value="">Seleccione una facultad</option>
+                    {facultades.map(facultad => (
+                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                            {facultad.nombre_facultad}
+                        </option>
+                    ))}
+                </select>
             </label>
             <button type="submit">Siguiente</button>
         </form>

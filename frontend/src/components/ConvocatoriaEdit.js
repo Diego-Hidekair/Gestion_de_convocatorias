@@ -8,24 +8,31 @@ const ConvocatoriaEdit = () => {
     const navigate = useNavigate();
     const [convocatoria, setConvocatoria] = useState({
         cod_convocatoria: '',
-        Nombre: '',
-        Fecha_inicio: '',
-        Fecha_fin: '',
+        nombre: '',
+        fecha_inicio: '',
+        fecha_fin: '',
         id_tipoconvocatoria: '',
         id_carrera: '',
         id_facultad: ''
     });
 
+    const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
+    const [carreras, setCarreras] = useState([]);
+    const [facultades, setFacultades] = useState([]);
+    
     useEffect(() => {
-        const fetchConvocatoria = async () => {
-            try {
-                const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
-                setConvocatoria(response.data);
-            } catch (error) {
-                console.error('Error al obtener la convocatoria:', error);
-            }
+        const fetchData = async () => {
+            const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+            setConvocatoria(response.data);
+
+            const tiposResponse = await axios.get('http://localhost:5000/tiposConvocatoria');
+            setTiposConvocatoria(tiposResponse.data);
+            const carrerasResponse = await axios.get('http://localhost:5000/carreras');
+            setCarreras(carrerasResponse.data);
+            const facultadesResponse = await axios.get('http://localhost:5000/facultades');
+            setFacultades(facultadesResponse.data);
         };
-        fetchConvocatoria();
+        fetchData();
     }, [id]);
 
     const handleChange = (e) => {
@@ -51,31 +58,52 @@ const ConvocatoriaEdit = () => {
             </label>
             <label>
                 Nombre:
-                <input type="text" name="Nombre" value={convocatoria.Nombre} onChange={handleChange} />
+                <input type="text" name="nombre" value={convocatoria.nombre} onChange={handleChange} />
             </label>
             <label>
                 Fecha Inicio:
-                <input type="date" name="Fecha_inicio" value={convocatoria.Fecha_inicio} onChange={handleChange} />
+                <input type="date" name="fecha_inicio" value={convocatoria.fecha_inicio} onChange={handleChange} />
             </label>
             <label>
                 Fecha Fin:
-                <input type="date" name="Fecha_fin" value={convocatoria.Fecha_fin} onChange={handleChange} />
+                <input type="date" name="fecha_fin" value={convocatoria.fecha_fin} onChange={handleChange} />
             </label>
             <label>
                 Tipo Convocatoria:
-                <input type="number" name="id_tipoconvocatoria" value={convocatoria.id_tipoconvocatoria} onChange={handleChange} />
+                <select name="id_tipoconvocatoria" value={convocatoria.id_tipoconvocatoria} onChange={handleChange}>
+                    <option value="">Seleccione un tipo</option>
+                    {tiposConvocatoria.map(tipo => (
+                        <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
+                            {tipo.nombre_convocatoria}
+                        </option>
+                    ))}
+                </select>
             </label>
             <label>
                 Carrera:
-                <input type="number" name="id_carrera" value={convocatoria.id_carrera} onChange={handleChange} />
+                <select name="id_carrera" value={convocatoria.id_carrera} onChange={handleChange}>
+                    <option value="">Seleccione una carrera</option>
+                    {carreras.map(carrera => (
+                        <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                            {carrera.nombre_carrera}
+                       
+ </option>
+                    ))}
+                </select>
             </label>
             <label>
                 Facultad:
-                <input type="number" name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange} />
+                <select name="id_facultad" value={convocatoria.id_facultad} onChange={handleChange}>
+                    <option value="">Seleccione una facultad</option>
+                    {facultades.map(facultad => (
+                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                            {facultad.nombre_facultad}
+                        </option>
+                    ))}
+                </select>
             </label>
-            <button type="submit">Actualizar Convocatoria</button>
+            <button type="submit">Guardar</button>
         </form>
     );
 };
-
 export default ConvocatoriaEdit;

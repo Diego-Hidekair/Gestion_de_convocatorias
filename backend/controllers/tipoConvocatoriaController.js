@@ -14,14 +14,7 @@ const getTipoConvocatorias = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-};/*const getTipoConvocatorias = async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM tipo_convocatoria ORDER BY nombre_convocatoria');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};*/
+};
 
 const createTipoConvocatoria = async (req, res) => {
     const { nombre_convocatoria, cod_carrera, cod_facultad } = req.body;
@@ -32,6 +25,7 @@ const createTipoConvocatoria = async (req, res) => {
         );
         res.status(201).json(result.rows[0]); // Cambio a status 201 (Created)
     } catch (err) {
+        console.error('Error al crear tipo de convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -49,6 +43,7 @@ const updateTipoConvocatoria = async (req, res) => {
         }
         res.json(result.rows[0]);
     } catch (err) {
+        console.error('Error al actualizar tipo de convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -62,6 +57,7 @@ const deleteTipoConvocatoria = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 const getTipoConvocatoriaById = async (req, res) => {
     const { id } = req.params;

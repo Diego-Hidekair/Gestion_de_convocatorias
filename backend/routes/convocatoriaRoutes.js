@@ -1,3 +1,5 @@
+// backend/routes/convocatoriaRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const convocatoriaController = require('../controllers/convocatoriaController');
@@ -9,5 +11,6 @@ router.delete('/:id', convocatoriaController.deleteConvocatoria);
 router.get('/:id', convocatoriaController.getConvocatoriaById);
 
 module.exports = router;
+
 
 
