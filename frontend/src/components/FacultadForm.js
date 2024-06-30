@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import '../styles.css';
 
 const FacultadForm = () => {
     const navigate = useNavigate();
@@ -23,13 +24,21 @@ const FacultadForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <label>
-                Nombre:
-                <input type="text" name="nombre_facultad" value={facultad.nombre_facultad} onChange={handleChange} />
-            </label>
-            <button type="submit">Crear Facultad</button>
-        </form>
+        <div className="container">
+            <h1>Crear Nueva Facultad</h1>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Nombre:
+                    <input
+                        type="text"
+                        name="nombre_facultad"
+                        value={facultad.nombre_facultad}
+                        onChange={handleChange}
+                    />
+                </label>
+                <button type="submit">Crear Facultad</button>
+            </form>
+        </div>
     );
 };
 

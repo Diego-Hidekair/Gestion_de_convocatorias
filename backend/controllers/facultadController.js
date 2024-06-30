@@ -34,12 +34,19 @@ const updateFacultad = async (req, res) => {
 const deleteFacultad = async (req, res) => {
     const { id } = req.params;
     try {
+        // Eliminar carreras relacionadas primero
+        await pool.query('DELETE FROM carrera WHERE cod_facultad = $1', [id]);
+
+        // Luego eliminar la facultad
         await pool.query('DELETE FROM facultad WHERE id_facultad = $1', [id]);
+
         res.json({ message: 'Facultad eliminada' });
     } catch (err) {
+        console.error('Error al eliminar la facultad:', err);
         res.status(500).json({ error: err.message });
     }
 };
+
 
 const getFacultadById = async (req, res) => {
     const { id } = req.params;

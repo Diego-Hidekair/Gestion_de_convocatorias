@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import '../styles.css';
 
 const CarreraForm = () => {
     const navigate = useNavigate();
@@ -36,33 +37,36 @@ const CarreraForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <label>
-                Nombre:
-                <input
-                    type="text"
-                    name="nombre_carrera"
-                    value={carrera.nombre_carrera}
-                    onChange={handleChange}
-                />
-            </label>
-            <label>
-                Facultad:
-                <select
-                    name="cod_facultad"
-                    value={carrera.cod_facultad}
-                    onChange={handleChange}
-                >
-                    <option value="">Seleccione una facultad</option>
-                    {facultades.map(facultad => (
-                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                            {facultad.nombre_facultad}
-                        </option>
-                    ))}
-                </select>
-            </label>
-            <button type="submit">Crear Carrera</button>
-        </form>
+        <div className="container">
+            <h1>Crear Nueva Carrera</h1>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Nombre:
+                    <input
+                        type="text"
+                        name="nombre_carrera"
+                        value={carrera.nombre_carrera}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Facultad:
+                    <select
+                        name="cod_facultad"
+                        value={carrera.cod_facultad}
+                        onChange={handleChange}
+                    >
+                        <option value="">Seleccione una facultad</option>
+                        {facultades.map(facultad => (
+                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                {facultad.nombre_facultad}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <button type="submit">Crear Carrera</button>
+            </form>
+        </div>
     );
 };
 

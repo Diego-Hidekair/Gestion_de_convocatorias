@@ -1,3 +1,4 @@
+//backend/routes/facultadRoutes.js
 const express = require('express');
 const router = express.Router();
 const facultadController = require('../controllers/facultadController');

@@ -26,7 +26,7 @@ const usuarioRoutes = require('./routes/usuarioRoutes'); // Añadido
 
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
-//app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
+app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
 app.use('/tipoConvocatoria', tipoConvocatoriaRoutes);
 app.use('/convocatorias', convocatoriaRoutes);
 app.use('/materias', materiaRoutes);
@@ -35,6 +35,17 @@ app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes); 
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes); // Añadido
+
+// Handle 404 - Route not found
+app.use((req, res, next) => {
+    res.status(404).json({ error: 'Ruta no encontrada' });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

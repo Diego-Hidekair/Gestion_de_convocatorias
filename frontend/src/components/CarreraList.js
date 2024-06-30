@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import '../styles.css';
 
 const CarreraList = () => {
     const [carreras, setCarreras] = useState([]);
@@ -18,15 +19,27 @@ const CarreraList = () => {
         fetchCarreras();
     }, []);
 
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/carreras/${id}`);
+            setCarreras(carreras.filter(carrera => carrera.id_carrera !== id));
+        } catch (error) {
+            console.error('Error al eliminar la carrera:', error);
+        }
+    };
+    
     return (
-        <div>
+        <div className="carrera-list">
             <h1>Lista de Carreras</h1>
             <Link to="/carreras/new">Crear Nueva Carrera</Link>
             <ul>
                 {carreras.map(carrera => (
                     <li key={carrera.id_carrera}>
                         {carrera.nombre_carrera}
-                        <Link to={`/carreras/edit/${carrera.id_carrera}`}>Editar</Link>
+                        <div>
+                            <Link to={`/carreras/edit/${carrera.id_carrera}`}>Editar</Link>
+                            <button onClick={() => handleDelete(carrera.id_carrera)}>Eliminar</button>
+                        </div>
                     </li>
                 ))}
             </ul>

@@ -1,0 +1,57 @@
+/* src/components/NavBar.css */
+
+nav {
+    background-color: #f4f4f9;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-around;
+}
+
+nav li {
+    margin: 0 10px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+nav a.active {
+    background-color: #ff7b54;
+    color: #fff;
+}
+
+nav a:hover {
+    background-color: #ff5c33;
+    color: #fff;
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    color: #333;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #ff5c33;
+    color: #fff;
+}

@@ -42,18 +42,23 @@ const updateCarrera = async (req, res) => {
 const deleteCarrera = async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query(
-            'DELETE FROM carrera WHERE id_carrera = $1 RETURNING *',
-            [id]
-        );
+        // Eliminar convocatorias relacionadas primero
+        await pool.query('DELETE FROM convocatorias WHERE id_carrera = $1', [id]);
+
+        // Luego eliminar la carrera
+        const result = await pool.query('DELETE FROM carrera WHERE id_carrera = $1 RETURNING *', [id]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Carrera no encontrada' });
         }
+
         res.json(result.rows[0]);
     } catch (err) {
+        console.error('Error al eliminar la carrera:', err);
         res.status(500).json({ error: err.message });
     }
 };
+
+
 
 const getCarreraById = async (req, res) => {
     const { id } = req.params;
