@@ -31,7 +31,7 @@ const TipoconvocatoriaList = () => {
 
 
     return (
-        <div>
+        <div className="container">
             <h2>Tipos de Convocatoria</h2>
             <Link to="/tipoconvocatorias/new">Crear Tipo de Convocatoria</Link>
             <ul>

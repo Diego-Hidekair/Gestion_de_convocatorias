@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
 import CarreraEdit from './components/CarreraEdit';
@@ -25,29 +25,56 @@ import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
 
-
 const App = () => {
+    return (
+        <Router>
+            <AuthWrapper />
+        </Router>
+    );
+};
+
+const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            setIsAuthenticated(true);
+            const expiryTime = JSON.parse(atob(token.split('.')[1])).exp * 1000;
+            const currentTime = Date.now();
+            if (currentTime >= expiryTime) {
+                localStorage.removeItem('token');
+                setIsAuthenticated(false);
+                navigate('/login');
+            } else {
+                setIsAuthenticated(true);
+                const timeout = setTimeout(() => {
+                    localStorage.removeItem('token');
+                    setIsAuthenticated(false);
+                    navigate('/login');
+                }, expiryTime - currentTime);
+                return () => clearTimeout(timeout);
+            }
+        } else {
+            navigate('/login');
         }
-    }, []);
+    }, [navigate]);
+
 
     const handleLogin = () => {
         setIsAuthenticated(true);
+        navigate('/');
     };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         setIsAuthenticated(false);
+        navigate('/login');
     };
-    
-    
+
+
     return (
-        <Router>
+        <>
             {isAuthenticated ? (
                 <>
                     <NavBar onLogout={handleLogout} />
@@ -72,7 +99,7 @@ const App = () => {
                         <Route path="/pdf-generator" element={<PDFGenerator />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios" element={<UsuarioList />} />
-                        <Route path="/file-upload" element={<FileUpload />} /> {/* Añadir la nueva ruta aquí */}
+                        <Route path="/file-upload" element={<FileUpload />} />
                     </Routes>
                 </>
             ) : (
@@ -82,7 +109,7 @@ const App = () => {
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
             )}
-        </Router>
+        </>
     );
 };
 

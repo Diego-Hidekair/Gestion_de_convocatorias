@@ -69,7 +69,7 @@ const PDFGenerator = () => {
 
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="container" onSubmit={handleSubmit}>
             <label>
                 Selecciona una Convocatoria:
                 <select onChange={handleConvocatoriaChange} required>

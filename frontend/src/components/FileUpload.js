@@ -27,7 +27,7 @@ const FileUpload = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="container" onSubmit={handleSubmit}>
       <div>
         <label>Resolución:</label>
         <input

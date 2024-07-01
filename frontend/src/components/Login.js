@@ -33,11 +33,14 @@ const Login = ({ setAuth }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
-            <input type="password" name="Contraseña" placeholder="Contraseña" value={formData.Contraseña} onChange={handleChange} required />
-            <button type="submit">Iniciar Sesión</button>
-        </form>
+        <div className="container">
+            <h2>Iniciar Sesión</h2>
+            <form onSubmit={handleSubmit}>
+                <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
+                <input type="password" name="Contraseña" placeholder="Contraseña" value={formData.Contraseña} onChange={handleChange} required />
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+        </div>
     );
 };
 

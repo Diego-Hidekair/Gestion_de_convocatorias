@@ -29,7 +29,7 @@ const CarreraList = () => {
     };
     
     return (
-        <div className="carrera-list">
+        <div className="container">
             <h1>Lista de Carreras</h1>
             <Link to="/carreras/new">Crear Nueva Carrera</Link>
             <ul>

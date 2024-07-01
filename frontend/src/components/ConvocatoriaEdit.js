@@ -51,7 +51,7 @@ const ConvocatoriaEdit = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="container" onSubmit={handleSubmit}>
             <label>
                 Código Convocatoria:
                 <input type="text" name="cod_convocatoria" value={convocatoria.cod_convocatoria} onChange={handleChange} />

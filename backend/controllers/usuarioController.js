@@ -19,7 +19,7 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ error: 'Contraseña incorrecta' });
         }
 
-        const token = jwt.sign({ id: user.id, rol: user.rol }, 'tu_secreto_jwt', { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, rol: user.rol }, 'tu_secreto_jwt', { expiresIn: '6h' });
         res.json({ token, rol: user.rol });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -29,6 +29,13 @@ const loginUser = async (req, res) => {
 // Crear un nuevo usuario
 const createUser = async (req, res) => {
     const { id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
+
+    // Verificar que el rol sea uno de los permitidos
+    const rolesPermitidos = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
+    if (!rolesPermitidos.includes(Rol)) {
+        return res.status(400).json({ error: 'Rol no permitido' });
+    }
+
     const hashedPassword = await bcrypt.hash(Contraseña, 10);
 
     try {
@@ -41,6 +48,7 @@ const createUser = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 // Obtener todos los usuarios
 const getUsers = async (req, res) => {

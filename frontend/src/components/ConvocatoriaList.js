@@ -29,7 +29,7 @@ const ConvocatoriaList = () => {
     };
 
     return (
-        <div>
+        <div className="container">
             <h1>Lista de Convocatorias</h1>
             <Link to="/convocatorias/new">
                 <button>Crear Nueva Convocatoria</button>

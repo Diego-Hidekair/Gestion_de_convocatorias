@@ -30,7 +30,7 @@ const MateriaList = () => {
     };
 
     return (
-        <div>
+        <div className="container">
             <h1>Lista de Materias</h1>
             <Link to="/materias/new">Crear Nueva Materia</Link>
             <ul>

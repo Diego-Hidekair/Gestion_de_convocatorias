@@ -30,7 +30,7 @@ const UsuarioList = () => {
     
 
     return (
-        <div>
+        <div className="container">
             <h2>Lista de Usuarios</h2>
             <ul>
                 {usuarios.map(usuario => (

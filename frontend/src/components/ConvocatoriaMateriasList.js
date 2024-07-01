@@ -21,7 +21,7 @@ const ConvocatoriaMateriasList = () => {
     }, [id_convocatoria]);
 
     return (
-        <div>
+        <div className="container">
             <h1>Materias Asignadas a la Convocatoria</h1>
             <ul>
                 {convocatoriaMaterias.map((convocatoriaMateria) => (

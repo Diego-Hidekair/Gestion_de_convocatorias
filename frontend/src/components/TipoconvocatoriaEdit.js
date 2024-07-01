@@ -63,7 +63,7 @@ const TipoconvocatoriaEdit = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="container" onSubmit={handleSubmit}>
             <label>
                 Nombre de Convocatoria:
                 <input

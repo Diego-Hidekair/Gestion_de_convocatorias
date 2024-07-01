@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { authenticateToken } = require('./middleware/authMiddleware'); // Añadir esto
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use('/convocatorias/materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes); 
 app.use('/pdf', pdfRoutes); 
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', usuarioRoutes); // Añadido
+app.use('/api/usuarios', authenticateToken, usuarioRoutes); // Añadido el middleware
 
 // Handle 404 - Route not found
 app.use((req, res, next) => {
@@ -46,6 +47,15 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
 });
+
+// Cerrar sesión al finalizar el servidor
+const shutdown = () => {
+    console.log('Shutting down gracefully...');
+    process.exit();
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

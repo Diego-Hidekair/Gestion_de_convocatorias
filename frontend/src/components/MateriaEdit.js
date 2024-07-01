@@ -32,7 +32,7 @@ const MateriaEdit = () => {
     };
 
     return (
-        <div>
+        <div className="container">
             <h1>Editar Materia</h1>
             <form onSubmit={handleSubmit}>
                 <label>

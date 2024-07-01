@@ -47,7 +47,7 @@ const UsuarioForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form  className="container" onSubmit={handleSubmit}>
             <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
             <input type="text" name="Nombres" placeholder="Nombres" value={formData.Nombres} onChange={handleChange} required />
             <input type="text" name="Apellido_paterno" placeholder="Apellido Paterno" value={formData.Apellido_paterno} onChange={handleChange} required />

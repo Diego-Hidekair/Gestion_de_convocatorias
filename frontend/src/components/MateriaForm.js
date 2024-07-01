@@ -50,7 +50,7 @@ const MateriaForm = () => {
     };
 
     return (
-        <div>
+        <div className="container">
             <h1>{id ? 'Editar Materia' : 'Crear Nueva Materia'}</h1>
             <form onSubmit={handleSubmit}>
                 <label>
