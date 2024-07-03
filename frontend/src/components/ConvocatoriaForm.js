@@ -1,4 +1,143 @@
-// frontend/src/components/ConvocatoriaForm.js
+// src/components/ConvocatoriaForm.js
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const ConvocatoriaForm = () => {
+    const [formData, setFormData] = useState({
+        nombre: '',
+        fechaInicio: '',
+        fechaFin: '',
+        tipoConvocatoria: '',
+        carrera: '',
+        facultad: '',
+        materias: [],
+        creadoPor: 'Admin'
+    });
+    const [materiasDisponibles, setMateriasDisponibles] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchMaterias = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/materias');
+                setMateriasDisponibles(response.data);
+            } catch (error) {
+                console.error('Error al obtener las materias:', error);
+            }
+        };
+
+        fetchMaterias();
+    }, []);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+    };
+
+    const handleMateriasChange = (e) => {
+        const { options } = e.target;
+        const selectedMaterias = [];
+        for (let i = 0, l = options.length; i < l; i++) {
+            if (options[i].selected) {
+                selectedMaterias.push(options[i].value);
+            }
+        }
+        setFormData({
+            ...formData,
+            materias: selectedMaterias
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('http://localhost:5000/convocatorias', formData);
+            navigate('/convocatorias');
+        } catch (error) {
+            console.error('Error al guardar la convocatoria:', error);
+        }
+    };
+
+    return (
+        <div className="container">
+            <h1>Crear Nueva Convocatoria</h1>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Nombre:
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Fecha de Inicio:
+                    <input
+                        type="date"
+                        name="fechaInicio"
+                        value={formData.fechaInicio}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Fecha de Fin:
+                    <input
+                        type="date"
+                        name="fechaFin"
+                        value={formData.fechaFin}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Tipo de Convocatoria:
+                    <input
+                        type="text"
+                        name="tipoConvocatoria"
+                        value={formData.tipoConvocatoria}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Carrera:
+                    <input
+                        type="text"
+                        name="carrera"
+                        value={formData.carrera}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Facultad:
+                    <input
+                        type="text"
+                        name="facultad"
+                        value={formData.facultad}
+                        onChange={handleChange}
+                    />
+                </label>
+                <label>
+                    Materias:
+                    <select multiple value={formData.materias} onChange={handleMateriasChange}>
+                        {materiasDisponibles.map((materia) => (
+                            <option key={materia.id_materia} value={materia.nombre}>
+                                {materia.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <button type="submit">Crear</button>
+            </form>
+        </div>
+    );
+};
+
+export default ConvocatoriaForm;
+/*// frontend/src/components/ConvocatoriaForm.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -110,4 +249,4 @@ const ConvocatoriaForm = () => {
     );
 };
 
-export default ConvocatoriaForm;
+export default ConvocatoriaForm;*/

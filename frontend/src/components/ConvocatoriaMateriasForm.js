@@ -40,7 +40,7 @@ const ConvocatoriaMateriaForm = () => {
     };
     
     return (
-        <form  className="container"onSubmit={handleSubmit}>
+        <form  className="container" onSubmit={handleSubmit}>
             <label>
                 Materia:
                 <select value={selectedMateria} onChange={handleChange}>

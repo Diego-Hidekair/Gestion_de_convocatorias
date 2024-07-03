@@ -8,7 +8,12 @@ const UsuarioList = () => {
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/usuarios'); // Ajusta la URL si es necesario
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:5000/api/usuarios', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
                 setUsuarios(response.data);
             } catch (error) {
                 console.error('Error al obtener usuarios:', error);
@@ -16,12 +21,16 @@ const UsuarioList = () => {
         };
 
         fetchUsuarios();
-
     }, []);
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/usuarios/${id}`);
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:5000/api/usuarios/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setUsuarios(usuarios.filter(usuario => usuario.id !== id));
         } catch (error) {
             console.error('Error al eliminar usuario:', error);
@@ -30,7 +39,7 @@ const UsuarioList = () => {
     
 
     return (
-        <div className="container">
+        <div>
             <h2>Lista de Usuarios</h2>
             <ul>
                 {usuarios.map(usuario => (
@@ -41,9 +50,6 @@ const UsuarioList = () => {
                     </li>
                 ))}
             </ul>
-            <div>
-                <button>Crear Usuario</button>
-            </div>
         </div>
     );
 };

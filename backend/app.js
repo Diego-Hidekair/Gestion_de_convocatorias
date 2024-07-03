@@ -1,4 +1,4 @@
-// app.js
+// backend/app.js
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -35,14 +35,22 @@ app.use('/convocatorias/materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes); 
 app.use('/pdf', pdfRoutes); 
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', authenticateToken, usuarioRoutes); // Añadido el middleware
+app.use('/api/usuarios', (req, res, next) => {
+    console.log('RUTA /api/usuarios accedida'); // Agregar log de depuración
+    next();
+}, authenticateToken, usuarioRoutes); // Añadido el middleware y log de depuración
 
-// Handle 404 - Route not found
+// Ruta de prueba para verificar la conexión
+app.get('/', (req, res) => {
+    res.send('API funcionando correctamente');
+});
+
+// Manejo de rutas no encontradas
 app.use((req, res, next) => {
     res.status(404).json({ error: 'Ruta no encontrada' });
 });
 
-// Global error handler
+// Manejador de errores global
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });

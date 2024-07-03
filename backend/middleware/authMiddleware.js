@@ -1,5 +1,6 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
+const pool = require('../db');
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -7,14 +8,15 @@ const authenticateToken = (req, res, next) => {
 
     if (token == null) return res.sendStatus(401);
 
-    jwt.verify(token, 'tu_secreto_jwt', (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return res.sendStatus(403);
         req.user = user;
         next();
     });
 };
+
 const authorizeAdmin = (req, res, next) => {
-    if (req.user.Rol !== 'admin') {
+    if (req.user.rol !== 'admin') {
         return res.status(403).json({ message: 'Acceso denegado' });
     }
     next();

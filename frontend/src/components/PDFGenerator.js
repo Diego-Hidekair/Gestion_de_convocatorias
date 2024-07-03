@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const PDFGenerator = () => {
     const [convocatorias, setConvocatorias] = useState([]);
+    const [materias, setMaterias] = useState([]);
     const [formData, setFormData] = useState({
         nombre: '',
         fechaInicio: '',
@@ -11,7 +12,7 @@ const PDFGenerator = () => {
         tipoConvocatoria: '',
         carrera: '',
         facultad: '',
-        materias: [],
+        materiasSeleccionadas: [],  // Nuevo campo para las materias seleccionadas
         creadoPor: 'Admin',
         fechaCreacion: new Date().toISOString().split('T')[0]
     });
@@ -25,7 +26,18 @@ const PDFGenerator = () => {
                 console.error('Error al obtener convocatorias:', error);
             }
         };
+
+        const fetchMaterias = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/materias');
+                setMaterias(response.data);
+            } catch (error) {
+                console.error('Error al obtener materias:', error);
+            }
+        };
+
         fetchConvocatorias();
+        fetchMaterias();
     }, []);
 
     const handleConvocatoriaChange = (e) => {
@@ -39,17 +51,37 @@ const PDFGenerator = () => {
                 fechaFin: convocatoria.fecha_fin.split('T')[0],
                 tipoConvocatoria: convocatoria.tipo_convocatoria,
                 carrera: convocatoria.carrera,
-                facultad: convocatoria.facultad,
-                materias: convocatoria.materias || []  // Asumiendo que materias es una lista de strings
+                facultad: convocatoria.facultad
             });
         }
     };
     
-    /*const handleMateriasChange = (e) => {
-        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-        setSelectedMaterias(selectedOptions);
-    };*/
+    const handleMateriaChange = (e, index) => {
+        const selectedMateria = e.target.value;
+        const updatedMaterias = [...formData.materiasSeleccionadas];
+        updatedMaterias[index] = selectedMateria;
+        setFormData({
+            ...formData,
+            materiasSeleccionadas: updatedMaterias
+        });
+    };
 
+    const handleAddMateria = () => {
+        setFormData({
+            ...formData,
+            materiasSeleccionadas: [...formData.materiasSeleccionadas, '']
+        });
+    };
+
+    const handleRemoveMateria = (index) => {
+        const updatedMaterias = [...formData.materiasSeleccionadas];
+        updatedMaterias.splice(index, 1);
+        setFormData({
+            ...formData,
+            materiasSeleccionadas: updatedMaterias
+        });
+    };
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -66,7 +98,6 @@ const PDFGenerator = () => {
             console.error('Error al generar el PDF:', error);
         }
     };
-
 
     return (
         <form className="container" onSubmit={handleSubmit}>
@@ -105,10 +136,34 @@ const PDFGenerator = () => {
                 Facultad:
                 <input type="text" name="facultad" value={formData.facultad} readOnly />
             </label>
-            <label>
-                Materias:
-                <textarea name="materias" value={formData.materias.join(', ')} readOnly />
-            </label>
+            {formData.materiasSeleccionadas.map((materia, index) => (
+                <div key={index}>
+                    <label>
+                        Materia {index + 1}:
+                        <select
+                            name={`materia${index}`}
+                            value={materia}
+                            onChange={(e) => handleMateriaChange(e, index)}
+                            required
+                        >
+                            <option value="">Selecciona una materia</option>
+                            {materias.map(mat => (
+                                <option key={mat.id_materia} value={mat.nombre}>
+                                    {mat.nombre}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                    {index > 0 && (
+                        <button type="button" onClick={() => handleRemoveMateria(index)}>
+                            Eliminar Materia
+                        </button>
+                    )}
+                </div>
+            ))}
+            <button type="button" onClick={handleAddMateria}>
+                Agregar Materia
+            </button>
             <button type="submit">Generar PDF</button>
         </form>
     );

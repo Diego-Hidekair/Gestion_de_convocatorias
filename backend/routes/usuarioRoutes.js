@@ -10,3 +10,4 @@ router.get('/', authenticateToken, authorizeAdmin, usuarioController.getUsers);
 router.delete('/:id', authenticateToken, authorizeAdmin, usuarioController.deleteUser);
 
 module.exports = router;
+
