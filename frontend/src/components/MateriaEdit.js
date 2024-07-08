@@ -4,27 +4,46 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const MateriaEdit = () => {
-    const [nombre, setNombre] = useState('');
     const { id } = useParams();
+    const [codigomateria, setCodigoMateria] = useState('');
+    const [nombre, setNombre] = useState('');
+    const [id_carrera, setIdCarrera] = useState('');
+    const [carreras, setCarreras] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchMateria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/materias/${id}`);
+                setCodigoMateria(response.data.codigomateria);
                 setNombre(response.data.nombre);
+                setIdCarrera(response.data.id_carrera);
             } catch (error) {
                 console.error('Error al obtener la materia:', error);
             }
         };
 
+        const fetchCarreras = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/carreras');
+                setCarreras(response.data);
+            } catch (error) {
+                console.error('Error al obtener las carreras:', error);
+            }
+        };
+
         fetchMateria();
+        fetchCarreras();
     }, [id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/materias/${id}`, { nombre });
+            await axios.put(`http://localhost:5000/materias/${id}`, {
+                codigomateria,
+                nombre,
+                id_carrera
+            });
             navigate('/materias');
         } catch (error) {
             console.error('Error al actualizar la materia:', error);
@@ -33,16 +52,41 @@ const MateriaEdit = () => {
 
     return (
         <div className="container">
-            <h1>Editar Materia</h1>
+            <h2>Editar Materia</h2>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Nombre:
+                <div>
+                    <label>Código de Materia:</label>
+                    <input
+                        type="text"
+                        value={codigomateria}
+                        onChange={(e) => setCodigoMateria(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Nombre:</label>
                     <input
                         type="text"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
+                        required
                     />
-                </label>
+                </div>
+                <div>
+                    <label>Carrera:</label>
+                    <select
+                        value={id_carrera}
+                        onChange={(e) => setIdCarrera(e.target.value)}
+                        required
+                    >
+                        <option value="">Seleccionar carrera</option>
+                        {carreras.map((carrera) => (
+                            <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                                {carrera.nombre_carrera}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <button type="submit">Actualizar</button>
             </form>
         </div>
