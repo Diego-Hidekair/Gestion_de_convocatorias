@@ -18,10 +18,11 @@ import MateriaForm from './components/MateriaForm';
 import MateriaEdit from './components/MateriaEdit';
 import NavBar from './components/NavBar';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
+import ConvocatoriaMateriasList from './components/ConvocatoriaMateriasList';
 import PDFGenerator from './components/PDFGenerator';
+import Login from './components/Login';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioList from './components/UsuarioList';
-import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
 
@@ -60,7 +61,6 @@ const AuthWrapper = () => {
         }
     }, [navigate]);
 
-
     const handleLogin = () => {
         setIsAuthenticated(true);
         navigate('/');
@@ -71,7 +71,6 @@ const AuthWrapper = () => {
         setIsAuthenticated(false);
         navigate('/login');
     };
-
 
     return (
         <>
@@ -89,16 +88,19 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias" element={<ConvocatoriaList />} />
                         <Route path="/convocatorias/new" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
-                        <Route path="/convocatorias/:id_convocatoria/materias" element={<ConvocatoriaMateriasForm />} />
+                        <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
-                        <Route path="/tipoconvocatorias/new" element={<TipoconvocatoriaForm />} />
-                        <Route path="/tipoconvocatorias/edit/:id" element={<TipoconvocatoriaEdit />} />
+                        <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
+                        <Route path="/tipoconvocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
                         <Route path="/materias" element={<MateriaList />} />
                         <Route path="/materias/new" element={<MateriaForm />} />
                         <Route path="/materias/edit/:id" element={<MateriaEdit />} />
+                        <Route path="/convocatorias_materias" element={<ConvocatoriaMateriasList />} />
+                        <Route path="/convocatorias_materias/new" element={<ConvocatoriaMateriasForm />} />
+                        <Route path="/convocatorias_materias/edit/:id" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/pdf-generator" element={<PDFGenerator />} />
-                        <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios" element={<UsuarioList />} />
+                        <Route path="/crear-usuario" element={<UsuarioForm />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                     </Routes>
                 </>

@@ -26,7 +26,25 @@ const getConvocatorias = async (req, res) => {
     }
 };
 
+// Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {
+    const { cod_convocatoria, nombre, fechaInicio, fechaFin, tipoConvocatoria, carrera, facultad, creadoPor } = req.body;
+    console.log('Datos recibidos para crear convocatoria:', req.body);
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO convocatorias (cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id_convocatoria`,
+            [cod_convocatoria, nombre, fechaInicio, fechaFin, tipoConvocatoria, carrera, facultad]
+        );
+        res.status(201).json({ id_convocatoria: result.rows[0].id_convocatoria });
+    } catch (error) {
+        console.error('Error al crear la convocatoria:', error);
+        res.status(500).json({ message: 'Error al crear la convocatoria' });
+    }
+};
+
+/*const createConvocatoria = async (req, res) => {
     const { cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad } = req.body;
     try {
         console.log('Datos recibidos para crear convocatoria:', req.body);
@@ -39,7 +57,7 @@ const createConvocatoria = async (req, res) => {
         console.error('Error al crear convocatoria:', err);
         res.status(500).json({ error: err.message });
     }
-};
+};*/
 
 const updateConvocatoria = async (req, res) => {
     const { id } = req.params;

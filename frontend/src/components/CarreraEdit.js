@@ -1,7 +1,7 @@
-// frontend/src/components/CarreraEdit.js
+// src/components/CarreraEdit.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import '../styles.css';
 
 const CarreraEdit = () => {
@@ -9,14 +9,17 @@ const CarreraEdit = () => {
     const navigate = useNavigate();
     const [carrera, setCarrera] = useState({ nombre_carrera: '', cod_facultad: '' });
     const [facultades, setFacultades] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchCarrera = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/carreras/${id}`);
                 setCarrera(response.data);
+                setLoading(false);
             } catch (error) {
                 console.error('Error al obtener la carrera:', error);
+                setLoading(false);
             }
         };
 
@@ -45,9 +48,12 @@ const CarreraEdit = () => {
             await axios.put(`http://localhost:5000/carreras/${id}`, carrera);
             navigate('/carreras');
         } catch (error) {
-            console.error('Error al actualizar carrera:', error);
+            console.error('Error al actualizar la carrera:', error);
         }
     };
+    if (loading) {
+        return <div>Cargando...</div>;
+    }
 
     return (
         <div className="container">
@@ -69,10 +75,10 @@ const CarreraEdit = () => {
                         value={carrera.cod_facultad}
                         onChange={handleChange}
                     >
-                        <option value="">Seleccione una facultad</option>
+                        <option key="" value="">Seleccione una facultad</option>
                         {facultades.map(facultad => (
-                            <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
-                                {facultad.nombre}
+                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                {facultad.nombre_facultad}
                             </option>
                         ))}
                     </select>

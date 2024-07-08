@@ -1,80 +1,73 @@
 // backend/controllers/usuarioController.js
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const pool = require('../db');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// Iniciar sesión de usuario
-const loginUser = async (req, res) => {
-    const { id, Contraseña } = req.body;
-
-    try {
-        const result = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            return res.status(400).json({ error: 'Usuario no encontrado' });
-        }
-
-        const user = result.rows[0];
-        const isMatch = await bcrypt.compare(Contraseña, user.contraseña);
-        if (!isMatch) {
-            return res.status(400).json({ error: 'Contraseña incorrecta' });
-        }
-
-        const token = jwt.sign({ id: user.id, rol: user.rol }, process.env.JWT_SECRET, { expiresIn: '6h' });
-        res.json({ token, rol: user.rol });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
-// Crear un nuevo usuario
 const createUser = async (req, res) => {
     const { id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
-    // Verificar que el rol sea uno de los permitidos
-    const rolesPermitidos = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
-    if (!rolesPermitidos.includes(Rol)) {
-        return res.status(400).json({ error: 'Rol no permitido' });
-    }
-
-    const hashedPassword = await bcrypt.hash(Contraseña, 10);
-
     try {
-        const result = await pool.query(
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(Contraseña, salt);
+
+        const newUser = await pool.query(
             'INSERT INTO usuarios (id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
             [id, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular]
         );
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+
+        res.json(newUser.rows[0]);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
     }
 };
 
-
-// Obtener todos los usuarios
 const getUsers = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM usuarios');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const allUsers = await pool.query('SELECT * FROM usuarios');
+        res.json(allUsers.rows);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
     }
 };
 
-// Eliminar un usuario
 const deleteUser = async (req, res) => {
     const { id } = req.params;
 
     try {
         await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
         res.json({ message: 'Usuario eliminado' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
     }
 };
 
-module.exports = {
-    loginUser,
-    createUser,
-    getUsers,
-    deleteUser
+// Iniciar sesión de usuario
+const loginUser = async (req, res) => {
+    const { id, Contraseña } = req.body;
+
+    try {
+        const user = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
+
+        if (user.rows.length === 0) {
+            return res.status(400).json({ message: 'Credenciales incorrectas' });
+        }
+
+        const validPassword = await bcrypt.compare(Contraseña, user.rows[0].contraseña);
+
+        if (!validPassword) {
+            return res.status(400).json({ message: 'Credenciales incorrectas' });
+        }
+        const token = jwt.sign({ id: user.rows[0].id, rol: user.rows[0].rol }, process.env.JWT_SECRET, { expiresIn: '4h',
+        });
+
+    res.json({ token });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
+    }
 };
+
+module.exports = { createUser, getUsers, deleteUser, loginUser };

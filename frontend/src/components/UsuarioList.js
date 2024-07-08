@@ -1,52 +1,43 @@
-// frontend/components/UsuarioList.js
+// src/components/TipoconvocatoriaList.js
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
+import '../styles.css';
 
-const UsuarioList = () => {
-    const [usuarios, setUsuarios] = useState([]);
+const TipoconvocatoriaList = () => {
+    const [tipoConvocatorias, setTipoConvocatorias] = useState([]);
 
     useEffect(() => {
-        const fetchUsuarios = async () => {
+        const fetchTipoConvocatorias = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:5000/api/usuarios', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                setUsuarios(response.data);
+                const response = await axios.get('http://localhost:5000/tipo-convocatorias');
+                setTipoConvocatorias(response.data);
             } catch (error) {
-                console.error('Error al obtener usuarios:', error);
+                console.error('Error al obtener los tipos de convocatoria:', error);
             }
         };
-
-        fetchUsuarios();
+        fetchTipoConvocatorias();
     }, []);
 
     const handleDelete = async (id) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/usuarios/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setUsuarios(usuarios.filter(usuario => usuario.id !== id));
+            await axios.delete(`http://localhost:5000/tipo-convocatorias/${id}`);
+            setTipoConvocatorias(tipoConvocatorias.filter(tipoConvocatoria => tipoConvocatoria.id_tipoconvocatoria !== id));
         } catch (error) {
-            console.error('Error al eliminar usuario:', error);
+            console.error('Error al eliminar el tipo de convocatoria:', error);
         }
     };
-    
 
     return (
-        <div>
-            <h2>Lista de Usuarios</h2>
+        <div className="container">
+            <h1>Lista de Tipos de Convocatoria</h1>
+            <Link to="/tipo-convocatorias/new">Crear Nuevo Tipo de Convocatoria</Link>
             <ul>
-                {usuarios.map(usuario => (
-                    <li key={usuario.id}>
-                        {usuario.Nombres} {usuario.Apellido_paterno} {usuario.Apellido_materno}
-                        <button>Editar</button>
-                        <button onClick={() => handleDelete(usuario.id)}>Eliminar</button>
+                {tipoConvocatorias.map(tipoConvocatoria => (
+                    <li key={tipoConvocatoria.id_tipoconvocatoria}>
+                        {tipoConvocatoria.nombre_convocatoria} - {tipoConvocatoria.nombre_facultad} - {tipoConvocatoria.nombre_carrera}
+                        <Link to={`/tipo-convocatorias/edit/${tipoConvocatoria.id_tipoconvocatoria}`}>Editar</Link>
+                        <button onClick={() => handleDelete(tipoConvocatoria.id_tipoconvocatoria)}>Eliminar</button>
                     </li>
                 ))}
             </ul>
@@ -54,4 +45,4 @@ const UsuarioList = () => {
     );
 };
 
-export default UsuarioList;
+export default TipoconvocatoriaList;

@@ -42,7 +42,7 @@ nav a {
 }
 
 nav a.active {
-    background-color: #ff7b54;
+    background-color: #af5700;
     color: #fff;
 }
 
@@ -52,19 +52,19 @@ nav a:hover {
 }
 
 button {
-    background-color: transparent;
+    background-color: #fff;
     border: none;
     color: #333;
     padding: 10px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 15%;
+    width: 100%;
     text-align: left;
 }
 
 button:hover {
-    background-color: #ff5c33;
+    background-color: #af5700;
     color: #fff;
 }
 

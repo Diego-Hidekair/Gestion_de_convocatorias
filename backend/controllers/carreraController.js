@@ -1,3 +1,4 @@
+//backend/controllers/ carreraController
 const pool = require('../db');
 
 const getCarreras = async (req, res) => {

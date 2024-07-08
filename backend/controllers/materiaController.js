@@ -6,6 +6,7 @@ const getMaterias = async (req, res) => {
         const result = await pool.query('SELECT * FROM materia ORDER BY nombre');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error al obtener materias:', error);
         res.status(500).send('Error al obtener materias');
     }
 };

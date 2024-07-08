@@ -1,59 +1,22 @@
 // src/components/ConvocatoriaMaterias.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+// src/components/ConvocatoriaMaterias.js
+import React, { useState } from 'react';
+import ConvocatoriaMateriasList from './ConvocatoriaMateriasList';
+import ConvocatoriaMateriasForm from './ConvocatoriaMateriasForm';
 
-const ConvocatoriaMateriasForm = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [materias, setMaterias] = useState([]);
-    const [selectedMateria, setSelectedMateria] = useState('');
+const ConvocatoriaMaterias = ({ idConvocatoria }) => {
+    const [refreshKey, setRefreshKey] = useState(0); // Key para forzar la actualización de componentes hijos
 
-    useEffect(() => {
-        const fetchMaterias = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/materias');
-                setMaterias(response.data);
-            } catch (error) {
-                console.error('Error al obtener las materias:', error);
-            }
-        };
-
-        fetchMaterias();
-    }, []);
-
-    const handleChange = (e) => {
-        setSelectedMateria(e.target.value);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('http://localhost:5000/convocatorias/materias', {
-                id_convocatoria: id,
-                id_materia: selectedMateria
-            });
-            navigate('/convocatorias');
-        } catch (error) {
-            console.error('Error al agregar materia a la convocatoria:', error);
-        }
+    const refreshMaterias = () => {
+        setRefreshKey(prevKey => prevKey + 1);
     };
 
     return (
-        <form className="container" onSubmit={handleSubmit}>
-            <label>
-                Materia:
-                <select value={selectedMateria} onChange={handleChange}>
-                    {materias.map(materia => (
-                        <option key={materia.id_materia} value={materia.id_materia}>
-                            {materia.nombre}
-                        </option>
-                    ))}
-                </select>
-            </label>
-            <button type="submit">Agregar Materia</button>
-        </form>
+        <div className='container'>
+            <ConvocatoriaMateriasList key={refreshKey} idConvocatoria={idConvocatoria} />
+            <ConvocatoriaMateriasForm idConvocatoria={idConvocatoria} refreshMaterias={refreshMaterias} />
+        </div>
     );
 };
 
-export default ConvocatoriaMateriasForm;
+export default ConvocatoriaMaterias;

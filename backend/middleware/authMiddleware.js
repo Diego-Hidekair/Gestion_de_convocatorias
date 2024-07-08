@@ -1,6 +1,6 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-const pool = require('../db');
+//const pool = require('../db');
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];

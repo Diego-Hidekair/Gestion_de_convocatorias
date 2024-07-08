@@ -2,12 +2,11 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { authenticateToken } = require('./middleware/authMiddleware'); // Añadir esto
 
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3000', // Ajusta esto según tu configuración
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -18,27 +17,23 @@ const facultadRoutes = require('./routes/facultadRoutes');
 const carreraRoutes = require('./routes/carreraRoutes');
 const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
 const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
-const materiaRoutes = require('./routes/materiaRoutes'); 
-const convocatoriaMateriaRoutes = require('./routes/convocatoriaMateriaRoutes'); 
-const documentosRoutes = require('./routes/documentosRoutes'); 
-const pdfRoutes = require('./routes/pdfRoutes'); 
+const materiaRoutes = require('./routes/materiaRoutes');
+const convocatoriaMateriaRoutes = require('./routes/convocatoriaMateriaRoutes');
+const documentosRoutes = require('./routes/documentosRoutes');
+const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
-const usuarioRoutes = require('./routes/usuarioRoutes'); // Añadido
+const usuarioRoutes = require('./routes/usuarioRoutes');
 
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
-app.use('/tipos-convocatorias', tipoConvocatoriaRoutes);
-app.use('/tipoConvocatoria', tipoConvocatoriaRoutes);
+app.use('/tipo-convocatorias', tipoConvocatoriaRoutes);
 app.use('/convocatorias', convocatoriaRoutes);
 app.use('/materias', materiaRoutes);
-app.use('/convocatorias/materias', convocatoriaMateriaRoutes); 
-app.use('/documentos', documentosRoutes); 
-app.use('/pdf', pdfRoutes); 
+app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
+app.use('/documentos', documentosRoutes);
+app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', (req, res, next) => {
-    console.log('RUTA /api/usuarios accedida'); // Agregar log de depuración
-    next();
-}, authenticateToken, usuarioRoutes); // Añadido el middleware y log de depuración
+app.use('/api/usuarios', usuarioRoutes);
 
 // Ruta de prueba para verificar la conexión
 app.get('/', (req, res) => {

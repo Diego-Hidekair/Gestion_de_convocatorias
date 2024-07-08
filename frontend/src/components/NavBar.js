@@ -1,6 +1,7 @@
+//frontend/src/components/Navbar.js 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Importa jwtDecode directamente desde jwt-decode
+import { jwtDecode } from 'jwt-decode'; // Importa jwtDecode como una importación con nombre
 
 import './NavBar.css';
 
@@ -15,7 +16,7 @@ const NavBar = ({ onLogout }) => {
         if (token) {
             setIsLoggedIn(true);
             const decodedToken = jwtDecode(token); // Usa jwtDecode aquí
-            setRole(decodedToken.role);
+            setRole(decodedToken.role); // Asegúrate de que esto coincide con la clave en el token
         }
     }, []);
 
@@ -47,6 +48,7 @@ const NavBar = ({ onLogout }) => {
                                     <li><Link to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>Convocatorias</Link></li>
                                     <li><Link to="/pdf-generator" className={location.pathname === '/pdf-generator' ? 'active' : ''}>Generador de PDF</Link></li>
                                     <li><Link to="/usuarios" className={location.pathname === '/usuarios' ? 'active' : ''}>Usuarios</Link></li>
+                                    <li><Link to="/crear-usuario" className={location.pathname === '/crear-usuario' ? 'active' : ''}>Crear Usuario</Link></li> 
                                 </>
                             )}
                             {role !== 'admin' && (

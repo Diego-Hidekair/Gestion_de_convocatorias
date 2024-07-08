@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../styles.css';
 
 const ConvocatoriaEdit = () => {
     const { id } = useParams();
@@ -13,12 +14,14 @@ const ConvocatoriaEdit = () => {
         fecha_fin: '',
         id_tipoconvocatoria: '',
         id_carrera: '',
-        id_facultad: ''
+        id_facultad: '',
+        id_materia: ''
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [facultades, setFacultades] = useState([]);
+    const [materias, setMaterias] = useState([]);
     
     useEffect(() => {
         const fetchData = async () => {
@@ -27,10 +30,15 @@ const ConvocatoriaEdit = () => {
 
             const tiposResponse = await axios.get('http://localhost:5000/tiposConvocatoria');
             setTiposConvocatoria(tiposResponse.data);
+
             const carrerasResponse = await axios.get('http://localhost:5000/carreras');
             setCarreras(carrerasResponse.data);
+
             const facultadesResponse = await axios.get('http://localhost:5000/facultades');
             setFacultades(facultadesResponse.data);
+
+            const materiasResponse = await axios.get('http://localhost:5000/materias');
+            setMaterias(materiasResponse.data);
         };
         fetchData();
     }, [id]);
@@ -49,11 +57,10 @@ const ConvocatoriaEdit = () => {
             console.error('Error al actualizar convocatoria:', error);
         }
     };
-
     return (
         <form className="container" onSubmit={handleSubmit}>
             <label>
-                Código Convocatoria:
+                Código Convocatoria: 
                 <input type="text" name="cod_convocatoria" value={convocatoria.cod_convocatoria} onChange={handleChange} />
             </label>
             <label>
@@ -86,8 +93,7 @@ const ConvocatoriaEdit = () => {
                     {carreras.map(carrera => (
                         <option key={carrera.id_carrera} value={carrera.id_carrera}>
                             {carrera.nombre_carrera}
-                       
- </option>
+                        </option>
                     ))}
                 </select>
             </label>
@@ -102,8 +108,20 @@ const ConvocatoriaEdit = () => {
                     ))}
                 </select>
             </label>
+            <label>
+                Materia:
+                <select name="id_materia" value={convocatoria.id_materia} onChange={handleChange}>
+                    <option value="">Seleccione una materia</option>
+                    {materias.map(materia => (
+                        <option key={materia.id_materia} value={materia.id_materia}>
+                            {materia.nombre_materia}
+                        </option>
+                    ))}
+                </select>
+            </label>
             <button type="submit">Guardar</button>
         </form>
     );
 };
+
 export default ConvocatoriaEdit;

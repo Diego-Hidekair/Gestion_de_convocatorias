@@ -56,7 +56,7 @@ const CarreraForm = () => {
                         value={carrera.cod_facultad}
                         onChange={handleChange}
                     >
-                        <option value="">Seleccione una facultad</option>
+                        <option key="" value="">Seleccione una facultad</option>
                         {facultades.map(facultad => (
                             <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                 {facultad.nombre_facultad}
