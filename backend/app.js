@@ -24,6 +24,7 @@ const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 
+
 // Usa las rutas 
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);

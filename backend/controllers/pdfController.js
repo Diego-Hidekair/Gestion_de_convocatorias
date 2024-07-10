@@ -3,28 +3,36 @@
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
+const pool = require('../db');
 
 async function createPdf(req, res) {
     try {
+        const { id_convocatoria } = req.body;
+
+        // Obtener datos de la convocatoria desde la base de datos
+        const query = `
+            SELECT c.cod_convocatoria, c.nombre AS nombre_convocatoria, c.fecha_inicio, c.fecha_fin, 
+                   tc.nombre_convocatoria AS tipo_convocatoria, ca.nombre_carrera AS nombre_carrera, f.nombre_facultad AS nombre_facultad
+            FROM convocatorias c
+            JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            JOIN carrera ca ON c.id_carrera = ca.id_carrera
+            JOIN facultad f ON c.id_facultad = f.id_facultad
+            WHERE c.id_convocatoria = $1
+        `;
+        const result = await pool.query(query, [id_convocatoria]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+
+        const convocatoria = result.rows[0];
+
+        // Crear el PDF
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([600, 400]);
         const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
         const fontSize = 12;
 
-        // Obtener datos de la solicitud
-        const convocatoria = {
-            nombre: req.body.nombre || "Convocatoria 2024",
-            fechaInicio: req.body.fechaInicio ? req.body.fechaInicio.split('T')[0] : "2024-06-22",
-            fechaFin: req.body.fechaFin ? req.body.fechaFin.split('T')[0] : "2024-07-22",
-            tipoConvocatoria: req.body.tipoConvocatoria || "Regular",
-            carrera: req.body.carrera || "Ingeniería de Sistemas",
-            facultad: req.body.facultad || "Facultad de Ingeniería",
-            materias: req.body.materias && req.body.materias.length ? req.body.materias : ["Materia 1", "Materia 2", "Materia 3"],
-            creadoPor: req.body.creadoPor || "Admin",
-            fechaCreacion: req.body.fechaCreacion || new Date().toISOString().split('T')[0]
-        };
-
-         // Añadir datos dinámicos al PDF
         page.drawText('Convocatoria', {
             x: 50,
             y: 350,
@@ -33,94 +41,65 @@ async function createPdf(req, res) {
             color: rgb(0, 0, 0),
         });
 
-        page.drawText('Datos Generales', {
+        page.drawText(`Código de Convocatoria: ${convocatoria.cod_convocatoria}`, {
             x: 50,
             y: 320,
-            size: 14,
-            font: timesRomanFont,
-            color: rgb(0, 0, 0),
-        });
-
-        page.drawText(`Nombre: ${convocatoria.nombre}`, {
-            x: 50,
-            y: 290,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Fecha de Inicio: ${convocatoria.fechaInicio}`, {
+        page.drawText(`Nombre: ${convocatoria.nombre_convocatoria}`, {
             x: 50,
-            y: 270,
+            y: 300,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Fecha de Fin: ${convocatoria.fechaFin}`, {
+        page.drawText(`Fecha de Inicio: ${convocatoria.fecha_inicio}`, {
             x: 50,
-            y: 250,
+            y: 280,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Tipo de Convocatoria: ${convocatoria.tipoConvocatoria}`, {
+        page.drawText(`Fecha de Fin: ${convocatoria.fecha_fin}`, {
             x: 50,
-            y: 230,
+            y: 260,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Carrera: ${convocatoria.carrera}`, {
+        page.drawText(`Tipo de Convocatoria: ${convocatoria.tipo_convocatoria}`, {
             x: 50,
-            y: 210,
+            y: 240,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Facultad: ${convocatoria.facultad}`, {
+        page.drawText(`Carrera: ${convocatoria.nombre_carrera}`, {
             x: 50,
-            y: 190,
+            y: 220,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        // Añadir materias
-        let yOffset = 170;
-        convocatoria.materias.forEach((materia, index) => {
-            page.drawText(`Materia ${index + 1}: ${materia}`, {
-                x: 50,
-                y: yOffset,
-                size: fontSize,
-                font: timesRomanFont,
-                color: rgb(0, 0, 0),
-            });
-            yOffset -= 20;
-        });
-        
-// Añadir creador y fecha de creación
-        page.drawText(`Creado por: ${convocatoria.creadoPor}`, {
+        page.drawText(`Facultad: ${convocatoria.nombre_facultad}`, {
             x: 50,
-            y: yOffset - 20,
-            size: fontSize,
-            font: timesRomanFont,
-            color: rgb(0, 0, 0),
-        });
-
-        page.drawText(`Fecha de Creación: ${convocatoria.fechaCreacion}`, {
-            x: 50,
-            y: yOffset - 40,
+            y: 200,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
         const pdfBytes = await pdfDoc.save();
-        const filePath = path.join(__dirname, 'convocatoria.pdf');
+        const sanitizedFileName = convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_'); // Para evitar caracteres no permitidos en nombres de archivos
+        const filePath = path.join(__dirname, `../pdfs/${sanitizedFileName}.pdf`);
         fs.writeFileSync(filePath, pdfBytes);
 
         res.sendFile(filePath);
