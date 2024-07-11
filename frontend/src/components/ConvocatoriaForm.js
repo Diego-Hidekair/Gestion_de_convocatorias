@@ -38,7 +38,7 @@ const ConvocatoriaForm = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            await axios.post('http://localhost:5000/convocatorias', {
+            const response = await axios.post('http://localhost:5000/convocatorias', {
                 cod_convocatoria: codConvocatoria,
                 nombre,
                 fecha_inicio: fechaInicio,
@@ -47,12 +47,14 @@ const ConvocatoriaForm = () => {
                 id_carrera: idCarrera,
                 id_facultad: idFacultad,
             });
-            navigate('/convocatorias');
+            const { id_convocatoria } = response.data;
+            navigate(`/pdf-generator/${id_convocatoria}`);
         } catch (error) {
             console.error('Error creating convocatoria:', error);
         }
     };
-return (
+    
+    return (
         <div className="container">
             <h2>Crear Nueva Convocatoria</h2>
             <form onSubmit={handleSubmit}>
@@ -136,7 +138,7 @@ return (
                         ))}
                     </select>
                 </div>
-                <button type="submit">Crear Convocatoria</button>
+                <button type="submit">Siguiente</button>
             </form>
         </div>
     );

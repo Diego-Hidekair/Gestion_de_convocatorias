@@ -100,3 +100,53 @@ const PDFGenerator = () => {
 };
 
 export default PDFGenerator;
+
+/*
+crear el pdf de manera directa al momento ene l que se creo la convocatoria 
+// frontend/src/components/PDFGenerator.js
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+
+const PDFGenerator = () => {
+    const { id } = useParams();
+    const [convocatoria, setConvocatoria] = useState(null);
+
+    useEffect(() => {
+        const fetchConvocatoria = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+                setConvocatoria(response.data);
+            } catch (error) {
+                console.error('Error fetching convocatoria:', error);
+            }
+        };
+
+        fetchConvocatoria();
+    }, [id]);
+
+    const generatePDF = () => {
+        // Implementar la lógica para generar el PDF aquí
+    };
+
+    if (!convocatoria) {
+        return <div>Cargando convocatoria...</div>;
+    }
+
+    return (
+        <div className="container">
+            <h2>Generar PDF para la Convocatoria</h2>
+            <p><strong>Nombre:</strong> {convocatoria.nombre}</p>
+            <p><strong>Código de Convocatoria:</strong> {convocatoria.cod_convocatoria}</p>
+            <p><strong>Fecha de Inicio:</strong> {convocatoria.fecha_inicio}</p>
+            <p><strong>Fecha de Fin:</strong> {convocatoria.fecha_fin}</p>
+            <p><strong>Carrera:</strong> {convocatoria.carrera.nombre_carrera}</p>
+            <p><strong>Facultad:</strong> {convocatoria.facultad.nombre_facultad}</p>
+            <p><strong>Tipo de Convocatoria:</strong> {convocatoria.tipo_convocatoria.nombre_convocatoria}</p>
+            <button onClick={generatePDF}>Generar PDF</button>
+        </div>
+    );
+};
+
+export default PDFGenerator;
+*/ 

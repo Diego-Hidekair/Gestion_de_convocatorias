@@ -6,6 +6,10 @@ const jwt = require('jsonwebtoken');
 const createUser = async (req, res) => {
     const { id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
+    // Verifica si el usuario tiene el rol de 'admin'
+    if (req.user.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden crear usuarios.' });
+    }
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(Contraseña, salt);
@@ -60,10 +64,10 @@ const loginUser = async (req, res) => {
         if (!validPassword) {
             return res.status(400).json({ message: 'Credenciales incorrectas' });
         }
-        const token = jwt.sign({ id: user.rows[0].id, rol: user.rows[0].rol }, process.env.JWT_SECRET, { expiresIn: '4h',
-        });
 
-    res.json({ token });
+        const token = jwt.sign({ id: user.rows[0].id, rol: user.rows[0].rol }, process.env.JWT_SECRET, { expiresIn: '4h' });
+
+        res.json({ token });
     } catch (error) {
         console.error(error.message);
         res.status(500).send('Server error');

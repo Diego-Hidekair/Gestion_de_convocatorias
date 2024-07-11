@@ -1,9 +1,10 @@
 // backend/app.js
 const express = require('express');
-const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const app = express();
 
+// Middlewares
 app.use(cors({
     origin: 'http://localhost:3000', // puerto origen donde se mandara
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -12,7 +13,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// Importa las rutas 
+// Importa las rutas
 const facultadRoutes = require('./routes/facultadRoutes');
 const carreraRoutes = require('./routes/carreraRoutes');
 const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
@@ -24,8 +25,10 @@ const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 
+// Importa el middleware de autenticación y autorización
+const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware');
 
-// Usa las rutas 
+// Usa las rutas
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
 app.use('/tipo-convocatorias', tipoConvocatoriaRoutes);
@@ -35,7 +38,8 @@ app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/usuarios', authenticateToken, usuarioRoutes); // Aplica autenticación a las rutas de usuarios
+
 
 // Ruta de prueba para verificar la conexión
 app.get('/', (req, res) => {
