@@ -1,4 +1,5 @@
 // backend/app.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -25,9 +26,6 @@ const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 
-// Importa el middleware de autenticación y autorización
-const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware');
-
 // Usa las rutas
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
@@ -38,8 +36,7 @@ app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', authenticateToken, usuarioRoutes); // Aplica autenticación a las rutas de usuarios
-
+app.use('/api/usuarios', usuarioRoutes);
 
 // Ruta de prueba para verificar la conexión
 app.get('/', (req, res) => {

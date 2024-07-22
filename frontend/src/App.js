@@ -16,16 +16,16 @@ import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
 import MateriaList from './components/MateriaList';
 import MateriaForm from './components/MateriaForm';
 import MateriaEdit from './components/MateriaEdit';
-import NavBar from './components/NavBar';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import ConvocatoriaMateriasList from './components/ConvocatoriaMateriasList';
 import PDFGenerator from './components/PDFGenerator';
 import Login from './components/Login';
-import UsuarioForm from './components/UsuarioForm';
-import UsuarioList from './components/UsuarioList';
-//import Register from './components/Register';
+import Register from './components/Register';
 import FileUpload from './components/FileUpload';
-import { AuthWrapper, AdminRoute, UserRoute } from './components/AuthWrapper';
+import NavBar from './components/NavBar';
+import UsuarioList from './components/UsuarioList';
+import UsuarioForm from './components/UsuarioForm';
+import UsuarioEdit from './components/UsuarioEdit';
 
 const App = () => {
     return (
@@ -100,9 +100,10 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias_materias/new" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/convocatorias_materias/edit/:id" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/pdf-generator/:id" element={<PDFGenerator />} />
-                        <Route path="/usuarios" element={<UsuarioList />} />
-                        <Route path="/crear-usuario" element={<UsuarioForm />} />
                         <Route path="/file-upload" element={<FileUpload />} />
+                        <Route path="/usuarios" element={<UsuarioList />} />
+                        <Route path="/usuarios/nuevo" element={<UsuarioForm />} />
+                        <Route path="/usuarios/editar/:id" element={<UsuarioEdit />} />
                     </Routes>
                 </>
             ) : (

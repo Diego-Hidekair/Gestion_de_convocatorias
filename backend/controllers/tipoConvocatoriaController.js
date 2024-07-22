@@ -68,14 +68,29 @@ exports.updateTipoConvocatoria = async (req, res) => {
 
 // Eliminar un tipo de convocatoria
 exports.deleteTipoConvocatoria = async (req, res) => {
+    const client = await pool.connect();
+
     try {
-        const result = await pool.query('DELETE FROM tipo_convocatoria WHERE id_tipoconvocatoria = $1 RETURNING *', [req.params.id]);
+        await client.query('BEGIN');
+
+        // Eliminar todas las convocatorias que referencian este tipo de convocatoria
+        await client.query('DELETE FROM convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]);
+
+        // Ahora se puede eliminar el tipo de convocatoria
+        const result = await client.query('DELETE FROM tipo_convocatoria WHERE id_tipoconvocatoria = $1 RETURNING *', [req.params.id]);
+
+        await client.query('COMMIT');
+
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Tipo de convocatoria no encontrado' });
         }
+
         res.status(200).json({ message: 'Tipo de convocatoria eliminado' });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Error al eliminar el tipo de convocatoria:', error);
         res.status(500).json({ message: 'Error al eliminar el tipo de convocatoria', error });
+    } finally {
+        client.release();
     }
 };

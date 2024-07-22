@@ -1,27 +1,13 @@
 // backend/routes/usuarioRoutes.js
 const express = require('express');
-const { createUser, getUsers, deleteUser, loginUser } = require('../controllers/usuarioController');
+const router = express.Router();
+const { createUser, getUsuarios, deleteUser, loginUser } = require('../controllers/usuarioController');
 const { authenticateToken, authorizeAdmin } = require('../middleware/authMiddleware');
 
-const router = express.Router();
-
+// Rutas para la gestión de usuarios
+router.get('/', authenticateToken, authorizeAdmin, getUsuarios);
 router.post('/', authenticateToken, authorizeAdmin, createUser);
-router.get('/', authenticateToken, getUsers);
 router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser);
 router.post('/login', loginUser);
 
 module.exports = router;
-/*const express = require('express');
-const { createUser, getUsers, deleteUser, loginUser } = require('../controllers/usuarioController');
-const { authenticateToken, authorizeAdmin } = require('../middleware/authMiddleware');
-
-const router = express.Router();
-
-router.post('/usuarios', authenticateToken, authorizeAdmin, createUser);
-router.get('/usuarios', authenticateToken, getUsers);
-router.delete('/usuarios/:id', authenticateToken, authorizeAdmin, deleteUser);
-router.post('/login', loginUser);
-
-module.exports = router;
-
-*/

@@ -1,9 +1,10 @@
-// frontend/src/components/UsuarioForm.js
-import React, { useState } from 'react';
+// frontend/src/components/UsuarioEdit.js
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const UsuarioForm = () => {
+const UsuarioEdit = () => {
+    const { id } = useParams();
     const [user, setUser] = useState({
         id: '',
         Nombres: '',
@@ -16,6 +17,22 @@ const UsuarioForm = () => {
 
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`http://localhost:5000/api/usuarios/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setUser(response.data);
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            }
+        };
+
+        fetchUser();
+    }, [id]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUser({ ...user, [name]: value });
@@ -25,18 +42,18 @@ const UsuarioForm = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/usuarios', user, {
+            await axios.put(`http://localhost:5000/api/usuarios/${id}`, user, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             navigate('/usuarios');
         } catch (error) {
-            console.error('Error creating user:', error);
+            console.error('Error updating user:', error);
         }
     };
 
     return (
         <div className="container">
-            <h2>Crear Usuario</h2>
+            <h2>Editar Usuario</h2>
             <form onSubmit={handleSubmit}>
                 <input type="text" name="id" placeholder="ID" value={user.id} onChange={handleChange} required />
                 <input type="text" name="Nombres" placeholder="Nombres" value={user.Nombres} onChange={handleChange} required />
@@ -45,10 +62,10 @@ const UsuarioForm = () => {
                 <input type="text" name="Rol" placeholder="Rol" value={user.Rol} onChange={handleChange} required />
                 <input type="password" name="Contraseña" placeholder="Contraseña" value={user.Contraseña} onChange={handleChange} required />
                 <input type="text" name="Celular" placeholder="Celular" value={user.Celular} onChange={handleChange} required />
-                <button type="submit">Crear</button>
+                <button type="submit">Actualizar</button>
             </form>
         </div>
     );
 };
 
-export default UsuarioForm;
+export default UsuarioEdit;

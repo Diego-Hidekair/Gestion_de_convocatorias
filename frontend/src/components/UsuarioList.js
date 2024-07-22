@@ -1,48 +1,43 @@
-// src/components/TipoconvocatoriaList.js
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../styles.css';
 
-const TipoconvocatoriaList = () => {
-    const [tipoConvocatorias, setTipoConvocatorias] = useState([]);
+const UsuarioList = () => {
+    const [usuarios, setUsuarios] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        const fetchTipoConvocatorias = async () => {
+        const fetchUsuarios = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/tipo-convocatorias');
-                setTipoConvocatorias(response.data);
-            } catch (error) {
-                console.error('Error al obtener los tipos de convocatoria:', error);
+                const token = localStorage.getItem('token');
+                const config = {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                };
+                const response = await axios.get('http://localhost:5000/api/usuarios', config);
+                setUsuarios(response.data);
+            } catch (err) {
+                console.error('Error fetching usuarios:', err);
+                setError('Error fetching usuarios');
             }
         };
-        fetchTipoConvocatorias();
+        fetchUsuarios();
     }, []);
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/tipo-convocatorias/${id}`);
-            setTipoConvocatorias(tipoConvocatorias.filter(tipoConvocatoria => tipoConvocatoria.id_tipoconvocatoria !== id));
-        } catch (error) {
-            console.error('Error al eliminar el tipo de convocatoria:', error);
-        }
-    };
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <div className="container">
-            <h1>Lista de Tipos de Convocatoria</h1>
-            <Link to="/tipo-convocatorias/new">Crear Nuevo Tipo de Convocatoria</Link>
+            <h2>Lista de Usuarios</h2>
             <ul>
-                {tipoConvocatorias.map(tipoConvocatoria => (
-                    <li key={tipoConvocatoria.id_tipoconvocatoria}>
-                        {tipoConvocatoria.nombre_convocatoria} - {tipoConvocatoria.nombre_facultad} - {tipoConvocatoria.nombre_carrera}
-                        <Link to={`/tipo-convocatorias/edit/${tipoConvocatoria.id_tipoconvocatoria}`}>Editar</Link>
-                        <button onClick={() => handleDelete(tipoConvocatoria.id_tipoconvocatoria)}>Eliminar</button>
-                    </li>
+                {usuarios.map(usuario => (
+                    <li key={usuario.id}>{usuario.Nombres} {usuario.Apellido_paterno}</li>
                 ))}
             </ul>
         </div>
     );
 };
 
-export default TipoconvocatoriaList;
+export default UsuarioList;

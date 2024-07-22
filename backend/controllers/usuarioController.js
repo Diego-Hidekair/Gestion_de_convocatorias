@@ -6,10 +6,10 @@ const jwt = require('jsonwebtoken');
 const createUser = async (req, res) => {
     const { id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
-    // Verifica si el usuario tiene el rol de 'admin'
     if (req.user.rol !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden crear usuarios.' });
     }
+
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(Contraseña, salt);
@@ -26,13 +26,12 @@ const createUser = async (req, res) => {
     }
 };
 
-const getUsers = async (req, res) => {
+const getUsuarios = async (req, res) => {
     try {
-        const allUsers = await pool.query('SELECT * FROM usuarios');
-        res.json(allUsers.rows);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).send('Server error');
+        const result = await pool.query('SELECT * FROM usuarios');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
 
@@ -48,7 +47,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-// Iniciar sesión de usuario
 const loginUser = async (req, res) => {
     const { id, Contraseña } = req.body;
 
@@ -74,4 +72,4 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { createUser, getUsers, deleteUser, loginUser };
+module.exports = { createUser, getUsuarios, deleteUser, loginUser };
