@@ -1,7 +1,7 @@
 // backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
-// Agregar una materia a una convocatoria
+/*// Agregar una materia a una convocatoria
 const addMateriaToConvocatoria = async (req, res) => {
     const { id_convocatoria, id_materia } = req.body;
     try {
@@ -14,24 +14,61 @@ const addMateriaToConvocatoria = async (req, res) => {
         console.error('Error al agregar materia a la convocatoria:', error);
         res.status(500).json({ error: 'Error al agregar materia a la convocatoria' });
     }
-};
+};*/
 
-// Obtener materias de una convocatoria
-const getMateriasByConvocatoria = async (req, res) => {
-    const { id_convocatoria } = req.params;
+// Obtener todas las materias de una convocatoria
+const getConvocatoriaMaterias = async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT m.* FROM materia m JOIN convocatoria_materia cm ON m.id_materia = cm.id_materia WHERE cm.id_convocatoria = $1',
-            [id_convocatoria]
-        );
+        const { id_convocatoria } = req.params;
+        const result = await pool.query('SELECT * FROM convocatoria_materia WHERE id_convocatoria = $1', [id_convocatoria]);
         res.json(result.rows);
     } catch (error) {
-        console.error('Error al obtener materias de la convocatoria:', error);
-        res.status(500).json({ error: 'Error al obtener materias de la convocatoria' });
+        console.error('Error fetching convocatoria_materias:', error);
+        res.status(500).send('Server error');
     }
 };
 
-module.exports = {
-    addMateriaToConvocatoria,
-    getMateriasByConvocatoria,
+// Crear una nueva relación convocatoria-materia
+const createConvocatoriaMateria = async (req, res) => {
+    try {
+        const { id_convocatoria, id_materia } = req.body;
+        const result = await pool.query(
+            'INSERT INTO convocatoria_materia (id_convocatoria, id_materia) VALUES ($1, $2) RETURNING *',
+            [id_convocatoria, id_materia]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error creating convocatoria_materia:', error);
+        res.status(500).send('Server error');
+    }
 };
+
+// Actualizar una relación convocatoria-materia
+const updateConvocatoriaMateria = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { id_convocatoria, id_materia } = req.body;
+        const result = await pool.query(
+            'UPDATE convocatoria_materia SET id_convocatoria = $1, id_materia = $2 WHERE id = $3 RETURNING *',
+            [id_convocatoria, id_materia, id]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error updating convocatoria_materia:', error);
+        res.status(500).send('Server error');
+    }
+};
+
+// Eliminar una relación convocatoria-materia
+const deleteConvocatoriaMateria = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM convocatoria_materia WHERE id = $1', [id]);
+        res.send('ConvocatoriaMateria deleted');
+    } catch (error) {
+        console.error('Error deleting convocatoria_materia:', error);
+        res.status(500).send('Server error');
+    }
+};
+
+module.exports = { getConvocatoriaMaterias, createConvocatoriaMateria, updateConvocatoriaMateria, deleteConvocatoriaMateria,};

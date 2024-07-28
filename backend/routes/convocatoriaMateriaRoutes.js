@@ -2,10 +2,15 @@
 const express = require('express');
 const router = express.Router();
 const {
-    addMateriaToConvocatoria,
-    getMateriasByConvocatoria
+    getConvocatoriaMaterias,
+    createConvocatoriaMateria,
+    updateConvocatoriaMateria,
+    deleteConvocatoriaMateria,
 } = require('../controllers/convocatoriaMateriaController');
 
-router.post('/', addMateriaToConvocatoria);
-router.get('/:id_convocatoria', getMateriasByConvocatoria);
+router.get('/:id_convocatoria', getConvocatoriaMaterias);
+router.post('/', createConvocatoriaMateria);
+router.put('/:id', updateConvocatoriaMateria);
+router.delete('/:id', deleteConvocatoriaMateria);
+
 module.exports = router;

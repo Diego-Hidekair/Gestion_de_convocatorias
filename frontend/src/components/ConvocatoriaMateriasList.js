@@ -1,42 +1,44 @@
-// src/components/ConvocatoriaMateriasList.js
+// frontend/src/components/ConvocatoriaMateriasList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams, Link } from 'react-router-dom';
 
-const ConvocatoriaMateriasList = ({ idConvocatoria }) => {
-    const [materias, setMaterias] = useState([]);
+const ConvocatoriaMateriasList = () => {
+    const { id_convocatoria } = useParams();
+    const [convocatoriaMaterias, setConvocatoriaMaterias] = useState([]);
 
     useEffect(() => {
-        const fetchMaterias = async () => {
+        const fetchConvocatoriaMaterias = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/convocatoria-materia/${idConvocatoria}`);
-                setMaterias(response.data);
+                const response = await axios.get(`http://localhost:5000/api/convocatoria-materias/${id_convocatoria}`);
+                setConvocatoriaMaterias(response.data);
             } catch (error) {
-                console.error('Error fetching materias:', error);
+                console.error('Error fetching convocatoria_materias:', error);
             }
         };
 
-        fetchMaterias();
-    }, [idConvocatoria]);
+        fetchConvocatoriaMaterias();
+    }, [id_convocatoria]);
 
-    const handleDelete = async (idMateria) => {
+    const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/convocatoria-materia/${idConvocatoria}/${idMateria}`);
-            setMaterias(materias.filter(materia => materia.id !== idMateria));
+            await axios.delete(`http://localhost:5000/api/convocatoria-materias/${id}`);
+            setConvocatoriaMaterias(convocatoriaMaterias.filter((item) => item.id !== id));
         } catch (error) {
-            console.error('Error deleting materia:', error);
+            console.error('Error deleting convocatoria_materia:', error);
         }
     };
 
     return (
-        <div className='container'>
-            <h2>Materias Asociadas</h2>
+        <div className="container">
+            <h2>Materias de la Convocatoria</h2>
+            <Link to={`/convocatorias/${id_convocatoria}/materias/new`}>Agregar Materia</Link>
             <ul>
-                {materias.map(materia => (
-                    <li key={materia.id}>
-                        {materia.nombre} - {materia.codigo} {/* Aquí ajusta según los datos de tu materia */}
-                        <button onClick={() => handleDelete(materia.id)}>Eliminar</button>
+                {convocatoriaMaterias.map((item) => (
+                    <li key={item.id}>
+                        {item.id_materia}
+                        <button onClick={() => handleDelete(item.id)}>Eliminar</button>
                     </li>
-                    
                 ))}
             </ul>
         </div>
@@ -44,4 +46,3 @@ const ConvocatoriaMateriasList = ({ idConvocatoria }) => {
 };
 
 export default ConvocatoriaMateriasList;
-

@@ -16,6 +16,7 @@ import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
 import MateriaList from './components/MateriaList';
 import MateriaForm from './components/MateriaForm';
 import MateriaEdit from './components/MateriaEdit';
+import ConvocatoriaMaterias from './components/ConvocatoriaMaterias';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import ConvocatoriaMateriasList from './components/ConvocatoriaMateriasList';
 import PDFGenerator from './components/PDFGenerator';
@@ -96,6 +97,10 @@ const AuthWrapper = () => {
                         <Route path="/materias" element={<MateriaList />} />
                         <Route path="/materias/new" element={<MateriaForm />} />
                         <Route path="/materias/edit/:id" element={<MateriaEdit />} />
+
+                        <Route path="/convocatorias/:id_convocatoria/materias/*" element={<ConvocatoriaMaterias />} />
+                        
+
                         <Route path="/convocatorias_materias" element={<ConvocatoriaMateriasList />} />
                         <Route path="/convocatorias_materias/new" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/convocatorias_materias/edit/:id" element={<ConvocatoriaMateriasForm />} />

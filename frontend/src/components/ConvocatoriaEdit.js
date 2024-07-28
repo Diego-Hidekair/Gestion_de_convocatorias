@@ -23,7 +23,7 @@ const ConvocatoriaEdit = () => {
     useEffect(() => {
         const fetchConvocatoria = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/convocatorias/${id}`);
+                const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
                 setConvocatoria(response.data);
             } catch (error) {
                 console.error('Error fetching convocatoria:', error);
@@ -32,7 +32,7 @@ const ConvocatoriaEdit = () => {
 
         const fetchTiposConvocatoria = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/tipo-convocatorias');
+                const response = await axios.get('http://localhost:5000/tipo-convocatorias');
                 setTiposConvocatoria(response.data);
             } catch (error) {
                 console.error('Error fetching tipos de convocatoria:', error);
@@ -41,7 +41,7 @@ const ConvocatoriaEdit = () => {
 
         const fetchCarreras = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/carreras');
+                const response = await axios.get('http://localhost:5000/carreras');
                 setCarreras(response.data);
             } catch (error) {
                 console.error('Error fetching carreras:', error);
@@ -50,7 +50,7 @@ const ConvocatoriaEdit = () => {
 
         const fetchFacultades = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/facultades');
+                const response = await axios.get('http://localhost:5000/facultades');
                 setFacultades(response.data);
             } catch (error) {
                 console.error('Error fetching facultades:', error);
@@ -74,7 +74,7 @@ const ConvocatoriaEdit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/convocatorias/${id}`, convocatoria);
+            await axios.put(`http://localhost:5000/convocatorias/${id}`, convocatoria);
             navigate('/convocatorias');
         } catch (error) {
             console.error('Error updating convocatoria:', error);
@@ -139,7 +139,7 @@ const ConvocatoriaEdit = () => {
                         <option value="">Seleccione un tipo de convocatoria</option>
                         {tiposConvocatoria.map((tipo) => (
                             <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
-                                {tipo.nombre}
+                                {tipo.nombre_convocatoria}
                             </option>
                         ))}
                     </select>

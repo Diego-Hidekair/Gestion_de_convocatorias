@@ -1,21 +1,15 @@
-// src/components/ConvocatoriaMaterias.js
-// src/components/ConvocatoriaMaterias.js
-import React, { useState } from 'react';
+// frontend/src/components/ConvocatoriaMaterias.js
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import ConvocatoriaMateriasList from './ConvocatoriaMateriasList';
 import ConvocatoriaMateriasForm from './ConvocatoriaMateriasForm';
 
-const ConvocatoriaMaterias = ({ idConvocatoria }) => {
-    const [refreshKey, setRefreshKey] = useState(0); // Key para forzar la actualización de componentes hijos
-
-    const refreshMaterias = () => {
-        setRefreshKey(prevKey => prevKey + 1);
-    };
-
+const ConvocatoriaMaterias = () => {
     return (
-        <div className='container'>
-            <ConvocatoriaMateriasList key={refreshKey} idConvocatoria={idConvocatoria} />
-            <ConvocatoriaMateriasForm idConvocatoria={idConvocatoria} refreshMaterias={refreshMaterias} />
-        </div>
+        <Routes>
+            <Route path="/" element={<ConvocatoriaMateriasList />} />
+            <Route path="/new" element={<ConvocatoriaMateriasForm />} />
+        </Routes>
     );
 };
 
