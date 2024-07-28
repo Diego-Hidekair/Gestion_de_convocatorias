@@ -27,6 +27,16 @@ async function createPdf(req, res) {
 
         const convocatoria = result.rows[0];
 
+        // Obtener las materias relacionadas con la convocatoria
+        const materiasQuery = `
+            SELECT m.nombre 
+            FROM convocatoria_materia cm
+            JOIN materia m ON cm.id_materia = m.id_materia
+            WHERE cm.id_convocatoria = $1
+        `;
+        const materiasResult = await pool.query(materiasQuery, [id_convocatoria]);
+        const materias = materiasResult.rows;
+
         // Crear el PDF
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([600, 400]);
@@ -95,6 +105,27 @@ async function createPdf(req, res) {
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
+        });
+
+        // Agregar materias al PDF
+        page.drawText('Materias:', {
+            x: 50,
+            y: 180,
+            size: fontSize,
+            font: timesRomanFont,
+            color: rgb(0, 0, 0),
+        });
+
+        let yPos = 160; // Posición inicial para las materias
+        materias.forEach((materia, index) => {
+            page.drawText(`${index + 1}. ${materia.nombre}`, {
+                x: 70,
+                y: yPos,
+                size: fontSize,
+                font: timesRomanFont,
+                color: rgb(0, 0, 0),
+            });
+            yPos -= 20; // Ajustar la posición vertical para la siguiente materia
         });
 
         const pdfBytes = await pdfDoc.save();
