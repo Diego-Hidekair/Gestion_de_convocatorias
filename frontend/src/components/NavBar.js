@@ -15,8 +15,8 @@ const NavBar = ({ onLogout }) => {
         const token = localStorage.getItem('token');
         if (token) {
             setIsLoggedIn(true);
-            const decodedToken = jwtDecode(token); // Usa jwtDecode aquí
-            setRole(decodedToken.role); // Asegúrate de que esto coincide con la clave en el token
+            const decodedToken = jwtDecode(token); // Decodifica el token
+            setRole(decodedToken.role); // Asegúrate de que esto coincida con la clave en el token
         }
     }, []);
 
@@ -46,9 +46,6 @@ const NavBar = ({ onLogout }) => {
                                     <li><Link to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>Tipo de Convocatorias</Link></li>
                                     <li><Link to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>Materias</Link></li>
                                     <li><Link to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>Convocatorias</Link></li>
-                                    <li><Link to="/pdf-generator" className={location.pathname === '/pdf-generator' ? 'active' : ''}>Generador de PDF</Link></li>
-                                    <li><Link to="/usuarios" className={location.pathname === '/usuarios' ? 'active' : ''}>Usuarios</Link></li>
-                                    <li><Link to="/crear-usuario" className={location.pathname === '/crear-usuario' ? 'active' : ''}>Crear Usuario</Link></li> 
                                 </>
                             )}
                             {role !== 'admin' && (

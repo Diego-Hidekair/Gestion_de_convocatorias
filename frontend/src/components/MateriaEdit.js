@@ -1,4 +1,3 @@
-// src/components/MateriaEdit.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,6 +6,9 @@ const MateriaEdit = () => {
     const { id } = useParams();
     const [codigomateria, setCodigoMateria] = useState('');
     const [nombre, setNombre] = useState('');
+    const [horasTeoria, setHorasTeoria] = useState('');
+    const [horasPractica, setHorasPractica] = useState('');
+    const [horasLaboratorio, setHorasLaboratorio] = useState('');
     const [id_carrera, setIdCarrera] = useState('');
     const [carreras, setCarreras] = useState([]);
     const navigate = useNavigate();
@@ -15,9 +17,13 @@ const MateriaEdit = () => {
         const fetchMateria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/materias/${id}`);
-                setCodigoMateria(response.data.codigomateria);
-                setNombre(response.data.nombre);
-                setIdCarrera(response.data.id_carrera);
+                const materia = response.data;
+                setCodigoMateria(materia.codigomateria);
+                setNombre(materia.nombre);
+                setHorasTeoria(materia.horas_teoria);
+                setHorasPractica(materia.horas_practica);
+                setHorasLaboratorio(materia.horas_laboratorio);
+                setIdCarrera(materia.id_carrera);
             } catch (error) {
                 console.error('Error al obtener la materia:', error);
             }
@@ -42,6 +48,9 @@ const MateriaEdit = () => {
             await axios.put(`http://localhost:5000/materias/${id}`, {
                 codigomateria,
                 nombre,
+                horas_teoria: horasTeoria,
+                horas_practica: horasPractica,
+                horas_laboratorio: horasLaboratorio,
                 id_carrera
             });
             navigate('/materias');
@@ -73,13 +82,40 @@ const MateriaEdit = () => {
                     />
                 </div>
                 <div>
+                    <label>Horas Teoría:</label>
+                    <input
+                        type="number"
+                        value={horasTeoria}
+                        onChange={(e) => setHorasTeoria(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Horas Práctica:</label>
+                    <input
+                        type="number"
+                        value={horasPractica}
+                        onChange={(e) => setHorasPractica(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Horas Laboratorio:</label>
+                    <input
+                        type="number"
+                        value={horasLaboratorio}
+                        onChange={(e) => setHorasLaboratorio(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
                     <label>Carrera:</label>
                     <select
                         value={id_carrera}
                         onChange={(e) => setIdCarrera(e.target.value)}
                         required
                     >
-                        <option value="">Seleccionar carrera</option>
+                        <option value="">Seleccione una carrera</option>
                         {carreras.map((carrera) => (
                             <option key={carrera.id_carrera} value={carrera.id_carrera}>
                                 {carrera.nombre_carrera}
@@ -87,7 +123,7 @@ const MateriaEdit = () => {
                         ))}
                     </select>
                 </div>
-                <button type="submit">Actualizar</button>
+                <button type="submit">Actualizar Materia</button>
             </form>
         </div>
     );

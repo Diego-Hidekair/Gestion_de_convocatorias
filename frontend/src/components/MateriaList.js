@@ -31,16 +31,38 @@ const MateriaList = () => {
     return (
         <div className="container">
             <h2>Lista de Materias</h2>
-            <Link to="/materias/new">Crear Nueva Materia</Link>
-            <ul>
-                {materias.map((materia) => (
-                    <li key={materia.id_materia}>
-                        {materia.codigomateria} - {materia.nombre} - Carrera ID: {materia.id_carrera}
-                        <Link to={`/materias/edit/${materia.id_materia}`}>Editar</Link>
-                        <button onClick={() => handleDelete(materia.id_materia)}>Eliminar</button>
-                    </li>
-                ))}
-            </ul>
+            <Link to="/materias/crear" className="btn btn-primary mb-3">Crear Materia</Link>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Horas Teoría</th>
+                        <th>Horas Práctica</th>
+                        <th>Horas Laboratorio</th>
+                        <th>Carrera</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {materias.map(materia => (
+                        <tr key={materia.id_materia}>
+                            <td>{materia.id_materia}</td>
+                            <td>{materia.codigomateria}</td>
+                            <td>{materia.nombre}</td>
+                            <td>{materia.horas_teoria}</td>
+                            <td>{materia.horas_practica}</td>
+                            <td>{materia.horas_laboratorio}</td>
+                            <td>{materia.id_carrera}</td>
+                            <td>
+                                <Link to={`/materias/editar/${materia.id_materia}`} className="btn btn-warning">Editar</Link>
+                                <button onClick={() => handleDelete(materia.id_materia)} className="btn btn-danger">Eliminar</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

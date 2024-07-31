@@ -1,43 +1,32 @@
 // frontend/src/components/ConvocatoriaMateriasList.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const ConvocatoriaMateriasList = () => {
-    const { id_convocatoria } = useParams();
-    const [convocatoriaMaterias, setConvocatoriaMaterias] = useState([]);
+    const [convocatorias, setConvocatorias] = useState([]);
 
     useEffect(() => {
-        const fetchConvocatoriaMaterias = async () => {
+        const fetchConvocatorias = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/convocatoria-materias/${id_convocatoria}`);
-                setConvocatoriaMaterias(response.data);
+                const response = await axios.get('http://localhost:5000/api/convocatorias');
+                setConvocatorias(response.data);
             } catch (error) {
-                console.error('Error fetching convocatoria_materias:', error);
+                console.error('Error al obtener las convocatorias:', error);
             }
         };
 
-        fetchConvocatoriaMaterias();
-    }, [id_convocatoria]);
-
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/api/convocatoria-materias/${id}`);
-            setConvocatoriaMaterias(convocatoriaMaterias.filter((item) => item.id !== id));
-        } catch (error) {
-            console.error('Error deleting convocatoria_materia:', error);
-        }
-    };
+        fetchConvocatorias();
+    }, []);
 
     return (
         <div className="container">
-            <h2>Materias de la Convocatoria</h2>
-            <Link to={`/convocatorias/${id_convocatoria}/materias/new`}>Agregar Materia</Link>
+            <h2>Lista de Convocatorias</h2>
             <ul>
-                {convocatoriaMaterias.map((item) => (
-                    <li key={item.id}>
-                        {item.id_materia}
-                        <button onClick={() => handleDelete(item.id)}>Eliminar</button>
+                {convocatorias.map((convocatoria) => (
+                    <li key={convocatoria.id_convocatoria}>
+                        {convocatoria.nombre}
+                        <Link to={`/convocatorias/${convocatoria.id_convocatoria}/materias`}>Ver Materias</Link>
                     </li>
                 ))}
             </ul>

@@ -6,9 +6,11 @@ import { useNavigate } from 'react-router-dom';
 const MateriaForm = () => {
     const [codigomateria, setCodigoMateria] = useState('');
     const [nombre, setNombre] = useState('');
-    const [id_carrera, setIdCarrera] = useState('');
+    const [horasTeoria, setHorasTeoria] = useState(0);
+    const [horasPractica, setHorasPractica] = useState(0);
+    const [horasLaboratorio, setHorasLaboratorio] = useState(0);
+    const [idCarrera, setIdCarrera] = useState('');
     const [carreras, setCarreras] = useState([]);
-
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +32,10 @@ const MateriaForm = () => {
             await axios.post('http://localhost:5000/materias', {
                 codigomateria,
                 nombre,
-                id_carrera
+                horas_teoria: horasTeoria,
+                horas_practica: horasPractica,
+                horas_laboratorio: horasLaboratorio,
+                id_carrera: idCarrera
             });
             navigate('/materias');
         } catch (error) {
@@ -61,16 +66,40 @@ const MateriaForm = () => {
                     />
                 </div>
                 <div>
+                    <label>Horas Teoría:</label>
+                    <input
+                        type="number"
+                        value={horasTeoria}
+                        onChange={(e) => setHorasTeoria(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label>Horas Práctica:</label>
+                    <input
+                        type="number"
+                        value={horasPractica}
+                        onChange={(e) => setHorasPractica(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label>Horas Laboratorio:</label>
+                    <input
+                        type="number"
+                        value={horasLaboratorio}
+                        onChange={(e) => setHorasLaboratorio(e.target.value)}
+                    />
+                </div>
+                <div>
                     <label>Carrera:</label>
                     <select
-                        value={id_carrera}
+                        value={idCarrera}
                         onChange={(e) => setIdCarrera(e.target.value)}
                         required
                     >
                         <option value="">Seleccionar carrera</option>
                         {carreras.map((carrera) => (
                             <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                                {carrera.nombre_carrera}
+                                {carrera.nombre_carrera }
                             </option>
                         ))}
                     </select>

@@ -15,7 +15,7 @@ const ConvocatoriaMateriasForm = () => {
                 const response = await axios.get('http://localhost:5000/api/materias');
                 setMaterias(response.data);
             } catch (error) {
-                console.error('Error fetching materias:', error);
+                console.error('Error al obtener las materias:', error);
             }
         };
 
@@ -31,7 +31,7 @@ const ConvocatoriaMateriasForm = () => {
             });
             navigate(`/convocatorias/${id_convocatoria}/materias`);
         } catch (error) {
-            console.error('Error creating convocatoria_materia:', error);
+            console.error('Error al crear la relación convocatoria-materia:', error);
         }
     };
 
@@ -49,7 +49,7 @@ const ConvocatoriaMateriasForm = () => {
                         <option value="">Seleccione una materia</option>
                         {materias.map((materia) => (
                             <option key={materia.id_materia} value={materia.id_materia}>
-                                {materia.nombre_materia}
+                                {materia.nombre}
                             </option>
                         ))}
                     </select>

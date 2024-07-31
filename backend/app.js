@@ -7,7 +7,7 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-    origin: 'http://localhost:3000', // puerto origen donde se mandara
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -19,7 +19,7 @@ const facultadRoutes = require('./routes/facultadRoutes');
 const carreraRoutes = require('./routes/carreraRoutes');
 const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
 const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
-const materiaRoutes = require('./routes/materiaRoutes'); 
+const materiaRoutes = require('./routes/materiaRoutes');
 const convocatoriaMateriaRoutes = require('./routes/convocatoriaMateriaRoutes');
 const documentosRoutes = require('./routes/documentosRoutes');
 const pdfRoutes = require('./routes/pdfRoutes');
@@ -28,10 +28,14 @@ const usuarioRoutes = require('./routes/usuarioRoutes');
 
 // Usa las rutas
 app.use('/facultades', facultadRoutes);
+//
 app.use('/carreras', carreraRoutes);
+//
 app.use('/tipo-convocatorias', tipoConvocatoriaRoutes);
 app.use('/convocatorias', convocatoriaRoutes);
-app.use('/materias', materiaRoutes); 
+//
+app.use('/materias', materiaRoutes);
+//
 app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);

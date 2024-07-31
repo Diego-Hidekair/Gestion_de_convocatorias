@@ -1,5 +1,4 @@
 // backend/controllers/materiaController.js
-
 const pool = require('../db');
 
 // Obtener todas las materias
@@ -28,35 +27,30 @@ exports.getMateriaById = async (req, res) => {
     }
 };
 
-
 // Crear una nueva materia
 exports.createMateria = async (req, res) => {
-    const { codigomateria, nombre, id_carrera } = req.body;
-    if (!codigomateria || !nombre || !id_carrera) {
-        return res.status(400).json({ message: 'Todos los campos son requeridos' });
-    }
-
     try {
+        const { codigomateria, nombre, id_carrera, horas_teoria, horas_practica, horas_laboratorio } = req.body;
         const result = await pool.query(
-            'INSERT INTO materia (codigomateria, nombre, id_carrera) VALUES ($1, $2, $3) RETURNING *',
-            [codigomateria, nombre, id_carrera]
+            'INSERT INTO materia (codigomateria, nombre, id_carrera, horas_teoria, horas_practica, horas_laboratorio) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [codigomateria, nombre, id_carrera, horas_teoria, horas_practica, horas_laboratorio]
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error al crear la materia:', error);
-        res.status(500).json({ message: 'Error al crear la materia' });
+        res.status(500).json({ error: 'Error al crear la materia' });
     }
 };
 
 // Actualizar una materia por ID
 exports.updateMateria = async (req, res) => {
     const { id } = req.params;
-    const { codigomateria, nombre, id_carrera } = req.body;
+    const { codigomateria, nombre, horas_teoria, horas_practica, horas_laboratorio, id_carrera } = req.body;
 
     try {
         const result = await pool.query(
-            'UPDATE materia SET codigomateria = $1, nombre = $2, id_carrera = $3 WHERE id_materia = $4 RETURNING *',
-            [codigomateria, nombre, id_carrera, id]
+            'UPDATE materia SET codigomateria = $1, nombre = $2, horas_teoria = $3, horas_practica = $4, horas_laboratorio = $5, id_carrera = $6 WHERE id_materia = $7 RETURNING *',
+            [codigomateria, nombre, horas_teoria, horas_practica, horas_laboratorio, id_carrera, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Materia no encontrada' });
@@ -83,5 +77,3 @@ exports.deleteMateria = async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar la materia' });
     }
 };
-
-//module.exports = {getAllMaterias, getMateriaById, createMateria, updateMateria, deleteMateria };

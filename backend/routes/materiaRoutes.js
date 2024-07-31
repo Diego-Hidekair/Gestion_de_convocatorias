@@ -10,5 +10,3 @@ router.put('/:id', materiaController.updateMateria);
 router.delete('/:id', materiaController.deleteMateria);
 
 module.exports = router;
-
-

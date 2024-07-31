@@ -1,21 +1,6 @@
 // backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
-/*// Agregar una materia a una convocatoria
-const addMateriaToConvocatoria = async (req, res) => {
-    const { id_convocatoria, id_materia } = req.body;
-    try {
-        const result = await pool.query(
-            'INSERT INTO convocatoria_materia (id_convocatoria, id_materia) VALUES ($1, $2) RETURNING *',
-            [id_convocatoria, id_materia]
-        );
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Error al agregar materia a la convocatoria:', error);
-        res.status(500).json({ error: 'Error al agregar materia a la convocatoria' });
-    }
-};*/
-
 // Obtener todas las materias de una convocatoria
 const getConvocatoriaMaterias = async (req, res) => {
     try {
@@ -71,4 +56,5 @@ const deleteConvocatoriaMateria = async (req, res) => {
     }
 };
 
-module.exports = { getConvocatoriaMaterias, createConvocatoriaMateria, updateConvocatoriaMateria, deleteConvocatoriaMateria,};
+module.exports = { getConvocatoriaMaterias, createConvocatoriaMateria, updateConvocatoriaMateria, deleteConvocatoriaMateria };
+ 
