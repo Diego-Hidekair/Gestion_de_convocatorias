@@ -27,7 +27,8 @@ import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
-
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles.css';
 const App = () => {
     return (
         <Router>

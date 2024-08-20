@@ -34,8 +34,7 @@ const MateriaList = () => {
             <Link to="/materias/crear" className="btn btn-primary mb-3">Crear Materia</Link>
             <table className="table">
                 <thead>
-                    <tr>
-                        <th>ID</th>
+                    <tr>                       
                         <th>Código</th>
                         <th>Nombre</th>
                         <th>Horas Teoría</th>
@@ -48,7 +47,6 @@ const MateriaList = () => {
                 <tbody>
                     {materias.map(materia => (
                         <tr key={materia.id_materia}>
-                            <td>{materia.id_materia}</td>
                             <td>{materia.codigomateria}</td>
                             <td>{materia.nombre}</td>
                             <td>{materia.horas_teoria}</td>

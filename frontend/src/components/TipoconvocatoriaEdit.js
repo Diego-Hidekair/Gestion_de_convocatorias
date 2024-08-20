@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const TipoconvocatoriaEdit = () => {
     const { id } = useParams();
@@ -66,10 +66,12 @@ const TipoconvocatoriaEdit = () => {
             return;
         }
 
-        console.log('Datos enviados:', tipoConvocatoria); // Log para verificar los datos
-
         try {
-            await axios.put(`http://localhost:5000/tipo-convocatorias/${id}`, tipoConvocatoria);
+            await axios.put(`http://localhost:5000/tipo-convocatorias/${id}`, {
+                Nombre_convocatoria: tipoConvocatoria.Nombre_convocatoria,
+                Cod_facultad: tipoConvocatoria.Cod_facultad,
+                Cod_carrera: tipoConvocatoria.Cod_carrera
+            });
             navigate('/tipoconvocatorias');
         } catch (error) {
             console.error('Error al actualizar el tipo de convocatoria:', error);
@@ -77,52 +79,55 @@ const TipoconvocatoriaEdit = () => {
     };
     
     return (
-        <div className="container">
-            <h1>Editar Tipo de Convocatoria</h1>
+        <div className="container mt-4">
+            <h1 className="mb-4">Editar Tipo de Convocatoria</h1>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Nombre de Convocatoria:
+                <div className="mb-3">
+                    <label className="form-label">Nombre de Convocatoria:</label>
                     <input
                         type="text"
                         name="Nombre_convocatoria"
                         value={tipoConvocatoria.Nombre_convocatoria}
                         onChange={handleChange}
+                        className="form-control"
                         required
                     />
-                </label>
-                <label>
-                    Facultad:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Facultad:</label>
                     <select
                         name="Cod_facultad"
                         value={tipoConvocatoria.Cod_facultad}
                         onChange={handleChange}
+                        className="form-select"
                         required
                     >
-                        <option key="" value="">Seleccione una facultad</option>
+                        <option value="">Seleccione una facultad</option>
                         {facultades.map(facultad => (
                             <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                 {facultad.nombre_facultad}
                             </option>
                         ))}
                     </select>
-                </label>
-                <label>
-                    Carrera:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Carrera:</label>
                     <select
                         name="Cod_carrera"
                         value={tipoConvocatoria.Cod_carrera}
                         onChange={handleChange}
+                        className="form-select"
                         required
                     >
-                        <option key="" value="">Seleccione una carrera</option>
+                        <option value="">Seleccione una carrera</option>
                         {carreras.map(carrera => (
                             <option key={carrera.id_carrera} value={carrera.id_carrera}>
                                 {carrera.nombre_carrera}
                             </option>
                         ))}
                     </select>
-                </label>
-                <button type="submit">Actualizar Tipo de Convocatoria</button>
+                </div>
+                <button type="submit" className="btn btn-primary">Guardar Cambios</button>
             </form>
         </div>
     );

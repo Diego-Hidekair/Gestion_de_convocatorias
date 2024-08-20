@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const TipoconvocatoriaForm = () => {
     const navigate = useNavigate();
@@ -45,20 +45,17 @@ const TipoconvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
     
-        // Validar que todos los campos requeridos estén presentes
         if (!tipoConvocatoria.nombre_convocatoria || !tipoConvocatoria.cod_facultad || !tipoConvocatoria.cod_carrera) {
             alert("Por favor, complete todos los campos.");
             return;
         }
     
-        // Validar que los códigos de facultad y carrera sean numéricos
         if (isNaN(tipoConvocatoria.cod_facultad) || isNaN(tipoConvocatoria.cod_carrera)) {
             alert("Por favor, seleccione valores válidos para facultad y carrera.");
             return;
         }
     
         try {
-            // Realizar la solicitud POST al backend
             await axios.post('http://localhost:5000/tipo-convocatorias', {
                 Nombre_convocatoria: tipoConvocatoria.nombre_convocatoria,
                 Cod_facultad: tipoConvocatoria.cod_facultad,
@@ -71,24 +68,28 @@ const TipoconvocatoriaForm = () => {
     };
 
     return (
-        <div className="container">
-            <h1>Crear Nuevo Tipo de Convocatoria</h1>
+        <div className="container mt-4">
+            <h1 className="mb-4">Crear Nuevo Tipo de Convocatoria</h1>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Nombre de Convocatoria:
+                <div className="mb-3">
+                    <label className="form-label">Nombre de Convocatoria:</label>
                     <input
                         type="text"
                         name="nombre_convocatoria"
                         value={tipoConvocatoria.nombre_convocatoria}
                         onChange={handleChange}
+                        className="form-control"
+                        required
                     />
-                </label>
-                <label>
-                    Facultad:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Facultad:</label>
                     <select
                         name="cod_facultad"
                         value={tipoConvocatoria.cod_facultad}
                         onChange={handleChange}
+                        className="form-select"
+                        required
                     >
                         <option value="">Seleccione una facultad</option>
                         {facultades.map(facultad => (
@@ -97,13 +98,15 @@ const TipoconvocatoriaForm = () => {
                             </option>
                         ))}
                     </select>
-                </label>
-                <label>
-                    Carrera:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Carrera:</label>
                     <select
                         name="cod_carrera"
                         value={tipoConvocatoria.cod_carrera}
                         onChange={handleChange}
+                        className="form-select"
+                        required
                     >
                         <option value="">Seleccione una carrera</option>
                         {carreras.map(carrera => (
@@ -112,8 +115,8 @@ const TipoconvocatoriaForm = () => {
                             </option>
                         ))}
                     </select>
-                </label>
-                <button type="submit">Crear Tipo de Convocatoria</button>
+                </div>
+                <button type="submit" className="btn btn-success">Crear Tipo de Convocatoria</button>
             </form>
         </div>
     );

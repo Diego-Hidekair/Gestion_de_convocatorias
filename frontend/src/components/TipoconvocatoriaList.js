@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const TipoconvocatoriaList = () => {
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
@@ -30,21 +30,17 @@ const TipoconvocatoriaList = () => {
     };
 
     return (
-        <div className="container">
-            <h1>Lista de Tipos de Convocatoria</h1>
-            <Link to="/tipoconvocatorias/crear" className="button">
-                Crear Nuevo Tipo de Convocatoria
-            </Link>
-            <ul>
+        <div className="container mt-4">
+            <h1 className="mb-4">Lista de Tipos de Convocatoria</h1>
+            <Link to="/tipoconvocatorias/crear" className="btn btn-primary mb-3">Crear Nuevo Tipo de Convocatoria</Link>
+            <ul className="list-group">
                 {tiposConvocatoria.map(tipo => (
-                    <li key={tipo.id_tipoconvocatoria}>
+                    <li key={tipo.id_tipoconvocatoria} className="list-group-item d-flex justify-content-between align-items-center">
                         {tipo.nombre_convocatoria}
-                        <Link to={`/tipoconvocatorias/editar/${tipo.id_tipoconvocatoria}`} className="button">
-                            Editar
-                        </Link>
-                        <button onClick={() => handleDelete(tipo.id_tipoconvocatoria)} className="button">
-                            Eliminar
-                        </button>
+                        <div>
+                            <Link to={`/tipoconvocatorias/editar/${tipo.id_tipoconvocatoria}`} className="btn btn-warning btn-sm me-2">Editar</Link>
+                            <button onClick={() => handleDelete(tipo.id_tipoconvocatoria)} className="btn btn-danger btn-sm">Eliminar</button>
+                        </div>
                     </li>
                 ))}
             </ul>

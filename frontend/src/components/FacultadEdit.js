@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const FacultadEdit = () => {
     const { id } = useParams();
@@ -38,18 +38,20 @@ const FacultadEdit = () => {
 
     return (
         <div className="container">
-            <h1>Editar Facultad</h1>
+            <h1 className="my-4">Editar Facultad</h1>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Nombre:
+                <div className="mb-3">
+                    <label htmlFor="nombre_facultad" className="form-label">Nombre:</label>
                     <input
                         type="text"
+                        id="nombre_facultad"
                         name="nombre_facultad"
+                        className="form-control"
                         value={facultad.nombre_facultad}
                         onChange={handleChange}
                     />
-                </label>
-                <button type="submit">Actualizar Facultad</button>
+                </div>
+                <button type="submit" className="btn btn-primary">Actualizar Facultad</button>
             </form>
         </div>
     );

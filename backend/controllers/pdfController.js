@@ -4,10 +4,16 @@ const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 const pool = require('../db');
+const multer = require('multer');
+
+
+// Configuración de Multer para manejar la subida de archivos
+const upload = multer({ dest: 'uploads/' });
 
 async function createPdf(req, res) {
     try {
         const { id_convocatoria } = req.body;
+        const documents = req.files;
 
         // Obtener datos de la convocatoria desde la base de datos
         const query = `
@@ -29,13 +35,22 @@ async function createPdf(req, res) {
 
         // Obtener las materias relacionadas con la convocatoria
         const materiasQuery = `
-            SELECT m.nombre 
+            SELECT m.codigomateria, m.nombre 
             FROM convocatoria_materia cm
             JOIN materia m ON cm.id_materia = m.id_materia
             WHERE cm.id_convocatoria = $1
         `;
         const materiasResult = await pool.query(materiasQuery, [id_convocatoria]);
         const materias = materiasResult.rows;
+
+        // **AGREGAR AQUÍ**: Obtener los documentos relacionados con la convocatoria
+        const documentosQuery = `
+            SELECT resolucion_path, dictamen_path, carta_path 
+            FROM documentos 
+            WHERE id_convocatoria = $1
+        `;
+        const documentosResult = await pool.query(documentosQuery, [id_convocatoria]);
+        const documentos = documentosResult.rows;
 
         // Crear el PDF
         const pdfDoc = await PDFDocument.create();
@@ -67,7 +82,7 @@ async function createPdf(req, res) {
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Fecha de Inicio: ${convocatoria.fecha_inicio}`, {
+        page.drawText(`Fecha de Inicio: ${new Date(convocatoria.fecha_inicio).toLocaleDateString()}`, {
             x: 50,
             y: 280,
             size: fontSize,
@@ -75,7 +90,7 @@ async function createPdf(req, res) {
             color: rgb(0, 0, 0),
         });
 
-        page.drawText(`Fecha de Fin: ${convocatoria.fecha_fin}`, {
+        page.drawText(`Fecha de Fin: ${new Date(convocatoria.fecha_fin).toLocaleDateString()}`, {
             x: 50,
             y: 260,
             size: fontSize,
@@ -118,7 +133,7 @@ async function createPdf(req, res) {
 
         let yPos = 160; // Posición inicial para las materias
         materias.forEach((materia, index) => {
-            page.drawText(`${index + 1}. ${materia.nombre}`, {
+            page.drawText(`${index + 1}. ${materia.codigomateria} - ${materia.nombre}`, {
                 x: 70,
                 y: yPos,
                 size: fontSize,
@@ -128,8 +143,19 @@ async function createPdf(req, res) {
             yPos -= 20; // Ajustar la posición vertical para la siguiente materia
         });
 
+        // Agregar documentos al PDF
+        if (documents && documents.length > 0) {
+            for (const file of documents) {
+                const pdfBytes = fs.readFileSync(file.path);
+                const pdfToMerge = await PDFDocument.load(pdfBytes);
+                const copiedPages = await pdfDoc.copyPages(pdfToMerge, pdfToMerge.getPageIndices());
+                copiedPages.forEach((page) => pdfDoc.addPage(page));
+            }
+        }
+
+        // Guardar y enviar el PDF
         const pdfBytes = await pdfDoc.save();
-        const sanitizedFileName = convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_'); // Para evitar caracteres no permitidos en nombres de archivos
+        const sanitizedFileName = convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_');
         const filePath = path.join(__dirname, `../pdfs/${sanitizedFileName}.pdf`);
         fs.writeFileSync(filePath, pdfBytes);
 

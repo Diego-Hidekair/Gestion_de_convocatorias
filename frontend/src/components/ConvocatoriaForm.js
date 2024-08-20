@@ -11,96 +11,112 @@ const ConvocatoriaForm = () => {
     const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
     const [idCarrera, setIdCarrera] = useState('');
     const [idFacultad, setIdFacultad] = useState('');
+    const [materias, setMaterias] = useState([]);
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [facultades, setFacultades] = useState([]);
+    const [allMaterias, setAllMaterias] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [tiposResponse, carrerasResponse, facultadesResponse] = await Promise.all([
+                const [tiposResponse, carrerasResponse, facultadesResponse, materiasResponse] = await Promise.all([
                     axios.get('http://localhost:5000/tipo-convocatorias'),
                     axios.get('http://localhost:5000/carreras'),
                     axios.get('http://localhost:5000/facultades'),
+                    axios.get('http://localhost:5000/materias')
                 ]);
                 setTiposConvocatoria(tiposResponse.data);
                 setCarreras(carrerasResponse.data);
                 setFacultades(facultadesResponse.data);
+                setAllMaterias(materiasResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
-
         fetchData();
     }, []);
 
+    const handleMateriaChange = (event) => {
+        const selectedOptions = Array.from(event.target.selectedOptions).map(option => option.value);
+        setMaterias(selectedOptions);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
+        const convocatoriaData = {
+            cod_convocatoria: codConvocatoria,
+            nombre: nombre,
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            id_tipoconvocatoria: idTipoConvocatoria,
+            id_carrera: idCarrera,
+            id_facultad: idFacultad,
+            materias: materias
+        };
+
         try {
-            const response = await axios.post('http://localhost:5000/convocatorias', {
-                cod_convocatoria: codConvocatoria,
-                nombre,
-                fecha_inicio: fechaInicio,
-                fecha_fin: fechaFin,
-                id_tipoconvocatoria: idTipoConvocatoria,
-                id_carrera: idCarrera,
-                id_facultad: idFacultad,
-            });
+            const response = await axios.post('http://localhost:5000/convocatorias', convocatoriaData);
             const { id_convocatoria } = response.data;
             navigate(`/pdf-generator/${id_convocatoria}`);
         } catch (error) {
-            console.error('Error creating convocatoria:', error);
+            console.error('Error al crear la convocatoria:', error);
         }
     };
     
     return (
-        <div className="container">
-            <h2>Crear Nueva Convocatoria</h2>
+        <div className="container mt-4">
+            <h2 className="mb-4">Crear Nueva Convocatoria</h2>
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Código de Convocatoria:</label>
+                <div className="mb-3">
+                    <label className="form-label">Código:</label>
                     <input
                         type="text"
+                        className="form-control"
                         value={codConvocatoria}
                         onChange={(e) => setCodConvocatoria(e.target.value)}
                         required
                     />
                 </div>
-                <div>
-                    <label>Nombre:</label>
+                <div className="mb-3">
+                    <label className="form-label">Nombre:</label>
                     <input
                         type="text"
+                        className="form-control"
                         value={nombre}
                         onChange={(e) => setNombre(e.target.value)}
                         required
                     />
                 </div>
-                <div>
-                    <label>Fecha de Inicio:</label>
+                <div className="mb-3">
+                    <label className="form-label">Fecha de Inicio:</label>
                     <input
                         type="date"
+                        className="form-control"
                         value={fechaInicio}
                         onChange={(e) => setFechaInicio(e.target.value)}
                         required
                     />
                 </div>
-                <div>
-                    <label>Fecha de Fin:</label>
+                <div className="mb-3">
+                    <label className="form-label">Fecha de Fin:</label>
                     <input
                         type="date"
+                        className="form-control"
                         value={fechaFin}
                         onChange={(e) => setFechaFin(e.target.value)}
                     />
                 </div>
-                <div>
-                    <label>Tipo de Convocatoria:</label>
+                <div className="mb-3">
+                    <label className="form-label">Tipo de Convocatoria:</label>
                     <select
+                        className="form-select"
                         value={idTipoConvocatoria}
                         onChange={(e) => setIdTipoConvocatoria(e.target.value)}
                         required
                     >
-                        <option value="">Seleccione un tipo</option>
+                        <option value="">Seleccione un tipo de convocatoria</option>
                         {tiposConvocatoria.map((tipo) => (
                             <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
                                 {tipo.nombre_convocatoria}
@@ -108,9 +124,10 @@ const ConvocatoriaForm = () => {
                         ))}
                     </select>
                 </div>
-                <div>
-                    <label>Carrera:</label>
+                <div className="mb-3">
+                    <label className="form-label">Carrera:</label>
                     <select
+                        className="form-select"
                         value={idCarrera}
                         onChange={(e) => setIdCarrera(e.target.value)}
                         required
@@ -123,9 +140,10 @@ const ConvocatoriaForm = () => {
                         ))}
                     </select>
                 </div>
-                <div>
-                    <label>Facultad:</label>
+                <div className="mb-3">
+                    <label className="form-label">Facultad:</label>
                     <select
+                        className="form-select"
                         value={idFacultad}
                         onChange={(e) => setIdFacultad(e.target.value)}
                         required
@@ -138,7 +156,23 @@ const ConvocatoriaForm = () => {
                         ))}
                     </select>
                 </div>
-                <button type="submit">Siguiente</button>
+                <div className="mb-3">
+                    <label className="form-label">Materias:</label>
+                    <select
+                        className="form-select"
+                        multiple
+                        value={materias}
+                        onChange={handleMateriaChange}
+                        required
+                    >
+                        {allMaterias.map((materia) => (
+                            <option key={materia.id_materia} value={materia.id_materia}>
+                                {materia.nombre}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <button type="submit" className="btn btn-primary">Crear</button>
             </form>
         </div>
     );

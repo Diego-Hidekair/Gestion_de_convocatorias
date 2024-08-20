@@ -10,4 +10,14 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+// Código para verificar la conexión
+pool.connect((err, client, done) => {
+    if (err) {
+        console.error('Error al conectar a la base de datos', err.stack);
+    } else {
+        console.log('Conexión a la base de datos exitosa');
+    }
+    done(); // Liberar el cliente después de la prueba
+});
+
 module.exports = pool;

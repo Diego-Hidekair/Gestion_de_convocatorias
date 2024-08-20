@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const FacultadList = () => {
     const [facultades, setFacultades] = useState([]);
@@ -30,15 +30,15 @@ const FacultadList = () => {
     
     return (
         <div className="container">
-            <h1>Lista de Facultades</h1>
-            <Link to="/facultades/new">Crear Nueva Facultad</Link>
-            <ul>
+            <h1 className="my-4">Lista de Facultades</h1>
+            <Link to="/facultades/new" className="btn btn-primary mb-3">Crear Nueva Facultad</Link>
+            <ul className="list-group">
                 {facultades.map(facultad => (
-                    <li key={facultad.id_facultad}>
+                    <li key={facultad.id_facultad} className="list-group-item d-flex justify-content-between align-items-center">
                         {facultad.nombre_facultad}
                         <div>
-                            <Link to={`/facultades/edit/${facultad.id_facultad}`}>Editar</Link>
-                            <button onClick={() => handleDelete(facultad.id_facultad)}>Eliminar</button>
+                            <Link to={`/facultades/edit/${facultad.id_facultad}`} className="btn btn-warning btn-sm me-2">Editar</Link>
+                            <button onClick={() => handleDelete(facultad.id_facultad)} className="btn btn-danger btn-sm">Eliminar</button>
                         </div>
                     </li>
                 ))}

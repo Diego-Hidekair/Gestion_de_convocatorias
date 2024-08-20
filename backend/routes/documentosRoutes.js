@@ -1,49 +1,29 @@
 // backend/routes/documentosRoutes.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
-const multer = require('multer');
-const path = require('path');
-
-// Configuración de almacenamiento de Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'backend/uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage: storage });
+const { 
+    upload, 
+    createDocumento, 
+    getDocumentos, 
+    obtenerDocumentosAdicionalesPorConvocatoria, 
+    subirDocumentoAdicional 
+} = require('../controllers/documentosController');
 
 // Obtener todos los documentos
-router.get('/', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM documentos');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al obtener documentos' });
-  }
-});
+router.get('/', getDocumentos);
 
 // Crear un nuevo documento
-router.post('/', upload.single('documento'), async (req, res) => {
-  const { resolucion, dictamen } = req.body;
-  const documentoPath = req.file ? req.file.path : null;
+router.post('/', upload.fields([
+  { name: 'resolucion', maxCount: 1 },
+  { name: 'dictamen', maxCount: 1 },
+  { name: 'carta', maxCount: 1 }
+]), createDocumento);
 
-  try {
-    const result = await pool.query(
-      'INSERT INTO documentos (resolucion, dictamen, documento_path) VALUES ($1, $2, $3) RETURNING *',
-      [resolucion, dictamen, documentoPath]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al crear documento' });
-  }
-});
+// Subir un documento adicional
+router.post('/adicional', upload.single('documento_adicional'), subirDocumentoAdicional);
+
+// Obtener documentos adicionales por convocatoria
+router.get('/adicional/:idConvocatoria', obtenerDocumentosAdicionalesPorConvocatoria);
 
 // Obtener un documento por ID
 router.get('/:id', async (req, res) => {
@@ -61,15 +41,21 @@ router.get('/:id', async (req, res) => {
 });
 
 // Actualizar un documento
-router.put('/:id', upload.single('documento'), async (req, res) => {
+router.put('/:id', upload.fields([
+  { name: 'resolucion', maxCount: 1 },
+  { name: 'dictamen', maxCount: 1 },
+  { name: 'carta', maxCount: 1 }
+]), async (req, res) => {
   const { id } = req.params;
-  const { resolucion, dictamen } = req.body;
-  const documentoPath = req.file ? req.file.path : null;
+  const { id_convocatoria } = req.body;
+  const resolucionPath = req.files['resolucion'] ? req.files['resolucion'][0].path : null;
+  const dictamenPath = req.files['dictamen'] ? req.files['dictamen'][0].path : null;
+  const cartaPath = req.files['carta'] ? req.files['carta'][0].path : null;
 
   try {
     const result = await pool.query(
-      'UPDATE documentos SET resolucion = $1, dictamen = $2, documento_path = $3 WHERE id = $4 RETURNING *',
-      [resolucion, dictamen, documentoPath, id]
+      'UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3, id_convocatoria = $4 WHERE id = $5 RETURNING *',
+      [resolucionPath, dictamenPath, cartaPath, id_convocatoria, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Documento no encontrado' });

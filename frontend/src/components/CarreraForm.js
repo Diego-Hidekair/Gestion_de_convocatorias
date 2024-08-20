@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarreraForm = () => {
     const navigate = useNavigate();
@@ -38,33 +38,37 @@ const CarreraForm = () => {
 
     return (
         <div className="container">
-            <h1>Crear Nueva Carrera</h1>
+            <h1 className="my-4">Crear Nueva Carrera</h1>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Nombre:
+                <div className="mb-3">
+                    <label className="form-label">Nombre:</label>
                     <input
                         type="text"
                         name="nombre_carrera"
+                        className="form-control"
                         value={carrera.nombre_carrera}
                         onChange={handleChange}
+                        required
                     />
-                </label>
-                <label>
-                    Facultad:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Facultad:</label>
                     <select
                         name="cod_facultad"
+                        className="form-select"
                         value={carrera.cod_facultad}
                         onChange={handleChange}
+                        required
                     >
-                        <option key="" value="">Seleccione una facultad</option>
+                        <option value="">Seleccione una facultad</option>
                         {facultades.map(facultad => (
                             <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                 {facultad.nombre_facultad}
                             </option>
                         ))}
                     </select>
-                </label>
-                <button type="submit">Crear Carrera</button>
+                </div>
+                <button type="submit" className="btn btn-success">Crear Carrera</button>
             </form>
         </div>
     );

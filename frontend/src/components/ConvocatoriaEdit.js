@@ -82,56 +82,57 @@ const ConvocatoriaEdit = () => {
     };
 
     return (
-        <div className="container">
-            <h2>Editar Convocatoria</h2>
+        <div className="container mt-4">
+            <h2 className="mb-4">Editar Convocatoria</h2>
             <form onSubmit={handleSubmit}>
-                <label>
-                    Código:
+                <div className="mb-3">
+                    <label className="form-label">Código:</label>
                     <input
                         type="text"
                         name="cod_convocatoria"
+                        className="form-control"
                         value={convocatoria.cod_convocatoria}
                         onChange={handleChange}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Nombre:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Nombre:</label>
                     <input
                         type="text"
                         name="nombre"
+                        className="form-control"
                         value={convocatoria.nombre}
                         onChange={handleChange}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Fecha de Inicio:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Fecha de Inicio:</label>
                     <input
                         type="date"
                         name="fecha_inicio"
+                        className="form-control"
                         value={convocatoria.fecha_inicio ? convocatoria.fecha_inicio.split('T')[0] : ''}
                         onChange={handleChange}
                         required
                     />
-                </label>
-                <br />
-                <label>
-                    Fecha de Fin:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Fecha de Fin:</label>
                     <input
                         type="date"
                         name="fecha_fin"
+                        className="form-control"
                         value={convocatoria.fecha_fin ? convocatoria.fecha_fin.split('T')[0] : ''}
                         onChange={handleChange}
                     />
-                </label>
-                <br />
-                <label>
-                    Tipo de Convocatoria:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Tipo de Convocatoria:</label>
                     <select
                         name="id_tipoconvocatoria"
+                        className="form-select"
                         value={convocatoria.id_tipoconvocatoria}
                         onChange={handleChange}
                         required
@@ -143,12 +144,12 @@ const ConvocatoriaEdit = () => {
                             </option>
                         ))}
                     </select>
-                </label>
-                <br />
-                <label>
-                    Carrera:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Carrera:</label>
                     <select
                         name="id_carrera"
+                        className="form-select"
                         value={convocatoria.id_carrera}
                         onChange={handleChange}
                         required
@@ -160,12 +161,12 @@ const ConvocatoriaEdit = () => {
                             </option>
                         ))}
                     </select>
-                </label>
-                <br />
-                <label>
-                    Facultad:
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Facultad:</label>
                     <select
                         name="id_facultad"
+                        className="form-select"
                         value={convocatoria.id_facultad}
                         onChange={handleChange}
                         required
@@ -177,9 +178,8 @@ const ConvocatoriaEdit = () => {
                             </option>
                         ))}
                     </select>
-                </label>
-                <br />
-                <button type="submit">Actualizar</button>
+                </div>
+                <button type="submit" className="btn btn-primary">Actualizar</button>
             </form>
         </div>
     );

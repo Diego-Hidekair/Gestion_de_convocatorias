@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './Login.css'; 
+
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
@@ -33,7 +35,7 @@ const Login = ({ setAuth }) => {
     };
 
     return (
-        <div className="container">
+        <div className="login-container">
             <h2>Iniciar Sesión</h2>
             <form onSubmit={handleSubmit}>
                 <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />

@@ -1,29 +1,35 @@
 /* src/styles.css */
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #fefefe;
-    margin: 0;
-    padding: 20px;
+/* Importa la fuente Quicksand de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+/* Aplica la fuente Quicksand como fuente principal de la aplicación */
+body, .container, h1, form, label, input, button, a, ul, li {
+    font-family: 'Quicksand', sans-serif;
 }
 
-/* Container for forms and lists */
+/* Otros estilos globales o específicos para componentes */
+body {
+    background-color: #fefefe;
+    margin: 0;
+    padding: 0;
+}
+
 .container {
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 20px;
-    background-color: #fff;
+    background-color: #d3e4ee;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     border-radius: 8px;
 }
 
-/* Headings */
 h1 {
     text-align: center;
     color: #333;
 }
 
-/* Form Styles */
+/* Estilos para formularios, botones, etc. */
 form {
     display: flex;
     flex-direction: column;
@@ -56,7 +62,6 @@ button:hover {
     background-color: #ff5c33;
 }
 
-/* Link Styles */
 a {
     color: #ff7b54;
     text-decoration: none;
@@ -119,4 +124,18 @@ li {
     a, button {
         font-size: 14px;
     }
+}
+
+.table-striped tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
 }

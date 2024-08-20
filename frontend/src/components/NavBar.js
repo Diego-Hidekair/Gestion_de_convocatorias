@@ -1,9 +1,10 @@
 //frontend/src/components/Navbar.js 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Importa jwtDecode como una importación con nombre
-
+import {jwtDecode} from 'jwt-decode'; 
 import './NavBar.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const NavBar = ({ onLogout }) => {
     const [navOpen, setNavOpen] = useState(false);
@@ -15,8 +16,8 @@ const NavBar = ({ onLogout }) => {
         const token = localStorage.getItem('token');
         if (token) {
             setIsLoggedIn(true);
-            const decodedToken = jwtDecode(token); // Decodifica el token
-            setRole(decodedToken.role); // Asegúrate de que esto coincida con la clave en el token
+            const decodedToken = jwtDecode(token); //decodifica la clave ingresada
+            setRole(decodedToken.role); //esta cladve debe asegurarse que coincida con la clave en el token
         }
     }, []);
 
@@ -33,31 +34,50 @@ const NavBar = ({ onLogout }) => {
     return (
         <>
             {isLoggedIn && (
-                <>
-                    <button className={`nav-toggle ${navOpen ? 'active' : ''}`} onClick={toggleNav}>
-                        ☰
-                    </button>
-                    <nav className={navOpen ? 'open' : ''}>
-                        <ul>
-                            {role === 'admin' && (
-                                <>
-                                    <li><Link to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>Facultades</Link></li>
-                                    <li><Link to="/carreras" className={location.pathname === '/carreras' ? 'active' : ''}>Carreras</Link></li>
-                                    <li><Link to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>Tipo de Convocatorias</Link></li>
-                                    <li><Link to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>Materias</Link></li>
-                                    <li><Link to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>Convocatorias</Link></li>
-                                </>
-                            )}
-                            {role !== 'admin' && (
-                                <>
-                                    <li><Link to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>Convocatorias</Link></li>
-                                    <li><Link to="/pdf-generator" className={location.pathname === '/pdf-generator' ? 'active' : ''}>Generador de PDF</Link></li>
-                                </>
-                            )}
-                            <li><button onClick={handleLogout}>Cerrar Sesión</button></li>
-                        </ul>
-                    </nav>
-                </>
+                <div className="navbar bg-light navbar-expand-lg navbar-light">
+                    <div className="container-fluid">
+                        <Link className="navbar-brand" to="/">Gestion de Convocatorias</Link>
+                        <button className="navbar-toggler" type="button" onClick={toggleNav} aria-expanded={navOpen}>
+                            <span className="navbar-toggler-icon"></span>
+                        </button>
+                        <div className={`collapse navbar-collapse ${navOpen ? 'show' : ''}`}>
+                            <ul className="navbar-nav ms-auto">
+                                {role === 'admin' && (
+                                    <>
+                                        <li className={`nav-item ${location.pathname === '/facultades' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/facultades">Facultades</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/carreras' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/carreras">Carreras</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/tipoconvocatorias' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/tipoconvocatorias">Tipo de Convocatorias</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/materias' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/materias">Materias</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/convocatorias' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/convocatorias">Convocatorias</Link>
+                                        </li>
+                                    </>
+                                )}
+                                {role !== 'admin' && (
+                                    <>
+                                        <li className={`nav-item ${location.pathname === '/convocatorias' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/convocatorias">Convocatorias</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/pdf-generator' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/pdf-generator">Generador de PDF</Link>
+                                        </li>
+                                    </>
+                                )}
+                                <li className="nav-item">
+                                    <button onClick={handleLogout} className="btn btn-outline-danger ms-3">Cerrar Sesión</button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );

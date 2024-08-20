@@ -1,125 +1,45 @@
-/* src/components/NavBar.css */
- 
-nav {
-    background-color: #ff5f2f;
-    padding: 40px 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    width: 200px;
-    transform: translateX(0%);
-    transition: transform 0.3s ease;
+/* frontend/src/components/NavBar.css */
+@import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&display=swap');
+
+/* Estilos para la barra de navegación */
+.navbar {
+    background-color: #014678 !important; /* Color de fondo del navbar */
+    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
 }
 
-nav.open {
-    transform: translateX(0);
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: white !important; /* Mantener las letras blancas */
+    font-weight: bold; /* Negrita en las letras */
+    background-color: #014678; /* Color de fondo de las opciones */
+    border-radius: 5px; /* Esquinas redondeadas */
+    padding: 10px 15px; /* Espaciado entre los elementos del menú */
+    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
 }
 
-nav ul {
-    list-style-type: none;
-    margin: 10;
-    padding: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+/* Estilo para el elemento seleccionado */
+.navbar .nav-link.active {
+    background-color: white ; /* Color de fondo blanco al estar seleccionado */
+    color: #014678 !important; /* Letra del color #014678 cuando está seleccionado */
+    border: 2px solid #014678; /* Opcional: borde con el color original */
+    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
 }
 
-nav li {
-    margin: 10px 0;
+/* Hover effect para las opciones */
+.navbar .nav-link:hover {
+    color: #014678 !important; /* Cambiar el color del texto al hover */
+    background-color: white; /* Cambiar el color de fondo al hover */
 }
 
-nav a {
-    text-decoration: none;
-    color: #333;
-    padding: 10px;
-    border-radius: 4px;
-    width: 100%;
-    text-align: left;
-    transition: background-color 0.3s ease;
+/* Estilo para el botón de cerrar sesión */
+.navbar .btn-outline-danger {
+    color: white;
+    border-color: white;
+    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
 }
 
-nav a.active {
-    background-color: #af5700;
-    color: #fff;
-}
-
-nav a:hover {
-    background-color: #af5700;
-    color: #fff;
-}
-
-button {
-    background-color: #fff;
-    border: none;
-    color: #333;
-    padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    text-align: left;
-}
-
-button:hover {
-    background-color: #af5700;
-    color: #fff;
-}
-
-body {
-    margin-left: 100px; 
-}
-
-@media (max-width: 768px) {
-    nav {
-        transform: translateX(-100%);
-        width: 50%;
-        height: auto;
-    }
-
-    nav.open {
-        transform: translateX(0);
-    }
-
-    nav ul {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    nav li {
-        margin: 10px 0;
-    }
-
-    .nav-toggle {
-        display: block;
-    }
-
-    .nav-toggle.active + nav {
-        transform: translateX(0);
-    }
-
-    body {
-        margin-left: 0;
-    }
-}
-
-.nav-toggle {
-    display: none;
-    background-color: #ff5f2f;
-    padding: 10px;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1001;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-}
-
-@media (max-width: 768px) {
-    .nav-toggle {
-        display: block;
-    }
+.navbar .btn-outline-danger:hover {
+    color: #014678;
+    background-color: white;
+    border-color: white;
 }

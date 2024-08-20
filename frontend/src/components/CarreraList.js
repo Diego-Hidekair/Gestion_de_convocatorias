@@ -1,8 +1,8 @@
-// src/components/CarreraList.js
+// frontend/src/components/CarreraList.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import '../styles.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarreraList = () => {
     const [carreras, setCarreras] = useState([]);
@@ -27,18 +27,18 @@ const CarreraList = () => {
             console.error('Error al eliminar la carrera:', error);
         }
     };
-    
+
     return (
         <div className="container">
-            <h1>Lista de Carreras</h1>
-            <Link to="/carreras/new">Crear Nueva Carrera</Link>
-            <ul>
+            <h1 className="my-4">Lista de Carreras</h1>
+            <Link to="/carreras/new" className="btn btn-primary mb-3">Crear Nueva Carrera</Link>
+            <ul className="list-group">
                 {carreras.map(carrera => (
-                    <li key={carrera.id_carrera}>
+                    <li key={carrera.id_carrera} className="list-group-item d-flex justify-content-between align-items-center">
                         {carrera.nombre_carrera}
                         <div>
-                            <Link to={`/carreras/edit/${carrera.id_carrera}`}>Editar</Link>
-                            <button onClick={() => handleDelete(carrera.id_carrera)}>Eliminar</button>
+                            <Link to={`/carreras/edit/${carrera.id_carrera}`} className="btn btn-warning btn-sm me-2">Editar</Link>
+                            <button onClick={() => handleDelete(carrera.id_carrera)} className="btn btn-danger btn-sm">Eliminar</button>
                         </div>
                     </li>
                 ))}
