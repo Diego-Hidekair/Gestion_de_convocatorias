@@ -21,11 +21,13 @@ const TipoconvocatoriaList = () => {
     };
     
     const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/tipo-convocatorias/${id}`);
-            setTiposConvocatoria(tiposConvocatoria.filter(tipo => tipo.id_tipoconvocatoria !== id));
-        } catch (error) {
-            console.error('Error al eliminar el tipo de convocatoria:', error);
+        if (window.confirm('¿Estás seguro de que deseas eliminar este tipo de convocatoria?')) {
+            try {
+                await axios.delete(`http://localhost:5000/tipo-convocatorias/${id}`);
+                setTiposConvocatoria(tiposConvocatoria.filter(tipo => tipo.id_tipoconvocatoria !== id));
+            } catch (error) {
+                console.error('Error al eliminar el tipo de convocatoria:', error);
+            }
         }
     };
 

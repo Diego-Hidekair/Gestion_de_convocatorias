@@ -37,10 +37,6 @@ const ConvocatoriaList = () => {
                         <th>Nombre</th>
                         <th>Fecha de Inicio</th>
                         <th>Fecha de Fin</th>
-                        <th>Tipo de Convocatoria</th>
-                        <th>Carrera</th>
-                        <th>Facultad</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>

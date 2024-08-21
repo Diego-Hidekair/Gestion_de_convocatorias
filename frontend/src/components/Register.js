@@ -37,7 +37,7 @@ const Register = () => {
             });
         } catch (error) {
             console.error('Error al crear usuario:', error);
-            alert('Error al crear usuario');
+            alert('Error al crear usuario. Por favor, inténtelo de nuevo.');
         }
     };
 

@@ -11,26 +11,22 @@ const ConvocatoriaForm = () => {
     const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
     const [idCarrera, setIdCarrera] = useState('');
     const [idFacultad, setIdFacultad] = useState('');
-    const [materias, setMaterias] = useState([]);
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [facultades, setFacultades] = useState([]);
-    const [allMaterias, setAllMaterias] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [tiposResponse, carrerasResponse, facultadesResponse, materiasResponse] = await Promise.all([
+                const [tiposResponse, carrerasResponse, facultadesResponse] = await Promise.all([
                     axios.get('http://localhost:5000/tipo-convocatorias'),
                     axios.get('http://localhost:5000/carreras'),
-                    axios.get('http://localhost:5000/facultades'),
-                    axios.get('http://localhost:5000/materias')
+                    axios.get('http://localhost:5000/facultades')
                 ]);
                 setTiposConvocatoria(tiposResponse.data);
                 setCarreras(carrerasResponse.data);
                 setFacultades(facultadesResponse.data);
-                setAllMaterias(materiasResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -38,10 +34,10 @@ const ConvocatoriaForm = () => {
         fetchData();
     }, []);
 
-    const handleMateriaChange = (event) => {
+    /*const handleMateriaChange = (event) => {
         const selectedOptions = Array.from(event.target.selectedOptions).map(option => option.value);
         setMaterias(selectedOptions);
-    };
+    };*/
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -52,8 +48,7 @@ const ConvocatoriaForm = () => {
             fecha_fin: fechaFin,
             id_tipoconvocatoria: idTipoConvocatoria,
             id_carrera: idCarrera,
-            id_facultad: idFacultad,
-            materias: materias
+            id_facultad: idFacultad
         };
 
         try {
@@ -155,24 +150,8 @@ const ConvocatoriaForm = () => {
                             </option>
                         ))}
                     </select>
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Materias:</label>
-                    <select
-                        className="form-select"
-                        multiple
-                        value={materias}
-                        onChange={handleMateriaChange}
-                        required
-                    >
-                        {allMaterias.map((materia) => (
-                            <option key={materia.id_materia} value={materia.id_materia}>
-                                {materia.nombre}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <button type="submit" className="btn btn-primary">Crear</button>
+                </div> 
+                <button type="submit" className="btn btn-primary">siguiente</button>
             </form>
         </div>
     );
