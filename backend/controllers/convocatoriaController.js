@@ -4,7 +4,7 @@ const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 
-const getConvocatorias = async (req, res) => {
+const getConvocatorias = async (req, res) => { 
     try {
         const result = await pool.query('SELECT * FROM convocatorias ORDER BY cod_convocatoria');
         res.json(result.rows);
@@ -94,6 +94,46 @@ const updateConvocatoria = async (req, res) => {
         res.json(convocatoria);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+};
+
+
+//estado de la convocatoria
+const getConvocatoriasWithEstado = async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id_convocatoria, cod_convocatoria, nombre, fecha_inicio,fecha_fin, estado 
+            FROM convocatorias
+            ORDER BY cod_convocatoria
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Error al obtener convocatorias' });
+    }
+};   
+
+
+
+//Actualizar el estado de la convocatoria
+const updateConvocatoriaEstado = async (req, res) => {
+    const { id_convocatoria } = req.params;
+    const { estado } = req.body;
+
+    try {
+        const result = await pool.query(
+            'UPDATE convocatorias SET estado = $1 WHERE id_convocatoria = $2 RETURNING *',
+            [estado, id_convocatoria]
+        );
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+
+        res.json({ message: 'Estado actualizado correctamente', convocatoria: result.rows[0] });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Error al actualizar el estado' });
     }
 };
 
@@ -191,4 +231,5 @@ const generatePDF = async (pdfPath, content) => {
     fs.writeFileSync(pdfPath, pdfBytes);
 };
 
-module.exports = { getConvocatorias, createConvocatoria, getConvocatoriaById, updateConvocatoria, deleteConvocatoria, createPdf };
+module.exports = { getConvocatorias, createConvocatoria, getConvocatoriaById, updateConvocatoria,
+                 deleteConvocatoria, createPdf,getConvocatoriasWithEstado,updateConvocatoriaEstado };

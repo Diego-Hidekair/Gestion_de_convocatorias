@@ -13,7 +13,6 @@ const upload = multer({ dest: 'uploads/' });
 async function createPdf(req, res) {
     try {
         const { id_convocatoria } = req.body;
-        const documents = req.files;
 
         // Obtener datos de la convocatoria desde la base de datos
         const query = `
@@ -43,24 +42,15 @@ async function createPdf(req, res) {
         const materiasResult = await pool.query(materiasQuery, [id_convocatoria]);
         const materias = materiasResult.rows;
 
-        // **AGREGAR AQUÍ**: Obtener los documentos relacionados con la convocatoria
-        const documentosQuery = `
-            SELECT resolucion_path, dictamen_path, carta_path 
-            FROM documentos 
-            WHERE id_convocatoria = $1
-        `;
-        const documentosResult = await pool.query(documentosQuery, [id_convocatoria]);
-        const documentos = documentosResult.rows;
-
         // Crear el PDF
         const pdfDoc = await PDFDocument.create();
-        const page = pdfDoc.addPage([600, 400]);
+        const page = pdfDoc.addPage([600, 800]);  // Cambiado a formato vertical
         const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
         const fontSize = 12;
 
         page.drawText('Convocatoria', {
             x: 50,
-            y: 350,
+            y: 750,
             size: 18,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -68,7 +58,7 @@ async function createPdf(req, res) {
 
         page.drawText(`Código de Convocatoria: ${convocatoria.cod_convocatoria}`, {
             x: 50,
-            y: 320,
+            y: 720,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -76,7 +66,7 @@ async function createPdf(req, res) {
 
         page.drawText(`Nombre: ${convocatoria.nombre_convocatoria}`, {
             x: 50,
-            y: 300,
+            y: 700,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -84,7 +74,7 @@ async function createPdf(req, res) {
 
         page.drawText(`Fecha de Inicio: ${new Date(convocatoria.fecha_inicio).toLocaleDateString()}`, {
             x: 50,
-            y: 280,
+            y: 680,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -92,7 +82,7 @@ async function createPdf(req, res) {
 
         page.drawText(`Fecha de Fin: ${new Date(convocatoria.fecha_fin).toLocaleDateString()}`, {
             x: 50,
-            y: 260,
+            y: 660,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -100,7 +90,7 @@ async function createPdf(req, res) {
 
         page.drawText(`Tipo de Convocatoria: ${convocatoria.tipo_convocatoria}`, {
             x: 50,
-            y: 240,
+            y: 640,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -108,7 +98,7 @@ async function createPdf(req, res) {
 
         page.drawText(`Carrera: ${convocatoria.nombre_carrera}`, {
             x: 50,
-            y: 220,
+            y: 620,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
@@ -116,22 +106,22 @@ async function createPdf(req, res) {
 
         page.drawText(`Facultad: ${convocatoria.nombre_facultad}`, {
             x: 50,
-            y: 200,
+            y: 600,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
-
+        
         // Agregar materias al PDF
         page.drawText('Materias:', {
             x: 50,
-            y: 180,
+            y: 580,
             size: fontSize,
             font: timesRomanFont,
             color: rgb(0, 0, 0),
         });
 
-        let yPos = 160; // Posición inicial para las materias
+        let yPos = 560; // Posición inicial para las materias
         materias.forEach((materia, index) => {
             page.drawText(`${index + 1}. ${materia.codigomateria} - ${materia.nombre}`, {
                 x: 70,
@@ -143,20 +133,10 @@ async function createPdf(req, res) {
             yPos -= 20; // Ajustar la posición vertical para la siguiente materia
         });
 
-        // Agregar documentos al PDF
-        if (documents && documents.length > 0) {
-            for (const file of documents) {
-                const pdfBytes = fs.readFileSync(file.path);
-                const pdfToMerge = await PDFDocument.load(pdfBytes);
-                const copiedPages = await pdfDoc.copyPages(pdfToMerge, pdfToMerge.getPageIndices());
-                copiedPages.forEach((page) => pdfDoc.addPage(page));
-            }
-        }
-
-        // Guardar y enviar el PDF
+        // Guardar el PDF con el nombre de archivo adecuado
         const pdfBytes = await pdfDoc.save();
-        const sanitizedFileName = convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_');
-        const filePath = path.join(__dirname, `../pdfs/${sanitizedFileName}.pdf`);
+        const sanitizedFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        const filePath = path.join(__dirname, `../pdfs/${sanitizedFileName}`);
         fs.writeFileSync(filePath, pdfBytes);
 
         res.sendFile(filePath);
@@ -166,6 +146,4 @@ async function createPdf(req, res) {
     }
 }
 
-module.exports = {
-    createPdf,
-};
+module.exports = {createPdf,};

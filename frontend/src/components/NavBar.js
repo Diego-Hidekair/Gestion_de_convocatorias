@@ -36,7 +36,7 @@ const NavBar = ({ onLogout }) => {
             {isLoggedIn && (
                 <div className="navbar bg-light navbar-expand-lg navbar-light">
                     <div className="container-fluid">
-                        <Link className="navbar-brand" to="/">Gestion de Convocatorias</Link>
+                        <Link className="navbar-brand" to="/">Gestión de Convocatorias</Link>
                         <button className="navbar-toggler" type="button" onClick={toggleNav} aria-expanded={navOpen}>
                             <span className="navbar-toggler-icon"></span>
                         </button>
@@ -59,6 +59,9 @@ const NavBar = ({ onLogout }) => {
                                         <li className={`nav-item ${location.pathname === '/convocatorias' ? 'active' : ''}`}>
                                             <Link className="nav-link" to="/convocatorias">Convocatorias</Link>
                                         </li>
+                                        <li className={`nav-item ${location.pathname === 'convocatorias/convocatorias-estado' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
+                                        </li>
                                     </>
                                 )}
                                 {role !== 'admin' && (
@@ -68,6 +71,9 @@ const NavBar = ({ onLogout }) => {
                                         </li>
                                         <li className={`nav-item ${location.pathname === '/pdf-generator' ? 'active' : ''}`}>
                                             <Link className="nav-link" to="/pdf-generator">Generador de PDF</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/convocatorias/convocatorias-estado' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
                                         </li>
                                     </>
                                 )}

@@ -7,9 +7,11 @@ import CarreraEdit from './components/CarreraEdit';
 import FacultadList from './components/FacultadList';
 import FacultadEdit from './components/FacultadEdit';
 import FacultadForm from './components/FacultadForm';
+//import Home from './components/Home'; 
 import ConvocatoriaList from './components/ConvocatoriaList';
 import ConvocatoriaForm from './components/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/ConvocatoriaEdit';
+import ConvocatoriaEstado from './components/ConvocatoriaEstado';
 import TipoconvocatoriaList from './components/TipoconvocatoriaList';
 import TipoconvocatoriaForm from './components/TipoconvocatoriaForm';
 import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
@@ -29,6 +31,7 @@ import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
+
 const App = () => {
     return (
         <Router>
@@ -92,6 +95,7 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                         <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
+                        <Route path="/convocatorias/convocatorias-estado" element={<ConvocatoriaEstado/>} />
                         <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
                         <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
                         <Route path="/tipoconvocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
