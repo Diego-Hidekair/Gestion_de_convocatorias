@@ -62,6 +62,9 @@ const NavBar = ({ onLogout }) => {
                                         <li className={`nav-item ${location.pathname === 'convocatorias/convocatorias-estado' ? 'active' : ''}`}>
                                             <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
                                         </li>
+                                        <li className={`nav-item ${location.pathname === '/usuarios' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/api/usuarios">Usuarios</Link>
+                                        </li>
                                     </>
                                 )}
                                 {role !== 'admin' && (
@@ -74,6 +77,9 @@ const NavBar = ({ onLogout }) => {
                                         </li>
                                         <li className={`nav-item ${location.pathname === '/convocatorias/convocatorias-estado' ? 'active' : ''}`}>
                                             <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
+                                        </li>
+                                        <li className={`nav-item ${location.pathname === '/usuarios' ? 'active' : ''}`}>
+                                            <Link className="nav-link" to="/api/usuarios">Usuarios</Link>
                                         </li>
                                     </>
                                 )}
