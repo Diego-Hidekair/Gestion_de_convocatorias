@@ -1,19 +1,39 @@
 // backend/middleware/authMiddleware.js
+
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+
+const authMiddleware = (req, res, next) => {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    if (!token) {
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    try {
+        const verified = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = verified;
+        next();
+    } catch (err) {
+        res.status(403).json({ error: 'Token inválido' });
+    }
+};
 
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = req.header('Authorization').replace('Bearer ', '');
+    if (!token) {
+        return res.status(401).json({ message: 'No se proporcionó un token' });
+    }
 
-    if (token == null) return res.sendStatus(401); // No se envió token
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403); // Token no válido
+        console.log('Token recibido:', token);
+        console.log('Rol del usuario:', req.user.rol);
 
-        req.user = user; // Añadir info del usuario
         next();
-    });
+    } catch (error) {
+        res.status(403).json({ message: 'Token no válido' });
+    }
 };
 
 const authorizeAdmin = (req, res, next) => {
@@ -24,4 +44,4 @@ const authorizeAdmin = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateToken, authorizeAdmin };
+module.exports = { authenticateToken, authorizeAdmin, authMiddleware };

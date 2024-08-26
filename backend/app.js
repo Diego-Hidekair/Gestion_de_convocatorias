@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
+//const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware'); // Importa las funciones
 
 // Middlewares
 app.use(cors({
@@ -28,14 +29,10 @@ const usuarioRoutes = require('./routes/usuarioRoutes');
 
 // Usa las rutas
 app.use('/facultades', facultadRoutes);
-//
 app.use('/carreras', carreraRoutes);
-//
 app.use('/tipo-convocatorias', tipoConvocatoriaRoutes);
 app.use('/convocatorias', convocatoriaRoutes);
-//
 app.use('/materias', materiaRoutes);
-//
 app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
@@ -71,3 +68,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+

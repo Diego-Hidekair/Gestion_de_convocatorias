@@ -1,4 +1,5 @@
 // frontend/src/App.js
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import CarreraList from './components/CarreraList';
@@ -29,8 +30,13 @@ import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
+
+axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`; // O donde estés almacenando el token
+axios.defaults.baseURL = 'http://localhost:5000/'; // Asegúrate de que esta URL coincida con tu backend
+
 
 const App = () => {
     return (

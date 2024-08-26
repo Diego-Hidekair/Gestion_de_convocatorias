@@ -1,71 +1,105 @@
 // frontend/src/components/UsuarioEdit.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const UsuarioEdit = () => {
-    const { id } = useParams();
-    const [user, setUser] = useState({
+    const [usuario, setUsuario] = useState({
         id: '',
-        Nombres: '',
-        Apellido_paterno: '',
-        Apellido_materno: '',
-        Rol: '',
-        Contraseña: '',
-        Celular: ''
+        nombres: '',
+        apellidoPaterno: '',
+        apellidoMaterno: '',
+        rol: '',
+        contraseña: '',
+        celular: ''
     });
-
+    const { id } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchUsuario = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get(`http://localhost:5000/api/usuarios/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                const response = await axios.get(`/api/usuarios/${id}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-                setUser(response.data);
+                setUsuario(response.data);
             } catch (error) {
-                console.error('Error fetching user:', error);
+                console.error('Error al obtener el usuario', error);
             }
         };
-
-        fetchUser();
+        fetchUsuario();
     }, [id]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setUser({ ...user, [name]: value });
+        setUsuario({
+            ...usuario,
+            [e.target.name]: e.target.value
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/usuarios/${id}`, user, {
-                headers: { Authorization: `Bearer ${token}` }
+            await axios.put(`/api/usuarios/${id}`, usuario, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             navigate('/usuarios');
         } catch (error) {
-            console.error('Error updating user:', error);
+            console.error('Error al actualizar el usuario', error);
+        }
+    };
+
+    const deleteUser = async () => {
+        if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+            try {
+                await axios.delete(`/api/usuarios/${id}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                navigate('/usuarios');
+            } catch (error) {
+                console.error('Error al eliminar el usuario', error);
+            }
         }
     };
 
     return (
-        <div className="container">
+        <div className="container mt-5">
             <h2>Editar Usuario</h2>
             <form onSubmit={handleSubmit}>
-                <input type="text" name="id" placeholder="ID" value={user.id} onChange={handleChange} required />
-                <input type="text" name="Nombres" placeholder="Nombres" value={user.Nombres} onChange={handleChange} required />
-                <input type="text" name="Apellido_paterno" placeholder="Apellido Paterno" value={user.Apellido_paterno} onChange={handleChange} required />
-                <input type="text" name="Apellido_materno" placeholder="Apellido Materno" value={user.Apellido_materno} onChange={handleChange} required />
-                <input type="text" name="Rol" placeholder="Rol" value={user.Rol} onChange={handleChange} required />
-                <input type="password" name="Contraseña" placeholder="Contraseña" value={user.Contraseña} onChange={handleChange} required />
-                <input type="text" name="Celular" placeholder="Celular" value={user.Celular} onChange={handleChange} required />
-                <button type="submit">Actualizar</button>
+                <div className="mb-3">
+                    <label>ID</label>
+                    <input type="text" className="form-control" name="id" value={usuario.id} readOnly />
+                </div>
+                <div className="mb-3">
+                    <label>Nombres</label>
+                    <input type="text" className="form-control" name="nombres" value={usuario.nombres} onChange={handleChange} required />
+                </div>
+                <div className="mb-3">
+                    <label>Apellido Paterno</label>
+                    <input type="text" className="form-control" name="apellidoPaterno" value={usuario.apellidoPaterno} onChange={handleChange} required />
+                </div>
+                <div className="mb-3">
+                    <label>Apellido Materno</label>
+                    <input type="text" className="form-control" name="apellidoMaterno" value={usuario.apellidoMaterno} onChange={handleChange} required />
+                </div>
+                <div className="mb-3">
+                    <label>Rol</label>
+                    <input type="text" className="form-control" name="rol" value={usuario.rol} onChange={handleChange} required />
+                </div>
+                <div className="mb-3">
+                    <label>Contraseña</label>
+                    <input type="password" className="form-control" name="contraseña" onChange={handleChange} />
+                </div>
+                <div className="mb-3">
+                    <label>Celular</label>
+                    <input type="text" className="form-control" name="celular" value={usuario.celular} onChange={handleChange} required />
+                </div>
+                <button type="submit" className="btn btn-primary">Guardar</button>
+                <button type="button" onClick={deleteUser} className="btn btn-danger ms-2">Eliminar</button>
             </form>
         </div>
     );
 };
 
 export default UsuarioEdit;
+

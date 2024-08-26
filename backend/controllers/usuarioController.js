@@ -1,4 +1,5 @@
 // backend/controllers/usuarioController.js
+
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -24,7 +25,7 @@ const createUser = async (req, res) => {
 
 const getUsuarios = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM usuarios');
+        const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios');
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
@@ -66,11 +67,30 @@ const loginUser = async (req, res) => {
             { expiresIn: '4h' }
         );
 
+        console.log('Token generado:', token);
+        console.log('Rol del usuario:', user.rows[0].rol);
+
         res.json({ token });
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
     }
 };
+const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { nombres, apellidoPaterno, apellidoMaterno, rol, celular } = req.body;
 
-module.exports = { createUser, getUsuarios, deleteUser, loginUser };
+    try {
+        const updatedUser = await pool.query(
+            'UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5 WHERE id = $6 RETURNING id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular',
+            [nombres, apellidoPaterno, apellidoMaterno, rol, celular, id]
+        );
+
+        res.json(updatedUser.rows[0]);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Error en el servidor al actualizar el usuario' });
+    }
+};
+
+module.exports = { createUser, getUsuarios, deleteUser, loginUser, updateUser };
