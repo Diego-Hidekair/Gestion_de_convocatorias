@@ -114,8 +114,8 @@ const AuthWrapper = () => {
                         <Route path="/pdf-generator/:id" element={<PDFGenerator />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />
-                        <Route path="/usuarios/nuevo" element={<UsuarioForm />} />
-                        <Route path="/usuarios/editar/:id" element={<UsuarioEdit />} />
+                        <Route path="/usuarios/new" element={<UsuarioForm />} />
+                        <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
                     </Routes>
                 </>
             ) : (

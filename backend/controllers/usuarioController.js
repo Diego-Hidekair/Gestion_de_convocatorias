@@ -4,16 +4,26 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const getUsuarios = async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Error en el servidor al obtener los usuarios' });
+    }
+};
+
 const createUser = async (req, res) => {
-    const { id, nombres, apellidoPaterno, apellidoMaterno, rol, contraseña, celular } = req.body;
+    const { id, Nombres, ApellidoPaterno, ApellidoMaterno, Rol, Contraseña, Celular } = req.body;
 
     try {
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(contraseña, salt);
+        const hashedPassword = await bcrypt.hash(Contraseña, salt);
 
         const newUser = await pool.query(
             'INSERT INTO usuarios (id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [id, nombres, apellidoPaterno, apellidoMaterno, rol, hashedPassword, celular]
+            [id, Nombres, ApellidoPaterno, ApellidoMaterno, Rol, hashedPassword, Celular]
         );
 
         res.json(newUser.rows[0]);
@@ -23,13 +33,20 @@ const createUser = async (req, res) => {
     }
 };
 
-const getUsuarios = async (req, res) => {
+const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { Nombres, ApellidoPaterno, ApellidoMaterno, Rol,Contraseña, Celular } = req.body;
+
     try {
-        const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios');
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Error en el servidor al obtener los usuarios' });
+        const updatedUser = await pool.query(
+            'UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña= $5, Celular = $6 WHERE id = $7 RETURNING id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular',
+            [Nombres, ApellidoPaterno, ApellidoMaterno, Rol,Contraseña, Celular, id]
+        );
+
+        res.json(updatedUser.rows[0]);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Error en el servidor al actualizar el usuario' });
     }
 };
 
@@ -74,22 +91,6 @@ const loginUser = async (req, res) => {
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
-    }
-};
-const updateUser = async (req, res) => {
-    const { id } = req.params;
-    const { nombres, apellidoPaterno, apellidoMaterno, rol, celular } = req.body;
-
-    try {
-        const updatedUser = await pool.query(
-            'UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5 WHERE id = $6 RETURNING id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular',
-            [nombres, apellidoPaterno, apellidoMaterno, rol, celular, id]
-        );
-
-        res.json(updatedUser.rows[0]);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: 'Error en el servidor al actualizar el usuario' });
     }
 };
 

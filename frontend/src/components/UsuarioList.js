@@ -10,8 +10,8 @@ const UsuarioList = () => {
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/usuarios', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                const response = await axios.get('http://localhost:5000/usuarios', {
+                    //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 setUsuarios(response.data);
             } catch (error) {
@@ -25,8 +25,8 @@ const UsuarioList = () => {
     const deleteUser = async (id) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/usuarios/${id}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                await axios.delete(`http://localhost:5000/usuarios/${id}`, {
+                    //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 setUsuarios(usuarios.filter(user => user.id !== id));
             } catch (error) {
@@ -38,6 +38,7 @@ const UsuarioList = () => {
     return (
         <div className="container mt-5">
             <h2>Lista de Usuarios</h2>
+                <Link to="/usuarios/new" className="btn btn-success mb-3">Crear Nuevo Usuario</Link>
             <table className="table">
                 <thead>
                     <tr>

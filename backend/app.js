@@ -37,7 +37,7 @@ app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
 app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/usuarios', usuarioRoutes);
+app.use('/usuarios', usuarioRoutes);
 
 // Ruta de prueba para verificar la conexión
 app.get('/', (req, res) => {

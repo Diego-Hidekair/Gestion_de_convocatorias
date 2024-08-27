@@ -1,101 +1,143 @@
 // frontend/src/components/UsuarioEdit.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const UsuarioEdit = () => {
-    const [usuario, setUsuario] = useState({
-        id: '',
-        nombres: '',
-        apellidoPaterno: '',
-        apellidoMaterno: '',
-        rol: '',
-        contraseña: '',
-        celular: ''
-    });
     const { id } = useParams();
     const navigate = useNavigate();
+
+    const [usuario, setUsuario] = useState({
+        
+        Nombres: '',
+        Apellido_paterno: '',
+        Apellido_materno: '',
+        Rol: '',
+        Contraseña: '',
+        Celular: '',
+    });
+    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         const fetchUsuario = async () => {
             try {
-                const response = await axios.get(`/api/usuarios/${id}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                const response = await axios.get(`/usuarios/${id}`, {
+                    //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 setUsuario(response.data);
             } catch (error) {
-                console.error('Error al obtener el usuario', error);
+                console.error('Error al obtener los datos del usuario:', error);
             }
         };
+
         fetchUsuario();
     }, [id]);
 
     const handleChange = (e) => {
-        setUsuario({
-            ...usuario,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        setUsuario({ ...usuario, [name]: value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsProcessing(true);
+
         try {
-            await axios.put(`/api/usuarios/${id}`, usuario, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            await axios.put(`/usuarios/${id}`, usuario, {
+                //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             navigate('/usuarios');
         } catch (error) {
-            console.error('Error al actualizar el usuario', error);
+            console.error('Error al actualizar el usuario:', error);
+        } finally {
+            setIsProcessing(false);
         }
     };
-
-    const deleteUser = async () => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-            try {
-                await axios.delete(`/api/usuarios/${id}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                navigate('/usuarios');
-            } catch (error) {
-                console.error('Error al eliminar el usuario', error);
-            }
-        }
-    };
-
+    
     return (
-        <div className="container mt-5">
+        <div className="container">
             <h2>Editar Usuario</h2>
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label>ID</label>
-                    <input type="text" className="form-control" name="id" value={usuario.id} readOnly />
+                <div className="form-group">
+                    <label htmlFor="Nombres">Nombres</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="Nombres"
+                        name="Nombres"
+                        value={usuario.Nombres}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div className="mb-3">
-                    <label>Nombres</label>
-                    <input type="text" className="form-control" name="nombres" value={usuario.nombres} onChange={handleChange} required />
+                <div className="form-group">
+                    <label htmlFor="Apellido_paterno">Apellido Paterno</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="Apellido_paterno"
+                        name="Apellido_paterno"
+                        value={usuario.Apellido_paterno}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div className="mb-3">
-                    <label>Apellido Paterno</label>
-                    <input type="text" className="form-control" name="apellidoPaterno" value={usuario.apellidoPaterno} onChange={handleChange} required />
+                <div className="form-group">
+                    <label htmlFor="Apellido_materno">Apellido Materno</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="Apellido_materno"
+                        name="Apellido_materno"
+                        value={usuario.Apellido_materno}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div className="mb-3">
-                    <label>Apellido Materno</label>
-                    <input type="text" className="form-control" name="apellidoMaterno" value={usuario.apellidoMaterno} onChange={handleChange} required />
+                <div className="form-group">
+                    <label htmlFor="rol">Rol</label>
+                    <select
+                        className="form-control"
+                        id="Rol"
+                        name="Rol"
+                        value={usuario.Rol}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="admin">admin</option>
+                        <option value="usuario">usuario</option>
+                        <option value="secretaria">secretaria</option>
+                        <option value="decanatura">decanatura</option>
+                        <option value="vicerrectorado">vicerrectorado</option>
+                    </select>
                 </div>
-                <div className="mb-3">
-                    <label>Rol</label>
-                    <input type="text" className="form-control" name="rol" value={usuario.rol} onChange={handleChange} required />
+                <div className="form-group">
+                    <label htmlFor="Contraseña">Contraseña</label>
+                    <input
+                        type="password"
+                        className="form-control"
+                        id="Contraseña"
+                        name="Contraseña"
+                        value={usuario.Contraseña}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div className="mb-3">
-                    <label>Contraseña</label>
-                    <input type="password" className="form-control" name="contraseña" onChange={handleChange} />
+                <div className="form-group">
+                    <label htmlFor="Celular">Celular</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="Celular"
+                        name="Celular"
+                        value={usuario.Celular}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <div className="mb-3">
-                    <label>Celular</label>
-                    <input type="text" className="form-control" name="celular" value={usuario.celular} onChange={handleChange} required />
-                </div>
-                <button type="submit" className="btn btn-primary">Guardar</button>
-                <button type="button" onClick={deleteUser} className="btn btn-danger ms-2">Eliminar</button>
+                <button type="submit" className="btn btn-primary" disabled={isProcessing}>
+                    {isProcessing ? 'Procesando...' : 'Guardar Cambios'}
+                </button>
             </form>
         </div>
     );
