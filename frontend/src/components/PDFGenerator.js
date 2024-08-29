@@ -38,9 +38,15 @@ const PDFGenerator = () => {
             const fetchSelectedConvocatoria = async () => {
                 try {
                     const response = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
-                    setSelectedConvocatoria(response.data);
+                    if (response.data) {
+                        setSelectedConvocatoria(response.data);
+                    } else {
+                        console.error('No se encontró la convocatoria con el ID especificado.');
+                        setSelectedConvocatoria(null);
+                    }
                 } catch (error) {
                     console.error('Error al obtener la convocatoria:', error);
+                    setSelectedConvocatoria(null);
                 }
             };
             fetchSelectedConvocatoria();
@@ -140,12 +146,12 @@ const PDFGenerator = () => {
                 </div>
 
                 {selectedConvocatoria && (
-                <div className="mt-4">
-                    <h4>Detalles de la Convocatoria Seleccionada:</h4>
-                    {Object.keys(selectedConvocatoria).map((key) => (
-                        <p key={key}><strong>{key}:</strong> {selectedConvocatoria[key]}</p>
-                    ))}
-                </div>
+                    <div className="mt-4">
+                        <h4>Detalles de la Convocatoria Seleccionada:</h4>
+                        {Object.keys(selectedConvocatoria).map((key) => (
+                            <p key={key}><strong>{key}:</strong> {selectedConvocatoria[key]}</p>
+                        ))}
+                    </div>
                 )}
 
                 <div className="mb-3">
