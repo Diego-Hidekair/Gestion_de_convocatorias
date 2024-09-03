@@ -4,8 +4,9 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const ConvocatoriaList = () => {
-    const [convocatorias, setConvocatorias] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');//barra de busqueda
+    const [convocatorias, setConvocatorias] = useState([]); //vistas creo?
+    const [searchTerm, setSearchTerm] = useState(''); // barra de busqueda 
+    const [searchBy, setSearchBy] = useState(''); // Criterio de búsqueda
     
     useEffect(() => {
         const fetchConvocatorias = async () => {
@@ -45,28 +46,49 @@ const ConvocatoriaList = () => {
         document.body.removeChild(link);
     };
 
-    // Filtrar las convocatorias en base al término de búsqueda
-    const filteredConvocatorias = convocatorias.filter(convocatoria =>
-        convocatoria.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filtrar las convocatorias en base al término de búsqueda y el criterio seleccionado
+    const filteredConvocatorias = convocatorias.filter(convocatoria => {
+        if (!searchBy) return true; // No filtrar si no se seleccionó un criterio
+        const value = convocatoria[searchBy].toString().toLowerCase();
+        return value.includes(searchTerm.toLowerCase());
+    });
 
     return (
         <div className="container mt-4">
             <h2 className="mb-4">Lista de Convocatorias</h2>
             <Link to="/convocatorias/crear" className="btn btn-success mb-3">Crear Nueva Convocatoria</Link>
 
+            {/* Selección del criterio de búsqueda */}
+            <div className="mb-3">
+                <select
+                    className="form-select"
+                    value={searchBy}
+                    onChange={(e) => setSearchBy(e.target.value)}
+                >
+                    <option value="">Buscar por...</option> 
+                    <option value="cod_convocatoria">Código</option>
+                    <option value="nombre">Nombre</option>
+                    <option value="fecha_inicio">Fecha de Inicio</option>
+                    <option value="fecha_fin">Fecha de Fin</option>
+                    <option value="nombre_tipoconvocatoria">Tipo de Convocatoria</option>
+                    <option value="nombre_carrera">Carrera</option>
+                    <option value="nombre_facultad">Facultad</option>
+                </select>
+            </div>
+
             {/* Barra de búsqueda */}
             <input
                 type="text"
                 className="form-control mb-3"
-                placeholder="Buscar convocatorias..."
+                placeholder={`Buscar por ${searchBy ? searchBy.replace('_', ' ') : ''}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={!searchBy} // Deshabilitar si no se selecciona un criterio
             />
 
             <table className="table table-striped">
                 <thead>
-                    <tr >
+                    <tr>
                         <th>Código</th>
                         <th>Nombre</th>
                         <th>Fecha de Inicio</th>
@@ -116,4 +138,3 @@ const ConvocatoriaList = () => {
 };
 
 export default ConvocatoriaList;
-   
