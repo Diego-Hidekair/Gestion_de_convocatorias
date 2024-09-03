@@ -7,14 +7,14 @@ const path = require('path');
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin, 
-                   tc.nombre_convocatoria AS tipo_convocatoria, 
-                   ca.nombre_carrera AS carrera, 
-                   f.nombre_facultad AS facultad
+            SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
+                   tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                   ca.nombre_carrera AS nombre_carrera, 
+                   f.nombre_facultad AS nombre_facultad
             FROM convocatorias c
-            JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            JOIN carrera ca ON c.id_carrera = ca.id_carrera
-            JOIN facultad f ON c.id_facultad = f.id_facultad
+            LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera
+            LEFT JOIN facultad f ON c.id_facultad = f.id_facultad
             ORDER BY c.cod_convocatoria
         `);
         res.json(result.rows);
@@ -22,19 +22,10 @@ const getConvocatorias = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-/*const getConvocatorias = async (req, res) => { 
-    try {
-        const result = await pool.query('SELECT * FROM convocatorias ORDER BY cod_convocatoria');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};*/
-
 
 // Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {
-    const { cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad, materias} = req.body;
+    const { cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad, materias } = req.body;
     try {
         const result = await pool.query(
             'INSERT INTO convocatorias (cod_convocatoria, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
@@ -116,12 +107,12 @@ const updateConvocatoria = async (req, res) => {
     }
 };
 
-
-//estado de la convocatoria
+// Estado de la convocatoria
 const getConvocatoriasWithEstado = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT id_convocatoria, cod_convocatoria, nombre, fecha_inicio,fecha_fin, estado 
+            SELECT ROW_NUMBER() OVER (ORDER BY cod_convocatoria) AS numero,
+                   id_convocatoria, cod_convocatoria, nombre, fecha_inicio, fecha_fin, estado 
             FROM convocatorias
             ORDER BY cod_convocatoria
         `);
@@ -130,11 +121,9 @@ const getConvocatoriasWithEstado = async (req, res) => {
         console.error(err.message);
         res.status(500).json({ error: 'Error al obtener convocatorias' });
     }
-};   
+}; 
 
-
-
-//Actualizar el estado de la convocatoria
+// Actualizar el estado de la convocatoria
 const updateConvocatoriaEstado = async (req, res) => {
     const { id_convocatoria } = req.params;
     const { estado } = req.body;
@@ -216,39 +205,24 @@ const createPdf = async (req, res) => {
             Tipo de Convocatoria: ${convocatoriaData.tipo_convocatoria}
             Carrera: ${convocatoriaData.carrera}
             Facultad: ${convocatoriaData.facultad}
-            Materias:
+            Materias: 
             ${materiasData}
         `;
 
-        await generatePDF(pdfPath, pdfContent);
+        // Crear un nuevo PDF con pdf-lib
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage();
+        page.drawText(pdfContent, { x: 50, y: 700 });
 
-        res.json({ message: 'PDF creado con éxito', pdfPath });
+        // Guardar el PDF en el servidor
+        const pdfBytes = await pdfDoc.save();
+        fs.writeFileSync(pdfPath, pdfBytes);
+
+        res.status(201).json({ message: 'PDF creado y guardado correctamente', pdfPath });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error(err.message);
+        res.status(500).json({ error: 'Error al crear PDF' });
     }
 };
 
-const generatePDF = async (pdfPath, content) => {
-    const pdfDoc = await PDFDocument.create();
-    let page = pdfDoc.addPage();
-    const { width, height } = page.getSize();
-    const fontSize = 12;
-
-    const lines = content.split('\n');
-    let y = height - 40;
-
-    for (const line of lines) {
-        if (y <= 40) {
-            page = pdfDoc.addPage();
-            y = height - 40;
-        }
-        page.drawText(line, { x: 50, y, size: fontSize });
-        y -= 20;
-    }
-
-    const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(pdfPath, pdfBytes);
-};
-
-module.exports = { getConvocatorias, createConvocatoria, getConvocatoriaById, updateConvocatoria,
-                 deleteConvocatoria, createPdf,getConvocatoriasWithEstado,updateConvocatoriaEstado };
+module.exports = { getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, updateConvocatoriaEstado, getConvocatoriasWithEstado, createPdf };

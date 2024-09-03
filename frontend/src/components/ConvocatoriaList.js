@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-//lista convocatorias
-    const ConvocatoriaList = () => {
+const ConvocatoriaList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');  // Estado para la barra de búsqueda
-
+    const [searchTerm, setSearchTerm] = useState('');//barra de busqueda
+    
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
@@ -20,7 +19,6 @@ import { Link } from 'react-router-dom';
         fetchConvocatorias();
     }, []);
 
-    //la opcion de borrar una convocatoria
     const handleDelete = async (id) => {
         try {
             await axios.delete(`http://localhost:5000/convocatorias/${id}`);
@@ -30,14 +28,12 @@ import { Link } from 'react-router-dom';
         }
     };
 
-    //ver vista previa de una convocatoria
     const handlePreview = (convocatoria) => {
         const pdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
         const pdfUrl = `http://localhost:5000/pdfs/${pdfFileName}`;
         window.open(pdfUrl, '_blank');
     };
 
-    //descargar el contenido de la convocatoria
     const handleDownload = (convocatoria) => {
         const pdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
         const pdfUrl = `http://localhost:5000/pdfs/${pdfFileName}`;
@@ -67,30 +63,30 @@ import { Link } from 'react-router-dom';
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-            
+
             <table className="table table-striped">
                 <thead>
                     <tr >
-                    <th>Código</th>
-                    <th>Nombre</th>
-                    <th>Fecha de Inicio</th>
-                    <th>Fecha de Fin</th>
-                    <th>Tipo de Convocatoria</th>
-                    <th>Carrera</th>
-                    <th>Facultad</th>
-                    <th>Acciones</th>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Fecha de Inicio</th>
+                        <th>Fecha de Fin</th>
+                        <th>Tipo de Convocatoria</th>
+                        <th>Carrera</th>
+                        <th>Facultad</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {filteredConvocatorias.map((convocatoria) => (
-                        <tr key={convocatoria.cod_convocatoria}>
+                        <tr key={convocatoria.id_convocatoria}>
                             <td>{convocatoria.cod_convocatoria}</td>
                             <td>{convocatoria.nombre}</td>
-                            <td>{convocatoria.fecha_inicio}</td>
-                            <td>{convocatoria.fecha_fin}</td>
-                            <td>{convocatoria.tipo_convocatoria}</td>
-                            <td>{convocatoria.carrera}</td>
-                            <td>{convocatoria.facultad}</td>
+                            <td>{new Date(convocatoria.fecha_inicio).toLocaleDateString()}</td>
+                            <td>{new Date(convocatoria.fecha_fin).toLocaleDateString()}</td>
+                            <td>{convocatoria.nombre_tipoconvocatoria}</td>
+                            <td>{convocatoria.nombre_carrera}</td>
+                            <td>{convocatoria.nombre_facultad}</td>
                             <td>
                                 <button 
                                     onClick={() => handlePreview(convocatoria)} 
@@ -120,3 +116,4 @@ import { Link } from 'react-router-dom';
 };
 
 export default ConvocatoriaList;
+   
