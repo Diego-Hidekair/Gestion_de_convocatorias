@@ -26,7 +26,7 @@ const UsuarioForm = () => {
         e.preventDefault();
         try {
             await axios.post('/usuarios', usuario, {
-                //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             navigate('/usuarios');
         } catch (error) {

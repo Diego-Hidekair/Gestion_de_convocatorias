@@ -7,8 +7,8 @@ const UsuarioEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    // Inicializa el estado con valores por defecto
     const [usuario, setUsuario] = useState({
-        
         Nombres: '',
         Apellido_paterno: '',
         Apellido_materno: '',
@@ -22,9 +22,17 @@ const UsuarioEdit = () => {
         const fetchUsuario = async () => {
             try {
                 const response = await axios.get(`/usuarios/${id}`, {
-                    //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-                setUsuario(response.data);
+                // Asegúrate de que la respuesta tenga todos los campos definidos
+                setUsuario({
+                    Nombres: response.data.Nombres || '',
+                    Apellido_paterno: response.data.Apellido_paterno || '',
+                    Apellido_materno: response.data.Apellido_materno || '',
+                    Rol: response.data.Rol || '',
+                    Contraseña: response.data.Contraseña || '',
+                    Celular: response.data.Celular || '',
+                });
             } catch (error) {
                 console.error('Error al obtener los datos del usuario:', error);
             }
@@ -35,7 +43,7 @@ const UsuarioEdit = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setUsuario({ ...usuario, [name]: value });
+        setUsuario(prevState => ({ ...prevState, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -44,7 +52,7 @@ const UsuarioEdit = () => {
 
         try {
             await axios.put(`/usuarios/${id}`, usuario, {
-                //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             navigate('/usuarios');
         } catch (error) {
@@ -95,7 +103,7 @@ const UsuarioEdit = () => {
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="rol">Rol</label>
+                    <label htmlFor="Rol">Rol</label>
                     <select
                         className="form-control"
                         id="Rol"
@@ -104,6 +112,7 @@ const UsuarioEdit = () => {
                         onChange={handleChange}
                         required
                     >
+                        <option value="">Seleccione un rol</option>
                         <option value="admin">admin</option>
                         <option value="usuario">usuario</option>
                         <option value="secretaria">secretaria</option>
@@ -144,4 +153,5 @@ const UsuarioEdit = () => {
 };
 
 export default UsuarioEdit;
+
 

@@ -4,14 +4,33 @@ const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 
-const getConvocatorias = async (req, res) => { 
+const getConvocatorias = async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin, 
+                   tc.nombre_convocatoria AS tipo_convocatoria, 
+                   ca.nombre_carrera AS carrera, 
+                   f.nombre_facultad AS facultad
+            FROM convocatorias c
+            JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            JOIN carrera ca ON c.id_carrera = ca.id_carrera
+            JOIN facultad f ON c.id_facultad = f.id_facultad
+            ORDER BY c.cod_convocatoria
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+/*const getConvocatorias = async (req, res) => { 
     try {
         const result = await pool.query('SELECT * FROM convocatorias ORDER BY cod_convocatoria');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-};
+};*/
+
 
 // Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {

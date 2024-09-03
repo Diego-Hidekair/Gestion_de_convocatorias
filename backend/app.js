@@ -6,7 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
-//const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware'); // Importa las funciones
+const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware'); // Importa las funciones
 
 // Middlewares
 app.use(cors({

@@ -11,7 +11,7 @@ const UsuarioList = () => {
         const fetchUsuarios = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/usuarios', {
-                    //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 setUsuarios(response.data);
             } catch (error) {
@@ -26,7 +26,7 @@ const UsuarioList = () => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
             try {
                 await axios.delete(`http://localhost:5000/usuarios/${id}`, {
-                    //headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 setUsuarios(usuarios.filter(user => user.id !== id));
             } catch (error) {

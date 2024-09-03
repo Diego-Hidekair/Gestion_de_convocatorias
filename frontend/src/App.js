@@ -2,13 +2,13 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
 import CarreraEdit from './components/CarreraEdit';
 import FacultadList from './components/FacultadList';
 import FacultadEdit from './components/FacultadEdit';
 import FacultadForm from './components/FacultadForm';
-//import Home from './components/Home'; 
 import ConvocatoriaList from './components/ConvocatoriaList';
 import ConvocatoriaForm from './components/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/ConvocatoriaEdit';
@@ -34,20 +34,22 @@ import UsuarioEdit from './components/UsuarioEdit';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 
-axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`; // O donde estés almacenando el token
-axios.defaults.baseURL = 'http://localhost:5000/'; // Asegúrate de que esta URL coincida con tu backend
-
+axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`; // Asegúrate de que esta URL coincida con tu backend
+axios.defaults.baseURL = 'http://localhost:5000/'; 
 
 const App = () => {
     return (
+        <div style={{ fontFamily: 'Karla, sans-serif' }}>
         <Router>
             <AuthWrapper />
         </Router>
+        </div>
     );
 };
 
 const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userRole, setUserRole] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -55,11 +57,14 @@ const AuthWrapper = () => {
         if (token) {
             const expiryTime = JSON.parse(atob(token.split('.')[1])).exp * 1000;
             const currentTime = Date.now();
+
             if (currentTime >= expiryTime) {
                 localStorage.removeItem('token');
                 setIsAuthenticated(false);
                 navigate('/login');
             } else {
+                const decodedToken = jwtDecode(token);
+                setUserRole(decodedToken.rol);
                 setIsAuthenticated(true);
                 const timeout = setTimeout(() => {
                     localStorage.removeItem('token');
@@ -101,7 +106,7 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                         <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
-                        <Route path="/convocatorias/convocatorias-estado" element={<ConvocatoriaEstado/>} />
+                        <Route path="/convocatorias/convocatorias-estado" element={<ConvocatoriaEstado userRole={userRole} />} />
                         <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
                         <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
                         <Route path="/tipoconvocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
