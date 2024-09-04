@@ -69,8 +69,10 @@ const PDFGenerator = () => {
     
     const handleMateriaChange = (e) => {
         const selectedMateriaId = parseInt(e.target.value);
+        if (!selectedMateriaId) return;
+        
         const selectedMateria = materias.find(materia => materia.id_materia === selectedMateriaId);
-        if (selectedMateria && !selectedMaterias.find(m => m.id_materia === selectedMateriaId)) {
+        if (selectedMateria && !selectedMaterias.some(m => m.id_materia === selectedMateriaId)) {
             setSelectedMaterias(prevSelected => [...prevSelected, selectedMateria]);
         }
     };
@@ -119,8 +121,21 @@ const PDFGenerator = () => {
             link.setAttribute('download', pdfFileName);
             document.body.appendChild(link);
             link.click();
+
         } catch (error) {
             console.error('Error al generar el PDF:', error);
+        }
+    };
+    
+    const viewPdf = async (pdfFileName) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/pdf/view/${pdfFileName}`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            window.open(url); // Abre una nueva ventana para visualizar el PDF
+        } catch (error) {
+            console.error('Error al obtener el PDF:', error);
         }
     };
 
@@ -152,7 +167,7 @@ const PDFGenerator = () => {
                             <p key={key}><strong>{key}:</strong> {selectedConvocatoria[key]}</p>
                         ))}
                     </div>
-)}
+                )}
 
                 <div className="mb-3">
                     <label className="form-label">Seleccionar Materia:</label>

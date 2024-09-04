@@ -42,6 +42,119 @@ async function createPdf(req, res) {
         const materiasResult = await pool.query(materiasQuery, [id_convocatoria]);
         const materias = materiasResult.rows;
 
+        const pdfDoc = await PDFDocument.create();
+        const page = pdfDoc.addPage([600, 800]);
+        const { width, height } = page.getSize();
+        const fontSize = 18;
+        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+        page.drawText(`Convocatoria: ${convocatoria.nombre_convocatoria}`, {
+            x: 50,
+            y: height - 50,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`Código: ${convocatoria.cod_convocatoria}`, {
+            x: 50,
+            y: height - 80,
+            size: fontSize,
+            fontRegular,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`Fecha Inicio: ${convocatoria.fecha_inicio}`, {
+            x: 50,
+            y: height - 110,
+            size: fontSize,
+            fontRegular,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`Fecha Fin: ${convocatoria.fecha_fin}`, {
+            x: 50,
+            y: height - 140,
+            size: fontSize,
+            fontRegular,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`Tipo de Convocatoria: ${convocatoria.tipo_convocatoria}`, {
+            x: 50,
+            y: height - 170,
+            size: fontSize,
+            fontRegular,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`Carrera: ${convocatoria.nombre_carrera}`, {
+            x: 50,
+            y: height - 200,
+            size: fontSize,
+            fontRegular,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`Facultad: ${convocatoria.nombre_facultad}`, {
+            x: 50,
+            y: height - 230,
+            size: fontSize,
+            fontRegular,
+            color: rgb(0, 0, 0),
+        });
+
+        let currentY = height - 260;
+        page.drawText('Materias:', {
+            x: 50,
+            y: currentY,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+        });
+
+        currentY -= 30;
+        materias.forEach((materia, index) => {
+            page.drawText(`${index + 1}. ${materia.nombre} - ${materia.codigomateria}`, {
+                x: 70,
+                y: currentY,
+                size: fontSize,
+                fontRegular,
+                color: rgb(0, 0, 0),
+            });
+            currentY -= 30;
+        });
+
+        const pdfBytes = await pdfDoc.save();
+        const pdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        const pdfFilePath = path.join(__dirname, '../pdfs', pdfFileName);
+        fs.writeFileSync(pdfFilePath, pdfBytes);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${pdfFileName}"`);
+        res.send(pdfBytes);
+    } catch (error) {
+        console.error('Error al generar el PDF:', error);
+        res.status(500).json({ error: 'Error al generar el PDF' });
+    }
+}
+
+module.exports = {
+    createPdf,
+};
+
+        
+        /*// Obtener las materias relacionadas con la convocatoria
+        const materiasQuery = `
+            SELECT m.codigomateria, m.nombre 
+            FROM convocatoria_materia cm
+            JOIN materia m ON cm.id_materia = m.id_materia
+            WHERE cm.id_convocatoria = $1
+        `;
+        const materiasResult = await pool.query(materiasQuery, [id_convocatoria]);
+        const materias = materiasResult.rows;
+
         // Crear el PDF
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([600, 800]);  // Cambiado a formato vertical
@@ -146,4 +259,4 @@ async function createPdf(req, res) {
     }
 }
 
-module.exports = {createPdf,};
+module.exports = {createPdf,};*/
