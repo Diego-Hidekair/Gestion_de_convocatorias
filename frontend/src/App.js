@@ -30,19 +30,20 @@ import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
+import RedirectPage from './components/RedirectPage'; // Importa el nuevo componente
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 
-axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`; // Asegúrate de que esta URL coincida con tu backend
+axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
 axios.defaults.baseURL = 'http://localhost:5000/'; 
 
 const App = () => {
     return (
         <div style={{ fontFamily: 'Karla, sans-serif' }}>
-        <Router>
-            <AuthWrapper />
-        </Router>
+            <Router>
+                <AuthWrapper />
+            </Router>
         </div>
     );
 };
@@ -80,7 +81,7 @@ const AuthWrapper = () => {
 
     const handleLogin = () => {
         setIsAuthenticated(true);
-        navigate('/');
+        navigate('/redirect'); 
     };
 
     const handleLogout = () => {
@@ -96,6 +97,7 @@ const AuthWrapper = () => {
                     <NavBar onLogout={handleLogout} />
                     <Routes>
                         <Route path="/" element={<Navigate to="/carreras" />} />
+                        <Route path="/redirect" element={<RedirectPage />} /> {/* Agrega la nueva ruta */}
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/carreras/new" element={<CarreraForm />} />
                         <Route path="/carreras/edit/:id" element={<CarreraEdit />} />
