@@ -48,8 +48,8 @@ const ConvocatoriaList = () => {
 
     // Filtrar las convocatorias en base al término de búsqueda y el criterio seleccionado
     const filteredConvocatorias = convocatorias.filter(convocatoria => {
-        if (!searchBy) return true; // No filtrar si no se seleccionó un criterio
-        const value = convocatoria[searchBy].toString().toLowerCase();
+        if (!searchBy || !searchTerm) return true; // No filtrar si no hay término de búsqueda o criterio seleccionado
+        const value = convocatoria[searchBy] ? convocatoria[searchBy].toString().toLowerCase() : '';
         return value.includes(searchTerm.toLowerCase());
     });
 
@@ -58,7 +58,6 @@ const ConvocatoriaList = () => {
             <h2 className="mb-4">Lista de Convocatorias</h2>
             <Link to="/convocatorias/crear" className="btn btn-success mb-3">Crear Nueva Convocatoria</Link>
 
-            {/* Selección del criterio de búsqueda */}
             <div className="mb-3">
                 <select
                     className="form-select"
@@ -76,14 +75,13 @@ const ConvocatoriaList = () => {
                 </select>
             </div>
 
-            {/* Barra de búsqueda */}
             <input
                 type="text"
                 className="form-control mb-3"
                 placeholder={`Buscar por ${searchBy ? searchBy.replace('_', ' ') : ''}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                disabled={!searchBy} // Deshabilitar si no se selecciona un criterio
+                disabled={!searchBy}
             />
 
             <table className="table table-striped">
@@ -105,7 +103,7 @@ const ConvocatoriaList = () => {
                             <td>{convocatoria.cod_convocatoria}</td>
                             <td>{convocatoria.nombre}</td>
                             <td>{new Date(convocatoria.fecha_inicio).toLocaleDateString()}</td>
-                            <td>{new Date(convocatoria.fecha_fin).toLocaleDateString()}</td>
+                            <td>{convocatoria.fecha_fin ? new Date(convocatoria.fecha_fin).toLocaleDateString() : 'N/A'}</td>
                             <td>{convocatoria.nombre_tipoconvocatoria}</td>
                             <td>{convocatoria.nombre_carrera}</td>
                             <td>{convocatoria.nombre_facultad}</td>

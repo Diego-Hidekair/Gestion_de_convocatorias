@@ -1,18 +1,21 @@
-// backend/routes/convocatoriaRoutes.js
 const express = require('express');
 const router = express.Router();
-const convocatoriaController = require('../controllers/convocatoriaController');
+const { getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, updateConvocatoriaEstado, getConvocatoriasWithEstado, createPdf } = require('../controllers/convocatoriaController');
+const { authMiddleware, authorizeAdmin } = require('../middleware/authMiddleware');
 
-//rutas nuevavs
-router.get('/convocatorias-estado', convocatoriaController.getConvocatoriasWithEstado);
-router.put('/convocatorias/:id_convocatoria/estado', convocatoriaController.updateConvocatoriaEstado);
+// Rutas para las convocatorias
+router.get('/', authMiddleware, getConvocatorias);
+router.get('/:id', authMiddleware, getConvocatoriaById);
+router.post('/', authMiddleware, createConvocatoria);
+router.put('/:id', authMiddleware, updateConvocatoria);
+router.delete('/:id', authMiddleware, deleteConvocatoria);
+//router.get('/convocatorias-estado', convocatoriaController.getConvocatoriasWithEstado);
+//router.put('/convocatorias/:id_convocatoria/estado', convocatoriaController.updateConvocatoriaEstado);
+router.put('/:id/estado', authMiddleware, updateConvocatoriaEstado);
+router.get('/estado', authMiddleware, getConvocatoriasWithEstado);
+router.post('/pdf', authMiddleware, createPdf);
 
-// Rutas anteriores
-router.get('/', convocatoriaController.getConvocatorias);
-router.get('/:id', convocatoriaController.getConvocatoriaById);
-router.post('/', convocatoriaController.createConvocatoria);
-router.put('/:id', convocatoriaController.updateConvocatoria);
-router.delete('/:id', convocatoriaController.deleteConvocatoria);
+
 
 
 module.exports = router;
