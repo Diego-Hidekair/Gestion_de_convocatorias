@@ -4,10 +4,10 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const ConvocatoriaList = () => {
-    const [convocatorias, setConvocatorias] = useState([]); //vistas creo?
-    const [searchTerm, setSearchTerm] = useState(''); // barra de busqueda 
-    const [searchBy, setSearchBy] = useState(''); // Criterio de búsqueda
-    
+    const [convocatorias, setConvocatorias] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchBy, setSearchBy] = useState('');
+
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
@@ -46,11 +46,10 @@ const ConvocatoriaList = () => {
         document.body.removeChild(link);
     };
 
-    // Filtrar las convocatorias en base al término de búsqueda y el criterio seleccionado
     const filteredConvocatorias = convocatorias.filter(convocatoria => {
-        if (!searchBy || !searchTerm) return true; // No filtrar si no hay término de búsqueda o criterio seleccionado
-        const value = convocatoria[searchBy] ? convocatoria[searchBy].toString().toLowerCase() : '';
-        return value.includes(searchTerm.toLowerCase());
+        if (!searchBy) return true;
+        const value = convocatoria[searchBy]?.toString().toLowerCase();
+        return value?.includes(searchTerm.toLowerCase());
     });
 
     return (
@@ -64,7 +63,7 @@ const ConvocatoriaList = () => {
                     value={searchBy}
                     onChange={(e) => setSearchBy(e.target.value)}
                 >
-                    <option value="">Buscar por...</option> 
+                    <option value="">Buscar por...</option>
                     <option value="cod_convocatoria">Código</option>
                     <option value="nombre">Nombre</option>
                     <option value="fecha_inicio">Fecha de Inicio</option>
@@ -74,7 +73,6 @@ const ConvocatoriaList = () => {
                     <option value="nombre_facultad">Facultad</option>
                 </select>
             </div>
-
             <input
                 type="text"
                 className="form-control mb-3"
@@ -103,7 +101,7 @@ const ConvocatoriaList = () => {
                             <td>{convocatoria.cod_convocatoria}</td>
                             <td>{convocatoria.nombre}</td>
                             <td>{new Date(convocatoria.fecha_inicio).toLocaleDateString()}</td>
-                            <td>{convocatoria.fecha_fin ? new Date(convocatoria.fecha_fin).toLocaleDateString() : 'N/A'}</td>
+                            <td>{new Date(convocatoria.fecha_fin).toLocaleDateString()}</td>
                             <td>{convocatoria.nombre_tipoconvocatoria}</td>
                             <td>{convocatoria.nombre_carrera}</td>
                             <td>{convocatoria.nombre_facultad}</td>
@@ -120,6 +118,9 @@ const ConvocatoriaList = () => {
                                 >
                                     Descargar
                                 </button>
+                                <Link to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="btn btn-warning btn-sm me-2">
+                                    Editar
+                                </Link>
                                 <button 
                                     onClick={() => handleDelete(convocatoria.id_convocatoria)} 
                                     className="btn btn-danger btn-sm"

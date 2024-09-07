@@ -93,7 +93,7 @@ const ConvocatoriaEdit = () => {
                         className="form-control"
                         value={convocatoria.cod_convocatoria}
                         onChange={handleChange}
-                        required
+                        readOnly
                     />
                 </div>
                 <div className="mb-3">

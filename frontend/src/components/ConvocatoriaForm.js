@@ -1,22 +1,40 @@
 // frontend/src/components/ConvocatoriaForm.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const ConvocatoriaForm = () => {
-    const [codConvocatoria, setCodConvocatoria] = useState('');
-    const [nombre, setNombre] = useState('');
-    const [fechaInicio, setFechaInicio] = useState('');
-    const [fechaFin, setFechaFin] = useState('');
-    const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
-    const [idCarrera, setIdCarrera] = useState('');
-    const [idFacultad, setIdFacultad] = useState('');
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [convocatoria, setConvocatoria] = useState({
+        nombre: '',
+        fecha_inicio: '',
+        fecha_fin: '',
+        id_tipoconvocatoria: '',
+        id_carrera: '',
+        id_facultad: ''
+    });
+
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [facultades, setFacultades] = useState([]);
-    const navigate = useNavigate();
 
     useEffect(() => {
+        if (id) {
+            const fetchConvocatoria = async () => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+                    setConvocatoria(response.data);
+                } catch (error) {
+                    console.error('Error fetching convocatoria:', error);
+                }
+            };
+            fetchConvocatoria();
+        }
+
         const fetchData = async () => {
             try {
                 const [tiposResponse, carrerasResponse, facultadesResponse] = await Promise.all([
@@ -31,127 +49,132 @@ const ConvocatoriaForm = () => {
                 console.error('Error fetching data:', error);
             }
         };
+
         fetchData();
-    }, []);
+    }, [id]);
 
-    /*const handleMateriaChange = (event) => {
-        const selectedOptions = Array.from(event.target.selectedOptions).map(option => option.value);
-        setMaterias(selectedOptions);
-    };*/
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setConvocatoria((prevConvocatoria) => ({
+            ...prevConvocatoria,
+            [name]: value,
+        }));
+    };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        const convocatoriaData = {
-            cod_convocatoria: codConvocatoria,
-            nombre: nombre,
-            fecha_inicio: fechaInicio,
-            fecha_fin: fechaFin,
-            id_tipoconvocatoria: idTipoConvocatoria,
-            id_carrera: idCarrera,
-            id_facultad: idFacultad
-        };
-
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/convocatorias', convocatoriaData);
-            const { id_convocatoria } = response.data;
-            navigate(`/pdf-generator/${id_convocatoria}`);
+            if (id) {
+                await axios.put(`http://localhost:5000/convocatorias/${id}`, convocatoria);
+            } else {
+                await axios.post('http://localhost:5000/convocatorias', convocatoria);
+            }
+            navigate('/convocatorias');
         } catch (error) {
-            console.error('Error al crear la convocatoria:', error);
+            console.error('Error saving convocatoria:', error);
         }
     };
     
+    const handleChangeDate = (name, date) => {
+        setConvocatoria(prevConvocatoria => ({
+            ...prevConvocatoria,
+            [name]: date.toISOString()
+        }));
+    };
+
     return (
         <div className="container mt-4">
-            <h2 className="mb-4">Crear Nueva Convocatoria</h2>
+            <h2>Datos de Convocatoria</h2>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                    <label className="form-label">Código:</label>
-                    <input
-                        type="text"
+                    <label className="form-label">Título de Convocatoria:</label>
+                    <textarea
+                        name="nombre"
                         className="form-control"
-                        value={codConvocatoria}
-                        onChange={(e) => setCodConvocatoria(e.target.value)}
+                        rows="4"
+                        value={convocatoria.nombre}
+                        onChange={handleChange}
                         required
                     />
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Nombre:</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Fecha de Inicio:</label>
-                    <input
-                        type="date"
-                        className="form-control"
-                        value={fechaInicio}
-                        onChange={(e) => setFechaInicio(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Fecha de Fin:</label>
-                    <input
-                        type="date"
-                        className="form-control"
-                        value={fechaFin}
-                        onChange={(e) => setFechaFin(e.target.value)}
-                    />
+                <div className="mb-3 row">
+                    <div className="col-md-6">
+                        <label className="form-label">Fecha de publicacion:</label>
+                        <DatePicker
+                            selected={convocatoria.fecha_inicio ? new Date(convocatoria.fecha_inicio) : null}
+                            onChange={date => handleChangeDate('fecha_inicio', date)}
+                            className="form-control"
+                            dateFormat="yyyy-MM-dd"
+                            required
+                        />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label">Fecha de conclusion:</label>
+                        <DatePicker
+                            selected={convocatoria.fecha_fin ? new Date(convocatoria.fecha_fin) : null}
+                            onChange={date => handleChangeDate('fecha_fin', date)}
+                            className="form-control"
+                            dateFormat="yyyy-MM-dd"
+                            required
+                        />
+                    </div>
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Tipo de Convocatoria:</label>
                     <select
-                        className="form-select"
-                        value={idTipoConvocatoria}
-                        onChange={(e) => setIdTipoConvocatoria(e.target.value)}
+                        name="id_tipoconvocatoria"
+                        className="form-control"
+                        value={convocatoria.id_tipoconvocatoria || ''}
+                        onChange={handleChange}
                         required
                     >
-                        <option value="">Seleccione un tipo de convocatoria</option>
-                        {tiposConvocatoria.map((tipo) => (
+                        <option value="">Seleccione un tipo</option>
+                        {tiposConvocatoria.map(tipo => (
                             <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
                                 {tipo.nombre_convocatoria}
                             </option>
                         ))}
                     </select>
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Carrera:</label>
-                    <select
-                        className="form-select"
-                        value={idCarrera}
-                        onChange={(e) => setIdCarrera(e.target.value)}
-                        required
-                    >
-                        <option value="">Seleccione una carrera</option>
-                        {carreras.map((carrera) => (
-                            <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                                {carrera.nombre_carrera}
-                            </option>
-                        ))}
-                    </select>
+                <div className="mb-3 row">
+                    <div className="col-md-6">
+                        <label className="form-label">Carrera:</label>
+                        <select
+                            name="id_carrera"
+                            className="form-control"
+                            value={convocatoria.id_carrera || ''}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Seleccione una carrera</option>
+                            {carreras.map(carrera => (
+                                <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                                    {carrera.nombre_carrera}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label">Facultad:</label>
+                        <select
+                            name="id_facultad"
+                            className="form-control"
+                            value={convocatoria.id_facultad || ''}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Seleccione una facultad</option>
+                            {facultades.map(facultad => (
+                                <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                    {facultad.nombre_facultad}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Facultad:</label>
-                    <select
-                        className="form-select"
-                        value={idFacultad}
-                        onChange={(e) => setIdFacultad(e.target.value)}
-                        required
-                    >
-                        <option value="">Seleccione una facultad</option>
-                        {facultades.map((facultad) => (
-                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                                {facultad.nombre_facultad}
-                            </option>
-                        ))}
-                    </select>
-                </div> 
-                <button type="submit" className="btn btn-primary">siguiente</button>
+                <button type="submit" className="btn btn-primary">
+                    {id ? 'Siguiente' : 'Siguiente'}
+                </button>
             </form>
         </div>
     );

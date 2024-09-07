@@ -3,10 +3,24 @@
 const jwt = require('jsonwebtoken');
 
 const authMiddleware = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+    const token = req.header('Authorization').replace('Bearer ', '');
     if (!token) {
-        return res.status(401).json({ error: 'Acceso denegado. No hay token proporcionado.' });
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+
+    try {
+        const verified = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = verified;
+        next();
+    } catch (err) {
+        res.status(403).json({ error: 'Token inválido' });
+    }
+};
+
+const authenticateToken = (req, res, next) => {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    if (!token) {
+        return res.status(401).json({ message: 'No se proporcionó un token' });
     }
 
     try {
@@ -17,8 +31,8 @@ const authMiddleware = (req, res, next) => {
         console.log('Rol del usuario:', req.user.rol);
 
         next();
-    } catch (err) {
-        res.status(403).json({ error: 'Token no válido.' });
+    } catch (error) {
+        res.status(403).json({ message: 'Token no válido' });
     }
 };
 
@@ -30,4 +44,4 @@ const authorizeAdmin = (req, res, next) => {
     next();
 };
 
-module.exports = { authMiddleware, authorizeAdmin };
+module.exports = { authenticateToken, authorizeAdmin, authMiddleware };

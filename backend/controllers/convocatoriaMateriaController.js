@@ -16,10 +16,10 @@ const getConvocatoriaMaterias = async (req, res) => {
 // Crear una nueva relación convocatoria-materia
 const createConvocatoriaMateria = async (req, res) => {
     try {
-        const { id_convocatoria, id_materia } = req.body;
+        const { id_convocatoria, id_materia, total_horas, perfil_profesional } = req.body; // Agregamos los nuevos campos
         const result = await pool.query(
-            'INSERT INTO convocatoria_materia (id_convocatoria, id_materia) VALUES ($1, $2) RETURNING *',
-            [id_convocatoria, id_materia]
+            'INSERT INTO convocatoria_materia (id_convocatoria, id_materia, total_horas, perfil_profesional) VALUES ($1, $2, $3, $4) RETURNING *',
+            [id_convocatoria, id_materia, total_horas, perfil_profesional]
         );
         res.json(result.rows[0]);
     } catch (error) {
@@ -32,10 +32,10 @@ const createConvocatoriaMateria = async (req, res) => {
 const updateConvocatoriaMateria = async (req, res) => {
     try {
         const { id } = req.params;
-        const { id_convocatoria, id_materia } = req.body;
+        const { id_convocatoria, id_materia, total_horas, perfil_profesional } = req.body; // Agregamos los nuevos campos
         const result = await pool.query(
-            'UPDATE convocatoria_materia SET id_convocatoria = $1, id_materia = $2 WHERE id = $3 RETURNING *',
-            [id_convocatoria, id_materia, id]
+            'UPDATE convocatoria_materia SET id_convocatoria = $1, id_materia = $2, total_horas = $3, perfil_profesional = $4 WHERE id = $5 RETURNING *',
+            [id_convocatoria, id_materia, total_horas, perfil_profesional, id]
         );
         res.json(result.rows[0]);
     } catch (error) {
@@ -57,4 +57,3 @@ const deleteConvocatoriaMateria = async (req, res) => {
 };
 
 module.exports = { getConvocatoriaMaterias, createConvocatoriaMateria, updateConvocatoriaMateria, deleteConvocatoriaMateria };
- 

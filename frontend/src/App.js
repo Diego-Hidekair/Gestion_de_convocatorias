@@ -1,7 +1,8 @@
+// frontend/src/App.js
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
 import CarreraEdit from './components/CarreraEdit';
@@ -29,13 +30,13 @@ import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
-import RedirectPage from './components/RedirectPage';
+import RedirectPage from './components/RedirectPage'; // Importa el nuevo componente
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 
 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
-axios.defaults.baseURL = 'http://localhost:5000/';
+axios.defaults.baseURL = 'http://localhost:5000/'; 
 
 const App = () => {
     return (
@@ -51,7 +52,6 @@ const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState('');
     const navigate = useNavigate();
-    const location = useLocation();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -79,17 +79,9 @@ const AuthWrapper = () => {
         }
     }, [navigate]);
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            if (location.pathname === '/' || location.pathname === '/login') {
-                navigate('/redirect');
-            }
-        }
-    }, [isAuthenticated, navigate, location.pathname]);
-
     const handleLogin = () => {
         setIsAuthenticated(true);
-        navigate('/redirect');
+        navigate('/redirect'); 
     };
 
     const handleLogout = () => {
@@ -105,7 +97,7 @@ const AuthWrapper = () => {
                     <NavBar onLogout={handleLogout} />
                     <Routes>
                         <Route path="/" element={<Navigate to="/carreras" />} />
-                        <Route path="/redirect" element={<RedirectPage />} />
+                        <Route path="/redirect" element={<RedirectPage />} /> {/* Agrega la nueva ruta */}
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/carreras/new" element={<CarreraForm />} />
                         <Route path="/carreras/edit/:id" element={<CarreraEdit />} />

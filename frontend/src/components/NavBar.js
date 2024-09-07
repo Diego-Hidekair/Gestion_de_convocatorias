@@ -5,6 +5,7 @@ import {jwtDecode} from 'jwt-decode';
 import './NavBar.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+
 const NavBar = ({ onLogout }) => {
     const [navOpen, setNavOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,8 +16,8 @@ const NavBar = ({ onLogout }) => {
         const token = localStorage.getItem('token');
         if (token) {
             setIsLoggedIn(true);
-            const decodedToken = jwtDecode(token); // Decodifica el token
-            setRole(decodedToken.role); // Asigna el rol
+            const decodedToken = jwtDecode(token); //decodifica la clave ingresada
+            setRole(decodedToken.role); //esta cladve debe asegurarse que coincida con la clave en el token
         }
     }, []);
 
@@ -35,8 +36,7 @@ const NavBar = ({ onLogout }) => {
             {isLoggedIn && (
                 <div className="navbar bg-light navbar-expand-lg navbar-light">
                     <div className="container-fluid">
-                        {/* Cambia el link a "/redirect" */}
-                        <Link className="navbar-brand" to="/redirect">Gestión de Convocatorias</Link>
+                        <Link className="navbar-brand" to="/">Gestión de Convocatorias</Link>
                         <button className="navbar-toggler" type="button" onClick={toggleNav} aria-expanded={navOpen}>
                             <span className="navbar-toggler-icon"></span>
                         </button>
