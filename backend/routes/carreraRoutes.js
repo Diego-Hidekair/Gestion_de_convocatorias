@@ -10,3 +10,4 @@ router.delete('/:id', carreraController.deleteCarrera);
 router.get('/:id', carreraController.getCarreraById);
 
 module.exports = router;
+

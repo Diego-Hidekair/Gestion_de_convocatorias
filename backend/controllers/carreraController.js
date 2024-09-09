@@ -59,8 +59,6 @@ const deleteCarrera = async (req, res) => {
     }
 };
 
-
-
 const getCarreraById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -74,10 +72,4 @@ const getCarreraById = async (req, res) => {
     }
 };
 
-module.exports = {
-    getCarreras,
-    createCarrera,
-    updateCarrera,
-    deleteCarrera,
-    getCarreraById
-};
+module.exports = { getCarreras, createCarrera, updateCarrera, deleteCarrera, getCarreraById };

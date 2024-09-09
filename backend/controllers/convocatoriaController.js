@@ -49,16 +49,16 @@ const getConvocatoriaById = async (req, res) => {
 
 // Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {
-    const { nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad } = req.body;
     try {
+        const { nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad } = req.body;
         const result = await pool.query(
-            `INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            'INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_convocatoria',
             [nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad]
         );
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.json(result.rows[0]); // Esto devolverá el id_convocatoria recién creado
+    } catch (error) {
+        console.error('Error creating convocatoria:', error);
+        res.status(500).send('Server error');
     }
 };
 
@@ -97,3 +97,4 @@ const deleteConvocatoria = async (req, res) => {
 };
 
 module.exports = { getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria };
+ 

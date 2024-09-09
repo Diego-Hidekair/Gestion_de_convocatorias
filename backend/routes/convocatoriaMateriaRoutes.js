@@ -1,17 +1,12 @@
 // backend/routes/convocatoriaMateriaRoutes.js
 const express = require('express');
 const router = express.Router();
-const {
-    getConvocatoriaMaterias,
-    createConvocatoriaMateria,
-    updateConvocatoriaMateria,
-    deleteConvocatoriaMateria,
-} = require('../controllers/convocatoriaMateriaController');
+const convocatoriaMateriaController = require('../controllers/convocatoriaMateriaController');
 
-router.get('/:id_convocatoria', getConvocatoriaMaterias);
-router.post('/', createConvocatoriaMateria);
-router.put('/:id', updateConvocatoriaMateria);
-router.delete('/:id', deleteConvocatoriaMateria);
+// Rutas para gestionar las materias de una convocatoria
+router.get('/:id_convocatoria', convocatoriaMateriaController.getConvocatoriaMaterias);
+router.post('/', convocatoriaMateriaController.createConvocatoriaMateria);
+router.put('/:id', convocatoriaMateriaController.updateConvocatoriaMateria);
+router.delete('/:id', convocatoriaMateriaController.deleteConvocatoriaMateria);
 
 module.exports = router;
-

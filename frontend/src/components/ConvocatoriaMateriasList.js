@@ -5,19 +5,27 @@ import { Link } from 'react-router-dom';
 
 const ConvocatoriaMateriasList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/convocatorias');
+                const response = await axios.get('http://localhost:5000/convocatorias');
                 setConvocatorias(response.data);
+                setLoading(false);
             } catch (error) {
                 console.error('Error al obtener las convocatorias:', error);
+                setError('Error al obtener convocatorias');
+                setLoading(false);
             }
         };
 
         fetchConvocatorias();
     }, []);
+
+    if (loading) return <p>Cargando convocatorias...</p>;
+    if (error) return <p>{error}</p>;
 
     return (
         <div className="container">

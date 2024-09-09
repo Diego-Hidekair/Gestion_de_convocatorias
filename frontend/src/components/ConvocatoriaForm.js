@@ -61,25 +61,25 @@ const ConvocatoriaForm = () => {
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (id) {
-                await axios.put(`http://localhost:5000/convocatorias/${id}`, convocatoria);
-            } else {
-                await axios.post('http://localhost:5000/convocatorias', convocatoria);
-            }
-            navigate('/convocatorias');
-        } catch (error) {
-            console.error('Error saving convocatoria:', error);
-        }
-    };
-    
     const handleChangeDate = (name, date) => {
         setConvocatoria(prevConvocatoria => ({
             ...prevConvocatoria,
             [name]: date.toISOString()
         }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+    
+        try {
+            const response = await axios.post('/convocatorias', convocatoria);
+            const newConvocatoriaId = response.data.id_convocatoria;
+    
+            // Redirigir a la página de materias con el ID de la convocatoria recién creada
+            navigate(`/convocatorias_materias/new`);
+        } catch (error) {
+            console.error("Error creando la convocatoria:", error);
+        }
     };
 
     return (
@@ -138,23 +138,6 @@ const ConvocatoriaForm = () => {
                 </div>
                 <div className="mb-3 row">
                     <div className="col-md-6">
-                        <label className="form-label">Carrera:</label>
-                        <select
-                            name="id_carrera"
-                            className="form-control"
-                            value={convocatoria.id_carrera || ''}
-                            onChange={handleChange}
-                            required
-                        >
-                            <option value="">Seleccione una carrera</option>
-                            {carreras.map(carrera => (
-                                <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                                    {carrera.nombre_carrera}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="col-md-6">
                         <label className="form-label">Facultad:</label>
                         <select
                             name="id_facultad"
@@ -167,6 +150,23 @@ const ConvocatoriaForm = () => {
                             {facultades.map(facultad => (
                                 <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                     {facultad.nombre_facultad}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="col-md-6">
+                        <label className="form-label">Carrera:</label>
+                        <select
+                            name="id_carrera"
+                            className="form-control"
+                            value={convocatoria.id_carrera || ''}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Seleccione una carrera</option>
+                            {carreras.map(carrera => (
+                                <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                                    {carrera.nombre_carrera}
                                 </option>
                             ))}
                         </select>
