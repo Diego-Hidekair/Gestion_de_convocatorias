@@ -31,6 +31,8 @@ import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
 import RedirectPage from './components/RedirectPage'; // Importa el nuevo componente
+import HonorariosForm from './components/HonorariosForm';
+
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
@@ -124,6 +126,7 @@ const AuthWrapper = () => {
                         <Route path="/api/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
+                        <Route path="/honorarios/new" element={<HonorariosForm />} />
                     </Routes>
                 </>
             ) : (

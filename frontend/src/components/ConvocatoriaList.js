@@ -106,18 +106,6 @@ const ConvocatoriaList = () => {
                             <td>{convocatoria.nombre_carrera}</td>
                             <td>{convocatoria.nombre_facultad}</td>
                             <td>
-                                <button 
-                                    onClick={() => handlePreview(convocatoria)} 
-                                    className="btn btn-info btn-sm me-2"
-                                >
-                                    Vista Previa
-                                </button>
-                                <button 
-                                    onClick={() => handleDownload(convocatoria)} 
-                                    className="btn btn-primary btn-sm me-2"
-                                >
-                                    Descargar
-                                </button>
                                 <Link to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="btn btn-warning btn-sm me-2">
                                     Editar
                                 </Link>

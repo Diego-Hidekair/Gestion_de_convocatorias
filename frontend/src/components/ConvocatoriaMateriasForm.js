@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 
 const CrearConvocatoriaMateria = () => {
   const [convocatorias, setConvocatorias] = useState([]);
@@ -11,6 +12,7 @@ const CrearConvocatoriaMateria = () => {
   const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
   const [perfilProfesional, setPerfilProfesional] = useState('');
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Hook de navegación
 
   useEffect(() => {
     const fetchConvocatorias = async () => {
@@ -58,6 +60,7 @@ const CrearConvocatoriaMateria = () => {
       }));
 
       alert('ConvocatoriaMateria creada exitosamente');
+      navigate('/honorarios/new'); // Redirige al formulario de honorarios
     } catch (err) {
       setError('Error al crear la ConvocatoriaMateria');
       console.error(err);

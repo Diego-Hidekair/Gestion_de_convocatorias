@@ -1,6 +1,6 @@
 // backend/app.js
-require('dotenv').config();
 
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -28,6 +28,7 @@ const documentosRoutes = require('./routes/documentosRoutes');
 const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
+const honorariosRoutes = require('./routes/honorariosRoutes'); // Importa las rutas de honorarios
 
 // Usa las rutas
 app.use('/facultades', facultadRoutes);
@@ -40,13 +41,13 @@ app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/usuarios', usuarioRoutes);
+app.use('/honorarios', honorariosRoutes); // Usa las rutas de honorarios
 
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 app.use((req, res, next) => {
     res.status(404).json({ error: "Ruta no encontrada" });
 });
-///##############################
 
 // Ruta de prueba para verificar la conexión
 app.get('/', (req, res) => {
@@ -76,4 +77,3 @@ process.on('SIGINT', shutdown);
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
-
