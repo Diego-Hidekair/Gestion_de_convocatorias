@@ -137,7 +137,7 @@ const AuthWrapper = () => {
                 </Routes>
             )}
         </>
-    );
+    ); 
 };
 
 export default App;

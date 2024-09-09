@@ -10,3 +10,4 @@ router.put('/:id', convocatoriaMateriaController.updateConvocatoriaMateria);
 router.delete('/:id', convocatoriaMateriaController.deleteConvocatoriaMateria);
 
 module.exports = router;
+

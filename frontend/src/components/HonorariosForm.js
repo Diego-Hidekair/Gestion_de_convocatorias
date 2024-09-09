@@ -9,7 +9,10 @@ const HonorariosForm = () => {
   useEffect(() => {
     const fetchTiposHonorarios = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/tipos-honorarios'); // Modifica según tu API
+//        const response = await axios.get('http://localhost:5000/tipos-honorarios');
+        const response = await axios.get('http://localhost:5000/tipo_convocatoria');
+
+        console.log(response.data);  // Verificar los datos recibidos
         setTiposHonorarios(response.data);
       } catch (err) {
         setError('Error al obtener los tipos de honorarios');

@@ -54,11 +54,6 @@ app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
 });
 
-// Manejo de rutas no encontradas
-app.use((req, res, next) => {
-    res.status(404).json({ error: "Ruta no encontrada" });
-});
-
 // Manejador de errores global
 app.use((err, req, res, next) => {
     console.error(err.stack);

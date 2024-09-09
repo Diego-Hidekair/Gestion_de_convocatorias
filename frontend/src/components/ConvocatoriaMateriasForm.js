@@ -52,7 +52,7 @@ const CrearConvocatoriaMateria = () => {
 
     try {
       await Promise.all(materiasSeleccionadas.map(async (materia) => {
-        await axios.post('http://localhost:5000/convocatoria_materias', {
+        await axios.post('http://localhost:5000/convocatoria-materias', {
           id_convocatoria: idConvocatoria,
           id_materia: materia.id,
           perfil_profesional: perfilProfesional,
@@ -81,7 +81,7 @@ const CrearConvocatoriaMateria = () => {
 
   return (
     <div className="container mt-4">
-      <h2>Crear una nueva ConvocatoriaMateria</h2>
+      <h2>Agregar materias a la Convocatoria</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       
       <form onSubmit={handleSubmit}>

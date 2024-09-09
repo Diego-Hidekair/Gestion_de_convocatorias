@@ -11,6 +11,6 @@ router.get('/:id', tipoConvocatoriaController.getTipoConvocatoriaById);
 router.post('/', tipoConvocatoriaController.createTipoConvocatoria);
 router.put('/:id', tipoConvocatoriaController.updateTipoConvocatoria);
 router.delete('/:id', tipoConvocatoriaController.deleteTipoConvocatoria);
-router.get('/', getAllTiposConvocatoria);
+//router.get('/', getAllTiposConvocatoria);
 
 module.exports = router;
