@@ -67,7 +67,9 @@ const ConvocatoriaForm = () => {
             [name]: date.toISOString()
         }));
     };
-
+ 
+    
+ 
     const handleSubmit = async (e) => {
         e.preventDefault();
     

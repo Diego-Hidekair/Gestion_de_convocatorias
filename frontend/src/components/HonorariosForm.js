@@ -1,38 +1,60 @@
+// frontend/src/components/HonorariosForm.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const HonorariosForm = () => {
-  const [honorario, setHonorario] = useState('');
-  const [tiposHonorarios, setTiposHonorarios] = useState([]);
+  const [idConvocatoria, setIdConvocatoria] = useState('');
+  const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
+  const [pagoMensual, setPagoMensual] = useState('');
+  const [tiposConvocatorias, setTiposConvocatorias] = useState([]);
+  const [convocatorias, setConvocatorias] = useState([]);
   const [error, setError] = useState(null);
 
+  // Obtener tipos de convocatorias
   useEffect(() => {
-    const fetchTiposHonorarios = async () => {
+    const fetchTiposConvocatorias = async () => {
       try {
-//        const response = await axios.get('http://localhost:5000/tipos-honorarios');
-        const response = await axios.get('http://localhost:5000/tipo_convocatoria');
-
-        console.log(response.data);  // Verificar los datos recibidos
-        setTiposHonorarios(response.data);
+        const response = await axios.get('http://localhost:5000/tipo_convocatoria'); // Obtén los tipos de convocatoria
+        setTiposConvocatorias(response.data);
       } catch (err) {
-        setError('Error al obtener los tipos de honorarios');
+        setError('Error al obtener los tipos de convocatorias');
         console.error(err);
       }
     };
 
-    fetchTiposHonorarios();
+    fetchTiposConvocatorias();
+  }, []);
+
+  // Obtener convocatorias
+  useEffect(() => {
+    const fetchConvocatorias = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/convocatorias'); // Obtén las convocatorias
+        setConvocatorias(response.data);
+      } catch (err) {
+        setError('Error al obtener las convocatorias');
+        console.error(err);
+      }
+    };
+
+    fetchConvocatorias();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!honorario) {
-      setError('Por favor, seleccione un tipo de honorario');
+    if (!idConvocatoria || !idTipoConvocatoria || !pagoMensual) {
+      setError('Por favor, complete todos los campos');
       return;
     }
 
     try {
-      await axios.post('http://localhost:5000/honorarios', { honorario });
+      await axios.post('http://localhost:5000/honorarios', {
+        id_convocatoria: idConvocatoria,
+        id_tipoconvocatoria: idTipoConvocatoria,
+        pago_mensual: pagoMensual
+      });
       alert('Honorario creado exitosamente');
     } catch (err) {
       setError('Error al crear el honorario');
@@ -47,19 +69,46 @@ const HonorariosForm = () => {
       
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">Seleccionar Tipo de Honorario:</label>
+          <label className="form-label">Seleccionar Convocatoria:</label>
           <select
             className="form-control"
-            value={honorario}
-            onChange={(e) => setHonorario(e.target.value)}
+            value={idConvocatoria}
+            onChange={(e) => setIdConvocatoria(e.target.value)}
           >
-            <option value="">Seleccione un tipo de honorario</option>
-            {tiposHonorarios.map((tipo) => (
-              <option key={tipo.id_honorario} value={tipo.id_honorario}>
-                {tipo.nombre}
+            <option value="">Seleccione una convocatoria</option>
+            {convocatorias.map((convocatoria) => (
+              <option key={convocatoria.id_convocatoria} value={convocatoria.id_convocatoria}>
+                {convocatoria.nombre}
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Seleccionar Tipo de Convocatoria:</label>
+          <select
+            className="form-control"
+            value={idTipoConvocatoria}
+            onChange={(e) => setIdTipoConvocatoria(e.target.value)}
+          >
+            <option value="">Seleccione un tipo de convocatoria</option>
+            {tiposConvocatorias.map((tipo) => (
+              <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
+                {tipo.nombre_convocatoria}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Pago Mensual:</label>
+          <input
+            type="text"
+            className="form-control"
+            value={pagoMensual}
+            onChange={(e) => setPagoMensual(e.target.value)}
+            placeholder="Ingrese el pago mensual"
+          />
         </div>
 
         <button type="submit" className="btn btn-primary">

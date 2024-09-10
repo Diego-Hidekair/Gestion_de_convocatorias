@@ -73,6 +73,9 @@ exports.deleteTipoConvocatoria = async (req, res) => {
     try {
         await client.query('BEGIN');
 
+        // Eliminar todas las filas dependientes en convocatoria_materia
+        await client.query('DELETE FROM convocatoria_materia WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
+
         // Eliminar todas las convocatorias que referencian este tipo de convocatoria
         await client.query('DELETE FROM convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]);
 
