@@ -16,6 +16,11 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Servir archivos estáticos
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 // Importa las rutas
 const facultadRoutes = require('./routes/facultadRoutes');
@@ -41,9 +46,8 @@ app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/usuarios', usuarioRoutes);
-app.use('/honorarios', honorariosRoutes); // Usa las rutas de honorarios
-
-app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
+app.use('/honorarios', honorariosRoutes);   
+//app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 app.use((req, res, next) => {
     res.status(404).json({ error: "Ruta no encontrada" });
