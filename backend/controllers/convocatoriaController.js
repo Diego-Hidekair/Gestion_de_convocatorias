@@ -83,7 +83,7 @@ const updateConvocatoria = async (req, res) => {
 };
 
 // Eliminar una convocatoria
-const deleteConvocatoria = async (req, res) => {
+const deleteConvocatoria = async (req, res) => { 
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id]);

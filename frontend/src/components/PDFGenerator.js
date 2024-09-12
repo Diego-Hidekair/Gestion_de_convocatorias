@@ -1,10 +1,11 @@
 // frontend/src/components/PDFGenerator.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const PDFGenerator = () => {
     const { id_convocatoria } = useParams();
+    const navigate = useNavigate(); // Para la redirección
     const [convocatorias, setConvocatorias] = useState([]);
     const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
     const [materias, setMaterias] = useState([]);
@@ -134,31 +135,16 @@ const PDFGenerator = () => {
                 }
             });
 
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
+            // Redirigir a la vista del PDF
             const pdfFileName = `N_${selectedConvocatoria.cod_convocatoria}_${selectedConvocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
-            link.href = url;
-            link.setAttribute('download', pdfFileName);
-            document.body.appendChild(link);
-            link.click();
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            navigate(`/pdf/view/${pdfFileName}`); // Redirigir a la vista del PDF
 
         } catch (error) {
             console.error('Error al generar el PDF:', error);
         }
     };
     
-    const viewPdf = async (pdfFileName) => {
-        try {
-            const response = await axios.get(`http://localhost:5000/pdf/view/${pdfFileName}`, {
-                responseType: 'blob'
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            window.open(url); // Abre una nueva ventana para visualizar el PDF
-        } catch (error) {
-            console.error('Error al obtener el PDF:', error);
-        }
-    };
-
     return (
         <div className="container mt-4">
             <h2 className="mb-4">Generar PDF para Convocatoria</h2>

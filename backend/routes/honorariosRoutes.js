@@ -11,3 +11,4 @@ router.put('/:id', updateHonorario);
 router.delete('/:id', deleteHonorario);
 
 module.exports = router;
+ 
