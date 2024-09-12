@@ -2,31 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { useNavigate, useParams } from 'react-router-dom';
 
 const CrearConvocatoriaMateria = () => {
-  const [convocatorias, setConvocatorias] = useState([]);
+  const { id_convocatoria } = useParams(); // Obtén el ID de la convocatoria de la URL
   const [materias, setMaterias] = useState([]);
   const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
-  const [idConvocatoria, setIdConvocatoria] = useState('');
-  const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
   const [perfilProfesional, setPerfilProfesional] = useState('');
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Hook de navegación
-
-  useEffect(() => {
-    const fetchConvocatorias = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/convocatorias');
-        setConvocatorias(response.data);
-      } catch (err) {
-        setError('Error al obtener las convocatorias');
-        console.error(err);
-      }
-    };
-
-    fetchConvocatorias();
-  }, []);
+  const navigate = useNavigate();
+  const [materiaSeleccionada, setMateriaSeleccionada] = useState(''); 
 
   useEffect(() => {
     const fetchMaterias = async () => {
@@ -45,31 +30,31 @@ const CrearConvocatoriaMateria = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!idConvocatoria || materiasSeleccionadas.length === 0 || !perfilProfesional) {
-      setError('Por favor, complete todos los campos');
-      return;
+    if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
+        setError('Por favor, complete todos los campos');
+        return;
     }
 
     try {
-      await Promise.all(materiasSeleccionadas.map(async (materia) => {
-        await axios.post('http://localhost:5000/convocatoria-materias', {
-          id_convocatoria: idConvocatoria,
-          id_materia: materia.id,
-          perfil_profesional: perfilProfesional,
-        });
-      }));
+        await Promise.all(materiasSeleccionadas.map(async (materia) => {
+            await axios.post('http://localhost:5000/convocatoria-materias', {
+                id_convocatoria: id_convocatoria, // Usar el id de la URL
+                id_materia: materia.id_materia,
+                perfil_profesional: perfilProfesional,
+            });
+        }));
 
-      alert('ConvocatoriaMateria creada exitosamente');
-      navigate('/honorarios/new'); // Redirige al formulario de honorarios
+        alert('Materias agregadas exitosamente');
+        navigate(`/honorarios/new/${id_convocatoria}`); // Redirige al formulario de honorarios con el ID de la convocatoria
     } catch (err) {
-      setError('Error al crear la ConvocatoriaMateria');
-      console.error(err);
+        setError('Error al crear la ConvocatoriaMateria');
+        console.error(err);
     }
   };
 
   const handleAddMateria = () => {
     const materia = materias.find(m => m.id_materia === parseInt(materiaSeleccionada));
-    if (materia && !materiasSeleccionadas.some(m => m.id === materia.id_materia)) {
+    if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
       setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
       setMateriaSeleccionada('');
     }
@@ -85,22 +70,6 @@ const CrearConvocatoriaMateria = () => {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Seleccionar Convocatoria:</label>
-          <select
-            className="form-control"
-            value={idConvocatoria}
-            onChange={(e) => setIdConvocatoria(e.target.value)}
-          >
-            <option value="">Seleccione una convocatoria</option>
-            {convocatorias.map((convocatoria) => (
-              <option key={convocatoria.id_convocatoria} value={convocatoria.id_convocatoria}>
-                {convocatoria.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="mb-3">
           <label className="form-label">Seleccionar Materia:</label>
           <select
@@ -159,6 +128,5 @@ const CrearConvocatoriaMateria = () => {
     </div>
   );
 };
-
 
 export default CrearConvocatoriaMateria;

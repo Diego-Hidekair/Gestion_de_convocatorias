@@ -29,7 +29,7 @@ const ConvocatoriaList = () => {
         }
     };
 
-    const handlePreview = (convocatoria) => {
+    /*const handlePreview = (convocatoria) => {
         const pdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
         const pdfUrl = `http://localhost:5000/pdfs/${pdfFileName}`;
         window.open(pdfUrl, '_blank');
@@ -44,7 +44,7 @@ const ConvocatoriaList = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    };
+    };*/
 
     const filteredConvocatorias = convocatorias.filter(convocatoria => {
         if (!searchBy) return true;

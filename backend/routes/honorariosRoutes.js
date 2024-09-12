@@ -2,13 +2,13 @@
 
 const express = require('express');
 const router = express.Router();
-const { getHonorarios, getHonorarioById, createHonorario, updateHonorario, deleteHonorario } = require('../controllers/honorariosController');
+const honorariosController = require('../controllers/honorariosController');
 
-router.get('/', getHonorarios);
-router.get('/:id', getHonorarioById);
-router.post('/', createHonorario);
-router.put('/:id', updateHonorario);
-router.delete('/:id', deleteHonorario);
+router.get('/', honorariosController.getHonorarios);
+router.get('/:id', honorariosController.getHonorarioById);
+router.post('/', honorariosController.createHonorario);
+router.put('/:id', honorariosController.updateHonorario);
+router.delete('/:id', honorariosController.deleteHonorario);
 
 module.exports = router;
  

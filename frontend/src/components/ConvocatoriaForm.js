@@ -74,15 +74,17 @@ const ConvocatoriaForm = () => {
         e.preventDefault();
     
         try {
-            const response = await axios.post('/convocatorias', convocatoria);
-            const newConvocatoriaId = response.data.id_convocatoria;
+            // Enviar los datos de la convocatoria al backend
+            const response = await axios.post('http://localhost:5000/convocatorias', convocatoria);
+            const newConvocatoriaId = response.data.id_convocatoria; // Obtén el ID de la convocatoria recién creada
     
-            // Redirigir a la página de materias con el ID de la convocatoria recién creada
-            navigate(`/convocatorias_materias/new`);
+            // Redirigir a la página de materias con el ID de la convocatoria
+            navigate(`/convocatorias_materias/new/${newConvocatoriaId}`);
         } catch (error) {
             console.error("Error creando la convocatoria:", error);
         }
     };
+    
 
     return (
         <div className="container mt-4">

@@ -22,7 +22,6 @@ import MateriaEdit from './components/MateriaEdit';
 import ConvocatoriaMaterias from './components/ConvocatoriaMaterias';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import ConvocatoriaMateriasList from './components/ConvocatoriaMateriasList';
-import PDFGenerator from './components/PDFGenerator';
 import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
@@ -101,7 +100,7 @@ const AuthWrapper = () => {
                     <NavBar onLogout={handleLogout} />
                     <Routes>
                         <Route path="/" element={<Navigate to="/carreras" />} />
-                        <Route path="/redirect" element={<RedirectPage />} /> {/* Agrega la nueva ruta */}
+                        <Route path="/redirect" element={<RedirectPage />} />
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/carreras/new" element={<CarreraForm />} />
                         <Route path="/carreras/edit/:id" element={<CarreraEdit />} />
@@ -120,17 +119,15 @@ const AuthWrapper = () => {
                         <Route path="/materias/crear" element={<MateriaForm />} />
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
                         <Route path="/convocatorias_materias" element={<ConvocatoriaMateriasList />} />
-                        <Route path="/convocatorias_materias/new" element={<ConvocatoriaMateriasForm />} />
+                        <Route path="/convocatorias_materias/new/:id" element={<ConvocatoriaMateriasForm />} /> {/* Esta es la ruta que faltaba */}
                         <Route path="/convocatorias_materias/edit/:id" element={<ConvocatoriaMateriasForm />} />
-                        <Route path="/:id/convocatorias_materias/new" element={<ConvocatoriaMaterias />} />
-                        <Route path="/pdf-generator/:id" element={<PDFGenerator />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
-                        <Route path="/honorarios/new" element={<HonorariosForm />} />
-                        <Route path="/generate-pdf" component={PDFGenerator} />
-                        <Route path="/view-pdf/:fileName" component={PDFViewer} />
+                        <Route path="/honorarios/new/:id" element={<HonorariosForm />} /> {/* Para pasar el id de la convocatoria */}
+                        <Route path="/generate-pdf" element={<PDFGenerator />} />
+                        <Route path="/view-pdf/:fileName" element={<PDFViewer />} />
                     </Routes>
                 </>
             ) : (
