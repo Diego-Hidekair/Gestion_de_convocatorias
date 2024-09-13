@@ -1,4 +1,5 @@
-// frontend/src/components/PDFGenerator.js
+//frontend/src/components/PDFGenerator.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -12,6 +13,9 @@ const PDFGenerator = () => {
     const [selectedMaterias, setSelectedMaterias] = useState([]);
     const [resolucion, setResolucion] = useState(null);
     const [dictamen, setDictamen] = useState(null);
+    const [loading, setLoading] = useState(false); // Estado de carga
+    const [error, setError] = useState(null); // Estado para manejar errores
+    const [successMessage, setSuccessMessage] = useState(null); // Estado para mensajes de éxito
 
     useEffect(() => {
         const fetchConvocatorias = async () => {
@@ -93,13 +97,15 @@ const PDFGenerator = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true); // Activar estado de carga
+        setError(null); // Limpiar errores previos
+        setSuccessMessage(null); // Limpiar mensajes de éxito previos
 
-        // Eliminar duplicados en selectedMaterias
         const uniqueSelectedMaterias = Array.from(new Set(selectedMaterias.map(m => m.id_materia)))
             .map(id => selectedMaterias.find(m => m.id_materia === id));
     
-        // Actualizar la tabla convocatoria_materia
         try {
+            // Vincular materias
             const promises = uniqueSelectedMaterias.map(materia => {
                 return axios.post('http://localhost:5000/convocatoria-materias', {
                     id_convocatoria: selectedConvocatoria.id_convocatoria,
@@ -107,27 +113,22 @@ const PDFGenerator = () => {
                 });
             });
             await Promise.all(promises);
-        } catch (error) {
-            console.error('Error al vincular materias a la convocatoria:', error);
-            return;
-        }
 
-        // Generar PDF
-        const formData = new FormData();
-        formData.append('id_convocatoria', selectedConvocatoria.id_convocatoria);
-        formData.append('materias', JSON.stringify(uniqueSelectedMaterias.map(materia => ({
-            nombre: materia.nombre,
-            codigo: materia.codigo,
-        }))));
-        
-        if (resolucion) {
-            formData.append('resolucion', resolucion);
-        }
-        if (dictamen) {
-            formData.append('dictamen', dictamen);
-        }
+            // Crear el PDF
+            const formData = new FormData();
+            formData.append('id_convocatoria', selectedConvocatoria.id_convocatoria);
+            formData.append('materias', JSON.stringify(uniqueSelectedMaterias.map(m => ({
+                nombre: m.nombre,
+                codigo: m.codigo,
+            }))));
+            
+            if (resolucion) {
+                formData.append('resolucion', resolucion);
+            }
+            if (dictamen) {
+                formData.append('dictamen', dictamen);
+            }
 
-        try {
             const response = await axios.post('http://localhost:5000/pdf/create', formData, {
                 responseType: 'blob',
                 headers: {
@@ -138,10 +139,14 @@ const PDFGenerator = () => {
             // Redirigir a la vista del PDF
             const pdfFileName = `N_${selectedConvocatoria.cod_convocatoria}_${selectedConvocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
             const url = window.URL.createObjectURL(new Blob([response.data]));
-            navigate(`/pdf/view/${pdfFileName}`); // Redirigir a la vista del PDF
+            setSuccessMessage('PDF generado exitosamente'); // Mostrar mensaje de éxito
+            navigate(`/pdf/view/${pdfFileName}`);
 
         } catch (error) {
+            setError('Error al generar el PDF.'); // Manejar el error y mostrar mensaje
             console.error('Error al generar el PDF:', error);
+        } finally {
+            setLoading(false); // Desactivar estado de carga
         }
     };
     
@@ -221,7 +226,13 @@ const PDFGenerator = () => {
                     />
                 </div>
 
-                <button type="submit" className="btn btn-primary">Generar PDF</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? 'Generando PDF...' : 'Generar PDF'}
+                </button>
+
+                {error && <p className="text-danger mt-3">{error}</p>}
+
+                {successMessage && <p className="text-success mt-3">{successMessage}</p>}
             </form>
         </div>
     );

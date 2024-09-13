@@ -26,7 +26,7 @@ router.get('/view/:fileName', (req, res) => {
     const filePath = path.join(__dirname, `../pdfs/${fileName}`);
 
     // Verificar si el archivo existe
-    if (fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) { 
         res.sendFile(filePath);
     } else {
         res.status(404).send('Archivo no encontrado');

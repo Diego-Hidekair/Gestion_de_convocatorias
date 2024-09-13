@@ -5,14 +5,14 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';  // Importar useNavigate
 
 const HonorariosForm = () => {
-    const { id_convocatoria } = useParams();
+    const { id_convocatoria } = useParams(); // Obtiene el id de la URL
     const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
     const [pagoMensual, setPagoMensual] = useState('');
     const [tiposConvocatorias, setTiposConvocatorias] = useState([]);
     const [error, setError] = useState(null);
     const [convocatorias, setConvocatorias] = useState([]);
-    const [idConvocatoria, setIdConvocatoria] = useState('');
-    const navigate = useNavigate();  // Usar useNavigate
+    const [idConvocatoria, setIdConvocatoria] = useState(id_convocatoria || ''); // Inicializa con id_convocatoria si existe
+    const navigate = useNavigate();
 
     // Obtener tipos de convocatorias
     useEffect(() => {
@@ -44,7 +44,7 @@ const HonorariosForm = () => {
         fetchConvocatorias();
     }, []);
 
-      const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
     
         if (!idTipoConvocatoria || !pagoMensual) {
@@ -53,21 +53,22 @@ const HonorariosForm = () => {
         }
     
         try {
-          await axios.post('http://localhost:5000/honorarios', {
-              id_convocatoria: id_convocatoria,  // Usa el id de la URL
-              id_tipoconvocatoria: idTipoConvocatoria,
-              pago_mensual: pagoMensual,
-          });
+            await axios.post('http://localhost:5000/honorarios', {
+                id_convocatoria: idConvocatoria, // Usa el idConvocatoria que ya está configurado
+                id_tipoconvocatoria: idTipoConvocatoria,
+                pago_mensual: pagoMensual,
+            });
     
             alert('Honorario creado exitosamente');
-            navigate(`/honorarios/new/${id_convocatoria}`);  // Redirigir usando navigate
+            
+            // Redirigir al componente PDFGenerator para generar el PDF
+            navigate(`/pdf/generate/${idConvocatoria}`); // Redirigir a la página de generación del PDF
         } catch (err) {
             setError('Error al crear el honorario');
             console.error(err);
         }
     };
   
-
     return (
         <div className="container mt-4">
             <h2>Crear Honorario</h2>
@@ -78,7 +79,7 @@ const HonorariosForm = () => {
                     <label className="form-label">Seleccionar Convocatoria:</label>
                     <select
                         className="form-control"
-                        value={idConvocatoria || id_convocatoria}
+                        value={idConvocatoria || ''}
                         onChange={(e) => setIdConvocatoria(e.target.value)}
                         disabled={!!id_convocatoria}  // Deshabilitar si se pasa el id desde la URL
                     >

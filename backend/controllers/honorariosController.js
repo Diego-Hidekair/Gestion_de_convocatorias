@@ -46,7 +46,8 @@ exports.getHonorarioById = async (req, res) => {
 };
 
 // Crear un nuevo honorario
-exports.createHonorario = async (req, res) => {
+// Crear un nuevo honorario
+exports.crearHonorario = async (req, res) => {
     const { id_convocatoria, id_tipoconvocatoria, pago_mensual } = req.body;
 
     try {

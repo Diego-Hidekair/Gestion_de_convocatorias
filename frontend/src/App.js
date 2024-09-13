@@ -31,6 +31,9 @@ import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
 import RedirectPage from './components/RedirectPage'; // Importa el nuevo componente
 import HonorariosForm from './components/HonorariosForm';
+
+import PDFGenerator from './components/PDFGenerator';
+import PDFView from './components/PDFView';
 import PDFGenerator from './components/PDFGenerator';
 import PDFViewer from './components/PDFViewer'; 
 
@@ -126,6 +129,11 @@ const AuthWrapper = () => {
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
                         <Route path="/honorarios/new/:id" element={<HonorariosForm />} /> {/* Para pasar el id de la convocatoria */}
+                        
+                        <Route path="/pdf/generate/:id" element={<PDFGenerator />} />
+                        <Route path="/pdf/view/:fileName" element={<PDFView />} />
+
+
                         <Route path="/generate-pdf" element={<PDFGenerator />} />
                         <Route path="/view-pdf/:fileName" element={<PDFViewer />} />
                     </Routes>

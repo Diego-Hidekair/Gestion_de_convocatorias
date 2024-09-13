@@ -90,8 +90,8 @@ async function createPdf(req, res) {
         const pdfPaths = [generatedPdfPath];
         if (resolucionPath) pdfPaths.push(resolucionPath);
         if (dictamenPath) pdfPaths.push(dictamenPath);
-
-        const combinedPdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre_convocatoria.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        
+        const combinedPdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre_convocatoria.replace(/[^\w\s]/gi, '_')}.pdf`;
         const combinedPdfPath = path.join(__dirname, '../pdfs', combinedPdfFileName);
         await combinePDFs(pdfPaths, combinedPdfPath);
 
@@ -130,9 +130,10 @@ async function combinePDFs(pdfPaths, outputPath) {
     }
 
     const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(outputPath, pdfBytes);
+    await fsPromises.writeFile(generatedPdfPath, generatedPdfBytes);
+//    fs.writeFileSync(outputPath, pdfBytes);
 }
 
-module.exports = {
+module.exports = { 
     createPdf,
 };
