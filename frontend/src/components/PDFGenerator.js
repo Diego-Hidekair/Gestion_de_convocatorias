@@ -1,21 +1,20 @@
 //frontend/src/components/PDFGenerator.js
-
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'; // Importa useState y useEffect
+import { useParams, useNavigate } from 'react-router-dom'; // Importa useParams y useNavigate
+import axios from 'axios'; // Importa axios para realizar solicitudes HTTP
 
 const PDFGenerator = () => {
     const { id_convocatoria } = useParams();
-    const navigate = useNavigate(); // Para la redirección
+    const navigate = useNavigate();
     const [convocatorias, setConvocatorias] = useState([]);
     const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
     const [materias, setMaterias] = useState([]);
     const [selectedMaterias, setSelectedMaterias] = useState([]);
     const [resolucion, setResolucion] = useState(null);
     const [dictamen, setDictamen] = useState(null);
-    const [loading, setLoading] = useState(false); // Estado de carga
-    const [error, setError] = useState(null); // Estado para manejar errores
-    const [successMessage, setSuccessMessage] = useState(null); // Estado para mensajes de éxito
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
 
     useEffect(() => {
         const fetchConvocatorias = async () => {
@@ -26,7 +25,7 @@ const PDFGenerator = () => {
                 console.error('Error al obtener convocatorias:', error);
             }
         };
-    
+
         const fetchMaterias = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/materias');
@@ -45,12 +44,7 @@ const PDFGenerator = () => {
             const fetchSelectedConvocatoria = async () => {
                 try {
                     const response = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
-                    if (response.data) {
-                        setSelectedConvocatoria(response.data);
-                    } else {
-                        console.error('No se encontró la convocatoria con el ID especificado.');
-                        setSelectedConvocatoria(null);
-                    }
+                    setSelectedConvocatoria(response.data || null);
                 } catch (error) {
                     console.error('Error al obtener la convocatoria:', error);
                     setSelectedConvocatoria(null);
@@ -68,16 +62,17 @@ const PDFGenerator = () => {
                 setSelectedConvocatoria(response.data);
             } catch (error) {
                 console.error('Error al obtener la convocatoria:', error);
+                setSelectedConvocatoria(null);
             }
         } else {
             setSelectedConvocatoria(null);
         }
     };
-    
+
     const handleMateriaChange = (e) => {
-        const selectedMateriaId = parseInt(e.target.value);
+        const selectedMateriaId = parseInt(e.target.value, 10);
         if (!selectedMateriaId) return;
-        
+
         const selectedMateria = materias.find(materia => materia.id_materia === selectedMateriaId);
         if (selectedMateria && !selectedMaterias.some(m => m.id_materia === selectedMateriaId)) {
             setSelectedMaterias(prevSelected => [...prevSelected, selectedMateria]);
@@ -97,15 +92,14 @@ const PDFGenerator = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Activar estado de carga
-        setError(null); // Limpiar errores previos
-        setSuccessMessage(null); // Limpiar mensajes de éxito previos
+        setLoading(true);
+        setError(null);
+        setSuccessMessage(null);
 
         const uniqueSelectedMaterias = Array.from(new Set(selectedMaterias.map(m => m.id_materia)))
             .map(id => selectedMaterias.find(m => m.id_materia === id));
-    
+
         try {
-            // Vincular materias
             const promises = uniqueSelectedMaterias.map(materia => {
                 return axios.post('http://localhost:5000/convocatoria-materias', {
                     id_convocatoria: selectedConvocatoria.id_convocatoria,
@@ -114,14 +108,13 @@ const PDFGenerator = () => {
             });
             await Promise.all(promises);
 
-            // Crear el PDF
             const formData = new FormData();
             formData.append('id_convocatoria', selectedConvocatoria.id_convocatoria);
             formData.append('materias', JSON.stringify(uniqueSelectedMaterias.map(m => ({
                 nombre: m.nombre,
                 codigo: m.codigo,
             }))));
-            
+
             if (resolucion) {
                 formData.append('resolucion', resolucion);
             }
@@ -136,20 +129,18 @@ const PDFGenerator = () => {
                 }
             });
 
-            // Redirigir a la vista del PDF
             const pdfFileName = `N_${selectedConvocatoria.cod_convocatoria}_${selectedConvocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            setSuccessMessage('PDF generado exitosamente'); // Mostrar mensaje de éxito
-            navigate(`/pdf/view/${pdfFileName}`);
+            setSuccessMessage('PDF generado exitosamente');
 
+            navigate(`/pdf/view/${pdfFileName}`);
         } catch (error) {
-            setError('Error al generar el PDF.'); // Manejar el error y mostrar mensaje
+            setError('Error al generar el PDF.');
             console.error('Error al generar el PDF:', error);
         } finally {
-            setLoading(false); // Desactivar estado de carga
+            setLoading(false);
         }
     };
-    
+
     return (
         <div className="container mt-4">
             <h2 className="mb-4">Generar PDF para Convocatoria</h2>
@@ -162,7 +153,7 @@ const PDFGenerator = () => {
                         onChange={handleConvocatoriaChange}
                         required
                     >
-                    <option value="">Seleccione una convocatoria</option>
+                        <option value="">Seleccione una convocatoria</option>
                         {convocatorias.map((convocatoria) => (
                             <option key={convocatoria.id_convocatoria} value={convocatoria.id_convocatoria}>
                                 {convocatoria.nombre}
@@ -215,7 +206,7 @@ const PDFGenerator = () => {
                         onChange={handleFileChange}
                     />
                 </div>
-                
+
                 <div className="mb-3">
                     <label className="form-label">Subir Dictamen:</label>
                     <input
@@ -226,16 +217,16 @@ const PDFGenerator = () => {
                     />
                 </div>
 
+                {error && <p className="text-danger">{error}</p>}
+                {successMessage && <p className="text-success">{successMessage}</p>}
+
                 <button type="submit" className="btn btn-primary" disabled={loading}>
                     {loading ? 'Generando PDF...' : 'Generar PDF'}
                 </button>
-
-                {error && <p className="text-danger mt-3">{error}</p>}
-
-                {successMessage && <p className="text-success mt-3">{successMessage}</p>}
             </form>
         </div>
     );
 };
 
 export default PDFGenerator;
+

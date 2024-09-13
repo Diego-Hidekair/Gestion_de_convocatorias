@@ -1,3 +1,5 @@
+//backend/controllers/pdfController.js
+
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
@@ -97,10 +99,12 @@ async function createPdf(req, res) {
 
         // Guardar en la base de datos los paths de los documentos
         const insertQuery = `
-            INSERT INTO documentos (documento_path, resolucion_path, dictamen_path, id_convocatoria)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO GeneracionPDF (id_convocatoria, resolucion_path, dictamen_path, fecha_generacion)
+            VALUES ($1, $2, $3, NOW()) RETURNING id_generacion;
         `;
-        await pool.query(insertQuery, [combinedPdfPath, resolucionPath, dictamenPath, id_convocatoria]);
+        const resultInsert = await pool.query(insertQuery, [id_convocatoria, resolucionPath, dictamenPath]);
+        const id_generacion = resultInsert.rows[0].id_generacion;
+        //await pool.query(insertQuery, [combinedPdfPath, resolucionPath, dictamenPath, id_convocatoria]);
 
         // Enviar el PDF combinado al cliente
         res.setHeader('Content-Type', 'application/pdf');
