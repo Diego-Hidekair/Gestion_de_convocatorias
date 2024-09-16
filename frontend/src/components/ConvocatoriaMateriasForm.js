@@ -10,28 +10,29 @@ const ConvocatoriaMateriasForm = () => {
     const [materias, setMaterias] = useState([]);
     const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
     const [perfilProfesional, setPerfilProfesional] = useState('');
+    const [totalHoras, setTotalHoras] = useState(''); // Nueva variable para total_horas
     const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
     const [error, setError] = useState(null);
 
-  // Obtener las materias desde el backend
-  useEffect(() => {
-    const fetchMaterias = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/materias');
-            setMaterias(response.data);
-        } catch (err) {
-            setError('Error al obtener las materias');
-            console.error(err);
-        }
-    };
-    fetchMaterias();
-  }, []);
+    // Obtener las materias desde el backend
+    useEffect(() => {
+        const fetchMaterias = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/materias');
+                setMaterias(response.data);
+            } catch (err) {
+                setError('Error al obtener las materias');
+                console.error(err);
+            }
+        };
+        fetchMaterias();
+    }, []);
 
-   //enviar los datos seleccionados
+   // enviar los datos seleccionados
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
+        if (materiasSeleccionadas.length === 0 || !perfilProfesional || !totalHoras) {
             setError('Por favor, complete todos los campos');
             return;
         }
@@ -42,6 +43,7 @@ const ConvocatoriaMateriasForm = () => {
                     id_convocatoria: id_convocatoria,
                     id_materia: materia.id_materia,
                     perfil_profesional: perfilProfesional,
+                    total_horas: totalHoras, // Enviar total_horas
                 });
             }));
 
@@ -53,8 +55,8 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
-  // Agregar una materia seleccionada a la lista y editar la materia
-  const handleAddMateria = () => {
+    // Agregar una materia seleccionada a la lista
+    const handleAddMateria = () => {
         const materia = materias.find(m => m.id_materia === parseInt(materiaSeleccionada));
         if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
             setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
@@ -66,42 +68,38 @@ const ConvocatoriaMateriasForm = () => {
         setMateriasSeleccionadas(materiasSeleccionadas.filter(materia => materia.id_materia !== id));
     };
 
-    const handleBack = () => {
-        navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
-    };
-
     return (
-      <div className="container mt-4">
-          <h2>Agregar materias a la Convocatoria</h2>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="container mt-4">
+            <h2>Agregar materias a la Convocatoria</h2>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
 
-          <form onSubmit={handleSubmit}>
-              {/* Seleccionar materia */}
-              <div className="mb-3">
-                  <label className="form-label">Seleccionar Materia:</label>
-                  <select
-                      className="form-control"
-                      value={materiaSeleccionada}
-                      onChange={(e) => setMateriaSeleccionada(e.target.value)}
-                  >
-                      <option value="">Seleccione una materia</option>
-                      {materias.map((materia) => (
-                          <option key={materia.id_materia} value={materia.id_materia}>
-                              {materia.nombre}
-                          </option>
-                      ))}
-                  </select>
-                  <button
-                      type="button"
-                      className="btn btn-secondary mt-2"
-                      onClick={handleAddMateria}
-                  >
-                      Agregar Materia
-                  </button>
-              </div>
+            <form onSubmit={handleSubmit}>
+                {/* Seleccionar materia */}
+                <div className="mb-3">
+                    <label className="form-label">Seleccionar Materia:</label>
+                    <select
+                        className="form-control"
+                        value={materiaSeleccionada}
+                        onChange={(e) => setMateriaSeleccionada(e.target.value)}
+                    >
+                        <option value="">Seleccione una materia</option>
+                        {materias.map((materia) => (
+                            <option key={materia.id_materia} value={materia.id_materia}>
+                                {materia.nombre}
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        type="button"
+                        className="btn btn-secondary mt-2"
+                        onClick={handleAddMateria}
+                    >
+                        Agregar Materia
+                    </button>
+                </div>
 
-              {/* Mostrar materias seleccionadas */}
-              <div className="mb-3">
+                {/* Mostrar materias seleccionadas */}
+                <div className="mb-3">
                     <h3>Materias Seleccionadas:</h3>
                     <ul className="list-group">
                         {materiasSeleccionadas.map((materia) => (
@@ -132,11 +130,21 @@ const ConvocatoriaMateriasForm = () => {
                     />
                 </div>
 
+                {/* Total Horas */}
+                <div className="mb-3">
+                    <label className="form-label">Total Horas:</label>
+                    <input
+                        type="number"
+                        className="form-control"
+                        value={totalHoras}
+                        onChange={(e) => setTotalHoras(e.target.value)}
+                        placeholder="Ingrese el total de horas"
+                        required
+                    />
+                </div>
+
                 <button type="submit" className="btn btn-primary">
                     Siguiente
-                </button>
-                <button type="button" className="btn btn-secondary ml-2" onClick={handleBack}>
-                    Volver
                 </button>
             </form>
         </div>

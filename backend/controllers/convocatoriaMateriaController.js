@@ -1,3 +1,4 @@
+// backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
 // Obtener todas las materias asociadas a una convocatoria
@@ -25,9 +26,9 @@ const getConvocatoriaMaterias = async (req, res) => {
     }
 };
 
-// Obtener una materia asociada a una convocatoria por ID
+// Obtener una relación convocatoria-materia específica por id_convocatoria y id_materia
 const getConvocatoriaMateriaById = async (req, res) => {
-    const { id } = req.params;
+    const { id_convocatoria, id_materia } = req.params;
     try {
         const result = await pool.query(`
             SELECT cm.id, cm.total_horas, cm.perfil_profesional, 
@@ -36,11 +37,11 @@ const getConvocatoriaMateriaById = async (req, res) => {
             FROM convocatoria_materia cm
             JOIN materia m ON cm.id_materia = m.id_materia
             JOIN convocatorias c ON cm.id_convocatoria = c.id_convocatoria
-            WHERE cm.id = $1
-        `, [id]);
+            WHERE cm.id_convocatoria = $1 AND cm.id_materia = $2
+        `, [id_convocatoria, id_materia]);
         
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Materia no encontrada' });
+            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
         }
         
         res.json(result.rows[0]);
@@ -66,16 +67,16 @@ const createConvocatoriaMateria = async (req, res) => {
     }
 };
 
-// Actualizar una relación convocatoria-materia
+// Actualizar una relación convocatoria-materia específica por id_convocatoria y id_materia
 const updateConvocatoriaMateria = async (req, res) => {
-    const { id } = req.params;
-    const { id_convocatoria, id_materia, total_horas, perfil_profesional } = req.body;
+    const { id_convocatoria, id_materia } = req.params;
+    const { total_horas, perfil_profesional } = req.body;
     try {
         const result = await pool.query(`
             UPDATE convocatoria_materia 
-            SET id_convocatoria = $1, id_materia = $2, total_horas = $3, perfil_profesional = $4 
-            WHERE id = $5 RETURNING *
-        `, [id_convocatoria, id_materia, total_horas, perfil_profesional, id]);
+            SET total_horas = $1, perfil_profesional = $2 
+            WHERE id_convocatoria = $3 AND id_materia = $4 RETURNING *
+        `, [total_horas, perfil_profesional, id_convocatoria, id_materia]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });

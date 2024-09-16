@@ -19,7 +19,7 @@ import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
 import MateriaList from './components/MateriaList';
 import MateriaForm from './components/MateriaForm';
 import MateriaEdit from './components/MateriaEdit';
-import ConvocatoriaMaterias from './components/ConvocatoriaMaterias';
+import ConvocatoriaMateriasEdit from './components/ConvocatoriaMateriasEdit';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import ConvocatoriaMateriasList from './components/ConvocatoriaMateriasList';
 import Login from './components/Login';
@@ -109,7 +109,7 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias" element={<ConvocatoriaList />} />
                         <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
-                        <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
+                        <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/convocatorias/convocatorias-estado" element={<ConvocatoriaEstado userRole={userRole} />} />
                         <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
                         <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
@@ -117,9 +117,9 @@ const AuthWrapper = () => {
                         <Route path="/materias" element={<MateriaList />} />
                         <Route path="/materias/crear" element={<MateriaForm />} />
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
-                        <Route path="/convocatorias_materias" element={<ConvocatoriaMateriasList />} />
+                        <Route path="/convocatorias/:id/materias/edit/:id_materia" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
-                        <Route path="/convocatorias_materias/edit/:id_convocatoria" element={<ConvocatoriaMaterias />} />
+                        <Route path="/convocatorias_materias/edit/:id_convocatoria" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
