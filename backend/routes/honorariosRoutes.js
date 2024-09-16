@@ -12,4 +12,4 @@ router.delete('/:id', honorariosController.deleteHonorario);
 
 module.exports = router;
 
- 
+

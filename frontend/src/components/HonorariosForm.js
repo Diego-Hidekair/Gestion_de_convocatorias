@@ -2,17 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';  // Importar useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 
 const HonorariosForm = () => {
-    const { id_convocatoria } = useParams(); // Obtiene el id de la URL
-    const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
+    const { id_convocatoria } = useParams();
+    const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
+    const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
     const [tiposConvocatorias, setTiposConvocatorias] = useState([]);
     const [error, setError] = useState(null);
-    const [convocatorias, setConvocatorias] = useState([]);
-    const [idConvocatoria, setIdConvocatoria] = useState(id_convocatoria || ''); // Inicializa con id_convocatoria si existe
-    const navigate = useNavigate();
 
     // Obtener tipos de convocatorias
     useEffect(() => {
@@ -22,53 +20,40 @@ const HonorariosForm = () => {
                 setTiposConvocatorias(response.data);
             } catch (err) {
                 setError('Error al obtener los tipos de convocatorias');
-                console.error('Error al obtener los tipos de convocatorias:', err.response ? err.response.data : err);
+                console.error('Error al obtener los tipos de convocatorias:', err);
             }
         };
 
         fetchTiposConvocatorias();
     }, []);
 
-    // Obtener convocatorias
-    useEffect(() => {
-        const fetchConvocatorias = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/convocatorias');
-                setConvocatorias(response.data);
-            } catch (err) {
-                setError('Error al obtener las convocatorias');
-                console.error('Error al obtener las convocatorias:', err.response ? err.response.data : err);
-            }
-        };
-
-        fetchConvocatorias();
-    }, []);
-
+    // enviar los datos seleccionados y editar
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
-        if (!idTipoConvocatoria || !pagoMensual) {
-            setError('Por favor, complete todos los campos');
+
+        if (!id_convocatoria) {
+            setError('No se ha seleccionado una convocatoria.');
             return;
         }
-    
+
         try {
             await axios.post('http://localhost:5000/honorarios', {
-                id_convocatoria: idConvocatoria, // Usa el idConvocatoria que ya está configurado
+                id_convocatoria: id_convocatoria,
                 id_tipoconvocatoria: idTipoConvocatoria,
                 pago_mensual: pagoMensual,
             });
-    
-            alert('Honorario creado exitosamente');
-            
-            // Redirigir al componente PDFGenerator para generar el PDF
-            navigate(`/pdf/generate/${idConvocatoria}`); // Redirigir a la página de generación del PDF
-        } catch (err) {
-            setError('Error al crear el honorario');
-            console.error(err);
+
+            navigate(`/honorarios/new/${id_convocatoria}`);
+        } catch (error) {
+            console.error('Error creando honorario:', error);
+            setError('Error creando el honorario');
         }
     };
-  
+
+    const handleBack = () => {
+        navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
+    };
+
     return (
         <div className="container mt-4">
             <h2>Crear Honorario</h2>
@@ -76,28 +61,12 @@ const HonorariosForm = () => {
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                    <label className="form-label">Seleccionar Convocatoria:</label>
-                    <select
-                        className="form-control"
-                        value={idConvocatoria || ''}
-                        onChange={(e) => setIdConvocatoria(e.target.value)}
-                        disabled={!!id_convocatoria}  // Deshabilitar si se pasa el id desde la URL
-                    >
-                        <option value="">Seleccione una convocatoria</option>
-                        {convocatorias.map((convocatoria) => (
-                            <option key={convocatoria.id_convocatoria} value={convocatoria.id_convocatoria}>
-                                {convocatoria.nombre}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="mb-3">
                     <label className="form-label">Seleccionar Tipo de Convocatoria:</label>
                     <select
                         className="form-control"
                         value={idTipoConvocatoria}
                         onChange={(e) => setIdTipoConvocatoria(e.target.value)}
+                        required
                     >
                         <option value="">Seleccione un tipo de convocatoria</option>
                         {tiposConvocatorias.map((tipo) => (
@@ -111,16 +80,20 @@ const HonorariosForm = () => {
                 <div className="mb-3">
                     <label className="form-label">Pago Mensual:</label>
                     <input
-                        type="text"
+                        type="number"
                         className="form-control"
                         value={pagoMensual}
                         onChange={(e) => setPagoMensual(e.target.value)}
                         placeholder="Ingrese el pago mensual"
+                        required
                     />
                 </div>
 
                 <button type="submit" className="btn btn-primary">
-                    Guardar Honorario
+                    Siguiente
+                </button>
+                <button type="button" className="btn btn-secondary ml-2" onClick={handleBack}>
+                    Volver
                 </button>
             </form>
         </div>

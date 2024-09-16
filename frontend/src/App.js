@@ -29,12 +29,10 @@ import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
-import RedirectPage from './components/RedirectPage'; // Importa el nuevo componente
+import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
-//import PDFView from './components/PDFViewer';
 import PDFViewer from './components/PDFViewer'; 
 import PDFGenerator from './components/PDFGenerator';
-
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
@@ -120,13 +118,13 @@ const AuthWrapper = () => {
                         <Route path="/materias/crear" element={<MateriaForm />} />
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
                         <Route path="/convocatorias_materias" element={<ConvocatoriaMateriasList />} />
-                        <Route path="/convocatorias_materias/new/:id" element={<ConvocatoriaMateriasForm />} /> {/* Esta es la ruta que faltaba */}
-                        <Route path="/convocatorias_materias/edit/:id" element={<ConvocatoriaMateriasForm />} />
+                        <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
+                        <Route path="/convocatorias_materias/edit/:id_convocatoria" element={<ConvocatoriaMaterias />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
-                        <Route path="/honorarios/new/:id" element={<HonorariosForm />} /> {/* Para pasar el id de la convocatoria */}
+                        <Route path="/honorarios/new/:id_convocatoria" element={<HonorariosForm />} />
                         <Route path="/pdf/generate/:id" element={<PDFGenerator />} />
                         <Route path="/pdf/view/:fileName" element={<PDFViewer />} />
                     </Routes>

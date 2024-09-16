@@ -72,7 +72,7 @@ const ConvocatoriaForm = () => {
  
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         try {
             // Enviar los datos de la convocatoria al backend
             const response = await axios.post('http://localhost:5000/convocatorias', convocatoria);
