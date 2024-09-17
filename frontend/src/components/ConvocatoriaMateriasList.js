@@ -24,6 +24,15 @@ const ConvocatoriaMateriasList = () => {
         fetchConvocatorias();
     }, []);
 
+    const handleDelete = async (id_convocatoria) => {
+        try {
+            await axios.delete(`http://localhost:5000/convocatorias/${id_convocatoria}`);
+            setConvocatorias(convocatorias.filter(c => c.id_convocatoria !== id_convocatoria)); // Eliminar del estado la convocatoria eliminada
+        } catch (error) {
+            console.error('Error deleting convocatoria:', error);
+        }
+    };
+
     if (loading) return <p>Cargando convocatorias...</p>;
     if (error) return <p>{error}</p>;
 
@@ -35,6 +44,7 @@ const ConvocatoriaMateriasList = () => {
                     <li key={convocatoria.id_convocatoria}>
                         {convocatoria.nombre}
                         <Link to={`/convocatorias/${convocatoria.id_convocatoria}/materias`}>Ver Materias</Link>
+                        <button onClick={() => handleDelete(convocatoria.id_convocatoria)}>Eliminar</button>
                     </li>
                 ))}
             </ul>

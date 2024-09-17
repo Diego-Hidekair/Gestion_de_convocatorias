@@ -44,6 +44,7 @@ const getConvocatoriaMateriaById = async (req, res) => {
             return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
         }
         
+        
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Error buscando convocatoria_materia por ID:', error);

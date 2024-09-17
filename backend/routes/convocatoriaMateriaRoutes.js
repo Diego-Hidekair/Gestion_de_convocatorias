@@ -7,7 +7,7 @@ const convocatoriaMateriaController = require('../controllers/convocatoriaMateri
 router.get('/:id_convocatoria', convocatoriaMateriaController.getConvocatoriaMaterias);
 router.post('/', convocatoriaMateriaController.createConvocatoriaMateria);
 router.delete('/:id', convocatoriaMateriaController.deleteConvocatoriaMateria);
-router.get('/convocatoria-materias/:id_convocatoria/:id_materia', convocatoriaMateriaController.getConvocatoriaMateriaById); // Aquí asegurarse de importar la función correcta
+router.get('/convocatoria-materias/:id_convocatoria/:id_materia', convocatoriaMateriaController.getConvocatoriaMateriaById);
 router.put('/convocatoria-materias/:id_convocatoria/:id_materia', convocatoriaMateriaController.updateConvocatoriaMateria);
 //router.get('/:id_convocatoria', convocatoriaMateriaController.getConvocatoriaMaterias);
 //router.put('/:id', convocatoriaMateriaController.updateConvocatoriaMateria);

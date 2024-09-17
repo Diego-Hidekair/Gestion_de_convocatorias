@@ -83,16 +83,19 @@ const updateConvocatoria = async (req, res) => {
 };
 
 // Eliminar una convocatoria
-const deleteConvocatoria = async (req, res) => { 
-    const { id } = req.params;
+const deleteConvocatoria = async (req, res) => {
+    const { id_convocatoria } = req.params;
     try {
-        const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id]);
+        const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
+
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+
+        res.json({ message: 'Convocatoria eliminada exitosamente' });
+    } catch (error) {
+        console.error('Error eliminando convocatoria:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
     }
 };
 

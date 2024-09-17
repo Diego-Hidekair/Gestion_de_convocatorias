@@ -63,7 +63,7 @@ const NavBar = ({ onLogout }) => {
                                             <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
                                         </li>
                                         <li className={`nav-item ${location.pathname === '/usuarios' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/api/usuarios">Usuarios</Link>
+                                            <Link className="nav-link" to="/usuarios">Usuarios</Link>
                                         </li>
                                     </>
                                 )}

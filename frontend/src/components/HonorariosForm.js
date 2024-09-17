@@ -3,8 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const HonorariosForm = () => {
+    
+    const location = useLocation();
+    const convocatoriaMateria_id = location.state?.convocatoriaMateria_id || null;
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
@@ -27,7 +31,7 @@ const HonorariosForm = () => {
         fetchTiposConvocatorias();
     }, []);
 
-    // enviar los datos seleccionados y editar
+    // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -38,12 +42,14 @@ const HonorariosForm = () => {
 
         try {
             await axios.post('http://localhost:5000/honorarios', {
-                id_convocatoria: id_convocatoria,
+                id_convocatoria,
                 id_tipoconvocatoria: idTipoConvocatoria,
                 pago_mensual: pagoMensual,
             });
 
-            navigate(`/honorarios/new/${id_convocatoria}`);
+            //navigate(`/honorarios/new/${id_convocatoria}`);
+            navigate(`/honorarios/new/${id_convocatoria}`, { state: { convocatoriaMateria_id } });
+
         } catch (error) {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');
@@ -51,8 +57,14 @@ const HonorariosForm = () => {
     };
 
     const handleBack = () => {
-        navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
+        if (convocatoriaMateria_id) {
+            navigate(`/convocatorias_materias/edit/${id_convocatoria}/${convocatoriaMateria_id}`);
+        } else {
+            navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
+        }
     };
+    
+      
 
     return (
         <div className="container mt-4">
@@ -89,12 +101,8 @@ const HonorariosForm = () => {
                     />
                 </div>
 
-                <button type="submit" className="btn btn-primary">
-                    Siguiente
-                </button>
-                <button type="button" className="btn btn-secondary ml-2" onClick={handleBack}>
-                    Volver
-                </button>
+                <button type="submit" className="btn btn-primary">Siguiente</button>
+                <button type="button" className="btn btn-secondary ml-2" onClick={handleBack}>Volver</button>
             </form>
         </div>
     );

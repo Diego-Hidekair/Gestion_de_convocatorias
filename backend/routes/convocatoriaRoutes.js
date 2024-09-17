@@ -8,6 +8,9 @@ router.get('/', convocatoriaController.getConvocatorias);
 router.get('/:id', convocatoriaController.getConvocatoriaById);
 router.post('/', convocatoriaController.createConvocatoria);
 router.put('/:id', convocatoriaController.updateConvocatoria);
-router.delete('/:id', convocatoriaController.deleteConvocatoria);
+//router.delete('/:id', convocatoriaController.deleteConvocatoria);
+router.delete('/:id_convocatoria', convocatoriaController.deleteConvocatoria);
 
 module.exports = router; 
+
+
