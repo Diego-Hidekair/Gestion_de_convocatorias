@@ -118,7 +118,7 @@ const AuthWrapper = () => {
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
                         
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
-                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" component={ConvocatoriaMateriasEdit} />
+                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={ConvocatoriaMateriasEdit} />
 
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />

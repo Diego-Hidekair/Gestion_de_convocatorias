@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const ConvocatoriaMateriasForm = () => {
+const ConvocatoriaMateriasForm = () => { 
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [materias, setMaterias] = useState([]);

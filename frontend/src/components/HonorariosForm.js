@@ -53,14 +53,14 @@ const HonorariosForm = () => {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');
         }
-    };
+    }; 
 
     const handleBack = () => {
         if (convocatoriaMateria_id) {
             navigate(`/convocatorias_materias/edit/${id_convocatoria}/${convocatoriaMateria_id}`);
-        } /*else if (id_convocatoria) {
-            navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
-        } */else {
+        } else if (id_convocatoria) {
+            navigate(`/convocatorias_materias/edit/${convocatoriaMateria_id}`);
+        } else {
             setError('No se ha seleccionado una convocatoria.');
         }
     };
