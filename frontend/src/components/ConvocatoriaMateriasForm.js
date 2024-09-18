@@ -38,17 +38,21 @@ const ConvocatoriaMateriasForm = () => {
         }
 
         try {
-            await Promise.all(materiasSeleccionadas.map(async (materia) => {
-                await axios.post('http://localhost:5000/convocatoria-materias', {
+            const results = await Promise.all(materiasSeleccionadas.map(async (materia) => {
+                const response = await axios.post('http://localhost:5000/convocatoria-materias', {
                     id_convocatoria: id_convocatoria,
                     id_materia: materia.id_materia,
                     perfil_profesional: perfilProfesional,
                     total_horas: totalHoras, // Enviar total_horas
                 });
+                return response.data;  // Suponiendo que el backend devuelve el id de convocatoria_materia
             }));
 
+            const idConvocatoriaMateria = results[0].id;  // Tomando el primer id de convocatoria_materia (puedes ajustar esto si es necesario)
+ 
             alert('Materias agregadas exitosamente');
-            navigate(`/honorarios/new/${id_convocatoria}`);
+            // Redirigir a la página de honorarios usando el id de convocatoria_materia
+            navigate(`/honorarios/new/${id_convocatoria}/${idConvocatoriaMateria}`);
         } catch (err) {
             setError('Error al crear la ConvocatoriaMateria');
             console.error(err);
@@ -151,4 +155,4 @@ const ConvocatoriaMateriasForm = () => {
     );
 };
 
-export default ConvocatoriaMateriasForm; 
+export default ConvocatoriaMateriasForm;

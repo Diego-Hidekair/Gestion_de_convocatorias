@@ -23,13 +23,12 @@ const HonorariosForm = () => {
                 const response = await axios.get('http://localhost:5000/tipo-convocatorias');
                 setTiposConvocatorias(response.data);
             } catch (err) {
-                setError('Error al obtener los tipos de convocatorias');
-                console.error('Error al obtener los tipos de convocatorias:', err);
+                setError('Error al obtener los tipos de convocatorias. Por favor, inténtalo más tarde.');
             }
         };
-
+    
         fetchTiposConvocatorias();
-    }, []);
+    }, []);    
 
     // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
@@ -59,10 +58,14 @@ const HonorariosForm = () => {
     const handleBack = () => {
         if (convocatoriaMateria_id) {
             navigate(`/convocatorias_materias/edit/${id_convocatoria}/${convocatoriaMateria_id}`);
-        } else {
+        } /*else if (id_convocatoria) {
             navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
+        } */else {
+            setError('No se ha seleccionado una convocatoria.');
         }
     };
+    
+    
     
       
 

@@ -21,7 +21,6 @@ import MateriaForm from './components/MateriaForm';
 import MateriaEdit from './components/MateriaEdit';
 import ConvocatoriaMateriasEdit from './components/ConvocatoriaMateriasEdit';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
-// import ConvocatoriaMateriasList from './components/ConvocatoriaMateriasList';
 import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
@@ -38,7 +37,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles.css';
 
 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
-axios.defaults.baseURL = 'http://localhost:5000/'; 
+axios.defaults.baseURL = 'http://localhost:5000/';  
 
 const App = () => {
     return (
@@ -119,13 +118,13 @@ const AuthWrapper = () => {
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
                         
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
-                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:convocatoriaMateria_id" element={<ConvocatoriaMateriasEdit />} />
+                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" component={ConvocatoriaMateriasEdit} />
 
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
-                        <Route path="/honorarios/new/:id_convocatoria" element={<HonorariosForm />} />
+                        <Route path="/honorarios/new/:id_convocatoria/:convocatoria_materia_id" element={<HonorariosForm />} />
                         <Route path="/pdf/generate/:id" element={<PDFGenerator />} />
                         <Route path="/pdf/view/:fileName" element={<PDFViewer />} />
                     </Routes>

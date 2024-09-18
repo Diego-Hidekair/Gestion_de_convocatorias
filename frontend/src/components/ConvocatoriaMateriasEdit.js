@@ -4,20 +4,19 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
-const ConvocatoriaMateriasEdit = () => {
-    const { id_convocatoria, convocatoriaMateria_id } = useParams();    
+const ConvocatoriaMateriasEdit = () => {    
+    const { id_convocatoria, id_materia } = useParams();
     const navigate = useNavigate();
     const [materia, setMateria] = useState(null);
     const [perfilProfesional, setPerfilProfesional] = useState('');
     const [totalHoras, setTotalHoras] = useState('');
     const [error, setError] = useState(null);
 
+    // Obtener los datos de la materia para editar
     useEffect(() => {
         const fetchMateria = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/convocatoria_materias/${convocatoriaMateria_id}`);
-                console.log("ID de la Convocatoria:", id_convocatoria);
-                console.log("ID de Convocatoria Materia:", convocatoriaMateria_id);
+                const response = await axios.get(`http://localhost:5000/convocatoria_materias/${id_materia}`);
                 setMateria(response.data);
                 setPerfilProfesional(response.data.perfil_profesional);
                 setTotalHoras(response.data.total_horas);
@@ -27,18 +26,20 @@ const ConvocatoriaMateriasEdit = () => {
             }
         };
         fetchMateria();
-    }, [id_convocatoria, convocatoriaMateria_id]); 
-    
-
+    }, [id_materia]);
+ 
+    // Manejar la edición de la materia
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/convocatoria_materias/${convocatoriaMateria_id}`, {
+            await axios.put(`http://localhost:5000/convocatoria_materias/${id_materia}`, {
                 perfil_profesional: perfilProfesional,
                 total_horas: totalHoras,
             });
             alert('Materia editada exitosamente');
-            navigate(`/convocatorias/${materia.id_convocatoria}/materias`);
+            // Redirigir nuevamente a la creación de honorarios
+            navigate(`/honorarios/new/${id_convocatoria}/${id_materia}`);
+
         } catch (err) {
             setError('Error al editar la materia');
             console.error(err);
@@ -54,7 +55,6 @@ const ConvocatoriaMateriasEdit = () => {
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <form onSubmit={handleSubmit}>
-                {/* Perfil Profesional */}
                 <div className="mb-3">
                     <label className="form-label">Perfil Profesional:</label>
                     <input
@@ -66,7 +66,6 @@ const ConvocatoriaMateriasEdit = () => {
                     />
                 </div>
 
-                {/* Total Horas */}
                 <div className="mb-3">
                     <label className="form-label">Total Horas:</label>
                     <input
