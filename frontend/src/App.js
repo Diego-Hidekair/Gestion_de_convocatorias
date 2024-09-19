@@ -1,7 +1,8 @@
+//frontend/src/App.js
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import { Container, Button } from 'reactstrap';
+import { Container } from 'reactstrap';
 import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
@@ -32,18 +33,18 @@ import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import PDFViewer from './components/PDFViewer'; 
 import PDFGenerator from './components/PDFGenerator';
-import './App.css';  // Aquí definiremos los colores personalizados
+
 
 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
 axios.defaults.baseURL = 'http://localhost:5000/';
 
 const App = () => {
     return (
-        <div className="app-container">
+        
             <Router>
                 <AuthWrapper />
             </Router>
-        </div>
+        
     );
 };
 
@@ -87,7 +88,7 @@ const AuthWrapper = () => {
         localStorage.removeItem('token');
         setIsAuthenticated(false);
         navigate('/login');
-    };
+    };  
 
     return (
         <Container className="main-container" fluid="lg">

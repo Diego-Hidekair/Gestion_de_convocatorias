@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Mantén tu archivo CSS
+import './Login.css'; // Mantén el archivo CSS actualizado
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
@@ -35,29 +35,51 @@ const Login = ({ setAuth }) => {
     };
 
     return (
-        <div className="login-wrapper"> 
-            <div className="card">
-                <form onSubmit={handleSubmit} className="box">
-                    <h1>Ingreso</h1>
-                    <p className="text-muted">Por favor ingresa el usuario y Contraseña</p>
-                    <input 
-                        type="text" 
-                        name="id" 
-                        placeholder="ID" 
-                        value={formData.id} 
-                        onChange={handleChange} 
-                        required 
-                    />
-                    <input 
-                        type="password" 
-                        name="Contraseña" 
-                        placeholder="Password" 
-                        value={formData.Contraseña} 
-                        onChange={handleChange} 
-                        required 
-                    />
-                    <input type="submit" value="Login" />
-                </form>
+        <div className="container-fluid">
+            <div className="row no-gutter">
+                <div className="col-md-6 d-none d-md-flex bg-image"></div>
+                <div className="col-md-6 bg-light">
+                    <div className="login d-flex align-items-center py-5">
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-lg-7 col-xl-6 mx-auto">
+                                    <h3 className="display-4">Acceso</h3>
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="form-group mb-3">
+                                            <input 
+                                                type="text" 
+                                                name="id" 
+                                                placeholder="ID" 
+                                                value={formData.id} 
+                                                onChange={handleChange} 
+                                                required 
+                                                className="form-control rounded-pill border-0 shadow-sm px-4"
+                                            />
+                                        </div>
+                                        <div className="form-group mb-3">
+                                            <input 
+                                                type="password" 
+                                                name="Contraseña" 
+                                                placeholder="Password" 
+                                                value={formData.Contraseña} 
+                                                onChange={handleChange} 
+                                                required 
+                                                className="form-control rounded-pill border-0 shadow-sm px-4 text-danger"
+                                            />
+                                        </div>
+                                        
+                                        <button 
+                                            type="submit" 
+                                            className="btn btn-danger btn-block text-uppercase mb-2 rounded-pill shadow-sm"
+                                        >
+                                            Ingresar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
