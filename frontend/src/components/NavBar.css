@@ -1,45 +1,37 @@
 /* frontend/src/components/NavBar.css */
-@import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&display=swap');
-
-/* Estilos para la barra de navegación */
-.navbar {
-    background-color: #014678 !important; /* Color de fondo del navbar */
-    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
-}
-
-.navbar .navbar-brand,
-.navbar .nav-link {
-    color: white !important; /* Mantener las letras blancas */
-    font-weight: bold; /* Negrita en las letras */
-    background-color: #014678; /* Color de fondo de las opciones */
-    border-radius: 5px; /* Esquinas redondeadas */
-    padding: 10px 15px; /* Espaciado entre los elementos del menú */
-    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
-}
-
-/* Estilo para el elemento seleccionado */
-.navbar .nav-link.active {
-    background-color: white ; /* Color de fondo blanco al estar seleccionado */
-    color: #014678 !important; /* Letra del color #014678 cuando está seleccionado */
-    border: 2px solid #014678; /* Opcional: borde con el color original */
-    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
-}
-
-/* Hover effect para las opciones */
-.navbar .nav-link:hover {
-    color: #014678 !important; /* Cambiar el color del texto al hover */
-    background-color: white; /* Cambiar el color de fondo al hover */
-}
-
-/* Estilo para el botón de cerrar sesión */
-.navbar .btn-outline-danger {
-    color: white;
-    border-color: white;
-    font-family: 'Arvo', serif; /* Aplicar la tipografía Arvo */
-}
-
-.navbar .btn-outline-danger:hover {
-    color: #014678;
-    background-color: white;
-    border-color: white;
-}
+.custom-navbar {
+    background-color: #343a40; /* Color oscuro para el fondo */
+  }
+  
+  .navbar-brand-custom {
+    color: #f8f9fa; /* Color blanco para el texto de la marca */
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  
+  .navbar-brand-custom:hover {
+    color: #ffc107; /* Color amarillo en hover */
+  }
+  
+  .nav-link {
+    color: #f8f9fa; /* Color blanco para los enlaces */
+  }
+  
+  .nav-link.active {
+    color: #ffc107; /* Color amarillo para los enlaces activos */
+  }
+  
+  .nav-link:hover {
+    color: #ffc107; /* Color amarillo en hover */
+  }
+  
+  .logout-button {
+    background-color: #dc3545; /* Color rojo para el botón de cierre de sesión */
+    border-color: #dc3545;
+  }
+  
+  .logout-button:hover {
+    background-color: #c82333; /* Color rojo más oscuro en hover */
+    border-color: #bd2130;
+  }
+  

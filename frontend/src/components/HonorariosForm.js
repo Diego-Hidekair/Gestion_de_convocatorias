@@ -8,7 +8,7 @@ import { useLocation } from 'react-router-dom';
 const HonorariosForm = () => {
     
     const location = useLocation();
-    const convocatoriaMateria_id = location.state?.convocatoriaMateria_id || null;
+    const id_materia = location.state?.id_materia || null;
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
@@ -47,8 +47,8 @@ const HonorariosForm = () => {
             });
 
             //navigate(`/honorarios/new/${id_convocatoria}`);
-            navigate(`/honorarios/new/${id_convocatoria}`, { state: { convocatoriaMateria_id } });
-
+            navigate(`/honorarios/new/${id_convocatoria}/${id_materia}`, { state: { id_materia } });
+            
         } catch (error) {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');
@@ -56,18 +56,13 @@ const HonorariosForm = () => {
     }; 
 
     const handleBack = () => {
-        if (convocatoriaMateria_id) {
-            navigate(`/convocatorias_materias/edit/${id_convocatoria}/${convocatoriaMateria_id}`);
+        if (id_materia) {
+            navigate(`/convocatorias_materias/edit/${id_materia}/${id_convocatoria}`);
         } else if (id_convocatoria) {
-            navigate(`/convocatorias_materias/edit/${convocatoriaMateria_id}`);
-        } else {
-            setError('No se ha seleccionado una convocatoria.');
+            navigate(`/convocatorias_materias/edit/${id_materia}`);
         }
+        
     };
-    
-    
-    
-      
 
     return (
         <div className="container mt-4">

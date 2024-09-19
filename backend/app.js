@@ -33,7 +33,7 @@ const documentosRoutes = require('./routes/documentosRoutes');
 const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
-const honorariosRoutes = require('./routes/honorariosRoutes'); // Importa las rutas de honorarios
+const honorariosRoutes = require('./routes/honorariosRoutes');
 
 // Usa las rutas
 app.use('/facultades', facultadRoutes);
@@ -46,9 +46,9 @@ app.use('/documentos', documentosRoutes);
 app.use('/pdf', pdfRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/usuarios', usuarioRoutes);
-app.use('/honorarios', honorariosRoutes);   
-//app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
+app.use('/honorarios', honorariosRoutes);
 
+// Middleware para rutas no encontradas
 app.use((req, res, next) => {
     res.status(404).json({ error: "Ruta no encontrada" });
 });

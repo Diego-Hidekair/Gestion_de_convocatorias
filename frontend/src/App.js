@@ -1,7 +1,7 @@
-// frontend/src/App.js
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { Container, Button } from 'reactstrap';
 import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
@@ -32,16 +32,14 @@ import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import PDFViewer from './components/PDFViewer'; 
 import PDFGenerator from './components/PDFGenerator';
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles.css';
+import './App.css';  // Aquí definiremos los colores personalizados
 
 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
-axios.defaults.baseURL = 'http://localhost:5000/';  
+axios.defaults.baseURL = 'http://localhost:5000/';
 
 const App = () => {
     return (
-        <div style={{ fontFamily: 'Karla, sans-serif' }}>
+        <div className="app-container">
             <Router>
                 <AuthWrapper />
             </Router>
@@ -82,7 +80,7 @@ const AuthWrapper = () => {
 
     const handleLogin = () => {
         setIsAuthenticated(true);
-        navigate('/redirect'); 
+        navigate('/redirect');
     };
 
     const handleLogout = () => {
@@ -92,7 +90,7 @@ const AuthWrapper = () => {
     };
 
     return (
-        <>
+        <Container className="main-container" fluid="lg">
             {isAuthenticated ? (
                 <>
                     <NavBar onLogout={handleLogout} />
@@ -118,7 +116,7 @@ const AuthWrapper = () => {
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
                         
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
-                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={ConvocatoriaMateriasEdit} />
+                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
 
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/api/usuarios" element={<UsuarioList />} />
@@ -136,8 +134,8 @@ const AuthWrapper = () => {
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
             )}
-        </>
-    ); 
+        </Container>
+    );
 };
 
 export default App;

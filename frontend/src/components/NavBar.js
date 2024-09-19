@@ -1,95 +1,110 @@
-//frontend/src/components/Navbar.js 
+// frontend/src/components/NavBar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode'; 
-import './NavBar.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-
+import {jwtDecode} from 'jwt-decode'; // Corregido import
+import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Button, Container } from 'reactstrap';
+// import './NavBar.css'; // Archivo CSS para estilos personalizados (si es necesario)
 
 const NavBar = ({ onLogout }) => {
-    const [navOpen, setNavOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [role, setRole] = useState('');
-    const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState('');
+  const location = useLocation();
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            setIsLoggedIn(true);
-            const decodedToken = jwtDecode(token); //decodifica la clave ingresada
-            setRole(decodedToken.role); //esta cladve debe asegurarse que coincida con la clave en el token
-        }
-    }, []);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      const decodedToken = jwtDecode(token);
+      setRole(decodedToken.role);
+    }
+  }, []);
 
-    const toggleNav = () => {
-        setNavOpen(!navOpen);
-    };
+  const toggleNav = () => {
+    setIsOpen(!isOpen);
+  };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-        if (onLogout) onLogout();
-    };
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    if (onLogout) onLogout();
+  };
 
-    return (
+  return (
+    <div>
+      {isLoggedIn && (
         <>
-            {isLoggedIn && (
-                <div className="navbar bg-light navbar-expand-lg navbar-light">
-                    <div className="container-fluid">
-                        <Link className="navbar-brand" to="/">Gestión de Convocatorias</Link>
-                        <button className="navbar-toggler" type="button" onClick={toggleNav} aria-expanded={navOpen}>
-                            <span className="navbar-toggler-icon"></span>
-                        </button>
-                        <div className={`collapse navbar-collapse ${navOpen ? 'show' : ''}`}>
-                            <ul className="navbar-nav ms-auto">
-                                {role === 'admin' && (
-                                    <>
-                                        <li className={`nav-item ${location.pathname === '/facultades' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/facultades">Facultades</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/carreras' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/carreras">Carreras</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/tipoconvocatorias' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/tipoconvocatorias">Tipo de Convocatorias</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/materias' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/materias">Materias</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/convocatorias' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/convocatorias">Convocatorias</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === 'convocatorias/convocatorias-estado' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/usuarios' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/usuarios">Usuarios</Link>
-                                        </li>
-                                    </>
-                                )}
-                                {role !== 'admin' && (
-                                    <>
-                                        <li className={`nav-item ${location.pathname === '/convocatorias' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/convocatorias">Convocatorias</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/pdf-generator' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/pdf-generator">Generador de PDF</Link>
-                                        </li>
-                                        <li className={`nav-item ${location.pathname === '/convocatorias/convocatorias-estado' ? 'active' : ''}`}>
-                                            <Link className="nav-link" to="/convocatorias/convocatorias-estado">Estado de Convocatorias</Link>
-                                        </li>
-                                    </>
-                                )}
-                                <li className="nav-item">
-                                    <button onClick={handleLogout} className="btn btn-outline-danger ms-3">Cerrar Sesión</button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            )}
+          <Navbar color="dark" dark expand="lg" className="mb-4 custom-navbar">
+            <Container fluid>
+              <NavbarBrand href="/" className="navbar-brand-custom">
+                Gestión de Convocatorias
+              </NavbarBrand>
+              <NavbarToggler onClick={toggleNav} />
+              <Collapse isOpen={isOpen} navbar>
+                <Nav className="me-auto" navbar>
+                  <UncontrolledDropdown nav inNavbar>
+                    
+                      
+                        <NavLink tag={Link} to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>
+                          Facultades
+                        </NavLink>
+                     
+                      
+                        <NavLink tag={Link} to="/carreras" className={location.pathname === '/carreras' ? 'active' : ''}>
+                          Carreras
+                        </NavLink>
+                      
+                        <NavLink tag={Link} to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>
+                          Tipo de Convocatorias
+                        </NavLink>
+                      
+                        <NavLink tag={Link} to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>
+                          Materias
+                        </NavLink>
+                      
+                        <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
+                          Convocatorias
+                        </NavLink>
+                      
+                        <NavLink tag={Link} to="/convocatorias/convocatorias-estado" className={location.pathname === '/convocatorias/convocatorias-estado' ? 'active' : ''}>
+                          Estado de Convocatorias
+                        </NavLink>
+                      {role === 'admin' && (
+                       
+                          <NavLink tag={Link} to="/usuarios" className={location.pathname === '/usuarios' ? 'active' : ''}>
+                            Usuarios
+                          </NavLink>
+                        
+                      )}
+                      <DropdownItem divider />
+                      
+                        <Button color="danger" onClick={handleLogout} className="logout-button">
+                          Cerrar Sesión
+                        </Button>
+                      
+                
+                  </UncontrolledDropdown>
+                </Nav>
+              </Collapse>
+            </Container>
+          </Navbar>
+          <div className="collapse" id="navbarToggleExternalContent">
+            <div className="bg-dark p-4">
+              <h5 className="text-white h4">Contenido Colapsable</h5>
+              <span className="text-muted">Contenido adicional aquí.</span>
+            </div>
+          </div>
+          <nav className="navbar navbar-dark bg-dark">
+            <div className="container-fluid">
+              <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span className="navbar-toggler-icon"></span>
+              </button>
+            </div>
+          </nav>
         </>
-    );
+      )}
+    </div>
+  );
 };
 
 export default NavBar;
