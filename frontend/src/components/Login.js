@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; 
-
+import './Login.css'; // Mantén tu archivo CSS
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
@@ -29,20 +28,37 @@ const Login = ({ setAuth }) => {
             localStorage.setItem('token', token);
             localStorage.setItem('user_id', user_id);
             setAuth(true);
-            navigate('/redirect'); // Redirigir a la página de redirección después de iniciar sesión
+            navigate('/redirect');
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
         }
     };
 
     return (
-        <div className="login-container">
-            <h2>Iniciar Sesión</h2>
-            <form onSubmit={handleSubmit}>
-                <input type="text" name="id" placeholder="ID" value={formData.id} onChange={handleChange} required />
-                <input type="password" name="Contraseña" placeholder="Contraseña" value={formData.Contraseña} onChange={handleChange} required />
-                <button type="submit">Iniciar Sesión</button>
-            </form>
+        <div className="login-wrapper"> 
+            <div className="card">
+                <form onSubmit={handleSubmit} className="box">
+                    <h1>Ingreso</h1>
+                    <p className="text-muted">Por favor ingresa el usuario y Contraseña</p>
+                    <input 
+                        type="text" 
+                        name="id" 
+                        placeholder="ID" 
+                        value={formData.id} 
+                        onChange={handleChange} 
+                        required 
+                    />
+                    <input 
+                        type="password" 
+                        name="Contraseña" 
+                        placeholder="Password" 
+                        value={formData.Contraseña} 
+                        onChange={handleChange} 
+                        required 
+                    />
+                    <input type="submit" value="Login" />
+                </form>
+            </div>
         </div>
     );
 };

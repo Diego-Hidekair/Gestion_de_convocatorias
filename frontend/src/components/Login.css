@@ -1,36 +1,56 @@
-/* frontend/src/components/Login.css */
-.login-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #f4f4f4;
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background: linear-gradient(to right, #b92b27, #1565c0) !important; /* Añade !important si es necesario */
+}
+
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ocupa toda la pantalla para centrar */
+    background: linear-gradient(to right, #b92b27, #1565c0); /* Fondo para la pantalla de login */
+}
+
+.card {
+    padding: 40px;
+    background-color: #191919;
     border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.login-container h2 {
+.box input[type="text"],
+.box input[type="password"] {
+    border: 0;
+    background: none;
+    display: block;
+    margin: 20px auto;
     text-align: center;
-    margin-bottom: 20px;
-}
-
-.login-container form input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.login-container form button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
+    border: 2px solid #3498db;
+    padding: 10px 10px;
+    width: 250px;
+    outline: none;
     color: white;
-    border: none;
-    border-radius: 5px;
+    border-radius: 24px;
+    transition: 0.25s;
+}
+
+.box input[type="submit"] {
+    border: 0;
+    background: none;
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+    border: 2px solid #2ecc71;
+    padding: 14px 40px;
+    outline: none;
+    color: white;
+    border-radius: 24px;
+    transition: 0.25s;
     cursor: pointer;
 }
 
-.login-container form button:hover {
-    background-color: #0056b3;
+.box input[type="submit"]:hover {
+    background: #2ecc71;
 }
