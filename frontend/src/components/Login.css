@@ -1,46 +1,46 @@
-/* frontend/src/components/Login.css */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-}
+    /* frontend/src/components/Login.css */
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+    }
 
-.container-fluid {
-    height: 100vh;
-}
+    .container-fluid {
+        height: 100vh;
+    }
 
-.bg-image {
-    background-image: url('https://media.istockphoto.com/id/1141709291/es/vector/personaje-de-negocios-sentado-en-un-discurso-de-burbuja-concepto-de-redes-sociales.jpg?s=612x612&w=0&k=20&c=fFbjsQ9TxIU_OklntB4Lijvo4vpQaayxSihSWzOBHZA=');
-    background-size: cover;
-    background-position: center center;
-}
+    .bg-image {
+        background-image: url('https://media.istockphoto.com/id/1141709291/es/vector/personaje-de-negocios-sentado-en-un-discurso-de-burbuja-concepto-de-redes-sociales.jpg?s=612x612&w=0&k=20&c=fFbjsQ9TxIU_OklntB4Lijvo4vpQaayxSihSWzOBHZA=');
+        background-size: cover;
+        background-position: center center;
+    }
 
-.login, .bg-image {
-    min-height: 100vh;
-}
+    .login, .bg-image {
+        min-height: 100vh;
+    }
 
-.card {
-    padding: 40px;
-    background-color: #191919;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+    .card {
+        padding: 40px;
+        background-color: #191919;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 
-.form-control {
-    background: none;
-    border-radius: 24px;
-    padding: 14px;
-    width: 100%;
-}
+    .form-control {
+        background: none;
+        border-radius: 24px;
+        padding: 14px;
+        width: 100%;
+    }
 
-.btn {
-    background-color: #dc3545;
-    color: white;
-    padding: 14px;
-    border-radius: 24px;
-    width: 100%;
-}
+    .btn {
+        background-color: #dc3545;
+        color: white;
+        padding: 14px;
+        border-radius: 24px;
+        width: 100%;
+    }
 
-.btn:hover {
-    background-color: #c82333;
-}
+    .btn:hover {
+        background-color: #c82333;
+    }

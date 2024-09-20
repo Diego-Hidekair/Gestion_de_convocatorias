@@ -18,11 +18,11 @@ body {
 }
 
 .navbar-brand, .nav-link {
-  color: #ECF0F1 !important;
+  color: #ECF0F1 
 }
 
 .navbar-brand:hover, .nav-link:hover {
-  color: #18BC9C !important;
+  color: #18BC9C 
 }
 
 .btn-primary {
