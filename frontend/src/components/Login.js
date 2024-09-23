@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // Mantén el archivo CSS actualizado
+import '../Global.css';  // Importa Global.css
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({

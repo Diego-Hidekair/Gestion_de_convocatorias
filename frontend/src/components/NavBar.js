@@ -1,8 +1,10 @@
+//frontend//src/components/NavBar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { Collapse, NavbarBrand, Nav, NavLink, DropdownItem, Button } from 'reactstrap';
-import './NavBar.css'; // Importa tu archivo CSS aquí
+import { FiMenu } from 'react-icons/fi'; // Importa el ícono aquí
+import '../Global.css';  // Importa Global.css
 
 const NavBar = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,11 +45,6 @@ const NavBar = ({ onLogout }) => {
             <NavbarBrand href="/" className="navbar-brand-custom">
               Gestión de <br /> Convocatorias
             </NavbarBrand>
-            {isOpen && ( // Solo muestra el botón si el sidebar está abierto
-              <Button color="primary" onClick={toggleNav} className="toggle-button">
-                {isOpen ? 'Cerrar' : 'Abrir'} Menú
-              </Button>
-            )}
             <Collapse isOpen={isOpen} navbar>
               <Nav vertical navbar className="sidebar-nav">
                 <NavLink tag={Link} to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>
@@ -82,8 +79,8 @@ const NavBar = ({ onLogout }) => {
           </div>
           <div className="sidebar-toggle">
             {!isOpen && ( // Solo muestra el botón si el sidebar está cerrado
-              <Button onClick={toggleNav}>
-                <span className="navbar-toggler-icon"></span>
+              <Button onClick={toggleNav} className="toggle-button">
+                <FiMenu size={24} /> {/* Icono en lugar de texto */}
               </Button>
             )}
           </div>

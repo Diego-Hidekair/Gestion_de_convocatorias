@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import { Container } from 'reactstrap';
+
 import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
@@ -91,7 +91,7 @@ const AuthWrapper = () => {
     };  
 
     return (
-        <Container className="main-container" fluid="lg">
+        <div >
             {isAuthenticated ? (
                 <>
                     <NavBar onLogout={handleLogout} />
@@ -135,7 +135,7 @@ const AuthWrapper = () => {
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
             )}
-        </Container>
+        </div>
     );
 };
 

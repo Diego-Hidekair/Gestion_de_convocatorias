@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Container, Form, FormGroup, Label, Input, Button, Row, Col } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarreraEdit = () => {
@@ -56,41 +57,52 @@ const CarreraEdit = () => {
     }
 
     return (
-        <div className="container">
-            <h1 className="my-4">Editar Carrera</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Nombre:</label>
-                    <input
-                        type="text"
-                        name="nombre_carrera"
-                        className="form-control"
-                        value={carrera.nombre_carrera}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Facultad:</label>
-                    <select
-                        name="cod_facultad"
-                        className="form-select"
-                        value={carrera.cod_facultad}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Seleccione una facultad</option>
-                        {facultades.map(facultad => (
-                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                                {facultad.nombre_facultad}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <button type="submit" className="btn btn-primary">Actualizar Carrera</button>
-            </form>
-        </div>
-    );
+        <Container className="my-5">
+            <Row className="mb-4">
+                <Col>
+                    <h1 className="text-center">Editar Carrera</h1>
+                </Col>
+            </Row>
+            <Row className="justify-content-center">
+                <Col md={6}>
+                    <Form onSubmit={handleSubmit}>
+                        <FormGroup>
+                            <Label for="nombre_carrera">Nombre de la Carrera</Label>
+                            <Input
+                                type="text"
+                                name="nombre_carrera"
+                                id="nombre_carrera"
+                                value={carrera.nombre_carrera}
+                                onChange={handleChange}
+                                required
+                            />
+                        </FormGroup>
+                        <FormGroup>
+                            <Label for="cod_facultad">Facultad</Label>
+                            <Input
+                                type="select"
+                                name="cod_facultad"
+                                id="cod_facultad"
+                                value={carrera.cod_facultad}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Seleccione una facultad</option>
+                                {facultades.map(facultad => (
+                                    <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                        {facultad.nombre_facultad}
+                                    </option>
+                                ))}
+                            </Input> 
+                            </FormGroup>
+                            <Button color="primary" block type="submit"> 
+                                Actualizar Carrera 
+                            </Button> 
+                    </Form>
+                </Col> 
+            </Row> 
+        </Container> 
+    ); 
 };
-
 export default CarreraEdit;
+                    

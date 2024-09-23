@@ -1,0 +1,255 @@
+/* frontend/src/Global.css */
+
+/* Importa la fuente Merriweather */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
+
+/* Cambia la tipografía en toda la aplicación */
+body {
+    font-family: 'Merriweather', serif;
+}
+
+/* Estilos del Login */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    background-color: #faffff; /* Fondo claro */
+    font-family: 'Merriweather', serif;
+}
+
+.container-fluid {
+    height: 100vh;
+}
+
+.bg-image {
+    background-image: url('https://img.freepik.com/fotos-premium/ilustra-persona-gestionando-tiempo-reloj-calendario_1031523-16902.jpg?w=900');
+    background-size: cover;
+    background-position: center center;
+    
+}
+
+.login, .bg-image {
+    min-height: 100vh;
+    
+}
+.login{
+    background: linear-gradient(135deg, #005f6b, #008c9e, #00b4cc, #00dffc);
+}
+
+.card {
+    padding: 40px;
+    background-color: #008c9e; /* Color principal */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-control {
+    background: #00b4cc; /* Fondo más claro */
+    border-radius: 24px;
+    padding: 14px;
+    width: 100%;
+}
+
+.btn {
+    background-color: #005f6b; /* Color del botón */
+    color: white;
+    padding: 14px;
+    border-radius: 24px;
+    width: 100%;
+}
+
+.btn:hover {
+    background-color: #004c54; /* Color al pasar el mouse */
+}
+
+/* Estilos del Sidebar (NavBar) */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #343838; /* Color de la sidebar */
+    transition: left 0.3s ease-in-out;
+    z-index: 1000;
+    padding: 1.5rem;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    font-family: 'Roboto', sans-serif;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar .navbar-brand-custom {
+    color: #00dffc; /* Color del texto en la sidebar */
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.sidebar-nav .nav-link {
+    color: #00dffc; /* Color del texto en los enlaces */
+    padding: 0.75rem 1rem;
+    display: block;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-nav .nav-link:hover,
+.sidebar-nav .nav-link.active {
+    color: #faffff; /* Color al pasar el mouse */
+    background-color: #005f6b; /* Color de fondo al pasar el mouse */
+}
+
+.logout-button {
+    margin-top: 2rem;
+    width: 100%;
+    font-weight: 600;
+    background-color: #dc3545; /* Color del botón de logout */
+}
+
+/* Estilos para los componentes CarreraList, CarreraForm, CarreraEdit */
+.degraded-background {
+    background: linear-gradient(135deg, #005f6b, #008c9e, #00b4cc, #00dffc);
+    min-height: 100vh;
+    padding: 20px;
+    color: #faffff; /* Color del texto */
+}
+
+.card-content {
+    background: rgba(255, 255, 255, 0.1); /* Fondo semi-transparente */
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px; /* Espacio entre los botones */
+}
+
+.button-group .btn-warning {
+    background-color: #ffc107;
+    color: white;
+}
+
+.button-group .btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Ajustes de tabla para lista de carreras */
+.table tbody tr {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    color: #343838; /* Color del texto de la tabla */
+}
+
+.table td, .table th {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 12px;
+}
+
+.table td {
+    font-size: 1rem;
+}
+.toggle-button {
+    position: fixed;
+    top: 20px; /* Ajusta la posición vertical */
+    left: 20px; /* Ajusta la posición horizontal */
+    z-index: 1001;
+    width: 50px; /* Ancho pequeño */
+    height: 50px; /* Alto pequeño */
+    border-radius: 50%; /* Botón redondo */
+    display: flex;
+    align-items: center; /* Centra el ícono verticalmente */
+    justify-content: center; /* Centra el ícono horizontalmente */
+    background-color: #008c9e; /* Color del botón */
+}
+
+.toggle-button:hover {
+    background-color: #005f6b; /* Color al pasar el mouse */
+}
+
+.contanierList{
+    background: rgba(255, 255, 255, 0); /* Fondo semi-transparente */
+}
+/* frontend/src/Global.css */
+
+/* Fondo degradado */
+.degraded-background {
+    background: linear-gradient(135deg, #005f6b, #008c9e, #00b4cc, #00dffc);
+    min-height: 100vh;
+    padding: 20px;
+    color: #faffff;
+}
+
+/* Ajustes para las tarjetas */
+.card-custom {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    padding: 20px;
+}
+
+.card-custom:hover {
+    transform: scale(1.05);
+}
+
+.card-title {
+    font-weight: bold;
+    color: #343a40;
+}
+
+/* Ajustes de los botones */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; /* Espacio entre los botones */
+}
+
+/* Estilos para los botones de editar y eliminar en la lista */
+.custom-button {
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Espacio entre el ícono y el texto */
+    transition: color 0.3s ease; /* Transición suave del color */
+}
+
+/* Estilo al pasar el mouse por los botones */
+.custom-button:hover {
+    color: black; /* Cambia el color del texto a negro */
+}
+
+/* Estilo específico para el botón de eliminar */
+.btn-danger.custom-button {
+    background-color: #dc3545; /* Color del botón de eliminar */
+}
+
+/* Estilo al pasar el mouse sobre el botón de eliminar */
+.btn-danger.custom-button:hover {
+    color: black; /* Cambia el color del texto a negro */
+    background-color: #c82333; /* Oscurece el color del botón al pasar el mouse */
+}
+
+/* Ajustes de los íconos dentro de los botones */
+.icon {
+    font-size: 1rem; /* Tamaño de los íconos */
+}
+
+
+/* Ajuste de los íconos dentro de los botones */
+.icon {
+    font-size: 1rem; /* Tamaño de los íconos */
+}
+
