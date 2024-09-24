@@ -2,6 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
+import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
+import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
+import '../Global.css';  // Importa el archivo CSS global
 
 const ConvocatoriaList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
@@ -29,23 +33,6 @@ const ConvocatoriaList = () => {
         }
     };
 
-    /*const handlePreview = (convocatoria) => {
-        const pdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
-        const pdfUrl = `http://localhost:5000/pdfs/${pdfFileName}`;
-        window.open(pdfUrl, '_blank');
-    };
-
-    const handleDownload = (convocatoria) => {
-        const pdfFileName = `N_${convocatoria.cod_convocatoria}_${convocatoria.nombre.replace(/\s+/g, '_')}.pdf`;
-        const pdfUrl = `http://localhost:5000/pdfs/${pdfFileName}`;
-        const link = document.createElement('a');
-        link.href = pdfUrl;
-        link.setAttribute('download', pdfFileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };*/
-
     const filteredConvocatorias = convocatorias.filter(convocatoria => {
         if (!searchBy) return true;
         const value = convocatoria[searchBy]?.toString().toLowerCase();
@@ -53,73 +40,56 @@ const ConvocatoriaList = () => {
     });
 
     return (
-        <div className="container mt-4">
-            <h2 className="mb-4">Lista de Convocatorias</h2>
-            <Link to="/convocatorias/crear" className="btn btn-success mb-3">Crear Nueva Convocatoria</Link>
+        <div className="degraded-background">
+            <Container className="container-list">
+                <Row className="mb-4">
+                    <Col>
+                        <h1 className="text-center">Lista de Convocatorias</h1>
+                    </Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col className="text-center">
+                        <Button color="primary" tag={Link} to="/convocatorias/crear">
+                            Crear Nueva Convocatoria
+                        </Button>
+                    </Col>
+                </Row>
 
-            <div className="mb-3">
-                <select
-                    className="form-select"
-                    value={searchBy}
-                    onChange={(e) => setSearchBy(e.target.value)}
-                >
-                    <option value="">Buscar por...</option>
-                    <option value="cod_convocatoria">Código</option>
-                    <option value="nombre">Nombre</option>
-                    <option value="fecha_inicio">Fecha de Inicio</option>
-                    <option value="fecha_fin">Fecha de Fin</option>
-                    <option value="nombre_tipoconvocatoria">Tipo de Convocatoria</option>
-                    <option value="nombre_carrera">Carrera</option>
-                    <option value="nombre_facultad">Facultad</option>
-                </select>
-            </div>
-            <input
-                type="text"
-                className="form-control mb-3"
-                placeholder={`Buscar por ${searchBy ? searchBy.replace('_', ' ') : ''}...`}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                disabled={!searchBy}
-            />
+                <div className="mb-3">
+                    <select className="form-select" value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
+                        <option value="">Buscar por...</option>
+                        <option value="cod_convocatoria">Código</option>
+                        <option value="nombre">Nombre</option>
+                        <option value="fecha_inicio">Fecha de Inicio</option>
+                        <option value="fecha_fin">Fecha de Fin</option>
+                        <option value="nombre_tipoconvocatoria">Tipo de Convocatoria</option>
+                        <option value="nombre_carrera">Carrera</option>
+                        <option value="nombre_facultad">Facultad</option>
+                    </select>
+                </div>
 
-            <table className="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Nombre</th>
-                        <th>Fecha de Inicio</th>
-                        <th>Fecha de Fin</th>
-                        <th>Tipo de Convocatoria</th>
-                        <th>Carrera</th>
-                        <th>Facultad</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
+                <Row>
                     {filteredConvocatorias.map((convocatoria) => (
-                        <tr key={convocatoria.id_convocatoria}>
-                            <td>{convocatoria.cod_convocatoria}</td>
-                            <td>{convocatoria.nombre}</td>
-                            <td>{new Date(convocatoria.fecha_inicio).toLocaleDateString()}</td>
-                            <td>{new Date(convocatoria.fecha_fin).toLocaleDateString()}</td>
-                            <td>{convocatoria.nombre_tipoconvocatoria}</td>
-                            <td>{convocatoria.nombre_carrera}</td>
-                            <td>{convocatoria.nombre_facultad}</td>
-                            <td>
-                                <Link to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="btn btn-warning btn-sm me-2">
-                                    Editar
-                                </Link>
-                                <button 
-                                    onClick={() => handleDelete(convocatoria.id_convocatoria)} 
-                                    className="btn btn-danger btn-sm"
-                                >
-                                    Eliminar
-                                </button>
-                            </td>
-                        </tr>
+                        <Col sm="12" md="4" lg="4" key={convocatoria.id_convocatoria} className="mb-4">
+                            <Card className="card-custom">
+                                <CardBody className="d-flex flex-column justify-content-between">
+                                    <CardTitle tag="h5" className="text-center">
+                                        {convocatoria.nombre}
+                                    </CardTitle>
+                                    <div className="d-flex justify-content-between mt-3 button-group">
+                                        <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="custom-button">
+                                            <PiPencilLineBold className="icon" /> Editar
+                                        </Button>
+                                        <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button">
+                                            <BsTrashFill className="icon" /> Eliminar
+                                        </Button>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        </Col>
                     ))}
-                </tbody>
-            </table>
+                </Row>
+            </Container>
         </div>
     );
 };

@@ -2,7 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
+import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
+import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
+import '../Global.css';  // Importa el archivo CSS global
 
 const FacultadList = () => {
     const [facultades, setFacultades] = useState([]);
@@ -27,22 +30,45 @@ const FacultadList = () => {
             console.error('Error al eliminar la facultad:', error);
         }
     };
-    
+
     return (
-        <div className="container">
-            <h1 className="my-4">Lista de Facultades</h1>
-            <Link to="/facultades/new" className="btn btn-primary mb-3">Crear Nueva Facultad</Link>
-            <ul className="list-group">
-                {facultades.map(facultad => (
-                    <li key={facultad.id_facultad} className="list-group-item d-flex justify-content-between align-items-center">
-                        {facultad.nombre_facultad}
-                        <div>
-                            <Link to={`/facultades/edit/${facultad.id_facultad}`} className="btn btn-warning btn-sm me-2">Editar</Link>
-                            <button onClick={() => handleDelete(facultad.id_facultad)} className="btn btn-danger btn-sm">Eliminar</button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+        <div className="degraded-background">
+            <Container className="container-list">
+                <Row className="mb-4">
+                    <Col>
+                        <h1 className="text-center">Lista de Facultades</h1>
+                    </Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col className="text-center">
+                        <Button color="primary" tag={Link} to="/facultades/new">
+                            Crear Nueva Facultad
+                        </Button>
+                    </Col>
+                </Row>
+
+                <Row>
+                    {facultades.map((facultad) => (
+                        <Col sm="12" md="4" lg="4" key={facultad.id_facultad} className="mb-4">
+                            <Card className="card-custom">
+                                <CardBody className="d-flex flex-column justify-content-between">
+                                    <CardTitle tag="h5" className="text-center">
+                                        {facultad.nombre_facultad}
+                                    </CardTitle>
+                                    <div className="d-flex justify-content-between mt-3 button-group">
+                                        <Button color="warning" size="sm" tag={Link} to={`/facultades/edit/${facultad.id_facultad}`} className="custom-button">
+                                            <PiPencilLineBold className="icon" /> Editar
+                                        </Button>
+                                        <Button color="danger" size="sm" onClick={() => handleDelete(facultad.id_facultad)} className="custom-button">
+                                            <BsTrashFill className="icon" /> Eliminar
+                                        </Button>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            </Container>
         </div>
     );
 };
