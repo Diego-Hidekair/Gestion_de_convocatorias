@@ -1,9 +1,8 @@
 // backend/controllers/honorariosController.js 
-
 const pool = require('../db');
 
 // Obtener todos los honorarios
-exports.getHonorarios = async (req, res) => {
+const getHonorarios = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT h.id_honorario, h.id_convocatoria, h.id_tipoconvocatoria, h.pago_mensual,
@@ -22,7 +21,7 @@ exports.getHonorarios = async (req, res) => {
 };
 
 // Obtener un honorario por ID
-exports.getHonorarioById = async (req, res) => {
+const getHonorarioById = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query(`
@@ -45,28 +44,24 @@ exports.getHonorarioById = async (req, res) => {
     }
 };
 
-// Crear un nuevo honorario (se eliminó la validación adicional)
-exports.crearHonorario = async (req, res) => {
+// Crear un nuevo honorario
+const crearHonorario = async (req, res) => {
     const { id_convocatoria, id_tipoconvocatoria, pago_mensual } = req.body;
-
-    if (!id_convocatoria || !id_tipoconvocatoria || !pago_mensual) {
-        return res.status(400).json({ error: 'Faltan datos' });
-    }
-
     try {
-        const result = await pool.query(
-            'INSERT INTO honorarios (id_convocatoria, id_tipoconvocatoria, pago_mensual) VALUES ($1, $2, $3) RETURNING *',
-            [id_convocatoria, id_tipoconvocatoria, pago_mensual]
-        );
-        res.status(201).json(result.rows[0]);
+        const result = await pool.query(`
+            INSERT INTO honorarios (id_convocatoria, id_tipoconvocatoria, pago_mensual) 
+            VALUES ($1, $2, $3) RETURNING *
+        `, [id_convocatoria, id_tipoconvocatoria, pago_mensual]);
+        
+        res.status(201).json(result.rows[0]);  // Enviar el registro recién creado
     } catch (error) {
-        console.error('Error al crear el honorario:', error);
-        res.status(500).json({ error: 'Error al crear el honorario' });
+        console.error('Error creando honorarios:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
     }
 };
 
 // Actualizar un honorario existente
-exports.updateHonorario = async (req, res) => {
+const updateHonorario = async (req, res) => {
     const { id } = req.params;
     const { id_convocatoria, id_tipoconvocatoria, pago_mensual } = req.body;
 
@@ -88,7 +83,7 @@ exports.updateHonorario = async (req, res) => {
 };
 
 // Eliminar un honorario
-exports.deleteHonorario = async (req, res) => {
+const deleteHonorario = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -104,3 +99,5 @@ exports.deleteHonorario = async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar el honorario' });
     }
 };
+
+module.exports = { getHonorarios, getHonorarioById, crearHonorario, updateHonorario, deleteHonorario };

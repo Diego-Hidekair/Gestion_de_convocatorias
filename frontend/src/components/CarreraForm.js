@@ -1,3 +1,4 @@
+// src/components/CarreraForm.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -65,6 +66,29 @@ const CarreraForm = () => {
                                     <Input
                                         type="select"
                                         name="cod_facultad"
-                                        id
-                                        ="cod_facultad" value={carrera.cod_facultad} onChange={handleChange} required > <option value="">Seleccione una Facultad</option> {facultades.map(facultad => ( <option key={facultad.cod_facultad} value={facultad.cod_facultad}> {facultad.nombre_facultad} </option> ))} </Input> </FormGroup> <Button color="primary" type="submit" block> Guardar </Button> </Form> </div> </Col> </Row> </Container> </div> ); };
-                                        export default CarreraForm;
+                                        id="cod_facultad"
+                                        value={carrera.cod_facultad}
+                                        onChange={handleChange}
+                                        required
+                                    >
+                                        <option value="">Seleccione una Facultad</option>
+                                        {facultades.map(facultad => (
+                                            <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
+                                                {facultad.nombre_facultad}
+                                            </option>
+                                        ))}
+                                    </Input>
+                                </FormGroup>
+                                <Button color="primary" type="submit" block className="custom-button">
+                                    Guardar
+                                </Button>
+                            </Form>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+        </div>
+    );
+};
+
+export default CarreraForm;

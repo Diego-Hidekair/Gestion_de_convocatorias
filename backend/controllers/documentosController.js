@@ -16,23 +16,21 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Crear un nuevo documento
-const createDocumento = async (req, res) => {
-    const { id_convocatoria } = req.body;  // Obtener id_convocatoria del cuerpo de la solicitud
-    const resolucionPath = req.files['resolucion'] ? req.files['resolucion'][0].path : null;
-    const dictamenPath = req.files['dictamen'] ? req.files['dictamen'][0].path : null;
-    const cartaPath = req.files['carta'] ? req.files['carta'][0].path : null;
-
+const createDocumentos = async (req, res) => {
+    const { documento_path, resolucion_path, dictamen_path, carta_path, id_convocatoria } = req.body;
     try {
-        const result = await pool.query(
-            'INSERT INTO documentos (resolucion_path, dictamen_path, carta_path, id_convocatoria) VALUES ($1, $2, $3, $4) RETURNING *',
-            [resolucionPath, dictamenPath, cartaPath, id_convocatoria]
-        );
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error('Error al crear documento:', err);
-        res.status(500).json({ error: err.message });
+        const result = await pool.query(`
+            INSERT INTO documentos (documento_path, resolucion_path, dictamen_path, carta_path, id_convocatoria) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *
+        `, [documento_path, resolucion_path, dictamen_path, carta_path, id_convocatoria]);
+        
+        res.status(201).json(result.rows[0]);  // Enviar el registro recién creado
+    } catch (error) {
+        console.error('Error creando documentos:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
     }
 };
+
 
 // Obtener todos los documentos
 const getDocumentos = async (req, res) => {
@@ -84,5 +82,5 @@ const obtenerDocumentosAdicionalesPorConvocatoria = async (req, res) => {
     }
 };
 
-module.exports = { upload, createDocumento, getDocumentos, obtenerDocumentosAdicionalesPorConvocatoria, subirDocumentoAdicional };
+module.exports = { upload, createDocumentos, getDocumentos, obtenerDocumentosAdicionalesPorConvocatoria, subirDocumentoAdicional };
 

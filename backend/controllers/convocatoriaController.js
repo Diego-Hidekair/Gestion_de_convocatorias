@@ -55,7 +55,7 @@ const createConvocatoria = async (req, res) => {
             'INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_convocatoria',
             [nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad]
         );
-        res.json(result.rows[0]); // Esto devolverá el id_convocatoria recién creado
+        res.json(result.rows[0]); // Devuelve el id_convocatoria generado
     } catch (error) {
         console.error('Error creating convocatoria:', error);
         res.status(500).send('Server error');
@@ -86,6 +86,13 @@ const updateConvocatoria = async (req, res) => {
 const deleteConvocatoria = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
+        // Primero elimina las relaciones dependientes en convocatoria_materia
+        await pool.query('DELETE FROM convocatoria_materia WHERE id_convocatoria = $1', [id_convocatoria]);
+
+        // Luego elimina las relaciones dependientes en honorarios
+        await pool.query('DELETE FROM honorarios WHERE id_convocatoria = $1', [id_convocatoria]);
+
+        // Finalmente elimina la convocatoria
         const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
 
         if (result.rows.length === 0) {
