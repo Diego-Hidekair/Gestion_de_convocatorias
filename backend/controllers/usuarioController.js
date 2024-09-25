@@ -3,7 +3,6 @@
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-//const jwtDecode = require('jwt-decode');
 
 const getUsuarios = async (req, res) => {
     try {
@@ -19,6 +18,11 @@ const createUser = async (req, res) => {
     const { id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
     try {
+        const validRoles = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
+        if (!validRoles.includes(Rol)) {
+            return res.status(400).json({ error: 'Rol inválido' });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(Contraseña, salt);
 
@@ -29,8 +33,8 @@ const createUser = async (req, res) => {
 
         res.json(newUser.rows[0]);
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: 'Error en el servidor al crear el usuario' });
+        console.error('Error al crear el usuario:', error);
+        res.status(500).json({ error: 'Error en el servidor al crear el usuario', details: error.message });
     }
 };
 
@@ -63,19 +67,6 @@ const updateUser = async (req, res) => {
         res.status(500).json({ error: 'Error en el servidor al actualizar el usuario' });
     }
 };
-const getUsuarioById = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Error al obtener el usuario', error);
-        res.status(500).json({ error: 'Error en el servidor al obtener el usuario' });
-    }
-};
 
 const deleteUser = async (req, res) => {
     const { id } = req.params;
@@ -89,7 +80,7 @@ const deleteUser = async (req, res) => {
     }
 };
 
-const loginUser = async (req, res) => {
+/*const loginUser = async (req, res) => {
     const { id, Contraseña } = req.body;
 
     try {
@@ -119,6 +110,19 @@ const loginUser = async (req, res) => {
         console.error(error.message);
         res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
     }
+};*/
+const getUsuarioById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error:', error.message);
+        res.status(500).json({ error: 'Error en el servidor al obtener el usuario' });
+    }
 };
 
-module.exports = { createUser, getUsuarios, deleteUser, loginUser, updateUser, getUsuarioById };
+module.exports = { createUser, getUsuarios, deleteUser, updateUser, getUsuarioById };
