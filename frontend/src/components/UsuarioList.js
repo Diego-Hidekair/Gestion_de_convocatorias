@@ -10,7 +10,7 @@ const UsuarioList = () => {
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/usuarios', {
+                const response = await axios.get('http://localhost:5000/usuarios', { // URL corregida
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 setUsuarios(response.data);
@@ -25,9 +25,10 @@ const UsuarioList = () => {
     const deleteUser = async (id) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
             try {
-                await axios.delete(`http://localhost:5000/usuarios/${id}`, {
+                await axios.post('http://localhost:5000/usuarios', usuario, { // URL corregida
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
+                
                 setUsuarios(usuarios.filter(user => user.id !== id));
             } catch (error) {
                 console.error('Error al eliminar el usuario', error);

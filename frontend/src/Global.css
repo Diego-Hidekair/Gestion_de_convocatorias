@@ -20,6 +20,9 @@ body {
 .container-fluid {
     height: 100vh;
 }
+.container-list {
+    margin-top: 20px;
+}
 
 .bg-image {
     background-image: url('https://img.freepik.com/fotos-premium/ilustra-persona-gestionando-tiempo-reloj-calendario_1031523-16902.jpg?w=900');
@@ -113,10 +116,11 @@ body {
 
 /* Estilos para los componentes CarreraList, CarreraForm, CarreraEdit */
 .degraded-background {
-    background: linear-gradient(135deg, #005f6b, #008c9e, #00b4cc, #00dffc);
-    min-height: 100vh;
-    padding: 20px;
-    color: #faffff; /* Color del texto */
+    background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .card-content {
@@ -193,8 +197,8 @@ body {
 
 /* Ajustes para las tarjetas */
 .card-custom {
-    background-color: #f8f9fa;
-    border-radius: 10px;
+    background-color: #36abb8;
+    border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
     padding: 20px;
@@ -207,6 +211,22 @@ body {
 .card-title {
     font-weight: bold;
     color: #343a40;
+}
+.text-center {
+    text-align: center;
+}
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+button.btn-primary {
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 25px;
+    background-color: #007bff;
 }
 
 /* Ajustes de los botones */
@@ -221,14 +241,19 @@ body {
     font-size: 0.8rem;
     font-weight: bold;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 5px; /* Espacio entre el ícono y el texto */
-    transition: color 0.3s ease; /* Transición suave del color */
+    gap: 5px;
+    padding: 10px 20px;
+    border-radius: 24px;
+    transition: background-color 0.3s, color 0.3s;
 }
+
 
 /* Estilo al pasar el mouse por los botones */
 .custom-button:hover {
-    color: black; /* Cambia el color del texto a negro */
+    background-color: #004c54;
+    color: white;
 }
 
 /* Estilo específico para el botón de eliminar */

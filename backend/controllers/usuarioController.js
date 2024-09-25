@@ -16,7 +16,7 @@ const getUsuarios = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-    const { id, Nombres, ApellidoPaterno, ApellidoMaterno, Rol, Contraseña, Celular } = req.body;
+    const { id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
     try {
         const salt = await bcrypt.genSalt(10);
@@ -24,7 +24,7 @@ const createUser = async (req, res) => {
 
         const newUser = await pool.query(
             'INSERT INTO usuarios (id, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [id, Nombres, ApellidoPaterno, ApellidoMaterno, Rol, hashedPassword, Celular]
+            [id, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular]
         );
 
         res.json(newUser.rows[0]);
@@ -36,16 +36,26 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { Nombres, ApellidoPaterno, ApellidoMaterno, Rol, Contraseña, Celular } = req.body;
+    const { Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(Contraseña, salt);
+        let hashedPassword;
+        let updatedUser;
 
-        const updatedUser = await pool.query(
-            'UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña= $5, Celular = $6 WHERE id = $7 RETURNING id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular',
-            [Nombres, ApellidoPaterno, ApellidoMaterno, Rol, hashedPassword, Celular, id]
-        );
+        if (Contraseña) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(Contraseña, salt);
+
+            updatedUser = await pool.query(
+                'UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña = $5, Celular = $6 WHERE id = $7 RETURNING id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular',
+                [Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id]
+            );
+        } else {
+            updatedUser = await pool.query(
+                'UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5 WHERE id = $6 RETURNING id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular',
+                [Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id]
+            );
+        }
 
         res.json(updatedUser.rows[0]);
     } catch (error) {
@@ -80,7 +90,7 @@ const deleteUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { id, contraseña } = req.body;
+    const { id, Contraseña } = req.body;
 
     try {
         const user = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
@@ -89,20 +99,20 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ error: 'Credenciales incorrectas' });
         }
 
-        const validPassword = await bcrypt.compare(contraseña, user.rows[0].contraseña);
+        const validPassword = await bcrypt.compare(Contraseña, user.rows[0].Contraseña);
 
         if (!validPassword) {
             return res.status(400).json({ error: 'Credenciales incorrectas' });
         }
 
         const token = jwt.sign(
-            { id: user.rows[0].id, rol: user.rows[0].rol },
+            { id: user.rows[0].id, rol: user.rows[0].Rol },
             process.env.JWT_SECRET,
             { expiresIn: '4h' }
         );
 
         console.log('Token generado:', token);
-        console.log('Rol del usuario:', user.rows[0].rol);
+        console.log('Rol del usuario:', user.rows[0].Rol);
 
         res.json({ token });
     } catch (error) {
@@ -112,4 +122,3 @@ const loginUser = async (req, res) => {
 };
 
 module.exports = { createUser, getUsuarios, deleteUser, loginUser, updateUser, getUsuarioById };
-

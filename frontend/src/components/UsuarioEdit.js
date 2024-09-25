@@ -13,31 +13,33 @@ const UsuarioEdit = () => {
         Apellido_paterno: '',
         Apellido_materno: '',
         Rol: '',
-        Contraseña: '',
+        Contraseña: '', // Campo opcional para cambiar la contraseña
         Celular: '',
     });
     const [isProcessing, setIsProcessing] = useState(false);
-
+    
     useEffect(() => {
         const fetchUsuario = async () => {
             try {
                 const response = await axios.get(`/usuarios/${id}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-                // Asegúrate de que la respuesta tenga todos los campos definidos
+    
+                const { Nombres, Apellido_paterno, Apellido_materno, Rol, Celular } = response.data;
+    
                 setUsuario({
-                    Nombres: response.data.Nombres || '',
-                    Apellido_paterno: response.data.Apellido_paterno || '',
-                    Apellido_materno: response.data.Apellido_materno || '',
-                    Rol: response.data.Rol || '',
-                    Contraseña: response.data.Contraseña || '',
-                    Celular: response.data.Celular || '',
+                    Nombres: Nombres || '',
+                    Apellido_paterno: Apellido_paterno || '',
+                    Apellido_materno: Apellido_materno || '',
+                    Rol: Rol || '',
+                    Contraseña: '', // No mostrar la contraseña
+                    Celular: Celular || ''
                 });
             } catch (error) {
                 console.error('Error al obtener los datos del usuario:', error);
             }
         };
-
+    
         fetchUsuario();
     }, [id]);
 
@@ -51,7 +53,13 @@ const UsuarioEdit = () => {
         setIsProcessing(true);
 
         try {
-            await axios.put(`/usuarios/${id}`, usuario, {
+            // Evita enviar la contraseña vacía si no ha sido modificada
+            const usuarioAEnviar = { ...usuario };
+            if (!usuarioAEnviar.Contraseña) {
+                delete usuarioAEnviar.Contraseña; // No envía contraseña si está vacía
+            }
+
+            await axios.put(`/usuarios/${id}`, usuarioAEnviar, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             navigate('/usuarios');
@@ -129,7 +137,7 @@ const UsuarioEdit = () => {
                         name="Contraseña"
                         value={usuario.Contraseña}
                         onChange={handleChange}
-                        required
+                        placeholder="Dejar en blanco para no cambiar"
                     />
                 </div>
                 <div className="form-group">
@@ -153,5 +161,3 @@ const UsuarioEdit = () => {
 };
 
 export default UsuarioEdit;
-
-

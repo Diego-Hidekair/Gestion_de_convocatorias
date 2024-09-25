@@ -120,7 +120,7 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
 
                         <Route path="/file-upload" element={<FileUpload />} />
-                        <Route path="/api/usuarios" element={<UsuarioList />} />
+                        <Route path="/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
                         <Route path="/honorarios/new/:id_convocatoria/:convocatoria_materia_id" element={<HonorariosForm />} />

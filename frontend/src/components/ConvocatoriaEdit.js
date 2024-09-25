@@ -2,6 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label, Input, Row, Col } from 'reactstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../Global.css';
 
 const ConvocatoriaEdit = () => {
     const { id } = useParams();
@@ -82,105 +85,135 @@ const ConvocatoriaEdit = () => {
     };
 
     return (
-        <div className="container mt-4">
-            <h2 className="mb-4">Editar Convocatoria</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Código:</label>
-                    <input
-                        type="text"
-                        name="cod_convocatoria"
-                        className="form-control"
-                        value={convocatoria.cod_convocatoria}
-                        onChange={handleChange}
-                        readOnly
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Nombre:</label>
-                    <input
-                        type="text"
-                        name="nombre"
-                        className="form-control"
-                        value={convocatoria.nombre}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Fecha de Inicio:</label>
-                    <input
-                        type="date"
-                        name="fecha_inicio"
-                        className="form-control"
-                        value={convocatoria.fecha_inicio ? convocatoria.fecha_inicio.split('T')[0] : ''}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Fecha de Fin:</label>
-                    <input
-                        type="date"
-                        name="fecha_fin"
-                        className="form-control"
-                        value={convocatoria.fecha_fin ? convocatoria.fecha_fin.split('T')[0] : ''}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Tipo de Convocatoria:</label>
-                    <select
-                        name="id_tipoconvocatoria"
-                        className="form-select"
-                        value={convocatoria.id_tipoconvocatoria}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Seleccione un tipo de convocatoria</option>
-                        {tiposConvocatoria.map((tipo) => (
-                            <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
-                                {tipo.nombre_convocatoria}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Carrera:</label>
-                    <select
-                        name="id_carrera"
-                        className="form-select"
-                        value={convocatoria.id_carrera}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Seleccione una carrera</option>
-                        {carreras.map((carrera) => (
-                            <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                                {carrera.nombre_carrera}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Facultad:</label>
-                    <select
-                        name="id_facultad"
-                        className="form-select"
-                        value={convocatoria.id_facultad}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Seleccione una facultad</option>
-                        {facultades.map((facultad) => (
-                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                                {facultad.nombre_facultad}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <button type="submit" className="btn btn-primary">Actualizar</button>
-            </form>
+        <div className="degraded-background">
+            <Container className="container-list">
+                <Row className="mb-4">
+                    <Col>
+                        <h1 className="text-center">Editar Convocatoria</h1>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col sm="12" md="8" lg="6" className="mx-auto">
+                        <Card className="card-custom">
+                            <CardBody>
+                                <CardTitle tag="h5" className="text-center mb-4">Formulario de Convocatoria</CardTitle>
+                                <Form onSubmit={handleSubmit}>
+                                    <FormGroup>
+                                        <Label for="cod_convocatoria">Código</Label>
+                                        <Input
+                                            type="text"
+                                            name="cod_convocatoria"
+                                            id="cod_convocatoria"
+                                            value={convocatoria.cod_convocatoria}
+                                            onChange={handleChange}
+                                            readOnly
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Label for="nombre">Nombre</Label>
+                                        <Input
+                                            type="text"
+                                            name="nombre"
+                                            id="nombre"
+                                            value={convocatoria.nombre}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </FormGroup>
+                                    <Row>
+                                        <Col>
+                                            <FormGroup>
+                                                <Label for="fecha_inicio">Fecha de Inicio</Label>
+                                                <Input
+                                                    type="date"
+                                                    name="fecha_inicio"
+                                                    id="fecha_inicio"
+                                                    value={convocatoria.fecha_inicio.split('T')[0]}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                            </FormGroup>
+                                        </Col>
+                                        <Col>
+                                            <FormGroup>
+                                                <Label for="fecha_fin">Fecha de Fin</Label>
+                                                <Input
+                                                    type="date"
+                                                    name="fecha_fin"
+                                                    id="fecha_fin"
+                                                    value={convocatoria.fecha_fin.split('T')[0]}
+                                                    onChange={handleChange}
+                                                />
+                                            </FormGroup>
+                                        </Col>
+                                    </Row>
+                                    <FormGroup>
+                                        <Label for="id_tipoconvocatoria">Tipo de Convocatoria</Label>
+                                        <Input
+                                            type="select"
+                                            name="id_tipoconvocatoria"
+                                            id="id_tipoconvocatoria"
+                                            value={convocatoria.id_tipoconvocatoria}
+                                            onChange={handleChange}
+                                            required
+                                        >
+                                            <option value="">Seleccione un tipo</option>
+                                            {tiposConvocatoria.map((tipo) => (
+                                                <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
+                                                    {tipo.nombre_convocatoria}
+                                                </option>
+                                            ))}
+                                        </Input>
+                                    </FormGroup>
+                                    <Row>
+                                        <Col>
+                                            <FormGroup>
+                                                <Label for="id_carrera">Carrera</Label>
+                                                <Input
+                                                    type="select"
+                                                    name="id_carrera"
+                                                    id="id_carrera"
+                                                    value={convocatoria.id_carrera}
+                                                    onChange={handleChange}
+                                                    required
+                                                >
+                                                    <option value="">Seleccione una carrera</option>
+                                                    {carreras.map((carrera) => (
+                                                        <option key={carrera.id_carrera} value={carrera.id_carrera}>
+                                                            {carrera.nombre_carrera}
+                                                        </option>
+                                                    ))}
+                                                </Input>
+                                            </FormGroup>
+                                        </Col>
+                                        <Col>
+                                            <FormGroup>
+                                                <Label for="id_facultad">Facultad</Label>
+                                                <Input
+                                                    type="select"
+                                                    name="id_facultad"
+                                                    id="id_facultad"
+                                                    value={convocatoria.id_facultad}
+                                                    onChange={handleChange}
+                                                    required
+                                                >
+                                                    <option value="">Seleccione una facultad</option>
+                                                    {facultades.map((facultad) => (
+                                                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                                            {facultad.nombre_facultad}
+                                                        </option>
+                                                    ))}
+                                                </Input>
+                                            </FormGroup>
+                                        </Col>
+                                    </Row>
+                                    <Button color="primary" type="submit" className="mt-3">Actualizar</Button>
+                                </Form>
+                            </CardBody>
+                        </Card>
+                    </Col>
+                </Row>
+            </Container>
         </div>
     );
 };

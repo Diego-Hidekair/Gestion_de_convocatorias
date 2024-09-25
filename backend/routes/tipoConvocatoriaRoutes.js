@@ -1,13 +1,14 @@
-// backend/routes/tipoConvocatoriaRoutes.js
+// backend/routes/usuarioRoutes.js
 const express = require('express');
 const router = express.Router();
-const tipoConvocatoriaController = require('../controllers/tipoConvocatoriaController');
+const { createUser, getUsuarios, deleteUser, loginUser, updateUser, getUsuarioById } = require('../controllers/usuarioController');
 
-// Define las rutas de tipo convocatoria
-router.get('/', tipoConvocatoriaController.getAllTiposConvocatoria);
-router.get('/:id', tipoConvocatoriaController.getTipoConvocatoriaById);
-router.post('/', tipoConvocatoriaController.createTipoConvocatoria);
-router.put('/:id', tipoConvocatoriaController.updateTipoConvocatoria);
-router.delete('/:id', tipoConvocatoriaController.deleteTipoConvocatoria);
+// Rutas para la gestión de usuarios
+router.get('/', getUsuarios);
+router.post('/', createUser);
+router.delete('/:id', deleteUser);
+router.post('/login', loginUser);
+router.put('/:id', updateUser);
+router.get('/:id', getUsuarioById);
 
 module.exports = router;
