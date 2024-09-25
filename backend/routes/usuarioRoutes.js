@@ -1,19 +1,16 @@
 // backend/routes/usuarioRoutes.js
 const express = require('express');
 const router = express.Router();
-const { createUser, getUsuarios, deleteUser, loginUser, updateUser, getUsuarioById } = require('../controllers/usuarioController');
+const { createUser, getUsuarios, deleteUser, updateUser, getCurrentUser, getUsuarioById } = require('../controllers/usuarioController');
 const { authenticateToken, authorizeAdmin } = require('../middleware/authMiddleware');
 
 // Rutas para la gestión de usuarios
-
 router.get('/', /*authenticateToken, authorizeAdmin,*/ getUsuarios);
-//router.post('/', authenticateToken, createUser);
+router.get('/:id', /*authenticateToken,*/ getUsuarioById); // Ruta para obtener un usuario por ID
 router.post('/', /*authenticateToken, authorizeAdmin,*/ createUser);
 router.delete('/:id', /*authenticateToken, authorizeAdmin,*/ deleteUser);
-//router.post('/login', loginUser);
 router.put('/:id', /*authenticateToken, authorizeAdmin,*/ updateUser);
+router.get('/me/:id', getCurrentUser); // Ahora acepta el ID del usuario en la URL
 
-// Ruta para obtener un usuario por ID
-router.get('/:id', /*authenticateToken, authorizeAdmin,*/ getUsuarioById);
 
 module.exports = router;

@@ -1,8 +1,7 @@
-//frontend/src/App.js
+// frontend/src/App.js
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-
 import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import CarreraForm from './components/CarreraForm';
@@ -29,6 +28,7 @@ import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
+import UsuarioPerfil from './components/UsuarioPerfil';
 import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import PDFViewer from './components/PDFViewer'; 
@@ -40,11 +40,9 @@ axios.defaults.baseURL = 'http://localhost:5000/';
 
 const App = () => {
     return (
-        
-            <Router>
-                <AuthWrapper />
-            </Router>
-        
+        <Router>
+            <AuthWrapper />
+        </Router>
     );
 };
 
@@ -91,7 +89,7 @@ const AuthWrapper = () => {
     };  
 
     return (
-        <div >
+        <div>
             {isAuthenticated ? (
                 <>
                     <NavBar onLogout={handleLogout} />
@@ -107,7 +105,7 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias" element={<ConvocatoriaList />} />
                         <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
-                        <Route path="/convocatorias/:id/materias" element={<ConvocatoriaEdit />} />
+                        <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/convocatorias/convocatorias-estado" element={<ConvocatoriaEstado userRole={userRole} />} />
                         <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
                         <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
@@ -115,14 +113,13 @@ const AuthWrapper = () => {
                         <Route path="/materias" element={<MateriaList />} />
                         <Route path="/materias/crear" element={<MateriaForm />} />
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
-                        
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
-
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
                         <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
+                        <Route path="/usuarios/me/:id" element={<UsuarioPerfil />} />
                         <Route path="/honorarios/new/:id_convocatoria/:convocatoria_materia_id" element={<HonorariosForm />} />
                         <Route path="/pdf/generate/:id" element={<PDFGenerator />} />
                         <Route path="/pdf/view/:fileName" element={<PDFViewer />} />

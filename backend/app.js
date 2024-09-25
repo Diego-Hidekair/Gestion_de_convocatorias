@@ -1,12 +1,10 @@
 // backend/app.js
-
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
-//const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware');
 
 // Middlewares
 app.use(cors({
@@ -16,6 +14,7 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos

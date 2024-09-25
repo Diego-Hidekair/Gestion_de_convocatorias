@@ -1,5 +1,4 @@
 // backend/controllers/usuarioController.js
-
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -23,6 +22,11 @@ const createUser = async (req, res) => {
             return res.status(400).json({ error: 'Rol inválido' });
         }
 
+        const existingUser = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: 'El id ya está en uso' });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(Contraseña, salt);
 
@@ -31,7 +35,7 @@ const createUser = async (req, res) => {
             [id, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular]
         );
 
-        res.json(newUser.rows[0]);
+        res.status(201).json(newUser.rows[0]);
     } catch (error) {
         console.error('Error al crear el usuario:', error);
         res.status(500).json({ error: 'Error en el servidor al crear el usuario', details: error.message });
@@ -80,37 +84,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-/*const loginUser = async (req, res) => {
-    const { id, Contraseña } = req.body;
-
-    try {
-        const user = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
-
-        if (user.rows.length === 0) {
-            return res.status(400).json({ error: 'Credenciales incorrectas' });
-        }
-
-        const validPassword = await bcrypt.compare(Contraseña, user.rows[0].Contraseña);
-
-        if (!validPassword) {
-            return res.status(400).json({ error: 'Credenciales incorrectas' });
-        }
-
-        const token = jwt.sign(
-            { id: user.rows[0].id, rol: user.rows[0].Rol },
-            process.env.JWT_SECRET,
-            { expiresIn: '4h' }
-        );
-
-        console.log('Token generado:', token);
-        console.log('Rol del usuario:', user.rows[0].Rol);
-
-        res.json({ token });
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
-    }
-};*/
 const getUsuarioById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -125,4 +98,17 @@ const getUsuarioById = async (req, res) => {
     }
 };
 
-module.exports = { createUser, getUsuarios, deleteUser, updateUser, getUsuarioById };
+const getCurrentUser = async (req, res) => {
+    const userId = req.params.id; // Obtener el ID del usuario desde la URL
+    try {
+        const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios WHERE id = $1', [userId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener el usuario actual', error });
+    }
+};
+
+module.exports = { createUser, getUsuarios, deleteUser, updateUser, getUsuarioById, getCurrentUser };
