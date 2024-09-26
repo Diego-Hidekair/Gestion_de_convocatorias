@@ -5,12 +5,16 @@ const { createUser, getUsuarios, deleteUser, updateUser, getCurrentUser, getUsua
 const { authenticateToken, authorizeAdmin } = require('../middleware/authMiddleware');
 
 // Rutas para la gestión de usuarios
-router.get('/', /*authenticateToken, authorizeAdmin,*/ getUsuarios);
-router.get('/:id', /*authenticateToken,*/ getUsuarioById); // Ruta para obtener un usuario por ID
-router.post('/', /*authenticateToken, authorizeAdmin,*/ createUser);
-router.delete('/:id', /*authenticateToken, authorizeAdmin,*/ deleteUser);
-router.put('/:id', /*authenticateToken, authorizeAdmin,*/ updateUser);
-router.get('/me/:id', getCurrentUser); // Ahora acepta el ID del usuario en la URL
-
+router.get('/', authenticateToken, authorizeAdmin, getUsuarios); // Lista de usuarios protegida
+router.get('/:id', authenticateToken, getUsuarioById); // Usuario por ID protegido
+router.post('/', authenticateToken, authorizeAdmin, createUser); // Crear usuario protegido
+router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser); // Eliminar usuario protegido
+router.put('/:id', authenticateToken, authorizeAdmin, updateUser); // Actualizar usuario protegido
+router.get('/me/:id', authenticateToken, getCurrentUser); // Obtener el usuario actual protegido
 
 module.exports = router;
+
+
+
+
+

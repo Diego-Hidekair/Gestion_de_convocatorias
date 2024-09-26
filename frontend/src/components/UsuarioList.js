@@ -26,7 +26,7 @@ const UsuarioList = () => {
         if (location.state && location.state.successMessage) {
             setSuccessMessage(location.state.successMessage);
             setTimeout(() => {
-                setSuccessMessage(''); // Limpiar el mensaje después de 3 segundos
+                setSuccessMessage(''); 
             }, 3000);
         }
     }, [location.state]);
@@ -43,7 +43,7 @@ const UsuarioList = () => {
             }
         }
     };
-
+    
     return (
         <div className="container mt-5">
             <h2>Lista de Usuarios</h2>
@@ -65,11 +65,11 @@ const UsuarioList = () => {
                     {usuarios.map((usuario) => (
                         <tr key={usuario.id}>
                             <td>{usuario.id}</td>
-                            <td>{usuario.Nombres}</td>
-                            <td>{usuario.Apellido_paterno}</td>
-                            <td>{usuario.Apellido_materno}</td>
-                            <td>{usuario.Rol}</td>
-                            <td>{usuario.Celular}</td>
+                            <td>{usuario.nombres}</td> {/* Asegúrate de que el campo en tu backend sea "nombres" */}
+                            <td>{usuario.apellido_paterno}</td> {/* Asegúrate de que el campo en tu backend sea "apellido_paterno" */}
+                            <td>{usuario.apellido_materno}</td> {/* Asegúrate de que el campo en tu backend sea "apellido_materno" */}
+                            <td>{usuario.rol}</td> {/* Asegúrate de que el campo en tu backend sea "rol" */}
+                            <td>{usuario.celular}</td> {/* Asegúrate de que el campo en tu backend sea "celular" */}
                             <td>
                                 <Link to={`/usuarios/edit/${usuario.id}`} className="btn btn-primary btn-sm">
                                     Editar

@@ -4,6 +4,20 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Global.css';  // Importa Global.css
 
+
+axios.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+); 
+
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
         id: '',
@@ -24,9 +38,9 @@ const Login = ({ setAuth }) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-            const { token, user_id } = response.data;
+            const { token, userId } = response.data;
             localStorage.setItem('token', token);
-            localStorage.setItem('user_id', user_id);
+            localStorage.setItem('userId', userId); // Asegúrate de que esto sea correcto
             setAuth(true);
             navigate('/redirect');
         } catch (error) {

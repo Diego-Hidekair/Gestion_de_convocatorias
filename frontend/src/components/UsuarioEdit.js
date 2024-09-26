@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const UsuarioEdit = () => {
-    const { id } = useParams();
+    const { id } = useParams(); // Asegúrate de que 'id' se obtenga correctamente
     const navigate = useNavigate();
 
     // Inicializa el estado con valores por defecto
@@ -17,16 +17,21 @@ const UsuarioEdit = () => {
         Celular: '',
     });
     const [isProcessing, setIsProcessing] = useState(false);
-    
+
     useEffect(() => {
         const fetchUsuario = async () => {
+            if (!id) {
+                console.error('El ID del usuario es indefinido.');
+                return;
+            }
+
             try {
                 const response = await axios.get(`/usuarios/${id}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-    
+
                 const { Nombres, Apellido_paterno, Apellido_materno, Rol, Celular } = response.data;
-    
+
                 setUsuario({
                     Nombres: Nombres || '',
                     Apellido_paterno: Apellido_paterno || '',
@@ -39,7 +44,7 @@ const UsuarioEdit = () => {
                 console.error('Error al obtener los datos del usuario:', error);
             }
         };
-    
+
         fetchUsuario();
     }, [id]);
 
@@ -69,7 +74,7 @@ const UsuarioEdit = () => {
             setIsProcessing(false);
         }
     };
-    
+
     return (
         <div className="container">
             <h2>Editar Usuario</h2>

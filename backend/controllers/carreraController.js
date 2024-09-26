@@ -11,14 +11,15 @@ const getCarreras = async (req, res) => {
 };
 
 const createCarrera = async (req, res) => {
-    const { nombre_carrera, cod_facultad } = req.body;
+    const { nombre_carrera, cod_facultad } = req.body; // Asegúrate de que estos campos son correctos
     try {
         const result = await pool.query(
-            'INSERT INTO carrera (nombre_carrera, cod_facultad) VALUES ($1, $2) RETURNING *',
-            [nombre_carrera, cod_facultad]
+            'INSERT INTO carrera (Nombre_carrera, Cod_facultad) VALUES ($1, $2) RETURNING *',
+            [nombre_carrera, cod_facultad] // Asegúrate de que cod_facultad sea un entero
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        console.error('Error al crear carrera:', err); // Para más detalles
         res.status(500).json({ error: err.message });
     }
 };

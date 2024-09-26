@@ -30,6 +30,7 @@ const CarreraForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Datos a enviar:', carrera); // Imprimir los datos antes de enviarlos
         try {
             await axios.post('http://localhost:5000/carreras', carrera);
             navigate('/carreras');
@@ -37,6 +38,7 @@ const CarreraForm = () => {
             console.error('Error al crear carrera:', error);
         }
     };
+    
 
     return (
         <div className="degraded-background">
@@ -74,7 +76,7 @@ const CarreraForm = () => {
                                         <option value="">Seleccione una Facultad</option>
                                         {facultades.map(facultad => (
                                             <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
-                                                {facultad.nombre_facultad}
+                                                {facultad.nombre_facultad}  {/* Asegúrate de que este es el nombre correcto */}
                                             </option>
                                         ))}
                                     </Input>

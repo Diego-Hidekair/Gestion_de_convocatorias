@@ -1,39 +1,36 @@
 // backend/controllers/authController.js
 const pool = require('../db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const login = async (req, res) => {
+const loginUser = async (req, res) => {
     const { id, Contraseña } = req.body;
 
     try {
-        // Verificar si el usuario existe en la base de datos
-        const userResult = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
-        const user = userResult.rows[0];
+        const result = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id]);
+        const user = result.rows[0];
 
-        // Si el usuario no existe, devolver un error
         if (!user) {
-            return res.status(401).json({ message: 'Credenciales incorrectas' });
+            return res.status(400).json({ error: 'Usuario no encontrado' });
         }
 
-        // Comparar la contraseña ingresada con la almacenada en la base de datos
-        const isMatch = await bcrypt.compare(Contraseña, user.contraseña);
-
-        // Si las contraseñas no coinciden, devolver un error
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Credenciales incorrectas' });
+        const validPassword = await bcrypt.compare(Contraseña, user.contraseña);
+        if (!validPassword) {
+            return res.status(400).json({ error: 'Contraseña incorrecta' });
         }
 
-        // Generar un token JWT
-        const token = jwt.sign({ userId: user.id, role: user.rol }, 'tu_secreto', { expiresIn: '1h' });
+        // Genera el token
+        const token = jwt.sign(
+            { id: user.id, rol: user.rol },
+            process.env.JWT_SECRET,
+            { expiresIn: '4h' } // Expira en 1 hora
+        );
 
-        // Devolver el token al cliente
-        res.json({ token });
-    }  catch (error) {
-        // Capturar cualquier error en el servidor y devolver un error 500
-        console.error('Error en el login:', error);
-        res.status(500).json({ message: 'Error en el servidor' });
+        res.json({ token, user_id: user.id });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
     }
 };
 
-module.exports = { login };
+module.exports = { loginUser };

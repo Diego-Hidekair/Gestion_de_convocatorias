@@ -1,11 +1,12 @@
 // backend/controllers/usuarioController.js
-const pool = require('../db');
+const pool = require('../db'); // Asegúrate de que la conexión a la base de datos esté bien configurada
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const getUsuarios = async (req, res) => {
     try {
         const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios');
+        console.log(result.rows); // Verifica la respuesta aquí
         res.json(result.rows);
     } catch (err) {
         console.error(err.message);
@@ -84,6 +85,7 @@ const deleteUser = async (req, res) => {
     }
 };
 
+// Obtener un usuario por ID
 const getUsuarioById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -98,6 +100,7 @@ const getUsuarioById = async (req, res) => {
     }
 };
 
+// Obtener el usuario actual
 const getCurrentUser = async (req, res) => {
     const userId = req.params.id; // Obtener el ID del usuario desde la URL
     try {

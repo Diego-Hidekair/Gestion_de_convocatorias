@@ -57,6 +57,11 @@ app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
 });
 
+app.get('/usuarios/:id', async (req, res) => {
+    const { id } = req.params;
+    // Lógica para obtener el usuario por ID
+});
+
 // Manejador de errores global
 app.use((err, req, res, next) => {
     console.error(err.stack);
