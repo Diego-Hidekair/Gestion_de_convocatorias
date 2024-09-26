@@ -1,15 +1,16 @@
 // src/components/CarreraForm.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Container, Form, FormGroup, Label, Input, Button, Row, Col } from 'reactstrap';
-import '../Global.css';  // Importa el archivo CSS global
+import { useNavigate } from 'react-router-dom'; // Solo usar useNavigate
+import { Container, Form, FormGroup, Label, Input, Button, Row, Col, Alert } from 'reactstrap'; // Importar Alert
+import '../Global.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarreraForm = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // Inicializar useNavigate correctamente
     const [carrera, setCarrera] = useState({ nombre_carrera: '', cod_facultad: '' });
     const [facultades, setFacultades] = useState([]);
+    const [successMessage, setSuccessMessage] = useState(''); // Estado para el mensaje de éxito
 
     useEffect(() => {
         const fetchFacultades = async () => {
@@ -30,15 +31,28 @@ const CarreraForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Datos a enviar:', carrera); // Imprimir los datos antes de enviarlos
+        const carreraData = {
+            nombre_carrera: carrera.nombre_carrera,
+            cod_facultad: carrera.cod_facultad,
+        };
+        console.log("Datos a enviar:", carreraData);
+
         try {
-            await axios.post('http://localhost:5000/carreras', carrera);
-            navigate('/carreras');
+            const response = await axios.post('http://localhost:5000/carreras', carreraData);
+            console.log("Respuesta del servidor:", response.data);
+
+            // Mostrar mensaje de éxito
+            setSuccessMessage('Carrera creada exitosamente!');
+
+            // Redirigir después de 3 segundos
+            setTimeout(() => {
+                setSuccessMessage('');  // Limpiar el mensaje de éxito
+                navigate('/carreras');  // Redirigir a la lista de carreras
+            }, 3000);  // Esperar 3 segundos antes de redirigir
         } catch (error) {
-            console.error('Error al crear carrera:', error);
+            console.error("Error al crear carrera:", error);
         }
     };
-    
 
     return (
         <div className="degraded-background">
@@ -48,6 +62,15 @@ const CarreraForm = () => {
                         <h1 className="text-center">Crear Nueva Carrera</h1>
                     </Col>
                 </Row>
+                {successMessage && (  // Mostrar el mensaje de éxito si existe
+                    <Row>
+                        <Col>
+                            <Alert color="success" className="text-center">
+                                {successMessage}
+                            </Alert>
+                        </Col>
+                    </Row>
+                )}
                 <Row className="justify-content-center">
                     <Col md={6}>
                         <div className="card-content">
@@ -75,8 +98,8 @@ const CarreraForm = () => {
                                     >
                                         <option value="">Seleccione una Facultad</option>
                                         {facultades.map(facultad => (
-                                            <option key={facultad.cod_facultad} value={facultad.cod_facultad}>
-                                                {facultad.nombre_facultad}  {/* Asegúrate de que este es el nombre correcto */}
+                                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                                {facultad.nombre_facultad}
                                             </option>
                                         ))}
                                     </Input>
