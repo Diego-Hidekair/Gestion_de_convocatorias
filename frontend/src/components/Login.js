@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Global.css';  // Importa Global.css
 
-
+// Interceptor para agregar el token en las solicitudes
 axios.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -38,9 +38,10 @@ const Login = ({ setAuth }) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-            const { token, userId } = response.data;
+            const { token, userId, rol } = response.data; // Ahora obtenemos el rol del usuario
             localStorage.setItem('token', token);
-            localStorage.setItem('userId', userId); // Asegúrate de que esto sea correcto
+            localStorage.setItem('userId', userId);
+            localStorage.setItem('rol', rol); // Guardamos el rol en el localStorage
             setAuth(true);
             navigate('/redirect');
         } catch (error) {

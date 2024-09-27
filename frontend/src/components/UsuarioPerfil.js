@@ -1,10 +1,9 @@
 // frontend/src/components/UsuarioPerfil.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const UsuarioPerfil = () => {
-    const { id } = useParams(); // ID del usuario de la URL
     const navigate = useNavigate(); // Para redirigir
     const [usuario, setUsuario] = useState(null);
     const [error, setError] = useState(null);
@@ -12,22 +11,17 @@ const UsuarioPerfil = () => {
 
     useEffect(() => {
         const fetchUsuario = async () => {
-            const userId = localStorage.getItem('user_id'); // Asegúrate de que user_id esté definido
-            const role = localStorage.getItem('user_role'); // Obtenemos el rol del usuario
-            setUserRole(role); // Guardamos el rol en el estado
+            const userId = localStorage.getItem('userId'); // Asegúrate de obtener el userId correctamente
 
-            if (!userId) {
-                console.error('No se encontró userId en localStorage');
-                return;
-            }
             try {
-                const response = await axios.get(`http://localhost:5000/usuarios/${userId}`, {
+                const response = await axios.get('http://localhost:5000/usuarios/me', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
                     },
                 });
-                
-                // Actualiza el estado con los datos del usuario
+
+                // Guardamos el rol y los datos del usuario
+                setUserRole(response.data.rol);
                 setUsuario(response.data);
             } catch (error) {
                 console.error('Error al obtener el perfil del usuario:', error);
@@ -35,18 +29,14 @@ const UsuarioPerfil = () => {
             }
         };
 
-        // Solo hacer la solicitud si id está definido
-        if (id) {
-            fetchUsuario();
-        } else {
-            setError('ID de usuario no proporcionado.');
-        }
-    }, [id]);
+        fetchUsuario();
+    }, []);
 
     const handleEdit = () => {
-        navigate(`/usuarios/edit/${usuario.id}`); // Asegúrate de que 'usuario.id' tenga el valor correcto
+        if (usuario) {
+            navigate(`/usuarios/edit/${usuario.id}`); // Asegúrate de que 'usuario.id' tenga el valor correcto
+        }
     };
-    
 
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
@@ -88,7 +78,6 @@ const UsuarioPerfil = () => {
                                     className="form-control"
                                     value={usuario.rol}
                                     onChange={(e) => {
-                                        // Aquí podrías manejar el cambio de rol, si lo deseas
                                         console.log('Cambio de rol:', e.target.value);
                                     }}
                                 >

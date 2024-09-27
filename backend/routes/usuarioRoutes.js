@@ -10,11 +10,8 @@ router.get('/:id', authenticateToken, getUsuarioById); // Usuario por ID protegi
 router.post('/', authenticateToken, authorizeAdmin, createUser); // Crear usuario protegido
 router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser); // Eliminar usuario protegido
 router.put('/:id', authenticateToken, authorizeAdmin, updateUser); // Actualizar usuario protegido
-router.get('/me/:id', authenticateToken, getCurrentUser); // Obtener el usuario actual protegido
+router.get('/me', authenticateToken, getCurrentUser); // Obtener el usuario actual protegido
 
 module.exports = router;
-
-
-
 
 

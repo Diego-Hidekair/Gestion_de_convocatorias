@@ -71,7 +71,7 @@ const NavBar = ({ onLogout }) => {
                                     <DropdownToggle nav caret>
                                         Estados de Convocatoria
                                     </DropdownToggle>
-                                    <DropdownMenu right>
+                                    <DropdownMenu end>
                                         <DropdownItem tag={Link} to="/convocatorias/estado/para-revision" className={location.pathname === '/convocatorias/estado/para-revision' ? 'active' : ''}>
                                             Para Revisión
                                         </DropdownItem>

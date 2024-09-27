@@ -6,6 +6,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
 
+// Importar el middleware de autenticación
+const { authenticateToken } = require('./middleware/authMiddleware'); // Ruta ajustada según tu estructura de carpetas
+
 // Middlewares
 app.use(cors({
     origin: 'http://localhost:3000',
@@ -21,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
-// Importa las rutas
+// Importar las rutas
 const facultadRoutes = require('./routes/facultadRoutes');
 const carreraRoutes = require('./routes/carreraRoutes');
 const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
@@ -34,7 +37,7 @@ const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const honorariosRoutes = require('./routes/honorariosRoutes');
 
-// Usa las rutas
+// Usar las rutas
 app.use('/facultades', facultadRoutes);
 app.use('/carreras', carreraRoutes);
 app.use('/tipo-convocatorias', tipoConvocatoriaRoutes);
@@ -57,9 +60,16 @@ app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
 });
 
+// Ruta para obtener el usuario por ID
 app.get('/usuarios/:id', async (req, res) => {
     const { id } = req.params;
     // Lógica para obtener el usuario por ID
+});
+
+// Ruta protegida para obtener el perfil del usuario autenticado
+app.get('/usuarios/me', authenticateToken, (req, res) => {
+    // Aquí manejas la obtención de datos del usuario autenticado
+    res.json(req.user);
 });
 
 // Manejador de errores global

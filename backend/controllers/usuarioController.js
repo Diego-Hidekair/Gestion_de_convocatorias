@@ -102,7 +102,8 @@ const getUsuarioById = async (req, res) => {
 
 // Obtener el usuario actual
 const getCurrentUser = async (req, res) => {
-    const userId = req.params.id; // Obtener el ID del usuario desde la URL
+    const userId = req.user.id; // El ID del usuario lo obtenemos del JWT, no de los params
+
     try {
         const result = await pool.query('SELECT id, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios WHERE id = $1', [userId]);
         if (result.rows.length === 0) {
