@@ -26,6 +26,33 @@ exports.getTipoConvocatoriaById = async (req, res) => {
     }
 };
 
+// Obtener convocatorias por estado
+const getConvocatoriasByEstado = async (req, res) => {
+    const { estado } = req.params;
+    try {
+        const result = await pool.query(`
+            SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
+                   tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                   ca.nombre_carrera AS nombre_carrera, 
+                   f.nombre_facultad AS nombre_facultad,
+                   c.estado
+            FROM convocatorias c
+            LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera
+            LEFT JOIN facultad f ON c.id_facultad = f.id_facultad
+            WHERE c.estado = $1
+            ORDER BY c.cod_convocatoria
+        `, [estado]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: `No se encontraron convocatorias con estado ${estado}` });
+        }
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // Crear un nuevo tipo de convocatoria
 exports.createTipoConvocatoria = async (req, res) => {
     const { Nombre_convocatoria, Cod_carrera, Cod_facultad } = req.body;

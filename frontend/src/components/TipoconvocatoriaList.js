@@ -42,7 +42,7 @@ const TipoconvocatoriaList = () => {
                 </Row>
                 <Row className="mb-3">
                     <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/tipo-convocatorias/new">
+                        <Button color="primary" tag={Link} to="/tipoconvocatorias/crear">
                             Crear Nuevo Tipo de Convocatoria
                         </Button>
                     </Col>
@@ -57,7 +57,7 @@ const TipoconvocatoriaList = () => {
                                         {tipo.nombre_convocatoria} {/* Cambia aquí si es necesario */}
                                     </CardTitle>
                                     <div className="d-flex justify-content-between mt-3 button-group">
-                                        <Button color="warning" size="sm" tag={Link} to={`/tipo-convocatorias/edit/${tipo.id_tipoconvocatoria}`} className="custom-button">
+                                    <Button color="warning" size="sm" tag={Link} to={`/tipoconvocatorias/editar/${tipo.id_tipoconvocatoria}`}>  
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>
                                         <Button color="danger" size="sm" onClick={() => handleDelete(tipo.id_tipoconvocatoria)} className="custom-button">

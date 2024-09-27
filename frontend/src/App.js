@@ -1,4 +1,4 @@
-// frontend/src/App.js
+// frontend/src/App.js 
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
@@ -12,7 +12,10 @@ import FacultadForm from './components/FacultadForm';
 import ConvocatoriaList from './components/ConvocatoriaList';
 import ConvocatoriaForm from './components/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/ConvocatoriaEdit';
-import ConvocatoriaEstado from './components/ConvocatoriaEstado';
+import ConvocatoriaParaRevision from './components/ConvocatoriaParaRevision';
+import ConvocatoriaEnRevision from './components/ConvocatoriaEnRevision';
+import ConvocatoriaObservado from './components/ConvocatoriaObservado';
+import ConvocatoriaRevisado from './components/ConvocatoriaRevisado';
 import TipoconvocatoriaList from './components/TipoconvocatoriaList';
 import TipoconvocatoriaForm from './components/TipoconvocatoriaForm';
 import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
@@ -34,7 +37,6 @@ import HonorariosForm from './components/HonorariosForm';
 import PDFViewer from './components/PDFViewer'; 
 import PDFGenerator from './components/PDFGenerator';
 
-
 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
 axios.defaults.baseURL = 'http://localhost:5000/';
 
@@ -48,7 +50,7 @@ const App = () => {
 
 const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [userRole, setUserRole] = useState('');
+    const [userRole, setUserRole] = useState(''); 
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -106,7 +108,10 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                         <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
-                        <Route path="/convocatorias/convocatorias-estado" element={<ConvocatoriaEstado userRole={userRole} />} />
+                        <Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />
+                        <Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />
+                        <Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />
+                        <Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />
                         <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
                         <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
                         <Route path="/tipoconvocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />

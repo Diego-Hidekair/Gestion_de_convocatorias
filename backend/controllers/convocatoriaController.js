@@ -47,6 +47,28 @@ const getConvocatoriaById = async (req, res) => {
     }
 };
 
+// Obtener convocatorias por estado
+const getConvocatoriasByEstado = async (req, res) => {
+    const { estado } = req.params; // Obtener el estado de los parámetros de la solicitud
+    try {
+        const result = await pool.query(`
+            SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
+                   tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                   ca.nombre_carrera AS nombre_carrera, 
+                   f.nombre_facultad AS nombre_facultad
+            FROM convocatorias c
+            LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera
+            LEFT JOIN facultad f ON c.id_facultad = f.id_facultad
+            WHERE c.estado = $1
+            ORDER BY c.cod_convocatoria
+        `, [estado]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {
     try {
@@ -106,5 +128,5 @@ const deleteConvocatoria = async (req, res) => {
     }
 };
 
-module.exports = { getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria };
+module.exports = { getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado };
  
