@@ -1,4 +1,3 @@
-// backend/controllers/tipoConvocatoriaController.js
 const pool = require('../db');
 
 // Obtener todos los tipos de convocatoria
@@ -26,36 +25,9 @@ exports.getTipoConvocatoriaById = async (req, res) => {
     }
 };
 
-// Obtener convocatorias por estado
-const getConvocatoriasByEstado = async (req, res) => {
-    const { estado } = req.params;
-    try {
-        const result = await pool.query(`
-            SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
-                   tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
-                   ca.nombre_carrera AS nombre_carrera, 
-                   f.nombre_facultad AS nombre_facultad,
-                   c.estado
-            FROM convocatorias c
-            LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera
-            LEFT JOIN facultad f ON c.id_facultad = f.id_facultad
-            WHERE c.estado = $1
-            ORDER BY c.cod_convocatoria
-        `, [estado]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: `No se encontraron convocatorias con estado ${estado}` });
-        }
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
 // Crear un nuevo tipo de convocatoria
 exports.createTipoConvocatoria = async (req, res) => {
-    const { Nombre_convocatoria, Cod_carrera, Cod_facultad } = req.body;
+    const { Nombre_convocatoria } = req.body; // Eliminamos Cod_carrera y Cod_facultad
     try {
         // Verificar que Nombre_convocatoria no sea null o undefined
         if (!Nombre_convocatoria) {
@@ -63,8 +35,8 @@ exports.createTipoConvocatoria = async (req, res) => {
         }
 
         const result = await pool.query(
-            'INSERT INTO tipo_convocatoria (nombre_convocatoria, cod_carrera, cod_facultad) VALUES ($1, $2, $3) RETURNING *',
-            [Nombre_convocatoria, Cod_carrera, Cod_facultad]
+            'INSERT INTO tipo_convocatoria (nombre_convocatoria) VALUES ($1) RETURNING *', // Solo insertar nombre_convocatoria
+            [Nombre_convocatoria]
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -75,13 +47,13 @@ exports.createTipoConvocatoria = async (req, res) => {
 
 // Actualizar un tipo de convocatoria
 exports.updateTipoConvocatoria = async (req, res) => {
-    const { Nombre_convocatoria, Cod_carrera, Cod_facultad } = req.body;
+    const { Nombre_convocatoria } = req.body; // Eliminamos Cod_carrera y Cod_facultad
     try {
-        console.log('Datos recibidos:', { Nombre_convocatoria, Cod_carrera, Cod_facultad, id: req.params.id });
+        console.log('Datos recibidos:', { Nombre_convocatoria, id: req.params.id });
         
         const result = await pool.query(
-            'UPDATE tipo_convocatoria SET Nombre_convocatoria = $1, Cod_carrera = $2, Cod_facultad = $3 WHERE id_tipoconvocatoria = $4 RETURNING *',
-            [Nombre_convocatoria, Cod_carrera, Cod_facultad, req.params.id]
+            'UPDATE tipo_convocatoria SET Nombre_convocatoria = $1 WHERE id_tipoconvocatoria = $2 RETURNING *', // Solo actualizar nombre_convocatoria
+            [Nombre_convocatoria, req.params.id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Tipo de convocatoria no encontrado' });

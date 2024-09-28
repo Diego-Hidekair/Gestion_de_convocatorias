@@ -7,77 +7,47 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const TipoconvocatoriaEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '', Cod_carrera: '', Cod_facultad: '' });
-    const [facultades, setFacultades] = useState([]);
-    const [carreras, setCarreras] = useState([]);
+    const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '' });
 
     useEffect(() => {
-        const fetchFacultades = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/facultades');
-                setFacultades(response.data);
-            } catch (error) {
-                console.error('Error al obtener las facultades:', error);
-            }
-        };
-
-        const fetchCarreras = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/carreras');
-                setCarreras(response.data);
-            } catch (error) {
-                console.error('Error al obtener las carreras:', error);
-            }
-        };
-
         const fetchTipoConvocatoria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/tipo-convocatorias/${id}`);
                 setTipoConvocatoria({
-                    Nombre_convocatoria: response.data.Nombre_convocatoria || '',
-                    Cod_carrera: response.data.Cod_carrera || '',
-                    Cod_facultad: response.data.Cod_facultad || ''
+                    Nombre_convocatoria: response.data.Nombre_convocatoria || ''
                 });
             } catch (error) {
                 console.error('Error al obtener el tipo de convocatoria:', error);
             }
         };
 
-        fetchFacultades();
-        fetchCarreras();
         fetchTipoConvocatoria();
     }, [id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setTipoConvocatoria({ ...tipoConvocatoria, [name]: value });
+        setTipoConvocatoria(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!tipoConvocatoria.Nombre_convocatoria || !tipoConvocatoria.Cod_facultad || !tipoConvocatoria.Cod_carrera) {
-            alert("Por favor, complete todos los campos.");
-            return;
-        }
-
-        if (isNaN(tipoConvocatoria.Cod_facultad) || isNaN(tipoConvocatoria.Cod_carrera)) {
-            alert("Por favor, seleccione valores válidos para facultad y carrera.");
+        if (!tipoConvocatoria.Nombre_convocatoria) {
+            alert("Por favor, complete el campo del nombre de convocatoria.");
             return;
         }
 
         try {
             await axios.put(`http://localhost:5000/tipo-convocatorias/${id}`, {
-                Nombre_convocatoria: tipoConvocatoria.Nombre_convocatoria,
-                Cod_facultad: tipoConvocatoria.Cod_facultad,
-                Cod_carrera: tipoConvocatoria.Cod_carrera
+                Nombre_convocatoria: tipoConvocatoria.Nombre_convocatoria
             });
             navigate('/tipoconvocatorias');
         } catch (error) {
             console.error('Error al actualizar el tipo de convocatoria:', error);
+            alert("Hubo un error al actualizar la convocatoria. Intenta nuevamente.");
         }
     };
-    
+
     return (
         <div className="container mt-4">
             <h1 className="mb-4">Editar Tipo de Convocatoria</h1>
@@ -92,40 +62,6 @@ const TipoconvocatoriaEdit = () => {
                         className="form-control"
                         required
                     />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Facultad:</label>
-                    <select
-                        name="Cod_facultad"
-                        value={tipoConvocatoria.Cod_facultad}
-                        onChange={handleChange}
-                        className="form-select"
-                        required
-                    >
-                        <option value="">Seleccione una facultad</option>
-                        {facultades.map(facultad => (
-                            <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                                {facultad.nombre_facultad}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Carrera:</label>
-                    <select
-                        name="Cod_carrera"
-                        value={tipoConvocatoria.Cod_carrera}
-                        onChange={handleChange}
-                        className="form-select"
-                        required
-                    >
-                        <option value="">Seleccione una carrera</option>
-                        {carreras.map(carrera => (
-                            <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                                {carrera.nombre_carrera}
-                            </option>
-                        ))}
-                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary">Guardar Cambios</button>
             </form>

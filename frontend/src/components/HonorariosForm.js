@@ -6,7 +6,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 
 const HonorariosForm = () => {
-    
     const location = useLocation();
     const id_materia = location.state?.id_materia || null;
     const { id_convocatoria } = useParams();
@@ -46,8 +45,8 @@ const HonorariosForm = () => {
                 pago_mensual: pagoMensual,
             });
 
-            //navigate(`/honorarios/new/${id_convocatoria}`);
-            navigate(`/honorarios/new/${id_convocatoria}/${id_materia}`, { state: { id_materia } });
+            // Redirigir a la vista de generación de PDF
+            navigate(`/pdf/generate/${id_convocatoria}/${id_materia}`, { state: { id_materia } });
             
         } catch (error) {
             console.error('Error creando honorario:', error);

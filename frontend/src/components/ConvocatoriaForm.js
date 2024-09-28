@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label,Input, Row, Col } from 'reactstrap';
+import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label, Input, Row, Col } from 'reactstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -30,7 +30,6 @@ const ConvocatoriaForm = () => {
             const fetchConvocatoria = async () => {
                 try {
                     const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
-                    // Convertir las fechas a objetos de Date
                     const data = response.data;
                     setConvocatoria({
                         ...data,
@@ -87,10 +86,12 @@ const ConvocatoriaForm = () => {
             };
             if (id) {
                 await axios.put(`http://localhost:5000/convocatorias/${id}`, formattedConvocatoria);
+                navigate('/convocatorias');
             } else {
-                await axios.post('http://localhost:5000/convocatorias', formattedConvocatoria);
+                const response = await axios.post('http://localhost:5000/convocatorias', formattedConvocatoria);
+                const newConvocatoriaId = response.data.id_convocatoria; // Asegúrate de que el backend devuelve el id
+                navigate(`/convocatorias_materias/new/${newConvocatoriaId}`); // Ruta corregida
             }
-            navigate('/convocatorias');
         } catch (error) {
             console.error('Error submitting form:', error);
         }
@@ -208,7 +209,7 @@ const ConvocatoriaForm = () => {
                                         </Col>
                                     </Row>
                                     <Button color="primary" type="submit" className="mt-3">
-                                        {id ? 'Actualizar' : 'Registrar'}
+                                        {id ? 'Actualizar' : 'Siguiente'}
                                     </Button>
                                 </Form>
                             </CardBody>
