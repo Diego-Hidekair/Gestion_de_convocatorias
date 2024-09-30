@@ -34,7 +34,7 @@ const ConvocatoriaMateriasEdit = () => {
         try {
             await axios.put(`http://localhost:5000/convocatoria_materias/${id_materia}`, {
                 perfil_profesional: perfilProfesional,
-                total_horas: totalHoras,
+                total_horas: totalHoras, // Asegúrate de que se envíe este dato
             });
             alert('Materia editada exitosamente');
             // Redirigir nuevamente a la creación de honorarios

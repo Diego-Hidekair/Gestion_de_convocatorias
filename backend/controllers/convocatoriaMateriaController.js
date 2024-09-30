@@ -44,7 +44,6 @@ const getConvocatoriaMateriaById = async (req, res) => {
             return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
         }
         
-        
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Error buscando convocatoria_materia por ID:', error);
@@ -54,14 +53,14 @@ const getConvocatoriaMateriaById = async (req, res) => {
 
 // Crear una nueva relación convocatoria-materia
 const createConvocatoriaMateria = async (req, res) => {
-    const { id_convocatoria, id_materia, total_horas, perfil_profesional } = req.body;
+    const { id_convocatoria, id_materia, perfil_profesional } = req.body;
     try {
         const result = await pool.query(`
-            INSERT INTO convocatoria_materia (id_convocatoria, id_materia, total_horas, perfil_profesional) 
-            VALUES ($1, $2, $3, $4) RETURNING *
-        `, [id_convocatoria, id_materia, total_horas, perfil_profesional]);
+            INSERT INTO convocatoria_materia (id_convocatoria, id_materia, perfil_profesional) 
+            VALUES ($1, $2, $3) RETURNING *
+        `, [id_convocatoria, id_materia, perfil_profesional]);
         
-        res.status(201).json(result.rows[0]);  // Enviar el registro recién creado
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error creando convocatoria_materia:', error);
         res.status(500).json({ error: 'Error en el servidor' });
@@ -71,19 +70,19 @@ const createConvocatoriaMateria = async (req, res) => {
 // Actualizar una relación convocatoria-materia específica por id_convocatoria y id_materia
 const updateConvocatoriaMateria = async (req, res) => {
     const { id_convocatoria, id_materia } = req.params;
-    const { total_horas, perfil_profesional } = req.body;
+    const { perfil_profesional } = req.body;
     try {
         const result = await pool.query(`
             UPDATE convocatoria_materia 
-            SET total_horas = $1, perfil_profesional = $2 
-            WHERE id_convocatoria = $3 AND id_materia = $4 RETURNING *
-        `, [total_horas, perfil_profesional, id_convocatoria, id_materia]);
+            SET perfil_profesional = $1 
+            WHERE id_convocatoria = $2 AND id_materia = $3 RETURNING *
+        `, [perfil_profesional, id_convocatoria, id_materia]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
         }
         
-        res.json(result.rows[0]);  // Devolver la relación actualizada
+        res.json(result.rows[0]);
     } catch (error) {
         console.error('Error actualizando convocatoria_materia:', error);
         res.status(500).json({ error: 'Error en el servidor' });
@@ -100,7 +99,7 @@ const deleteConvocatoriaMateria = async (req, res) => {
             return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
         }
 
-        res.json(result.rows[0]);  // Devolver la relación eliminada
+        res.json(result.rows[0]);
     } catch (error) {
         console.error('Error eliminando convocatoria_materia:', error);
         res.status(500).json({ error: 'Error en el servidor' });

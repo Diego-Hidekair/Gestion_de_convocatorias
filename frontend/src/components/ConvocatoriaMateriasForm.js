@@ -65,11 +65,21 @@ const ConvocatoriaMateriasForm = () => {
         if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
             setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
             setMateriaSeleccionada('');
+            
+            // Sumar las horas de la materia seleccionada
+            setTotalHoras((prevTotal) => parseInt(prevTotal) + materia.horas);
+            setTotalHoras((prevTotal) => parseInt(prevTotal) - materia.horas);
         }
     };
 
+    // Actualizar la suma de horas al eliminar materias seleccionadas
     const handleRemoveMateria = (id) => {
-        setMateriasSeleccionadas(materiasSeleccionadas.filter(materia => materia.id_materia !== id));
+        const materia = materiasSeleccionadas.find(m => m.id_materia === id);
+        if (materia) {
+            setMateriasSeleccionadas(materiasSeleccionadas.filter(m => m.id_materia !== id));
+            // Restar las horas de la materia eliminada
+            setTotalHoras((prevTotal) => parseInt(prevTotal) - materia.horas);
+        }
     };
 
     return (

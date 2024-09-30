@@ -34,12 +34,13 @@ const MateriaList = () => {
             <Link to="/materias/crear" className="btn btn-primary mb-3">Crear Materia</Link>
             <table className="table">
                 <thead>
-                    <tr>                       
+                    <tr>
                         <th>Código</th>
                         <th>Nombre</th>
                         <th>Horas Teoría</th>
                         <th>Horas Práctica</th>
                         <th>Horas Laboratorio</th>
+                        <th>Total Horas</th>
                         <th>Carrera</th>
                         <th>Acciones</th>
                     </tr>
@@ -52,6 +53,7 @@ const MateriaList = () => {
                             <td>{materia.horas_teoria}</td>
                             <td>{materia.horas_practica}</td>
                             <td>{materia.horas_laboratorio}</td>
+                            <td>{materia.total_horas}</td> {/* Mostramos el total de horas */}
                             <td>{materia.id_carrera}</td>
                             <td>
                                 <Link to={`/materias/editar/${materia.id_materia}`} className="btn btn-warning">Editar</Link>

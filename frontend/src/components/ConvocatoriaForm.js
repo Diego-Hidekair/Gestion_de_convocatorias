@@ -26,6 +26,13 @@ const ConvocatoriaForm = () => {
     const [facultades, setFacultades] = useState([]);
 
     useEffect(() => {
+        const today = new Date();
+        if (!id) { // Si no está editando una convocatoria existente
+            setConvocatoria((prevConvocatoria) => ({
+                ...prevConvocatoria,
+                fecha_inicio: today,
+            }));
+        }
         if (id) {
             const fetchConvocatoria = async () => {
                 try {
@@ -128,9 +135,9 @@ const ConvocatoriaForm = () => {
                                                 <Label for="fecha_inicio">Fecha de Inicio</Label>
                                                 <DatePicker
                                                     selected={convocatoria.fecha_inicio}
-                                                    onChange={(date) => handleDateChange('fecha_inicio', date)}
                                                     dateFormat="yyyy-MM-dd"
                                                     className="form-control"
+                                                    readOnly // Deshabilita el campo para que no sea editable
                                                     required
                                                 />
                                             </FormGroup>
