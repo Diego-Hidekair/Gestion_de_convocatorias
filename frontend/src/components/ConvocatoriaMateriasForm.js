@@ -10,7 +10,6 @@ const ConvocatoriaMateriasForm = () => {
     const [materias, setMaterias] = useState([]);
     const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
     const [perfilProfesional, setPerfilProfesional] = useState('');
-    const [totalHoras, setTotalHoras] = useState(''); // Nueva variable para total_horas
     const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
     const [error, setError] = useState(null);
 
@@ -28,31 +27,25 @@ const ConvocatoriaMateriasForm = () => {
         fetchMaterias();
     }, []);
 
-   // enviar los datos seleccionados
+    // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (materiasSeleccionadas.length === 0 || !perfilProfesional || !totalHoras) {
+        if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
             setError('Por favor, complete todos los campos');
             return;
         }
 
         try {
-            const results = await Promise.all(materiasSeleccionadas.map(async (materia) => {
-                const response = await axios.post('http://localhost:5000/convocatoria-materias', {
-                    id_convocatoria: id_convocatoria,
-                    id_materia: materia.id_materia,
-                    perfil_profesional: perfilProfesional,
-                    total_horas: totalHoras, // Enviar total_horas
-                });
-                return response.data;  // Suponiendo que el backend devuelve el id de convocatoria_materia
-            }));
+            const response = await axios.post(`http://localhost:5000/convocatoria-materias/multiple`, {
+                id_convocatoria: id_convocatoria,
+                materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
+                perfil_profesional: perfilProfesional,
+            });
+            console.log(`Enviando solicitud a: http://localhost:5000/convocatoria-materias/multiple`);
 
-            const idConvocatoriaMateria = results[0].id;  // Tomando el primer id de convocatoria_materia (puedes ajustar esto si es necesario)
- 
-            alert('Materias agregadas exitosamente');
-            // Redirigir a la página de honorarios usando el id de convocatoria_materia
-            navigate(`/honorarios/new/${id_convocatoria}/${idConvocatoriaMateria}`);
+            alert(`Materias agregadas exitosamente. Total de horas: ${response.data.totalHorasConvocatoria}`);
+            navigate(`/honorarios/new/${id_convocatoria}/${response.data.id_materia}`); // Asegúrate de que response.data.id_materia contenga el id correcto.
+
         } catch (err) {
             setError('Error al crear la ConvocatoriaMateria');
             console.error(err);
@@ -65,20 +58,15 @@ const ConvocatoriaMateriasForm = () => {
         if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
             setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
             setMateriaSeleccionada('');
-            
-            // Sumar las horas de la materia seleccionada
-            setTotalHoras((prevTotal) => parseInt(prevTotal) + materia.horas);
-            setTotalHoras((prevTotal) => parseInt(prevTotal) - materia.horas);
+        } else {
+            setError('Materia ya seleccionada o no válida');
         }
     };
 
-    // Actualizar la suma de horas al eliminar materias seleccionadas
+    // Eliminar una materia seleccionada
     const handleRemoveMateria = (id) => {
-        const materia = materiasSeleccionadas.find(m => m.id_materia === id);
-        if (materia) {
+        if (window.confirm('¿Estás seguro de que deseas eliminar esta materia?')) {
             setMateriasSeleccionadas(materiasSeleccionadas.filter(m => m.id_materia !== id));
-            // Restar las horas de la materia eliminada
-            setTotalHoras((prevTotal) => parseInt(prevTotal) - materia.horas);
         }
     };
 
@@ -144,21 +132,8 @@ const ConvocatoriaMateriasForm = () => {
                     />
                 </div>
 
-                {/* Total Horas */}
-                <div className="mb-3">
-                    <label className="form-label">Total Horas:</label>
-                    <input
-                        type="number"
-                        className="form-control"
-                        value={totalHoras}
-                        onChange={(e) => setTotalHoras(e.target.value)}
-                        placeholder="Ingrese el total de horas"
-                        required
-                    />
-                </div>
-
                 <button type="submit" className="btn btn-primary">
-                    Siguiente
+                    Guardar
                 </button>
             </form>
         </div>
