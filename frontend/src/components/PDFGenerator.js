@@ -1,3 +1,4 @@
+// frontend/src/components/PDFGenerator.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Spinner } from 'reactstrap'; // Asegúrate de tener instalada esta librería
@@ -6,19 +7,29 @@ const PDFGenerator = () => {
   const { idConvocatoria } = useParams();
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true); // Estado de carga
+  const [error, setError] = useState(null); // Estado para manejar errores
 
   useEffect(() => {
     if (idConvocatoria) {
       setLoading(true); // Activar el estado de carga
       // Obtener la URL del PDF generado
+      console.log('Enviando solicitud para generar PDF con idConvocatoria:', idConvocatoria); // Log
       fetch(`/pdf/generar/${idConvocatoria}`)
-        .then((response) => response.json())
+        .then((response) => {
+          console.log('Respuesta del servidor:', response); // Log para verificar respuesta del servidor
+          if (!response.ok) {
+            throw new Error('Error al generar el PDF');
+          }
+          return response.json();
+        })
         .then((data) => {
+          console.log('Datos recibidos:', data); // Log para ver los datos recibidos
           setPdfUrl(data.pdfPath);
           setLoading(false); // Desactivar el estado de carga
         })
         .catch((error) => {
-          console.error('Error:', error);
+          console.error('Error:', error); // Log de error
+          setError('No se pudo generar el PDF');
           setLoading(false); // Desactivar el estado de carga en caso de error
         });
     }
@@ -43,6 +54,8 @@ const PDFGenerator = () => {
             <Spinner color="primary" size="sm">Loading...</Spinner>
             <Spinner color="primary" size="sm" type="grow">Loading...</Spinner>
           </>
+        ) : error ? (
+          <p>{error}</p> // Mostrar el error si ocurre
         ) : pdfUrl ? (
           <iframe src={pdfUrl} width="100%" height="500px" title="Vista previa PDF"></iframe>
         ) : (

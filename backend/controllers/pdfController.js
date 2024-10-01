@@ -11,6 +11,7 @@ exports.generatePDF = async (req, res) => {
 
     try {
         // Obtener los datos de la convocatoria desde la base de datos
+        console.log('Obteniendo datos de la convocatoria...');
         const result = await pool.query('SELECT * FROM convocatorias WHERE id_convocatoria = $1', [id_convocatoria]);
         const convocatoria = result.rows[0];
 
@@ -18,9 +19,12 @@ exports.generatePDF = async (req, res) => {
             return res.status(404).json({ error: "Convocatoria no encontrada" });
         }
 
+        const convocatoriaNombre = convocatoria.nombre.replace(/[^a-zA-Z0-9]/g, '_'); // Limpiar el nombre para que sea válido como nombre de archivo
+
         // Crear el PDF
         const doc = new PDFDocument();
-        const pdfPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`);
+        const pdfPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${convocatoriaNombre}.pdf`);
+        console.log('Generando PDF en:', pdfPath);
         doc.pipe(fs.createWriteStream(pdfPath));
 
         // Agregar contenido al PDF
@@ -36,9 +40,12 @@ exports.generatePDF = async (req, res) => {
             [pdfPath, id_convocatoria]
         );
 
+        console.log('PDF generado y guardado en la base de datos');
+
         res.status(200).json({ message: 'PDF generado con éxito', pdfPath });
     } catch (error) {
-        console.error(error);
+        console.error('Error generando el PDF:', error);
         res.status(500).json({ error: 'Error generando el PDF' });
     }
 };
+

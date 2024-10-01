@@ -34,7 +34,7 @@ const UsuarioPerfil = () => {
 
     const handleEdit = () => {
         if (usuario) {
-            navigate(`/usuarios/edit/${usuario.id}`); // Asegúrate de que 'usuario.id' tenga el valor correcto
+            navigate(`/usuarios/edit/${usuario.id}`); // valor correctodel id usuario?
         }
     };
 
