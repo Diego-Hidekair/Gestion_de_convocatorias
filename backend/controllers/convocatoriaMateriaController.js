@@ -51,35 +51,6 @@ const getConvocatoriaMateriaById = async (req, res) => {
     }
 };
 
-// Crear una nueva relación convocatoria-materia y sumar el total de horas de la materia
-/*const createConvocatoriaMateria = async (req, res) => {
-    const { id_convocatoria, id_materia, perfil_profesional } = req.body;
-    try {
-        // Obtener el total de horas de la materia seleccionada
-        const materiaResult = await pool.query(`
-            SELECT total_horas 
-            FROM materia 
-            WHERE id_materia = $1
-        `, [id_materia]);
-
-        if (materiaResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Materia no encontrada' });
-        }
-
-        const totalHoras = materiaResult.rows[0].total_horas;
-
-        // Insertar la nueva relación en convocatoria_materia y guardar el total de horas
-        const result = await pool.query(`
-            INSERT INTO convocatoria_materia (id_convocatoria, id_materia, perfil_profesional, total_horas) 
-            VALUES ($1, $2, $3, $4) RETURNING *
-        `, [id_convocatoria, id_materia, perfil_profesional, totalHoras]);
-
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error('Error creando convocatoria_materia:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
-    }
-};*/
 const createConvocatoriaMateriaMultiple = async (req, res) => {
     const { id_convocatoria, materiasSeleccionadas, perfil_profesional } = req.body;
     try {
@@ -102,7 +73,8 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {
             // Insertar cada materia en convocatoria_materia
             await pool.query(`
                 INSERT INTO convocatoria_materia (id_convocatoria, id_materia, perfil_profesional, total_horas) 
-                VALUES ($1, $2, $3, $4)
+                VALUES ($1, $2, $3, $4) 
+                RETURNING id;
             `, [id_convocatoria, id_materia, perfil_profesional, materiaResult.rows[0].total_horas]);
         }
 

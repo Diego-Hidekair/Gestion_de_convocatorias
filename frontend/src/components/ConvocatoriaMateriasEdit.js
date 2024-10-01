@@ -40,6 +40,7 @@ const ConvocatoriaMateriasEdit = () => {
             // Redirigir nuevamente a la creación de honorarios
             navigate(`/honorarios/new/${id_convocatoria}/${id_materia}`);
 
+
         } catch (err) {
             setError('Error al editar la materia');
             console.error(err);
