@@ -1,5 +1,5 @@
 // frontend/src/components/HonorariosForm.js
-
+ 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 
 const HonorariosForm = () => {
     const location = useLocation();
-    const id_materia = location.state?.id_materia || null;
+    const id_materia = location.state?.id_materia || null; // Validación
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
@@ -25,9 +25,9 @@ const HonorariosForm = () => {
                 setError('Error al obtener los tipos de convocatorias. Por favor, inténtalo más tarde.');
             }
         };
-    
+
         fetchTiposConvocatorias();
-    }, []);    
+    }, []);
 
     // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
@@ -46,21 +46,20 @@ const HonorariosForm = () => {
             });
 
             // Redirigir a la vista de generación de PDF
-            navigate(`/pdf/generate/${id_convocatoria}/${id_materia}`, { state: { id_materia } });
-            
+            // Asegurarse de pasar el id_materia de manera segura
+            navigate(`/pdf/generate/${id_convocatoria}/${id_materia || 'none'}`, { state: { id_materia } });
         } catch (error) {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');
         }
-    }; 
+    };
 
     const handleBack = () => {
         if (id_materia) {
             navigate(`/convocatorias_materias/edit/${id_materia}/${id_convocatoria}`);
         } else if (id_convocatoria) {
-            navigate(`/convocatorias_materias/edit/${id_materia}`);
+            navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
         }
-        
     };
 
     return (
