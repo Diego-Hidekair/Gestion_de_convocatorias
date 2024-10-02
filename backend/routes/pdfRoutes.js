@@ -4,6 +4,6 @@ const router = express.Router();
 const pdfController = require('../controllers/pdfController');
 
 // Ruta para generar un PDF
-router.get('/generar/:id_convocatoria', pdfController.generatePDF);
-
+router.get('/pdf/generar/:idConvocatoria', pdfController.generatePDF);
 module.exports = router;
+

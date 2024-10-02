@@ -32,10 +32,10 @@ const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
 const materiaRoutes = require('./routes/materiaRoutes');
 const convocatoriaMateriaRoutes = require('./routes/convocatoriaMateriaRoutes');
 const documentosRoutes = require('./routes/documentosRoutes');
-const pdfRoutes = require('./routes/pdfRoutes');
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const honorariosRoutes = require('./routes/honorariosRoutes');
+const pdfRoutes = require('./routes/pdfRoutes');
 
 // Usar las rutas
 app.use('/facultades', facultadRoutes);

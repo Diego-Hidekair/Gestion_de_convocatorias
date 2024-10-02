@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const PDFViewer = () => {
-  const { fileName } = useParams();
+  const { fileName } = useParams();  // fileName podría ser 'convocatoria_X_combinado.pdf'
   const [pdfUrl, setPdfUrl] = useState('');
 
   useEffect(() => {
@@ -22,9 +22,8 @@ const PDFViewer = () => {
 
     fetchPdf();
 
-    // Limpiar el URL del blob al desmontar el componente
     return () => {
-      URL.revokeObjectURL(pdfUrl);
+      URL.revokeObjectURL(pdfUrl);  // Limpia la URL cuando se desmonte el componente
     };
   }, [fileName, pdfUrl]);
 
@@ -45,3 +44,4 @@ const PDFViewer = () => {
 };
 
 export default PDFViewer;
+
