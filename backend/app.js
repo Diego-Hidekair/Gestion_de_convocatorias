@@ -84,6 +84,7 @@ const shutdown = () => {
     process.exit();
 };
 
+
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 

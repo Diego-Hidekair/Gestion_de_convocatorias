@@ -127,6 +127,7 @@
                             <Route path="/usuarios/me/:id" element={<UsuarioPerfil />} />
                             <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
                             <Route path="/pdf/generate/:id/:id_materia" element={<PDFGenerator />} />
+                            <Route path="/pdf/generar/:id" element={<PDFGenerator />} />
                             <Route path="/pdf/view/:fileName" element={<PDFViewer />} />
                         </Routes>
                     </>

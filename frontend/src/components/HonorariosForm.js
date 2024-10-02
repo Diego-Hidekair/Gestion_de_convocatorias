@@ -47,7 +47,7 @@ const HonorariosForm = () => {
 
             // Redirigir a la vista de generación de PDF
             // Asegurarse de pasar el id_materia de manera segura
-            navigate(`/pdf/generate/${id_convocatoria}/${id_materia || 'none'}`, { state: { id_materia } });
+            navigate(`/pdf/generar/${id_convocatoria}`);
         } catch (error) {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');

@@ -19,23 +19,29 @@ const PDFViewer = () => {
         console.error('Error al obtener el PDF:', error);
       }
     };
-
+  
     fetchPdf();
-
+  
     return () => {
       URL.revokeObjectURL(pdfUrl);  // Limpia la URL cuando se desmonte el componente
     };
   }, [fileName, pdfUrl]);
+  
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {pdfUrl ? (
-        <iframe
-          src={pdfUrl}
-          width="100%"
-          height="800px"
-          title="PDF Viewer"
-        />
+        <>
+          <iframe
+            src={pdfUrl}
+            width="50%"  // Puedes ajustar el tamaño aquí
+            height="300px"
+            title="Vista previa del PDF"
+          />
+          <button style={{ marginTop: '20px' }} onClick={() => alert('PDF confirmado')}>
+            Confirmar
+          </button>
+        </>
       ) : (
         <p>Cargando PDF...</p>
       )}
