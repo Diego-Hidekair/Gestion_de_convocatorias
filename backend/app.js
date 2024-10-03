@@ -50,6 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/usuarios', usuarioRoutes);
 app.use('/honorarios', honorariosRoutes);
 
+
 // Middleware para rutas no encontradas
 app.use((req, res, next) => {
     res.status(404).json({ error: "Ruta no encontrada" });

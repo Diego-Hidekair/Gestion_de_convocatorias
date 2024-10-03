@@ -9,7 +9,13 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
 });
-
+console.log({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,  // Verifica si la contraseña es correcta aquí
+    port: process.env.DB_PORT,
+  });
 // Código para verificar la conexión
 pool.connect()
     .then(() => console.log('Conexión a la base de datos exitosa'))
