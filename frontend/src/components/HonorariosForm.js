@@ -32,27 +32,28 @@ const HonorariosForm = () => {
     // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!id_convocatoria) {
             setError('No se ha seleccionado una convocatoria.');
             return;
         }
-
+    
         try {
-            await axios.post('http://localhost:5000/honorarios', {
+            const response = await axios.post('http://localhost:5000/honorarios', {
                 id_convocatoria,
                 id_tipoconvocatoria: idTipoConvocatoria,
                 pago_mensual: pagoMensual,
             });
-
-            // Redirigir a la vista de generación de PDF
-            // Asegurarse de pasar el id_materia de manera segura
-            navigate(`/pdf/generar/${id_convocatoria}`);
+    
+            const { id_honorario } = response.data;  // Guardar el id_honorario generado
+    
+            // Redirigir a la vista de generación de PDF con el id_honorario
+            navigate(`/pdf/generar/${id_convocatoria}/${id_honorario}`);
         } catch (error) {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');
         }
-    };
+    };    
 
     const handleBack = () => {
         if (id_materia) {

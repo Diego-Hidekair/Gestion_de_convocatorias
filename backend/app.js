@@ -4,10 +4,25 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { Pool } = require('pg');
 const app = express();
 
+
 // Importar el middleware de autenticación
-const { authenticateToken } = require('./middleware/authMiddleware'); // Ruta ajustada según tu estructura de carpetas
+const { authenticateToken } = require('./middleware/authMiddleware');
+
+// Configuración de la base de datos
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+});
+
+pool.connect()
+  .then(() => console.log('Conexión a la base de datos exitosa'))
+  .catch(err => console.error('Error conectando a la base de datos', err));
 
 // Middlewares
 app.use(cors({
@@ -17,39 +32,30 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 // Importar las rutas
-const facultadRoutes = require('./routes/facultadRoutes');
-const carreraRoutes = require('./routes/carreraRoutes');
-const tipoConvocatoriaRoutes = require('./routes/tipoConvocatoriaRoutes');
-const convocatoriaRoutes = require('./routes/convocatoriaRoutes');
-const materiaRoutes = require('./routes/materiaRoutes');
-const convocatoriaMateriaRoutes = require('./routes/convocatoriaMateriaRoutes');
-const documentosRoutes = require('./routes/documentosRoutes');
-const authRoutes = require('./routes/authRoutes');
-const usuarioRoutes = require('./routes/usuarioRoutes');
-const honorariosRoutes = require('./routes/honorariosRoutes');
-const pdfRoutes = require('./routes/pdfRoutes');
+const routes = [
+    { path: '/facultades', route: './routes/facultadRoutes' },
+    { path: '/carreras', route: './routes/carreraRoutes' },
+    { path: '/tipo-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
+    { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
+    { path: '/materias', route: './routes/materiaRoutes' },
+    { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
+    { path: '/documentos', route: './routes/documentosRoutes' },
+    { path: '/pdf', route: './routes/pdfRoutes' },
+    { path: '/api/auth', route: './routes/authRoutes' },
+    { path: '/usuarios', route: './routes/usuarioRoutes' },
+    { path: '/honorarios', route: './routes/honorariosRoutes' }
+];
 
 // Usar las rutas
-app.use('/facultades', facultadRoutes);
-app.use('/carreras', carreraRoutes);
-app.use('/tipo-convocatorias', tipoConvocatoriaRoutes);
-app.use('/convocatorias', convocatoriaRoutes);
-app.use('/materias', materiaRoutes);
-app.use('/convocatoria-materias', convocatoriaMateriaRoutes);
-app.use('/documentos', documentosRoutes);
-app.use('/pdf', pdfRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/usuarios', usuarioRoutes);
-app.use('/honorarios', honorariosRoutes);
-
+routes.forEach(r => app.use(r.path, require(r.route)));
 
 // Middleware para rutas no encontradas
 app.use((req, res, next) => {
@@ -61,15 +67,8 @@ app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
 });
 
-// Ruta para obtener el usuario por ID
-app.get('/usuarios/:id', async (req, res) => {
-    const { id } = req.params;
-    // Lógica para obtener el usuario por ID
-});
-
 // Ruta protegida para obtener el perfil del usuario autenticado
 app.get('/usuarios/me', authenticateToken, (req, res) => {
-    // Aquí manejas la obtención de datos del usuario autenticado
     res.json(req.user);
 });
 
@@ -84,7 +83,6 @@ const shutdown = () => {
     console.log('Shutting down gracefully...');
     process.exit();
 };
-
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);

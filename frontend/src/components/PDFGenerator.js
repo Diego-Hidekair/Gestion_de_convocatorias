@@ -2,63 +2,55 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
+import axios from 'axios';
 
 const PDFGenerator = () => {
-  const { id_convocatoria } = useParams();
+  const { id_convocatoria, id_honorario } = useParams();
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [files, setFiles] = useState({ resolucion: null, dictamen: null, otrosDocumentos: null });
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (id_convocatoria) {
-      setLoading(true);
-      fetch(`http://localhost:5000/pdf/generar/${id_convocatoria}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.pdfPath) {
-            setPdfUrl(data.pdfPath);  // Debe recibir algo como "/pdfs/convocatoria_X.pdf"
-          } else {
-            throw new Error('PDF no encontrado');
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          setError('No se pudo generar el PDF');
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [id_convocatoria]);
+    const generarPDF = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
+        setPdfUrl(`http://localhost:5000/pdfs/convocatoria_${id_convocatoria}.pdf`);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error generando el PDF:', error);
+        setError('Error al generar el PDF.');
+        setLoading(false);
+      }
+    };
 
-  const handleFileUpload = (e, field) => {
-    const file = e.target.files[0];
-    console.log(`Subiendo archivo para: ${field}`, file);
+    generarPDF();
+  }, [id_convocatoria, id_honorario]);
+
+  const handleFileUpload = (e) => {
+    const { name, files: selectedFiles } = e.target;
+    setFiles((prevFiles) => ({ ...prevFiles, [name]: selectedFiles[0] }));
   };
 
   const handleGenerateDocument = async () => {
-    console.log('Generando documento...');
-
     const formData = new FormData();
-    const resolucionFile = document.querySelector('input[type="file"][name="resolucion"]').files[0];
-    const dictamenFile = document.querySelector('input[type="file"][name="dictamen"]').files[0];
-    const otrosDocumentosFile = document.querySelector('input[type="file"][name="otros_documentos"]').files[0];
-
-    if (resolucionFile) formData.append('resolucion', resolucionFile);
-    if (dictamenFile) formData.append('dictamen', dictamenFile);
-    if (otrosDocumentosFile) formData.append('otros_documentos', otrosDocumentosFile);
+    if (files.resolucion) formData.append('resolucion', files.resolucion);
+    if (files.dictamen) formData.append('dictamen', files.dictamen);
+    if (files.otrosDocumentos) formData.append('otros_documentos', files.otrosDocumentos);
 
     try {
       const response = await fetch('http://localhost:5000/pdf/unir', {
         method: 'POST',
         body: formData,
       });
-      const data = await response.json();
-      console.log('Documentos unidos y PDF generado:', data);
 
-      // Redirigir a la vista del PDF combinado
-      if (data.pdfFileName) {
-        navigate(`/pdf/view/${data.pdfFileName}`);
+      if (!response.ok) {
+        throw new Error('Error al unir documentos');
       }
+
+      const data = await response.json();
+      navigate(`/pdf/view/${data.pdfFileName}`);
     } catch (error) {
       console.error('Error al unir documentos:', error);
     }
@@ -68,10 +60,7 @@ const PDFGenerator = () => {
     <div style={{ display: 'flex' }}>
       <div style={{ flex: 1 }}>
         {loading ? (
-          <>
-            <Spinner color="primary" size="sm">Loading...</Spinner>
-            <Spinner color="primary" size="sm" type="grow">Loading...</Spinner>
-          </>
+          <Spinner color="primary">Loading...</Spinner>
         ) : error ? (
           <p>{error}</p>
         ) : pdfUrl ? (
@@ -84,15 +73,15 @@ const PDFGenerator = () => {
         <h3>Subir documentos</h3>
         <div>
           <label>Subir Resolución:</label>
-          <input type="file" name="resolucion" onChange={(e) => handleFileUpload(e, 'resolucion')} />
+          <input type="file" name="resolucion" onChange={handleFileUpload} />
         </div>
         <div style={{ marginTop: '10px' }}>
           <label>Subir Dictamen:</label>
-          <input type="file" name="dictamen" onChange={(e) => handleFileUpload(e, 'dictamen')} />
+          <input type="file" name="dictamen" onChange={handleFileUpload} />
         </div>
         <div style={{ marginTop: '10px' }}>
           <label>Otros Documentos:</label>
-          <input type="file" name="otros_documentos" onChange={(e) => handleFileUpload(e, 'otros_documentos')} />
+          <input type="file" name="otrosDocumentos" onChange={handleFileUpload} />
         </div>
         <div style={{ marginTop: '20px' }}>
           <button onClick={handleGenerateDocument}>Generar Documento</button>

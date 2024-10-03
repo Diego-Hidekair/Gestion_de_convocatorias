@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const PDFViewer = () => {
-  const { fileName } = useParams();  // fileName podría ser 'convocatoria_X_combinado.pdf'
+  const { fileName } = useParams();  // fileName podría ser 'combined_document.pdf'
   const [pdfUrl, setPdfUrl] = useState('');
 
   useEffect(() => {
@@ -19,14 +19,13 @@ const PDFViewer = () => {
         console.error('Error al obtener el PDF:', error);
       }
     };
-  
+
     fetchPdf();
-  
+
     return () => {
       URL.revokeObjectURL(pdfUrl);  // Limpia la URL cuando se desmonte el componente
     };
   }, [fileName, pdfUrl]);
-  
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -50,4 +49,3 @@ const PDFViewer = () => {
 };
 
 export default PDFViewer;
-

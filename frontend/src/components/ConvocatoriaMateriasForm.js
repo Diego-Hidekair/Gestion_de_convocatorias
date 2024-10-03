@@ -34,6 +34,36 @@ const ConvocatoriaMateriasForm = () => {
             setError('Por favor, complete todos los campos');
             return;
         }
+    
+        try {
+            const response = await axios.post(`http://localhost:5000/convocatoria-materias/multiple`, {
+                id_convocatoria: id_convocatoria,
+                materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
+                perfil_profesional: perfilProfesional,
+            });
+    
+            alert(`Materias agregadas exitosamente. Total de horas: ${response.data.totalHorasConvocatoria}`);
+            
+            // Asegúrate de que idsMaterias exista y tenga al menos un id_materia válido
+            const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
+    
+            if (firstIdMateria) {
+                navigate(`/honorarios/new/${id_convocatoria}/${firstIdMateria}`);  // Redirigir con el id_materia correcto
+            } else {
+                setError('No se pudo obtener el ID de la materia');
+            }
+    
+        } catch (err) {
+            setError('Error al crear la ConvocatoriaMateria');
+            console.error(err);
+        }
+    };
+    /*const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
+            setError('Por favor, complete todos los campos');
+            return;
+        }
 
         try {
             const response = await axios.post(`http://localhost:5000/convocatoria-materias/multiple`, {
@@ -50,7 +80,7 @@ const ConvocatoriaMateriasForm = () => {
             setError('Error al crear la ConvocatoriaMateria');
             console.error(err);
         }
-    };
+    };*/ 
 
     // Agregar una materia seleccionada a la lista
     const handleAddMateria = () => {

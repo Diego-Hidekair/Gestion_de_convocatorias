@@ -55,6 +55,7 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {
     const { id_convocatoria, materiasSeleccionadas, perfil_profesional } = req.body;
     try {
         let totalHorasConvocatoria = 0;
+        let idsMaterias = [];
 
         // Iterar sobre las materias seleccionadas y sumar las horas de cada una
         for (const id_materia of materiasSeleccionadas) {
@@ -70,21 +71,23 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {
 
             totalHorasConvocatoria += materiaResult.rows[0].total_horas;
 
-            // Insertar cada materia en convocatoria_materia
-            await pool.query(`
+            const result = await pool.query(`
                 INSERT INTO convocatoria_materia (id_convocatoria, id_materia, perfil_profesional, total_horas) 
                 VALUES ($1, $2, $3, $4) 
-                RETURNING id;
+                RETURNING id, id_materia;
             `, [id_convocatoria, id_materia, perfil_profesional, materiaResult.rows[0].total_horas]);
+
+            idsMaterias.push(result.rows[0].id_materia);  // Guardar los ids de las materias
         }
 
-        // Retornar el total de horas acumuladas
-        res.status(201).json({ mensaje: 'Materias agregadas con éxito', totalHorasConvocatoria });
+        // Retornar el total de horas acumuladas y los ids de las materias
+        res.status(201).json({ mensaje: 'Materias agregadas con éxito', totalHorasConvocatoria, idsMaterias });
     } catch (error) {
         console.error('Error creando convocatoria_materia:', error);
         res.status(500).json({ error: 'Error en el servidor' });
     }
 };
+
 
 
 // Actualizar una relación convocatoria-materia específica por id_convocatoria y id_materia

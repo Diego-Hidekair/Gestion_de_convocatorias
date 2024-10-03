@@ -4,14 +4,20 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const { Pool } = require('pg');
-const pool = new Pool(); // Configura tu conexión a PostgreSQL
+
+// Configuración de la conexión a la base de datos
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+});
 
 exports.generatePDF = async (req, res) => {
-    const { id_convocatoria } = req.params;  // Obtener el ID de la convocatoria
+    const { id_convocatoria, id_honorario } = req.params;  // Obtener ID de convocatoria y honorario
 
     try {
-        console.log("ID Convocatoria recibido:", id_convocatoria);
-
         // Obtener los datos de la convocatoria
         const convocatoriaResult = await pool.query(`
             SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.nombre_carrera, f.nombre_facultad
@@ -23,8 +29,6 @@ exports.generatePDF = async (req, res) => {
         `, [id_convocatoria]);
 
         const convocatoria = convocatoriaResult.rows[0];
-        console.log("Convocatoria obtenida:", convocatoria);
-
         if (!convocatoria) {
             return res.status(404).json({ error: "Convocatoria no encontrada" });
         }
@@ -38,35 +42,31 @@ exports.generatePDF = async (req, res) => {
         `, [id_convocatoria]);
 
         const materias = materiasResult.rows;
-        console.log("Materias obtenidas:", materias);
 
         // Obtener los honorarios asociados a la convocatoria
         const honorariosResult = await pool.query(`
             SELECT h.pago_mensual, tc.nombre_convocatoria AS tipo_convocatoria
             FROM honorarios h
             JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            WHERE h.id_convocatoria = $1
-        `, [id_convocatoria]);
+            WHERE h.id_convocatoria = $1 AND h.id_honorario = $2
+        `, [id_convocatoria, id_honorario]);
 
-        const honorarios = honorariosResult.rows[0]; // Tomar el primer resultado
-        console.log("Honorarios obtenidos:", honorarios);
+        const honorarios = honorariosResult.rows[0]; // Primer resultado
 
-        // Crear el PDF
+        // Crear la ruta del PDF
         const pdfDirectory = path.join(__dirname, '..', 'pdfs');
         const pdfPath = path.join(pdfDirectory, `convocatoria_${id_convocatoria}.pdf`);
-        console.log('Ruta de la carpeta PDF:', pdfDirectory);
-        console.log('Ruta completa del PDF:', pdfPath);
 
         // Asegura que el directorio de PDFs exista
         if (!fs.existsSync(pdfDirectory)) {
-            console.log('Directorio de PDFs no existe. Creando...');
             fs.mkdirSync(pdfDirectory, { recursive: true });
         }
 
+        // Crear el documento PDF
         const doc = new PDFDocument();
         doc.pipe(fs.createWriteStream(pdfPath));
 
-        // Encabezado del PDF
+        // Agregar contenido al PDF
         doc.fontSize(16).text('SEGUNDA CONVOCATORIA A CONCURSO DE MÉRITOS', { align: 'center' });
         doc.fontSize(14).text('PARA LA CONTRATACIÓN DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA', { align: 'center' });
         doc.moveDown();
@@ -95,12 +95,12 @@ exports.generatePDF = async (req, res) => {
 
         // Finalizar y guardar el PDF
         doc.end();
-        console.log('PDF generado correctamente:', pdfPath);
 
         // Actualizar la base de datos con la ruta del PDF generado
         await pool.query('UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2', [pdfPath, id_convocatoria]);
 
         res.status(200).json({ message: 'PDF generado con éxito', pdfPath });
+
     } catch (error) {
         console.error('Error generando el PDF:', error);
         res.status(500).json({ error: 'Error generando el PDF' });
