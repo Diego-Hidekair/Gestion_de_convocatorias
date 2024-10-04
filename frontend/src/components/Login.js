@@ -2,9 +2,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../Global.css';  // Importa Global.css
+import '../Global.css';
 
-// Interceptor para agregar el token en las solicitudes
 axios.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -38,10 +37,10 @@ const Login = ({ setAuth }) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-            const { token, userId, rol } = response.data; // Ahora obtenemos el rol del usuario
+            const { token, userId, rol } = response.data; 
             localStorage.setItem('token', token);
             localStorage.setItem('userId', userId);
-            localStorage.setItem('rol', rol); // Guardamos el rol en el localStorage
+            localStorage.setItem('rol', rol);
             setAuth(true);
             navigate('/redirect');
         } catch (error) {
@@ -50,53 +49,43 @@ const Login = ({ setAuth }) => {
     };
 
     return (
-        <div className="container-fluid">
-            <div className="row no-gutter">
-                <div className="col-md-6 d-none d-md-flex bg-image"></div>
-                <div className="col-md-6 bg-light">
-                    <div className="login d-flex align-items-center py-5">
-                        <div className="container">
-                            <div className="row">
-                                <div className="col-lg-7 col-xl-6 mx-auto">
-                                    <h3 className="display-4">Acceso</h3>
-                                    <form onSubmit={handleSubmit}>
-                                        <div className="form-group mb-3">
-                                            <input 
-                                                type="text" 
-                                                name="id" 
-                                                placeholder="ID" 
-                                                value={formData.id} 
-                                                onChange={handleChange} 
-                                                required 
-                                                className="form-control rounded-pill border-0 shadow-sm px-4"
-                                            />
-                                        </div>
-                                        <div className="form-group mb-3">
-                                            <input 
-                                                type="password" 
-                                                name="Contraseña" 
-                                                placeholder="Password" 
-                                                value={formData.Contraseña} 
-                                                onChange={handleChange} 
-                                                required 
-                                                className="form-control rounded-pill border-0 shadow-sm px-4 text-danger"
-                                            />
-                                        </div>
-                                        
-                                        <button 
-                                            type="submit" 
-                                            className="btn btn-danger btn-block text-uppercase mb-2 rounded-pill shadow-sm"
-                                        >
-                                            Ingresar
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+        <div className="login-container">
+            <div className="login-box">
+                <img src="/imagenes/logo_login.jpg" alt="Logo" className="login-logo" />
+                <h3 className="login-title">Acceso</h3>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group mb-3">
+                        <input 
+                            type="text" 
+                            name="id" 
+                            placeholder="ID" 
+                            value={formData.id} 
+                            onChange={handleChange} 
+                            required 
+                            className="form-control" 
+                        />
                     </div>
-                </div>
+                    <div className="form-group mb-3">
+                        <input 
+                            type="password" 
+                            name="Contraseña" 
+                            placeholder="Contraseña" 
+                            value={formData.Contraseña} 
+                            onChange={handleChange} 
+                            required 
+                            className="form-control" 
+                        />
+                    </div>
+                    <button 
+                        type="submit" 
+                        className="btn-login"
+                    >
+                        Ingresar
+                    </button>
+                </form>
             </div>
         </div>
+        
     );
 };
 

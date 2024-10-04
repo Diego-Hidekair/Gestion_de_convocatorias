@@ -38,13 +38,33 @@ const NavBar = ({ onLogout }) => {
     };
 
     const userId = localStorage.getItem('userId'); // Obtén el ID del usuario desde localStorage
-    //console.log('User ID:', userId); // Esto debería mostrar el ID del usuario
+
+    const closeMenu = () => {
+        setIsOpen(false); // Cierra el menú al hacer clic en "Cerrar Menú"
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar && isOpen && !sidebar.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+    
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
 
     return (
         <div>
             {isLoggedIn && (
                 <>
                     <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+                        {/* Añade el logo */}
+                        <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="navbar-logo" />
+
                         <div className="navbar-brand-custom">
                             Gestión de <br /> Convocatorias
                         </div>
@@ -102,8 +122,14 @@ const NavBar = ({ onLogout }) => {
                                 )}
 
                                 <DropdownItem divider />
+
                                 <Button color="danger" onClick={handleLogout} className="logout-button">
                                     Cerrar Sesión
+                                </Button>
+
+                                {/* Botón para cerrar el menú */}
+                                <Button className="close-menu-button" onClick={closeMenu}>
+                                    Cerrar Menú
                                 </Button>
                             </Nav>
                         </Collapse>

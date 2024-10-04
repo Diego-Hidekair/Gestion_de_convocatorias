@@ -8,13 +8,85 @@ body {
     font-family: 'Merriweather', serif;
 }
 
-/* Estilos del Login */
+
+/* Fondo degradado en la página de login */
 body {
+    background: linear-gradient(to right, #FF4E50, #1E3C72); /* Degradado rojo a azul */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    background-color: #faffff; /* Fondo claro */
-    font-family: 'Merriweather', serif;
+}
+
+/* Estilos para el contenedor principal del login */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+}
+
+.login-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.login-image {
+    margin-right: 20px;
+}
+
+/* Ajustes para la imagen del logo */
+.login-logo {
+    max-width: 200px; /* Ajusta el tamaño de la imagen */
+    height: auto;
+}
+
+/* Cuadro negro para el formulario con transparencia */
+.login-box {
+    background-color: rgba(0, 0, 0, 0.7); /* Negro con transparencia */
+    padding: 40px; 
+    border-radius: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); 
+    text-align: center;
+    width: 400px; 
+    max-width: 400px; /* Ajusta el tamaño del formulario */
+}
+
+
+
+/* Estilo para el título del login */
+.login-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #fff; 
+}
+
+/* Botón de login */
+.btn-login {
+    background-color: #FF4E50; /* Color del botón */
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 20px;
+    width: 100%;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.btn-login:hover {
+    background-color: #1E3C72; /* Azul al pasar el mouse */
+}
+
+button[type="submit"] {
+    display: block;
 }
 
 .container-fluid {
@@ -46,15 +118,19 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Estilo para los campos de entrada */
 .form-control {
-    background: #00b4cc; /* Fondo más claro */
-    border-radius: 24px;
-    padding: 14px;
+    background-color: rgba(255, 255, 255, 0.1); /* Fondo semitransparente */
+    border: none;
+    border-radius: 25px;
+    padding: 10px;
+    margin-bottom: 15px;
     width: 100%;
+    color: #fff; /* Color del texto blanco */
 }
 
 .btn {
-    background-color: #005f6b; /* Color del botón */
+    background-color: #57ad41; 
     color: white;
     padding: 14px;
     border-radius: 24px;
@@ -74,7 +150,7 @@ body {
     left: -250px;
     width: 250px;
     height: 100%;
-    background-color: #343838; /* Color de la sidebar */
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo negro con transparencia */
     transition: left 0.3s ease-in-out;
     z-index: 1000;
     padding: 1.5rem;
@@ -86,15 +162,25 @@ body {
     left: 0;
 }
 
+
 .sidebar .navbar-brand-custom {
-    color: #00dffc; /* Color del texto en la sidebar */
+    color: #fff; /* Texto blanco */
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
     font-weight: 700;
+    text-align: center; /* Centra el texto */
+}
+
+/* Imagen del logo */
+.sidebar .navbar-logo {
+    width: 100px;
+    height: auto;
+    margin: 0 auto 20px; /* Centra la imagen y añade espacio inferior */
+    display: block;
 }
 
 .sidebar-nav .nav-link {
-    color: #00dffc; /* Color del texto en los enlaces */
+    color: rgba(255, 255, 255, 0.8); /* Texto blanco con transparencia */
     padding: 0.75rem 1rem;
     display: block;
     border-radius: 5px;
@@ -103,8 +189,8 @@ body {
 
 .sidebar-nav .nav-link:hover,
 .sidebar-nav .nav-link.active {
-    color: #faffff; /* Color al pasar el mouse */
-    background-color: #005f6b; /* Color de fondo al pasar el mouse */
+    color: rgba(0, 0, 0, 1); /* Texto negro */
+    background-color: rgba(255, 255, 255, 0.5); /* Fondo blanco con transparencia */
 }
 
 .logout-button {
@@ -112,8 +198,40 @@ body {
     width: 100%;
     font-weight: 600;
     background-color: #dc3545; /* Color del botón de logout */
+    color: #fff;
 }
 
+/* Botón para cerrar el menú */
+.close-menu-button {
+    background-color: #FF4E50; /* Color del botón de cierre */
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+}
+.close-menu-button:hover {
+    background-color: #1E3C72; /* Azul al pasar el mouse */
+}
+
+.sidebar-toggle {
+    position: absolute;
+    top: 20px; /* Ajustar según el diseño */
+    left: 20px; /* Ajustar según el diseño */
+    z-index: 1100; /* Asegúrate de que esté encima de otros elementos */
+}
+
+.toggle-button {
+    background-color: transparent; /* Sin fondo */
+    border: none; /* Sin borde */
+    color: white; /* Color del ícono */
+    cursor: pointer; /* Cambiar el cursor a mano */
+}
+
+/*######################otros estilos######################*/
 /* Estilos para los componentes CarreraList, CarreraForm, CarreraEdit */
 .degraded-background {
     background: linear-gradient(to right, #a1c4fd, #c2e9fb);
