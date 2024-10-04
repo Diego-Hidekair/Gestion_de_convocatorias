@@ -1,11 +1,10 @@
 // backend/controllers/pdfController.js
-
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const { Pool } = require('pg');
-
-// Configuración de la conexión a la base de datos
+const { PDFDocument: PDFLibDocument } = require('pdf-lib');  // Usaremos pdf-lib para combinar
+//configuracion para verificar la conexion a la base de datos
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -14,8 +13,9 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+// Función para generar el PDF (esta no la tocamos)
 exports.generatePDF = async (req, res) => {
-    const { id_convocatoria, id_honorario } = req.params;  // Obtener ID de convocatoria y honorario
+    const { id_convocatoria, id_honorario } = req.params;
 
     try {
         // Obtener los datos de la convocatoria
@@ -104,5 +104,76 @@ exports.generatePDF = async (req, res) => {
     } catch (error) {
         console.error('Error generando el PDF:', error);
         res.status(500).json({ error: 'Error generando el PDF' });
+    }
+};
+
+// función para combinar PDFs
+exports.combinePDFs = async (req, res) => {
+    const { id_convocatoria } = req.params;
+
+    try {
+        // Rutas de los PDFs a combinar
+        const basePDFPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`);
+        const resolucionPath = req.body.resolucion_path || null;
+        const dictamenPath = req.body.dictamen_path || null;
+        const cartaPath = req.body.carta_path || null;
+
+        // Verificar si el archivo base existe
+        if (!fs.existsSync(basePDFPath)) {
+            return res.status(404).json({ error: 'PDF base no encontrado' });
+        }
+
+        // Cargar el PDF base
+        const basePDFBytes = fs.readFileSync(basePDFPath);
+        const basePDFDoc = await PDFLibDocument.load(basePDFBytes);
+
+        // Agregar los otros PDFs si existen
+        if (resolucionPath && fs.existsSync(resolucionPath)) {
+            const resolucionBytes = fs.readFileSync(resolucionPath);
+            const resolucionDoc = await PDFLibDocument.load(resolucionBytes);
+            const pages = await basePDFDoc.copyPages(resolucionDoc, resolucionDoc.getPageIndices());
+            pages.forEach((page) => basePDFDoc.addPage(page));
+        }
+
+        if (dictamenPath && fs.existsSync(dictamenPath)) {
+            const dictamenBytes = fs.readFileSync(dictamenPath);
+            const dictamenDoc = await PDFLibDocument.load(dictamenBytes);
+            const pages = await basePDFDoc.copyPages(dictamenDoc, dictamenDoc.getPageIndices());
+            pages.forEach((page) => basePDFDoc.addPage(page));
+        }
+
+        if (cartaPath && fs.existsSync(cartaPath)) {
+            const cartaBytes = fs.readFileSync(cartaPath);
+            const cartaDoc = await PDFLibDocument.load(cartaBytes);
+            const pages = await basePDFDoc.copyPages(cartaDoc, cartaDoc.getPageIndices());
+            pages.forEach((page) => basePDFDoc.addPage(page));
+        }
+
+        // Guardar el PDF combinado
+        const combinedPDFPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}_combinado.pdf`);
+        const combinedPDFBytes = await basePDFDoc.save();
+        fs.writeFileSync(combinedPDFPath, combinedPDFBytes);
+
+        // Actualizar la base de datos con la ruta del PDF combinado
+        await pool.query('UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3 WHERE id_convocatoria = $4', 
+            [resolucionPath, dictamenPath, cartaPath, id_convocatoria]);
+
+        res.status(200).json({ message: 'PDF combinado con éxito', combinedPDFPath });
+
+    } catch (error) {
+        console.error('Error combinando los PDFs:', error);
+        res.status(500).json({ error: 'Error combinando los PDFs' });
+    }
+};
+
+// función para ver el PDF combinado
+exports.viewCombinedPDF = (req, res) => {
+    const { id_convocatoria } = req.params;
+    const combinedPDFPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}_combinado.pdf`);
+
+    if (fs.existsSync(combinedPDFPath)) {
+        res.sendFile(combinedPDFPath);
+    } else {
+        res.status(404).json({ error: 'PDF combinado no encontrado' });
     }
 };

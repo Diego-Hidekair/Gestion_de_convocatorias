@@ -96,16 +96,8 @@ button[type="submit"] {
     margin-top: 20px;
 }
 
-.bg-image {
-    background-image: url('https://img.freepik.com/fotos-premium/ilustra-persona-gestionando-tiempo-reloj-calendario_1031523-16902.jpg?w=900');
-    background-size: cover;
-    background-position: center center;
-    
-}
-
 .login, .bg-image {
     min-height: 100vh;
-    
 }
 .login{
     background: linear-gradient(135deg, #005f6b, #008c9e, #00b4cc, #00dffc);
@@ -315,7 +307,7 @@ button[type="submit"] {
 
 /* Ajustes para las tarjetas */
 .card-custom {
-    background-color: #36abb8;
+    background-color: #518186;
     border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;

@@ -35,24 +35,24 @@ const PDFGenerator = () => {
 
   const handleGenerateDocument = async () => {
     const formData = new FormData();
-    if (files.resolucion) formData.append('resolucion', files.resolucion);
-    if (files.dictamen) formData.append('dictamen', files.dictamen);
-    if (files.otrosDocumentos) formData.append('otros_documentos', files.otrosDocumentos);
+    if (files.resolucion) formData.append('resolucion_path', files.resolucion);
+    if (files.dictamen) formData.append('dictamen_path', files.dictamen);
+    if (files.otrosDocumentos) formData.append('carta_path', files.otrosDocumentos);  // Cambié el nombre a carta_path
 
     try {
-      const response = await fetch('http://localhost:5000/pdf/unir', {
-        method: 'POST',
-        body: formData,
+      const response = await axios.post(`http://localhost:5000/pdf/combinar/${id_convocatoria}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (!response.ok) {
-        throw new Error('Error al unir documentos');
+      if (response.status === 200) {
+        // Navegar al visor del PDF combinado
+        navigate(`/pdf/view/${id_convocatoria}`);
+      } else {
+        throw new Error('Error al combinar documentos');
       }
-
-      const data = await response.json();
-      navigate(`/pdf/view/${data.pdfFileName}`);
     } catch (error) {
-      console.error('Error al unir documentos:', error);
+      console.error('Error al combinar documentos:', error);
+      setError('Error al combinar documentos.');
     }
   };
 
