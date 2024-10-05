@@ -33,7 +33,7 @@ const CarreraList = () => {
     };
 
     return (
-        <div >
+        <div className="app-body">
             <Container className="container-list">
                 <Row className="mb-4">
                     <Col>
@@ -42,35 +42,32 @@ const CarreraList = () => {
                 </Row>
                 <Row className="mb-3">
                     <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/carreras/new">
+                        <Button className="btn-primary" tag={Link} to="/carreras/new">
                             Crear Nueva Carrera
                         </Button>
                     </Col>
                 </Row>
-
                 <Row>
                     {carreras.map((carrera) => (
                         <Col sm="12" md="4" lg="4" key={carrera.id_carrera} className="mb-4">
                             <Card className="card-custom">
                                 <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center">
+                                    <CardTitle tag="h5" className="text-center card-title">
                                         {carrera.nombre_carrera}
                                     </CardTitle>
                                     <div className="d-flex justify-content-between mt-3 button-group">
                                         <Button
-                                            color="warning"
+                                            className="btn-warning custom-button"
                                             size="sm"
                                             tag={Link}
                                             to={`/carreras/edit/${carrera.id_carrera}`}
-                                            className="custom-button"
                                         >
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>
                                         <Button
-                                            color="danger"
+                                            className="btn-danger custom-button"
                                             size="sm"
                                             onClick={() => handleDelete(carrera.id_carrera)}
-                                            className="custom-button"
                                         >
                                             <BsTrashFill className="icon" /> Eliminar
                                         </Button>

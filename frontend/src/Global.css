@@ -3,14 +3,59 @@
 /* Importa la fuente Merriweather */
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
 
-/* Cambia la tipografía en toda la aplicación */
+/* Fondo degradado en la página de login */
 body {
-    font-family: 'Merriweather', serif;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, 
+        #6a000b 25%, 
+        #002139 25% 50%, 
+        #d5d5d5 50% 75%, 
+        #011728 75%); /* Fondo degradado */
+}
+
+/* Estilo para las líneas en el contenedor */
+.lines-container {
+    position: relative; /* Necesario para el posicionamiento absoluto de las líneas */
+    width: 100%; /* O el ancho deseado */
+    height: 100%; /* O la altura deseada */
+    overflow: hidden; /* Oculta cualquier contenido desbordante */
+}
+
+/* Línea horizontal */
+.horizontal-line {
+    position: absolute; /* Posición absoluta para el posicionamiento dentro del contenedor */
+    top: 50%; /* Centra verticalmente */
+    left: 0;
+    right: 0; /* Se extiende hasta el lado derecho */
+    height: 2px; /* Altura de la línea */
+    background-color: #FF4E50; /* Color de la línea */
+}
+
+/* Línea vertical */
+.vertical-line {
+    position: absolute; /* Posición absoluta para el posicionamiento dentro del contenedor */
+    top: 0; /* Inicia desde la parte superior */
+    left: 50%; /* Centra horizontalmente */
+    width: 2px; /* Ancho de la línea */
+    height: 100%; /* Se extiende hasta la parte inferior */
+    background-color: #FF4E50; /* Color de la línea */
 }
 
 
-/* Fondo degradado en la página de login */
-body {
+/* Fondo blanco para las pantallas internas */
+.app-body {
+    background-color: rgba(0, 0, 0, 0.2); /* Fondo blanco */
+    color: #fafafa; /* Color del texto en azul oscuro */
+    font-family: 'Merriweather', serif;
+}
+
+/* Fondo degradado solo para la página de login */
+.login-body {
     background: linear-gradient(to right, #FF4E50, #1E3C72); /* Degradado rojo a azul */
     height: 100vh;
     display: flex;
@@ -19,35 +64,6 @@ body {
     margin: 0;
 }
 
-/* Estilos para el contenedor principal del login */
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; 
-}
-
-.login-content {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    background-color: #f4f4f4;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-.login-image {
-    margin-right: 20px;
-}
-
-/* Ajustes para la imagen del logo */
-.login-logo {
-    max-width: 200px; /* Ajusta el tamaño de la imagen */
-    height: auto;
-}
-
-/* Cuadro negro para el formulario con transparencia */
 .login-box {
     background-color: rgba(0, 0, 0, 0.7); /* Negro con transparencia */
     padding: 40px; 
@@ -58,15 +74,15 @@ body {
     max-width: 400px; /* Ajusta el tamaño del formulario */
 }
 
-
-
-/* Estilo para el título del login */
-.login-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #fff; 
+/* Estilos para el contenedor principal del login */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
 }
+
+
 
 /* Botón de login */
 .btn-login {
@@ -85,6 +101,89 @@ body {
     background-color: #1E3C72; /* Azul al pasar el mouse */
 }
 
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9); /* Fondo blanco con transparencia */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Contenedores generales después del login */
+.app-body .container {
+    padding: 20px;
+}
+
+/* Tarjetas, formularios y contenedores después del login */
+.card {
+    background-color: #FFFFFF; /* Fondo blanco para las tarjetas */
+    color: #010169; /* Texto en azul oscuro */
+    border: 2px solid #0D4ABC; /* Borde azul más claro */
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+
+/*(cuadro interno)*/
+.row{ background-color: rgba(0, 0, 0, 0.2);}
+.container-list {
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.login-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.degraded-background {
+    background-color: rgba(0, 0, 0, 0.2);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-image {
+    margin-right: 20px;
+}
+
+/* Ajustes para la imagen del logo */
+.login-logo {
+    max-width: 200px; /* Ajusta el tamaño de la imagen */
+    height: auto;
+}
+
+/* Estilo para el título del login */
+.login-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #fff; 
+}
+/* Encabezados */
+h2, h3, h4 {
+    color: #ffffff; /* Azul claro */
+}
+/* Añadir espacio superior al encabezado */
+h1 {
+    margin-top: 40px; /* Ajusta este valor según sea necesario */
+    color: #ffffff; /* Asegúrate de que el color sea visible */
+}
+
+/* Asegúrate de que el contenedor tenga suficiente espacio */
+.container-list {
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 20px; /* Añadir padding para dar espacio interno */
+}
+
+
 button[type="submit"] {
     display: block;
 }
@@ -92,9 +191,8 @@ button[type="submit"] {
 .container-fluid {
     height: 100vh;
 }
-.container-list {
-    margin-top: 20px;
-}
+/* Contenedores y tarjetas */
+
 
 .login, .bg-image {
     min-height: 100vh;
@@ -103,12 +201,8 @@ button[type="submit"] {
     background: linear-gradient(135deg, #005f6b, #008c9e, #00b4cc, #00dffc);
 }
 
-.card {
-    padding: 40px;
-    background-color: #008c9e; /* Color principal */
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+
+
 
 /* Estilo para los campos de entrada */
 .form-control {
@@ -225,13 +319,7 @@ button[type="submit"] {
 
 /*######################otros estilos######################*/
 /* Estilos para los componentes CarreraList, CarreraForm, CarreraEdit */
-.degraded-background {
-    background: linear-gradient(to right, #a1c4fd, #c2e9fb);
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+
 
 .card-content {
     background: rgba(255, 255, 255, 0.1); /* Fondo semi-transparente */
@@ -249,6 +337,7 @@ button[type="submit"] {
     color: white;
 }
 
+
 .button-group .btn-danger {
     background-color: #dc3545;
     color: white;
@@ -260,15 +349,20 @@ button[type="submit"] {
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+/* Estilo para la tabla (si la tienes en otras secciones) */
 .table {
-    border-collapse: collapse;
-    width: 100%;
-    color: #343838; /* Color del texto de la tabla */
+    background-color: #FFFFFF; /* Fondo blanco */
+    color: #ffffff; /* Texto en azul oscuro */
+    border: 1px solid #9C0005; /* Borde rojo oscuro */
 }
 
-.table td, .table th {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 12px;
+.table th {
+    background-color: #0D4ABC; /* Encabezados de la tabla en azul */
+    color: #FFFFFF; /* Texto blanco */
+}
+
+.table td {
+    border-bottom: 1px solid #0D4ABC; /* Líneas divisorias en azul claro */
 }
 
 .table td {
@@ -307,21 +401,23 @@ button[type="submit"] {
 
 /* Ajustes para las tarjetas */
 .card-custom {
-    background-color: #518186;
-    border-radius: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-    padding: 20px;
+    background-color: #FFFFFF; /* Fondo blanco para las tarjetas */
+    color: #ffffff; /* Texto en azul oscuro */
+    border: 2px solid #0D4ABC; /* Borde azul claro */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    transition: transform 0.3s;
 }
 
 .card-custom:hover {
-    transform: scale(1.05);
+    transform: scale(1.05); /* Animación al pasar el mouse */
 }
 
+/* Colores para los títulos dentro de las tarjetas */
 .card-title {
-    font-weight: bold;
-    color: #343a40;
+    color: #9C0005; /* Rojo oscuro */
 }
+
 .text-center {
     text-align: center;
 }
@@ -338,6 +434,7 @@ button.btn-primary {
     border-radius: 25px;
     background-color: #007bff;
 }
+
 
 /* Ajustes de los botones */
 .button-group {
@@ -377,14 +474,20 @@ button.btn-primary {
     background-color: #c82333; /* Oscurece el color del botón al pasar el mouse */
 }
 
-/* Ajustes de los íconos dentro de los botones */
+/* Iconos dentro de los botones */
 .icon {
     font-size: 1rem; /* Tamaño de los íconos */
 }
 
-
-/* Ajuste de los íconos dentro de los botones */
-.icon {
-    font-size: 1rem; /* Tamaño de los íconos */
+/*post login*/
+/* Botones principales */
+.btn-primary {
+    background-color: #9C0005; /* Rojo oscuro */
+    border-color: #9C0005; /* Borde del mismo color */
+    color: #FFFFFF; /* Texto blanco */
+}
+.btn-primary:hover {
+    background-color: #FF0000; /* Rojo brillante al pasar el mouse */
+    border-color: #FF0000;
 }
 
