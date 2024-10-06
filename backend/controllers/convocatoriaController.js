@@ -71,18 +71,25 @@ const getConvocatoriasByEstado = async (req, res) => {
 
 // Crear una nueva convocatoria
 const createConvocatoria = async (req, res) => {
+    console.log("Datos recibidos:", req.body);
     try {
+        // Extraer el id del usuario autenticado
+        const id_usuario = req.user.id; 
         const { nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad } = req.body;
+        
         const result = await pool.query(
-            'INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_convocatoria',
-            [nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad]
+            `INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad, id_usuario) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id_convocatoria`,
+            [nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_carrera, id_facultad, id_usuario]
         );
+
         res.json(result.rows[0]); // Devuelve el id_convocatoria generado
     } catch (error) {
         console.error('Error creating convocatoria:', error);
         res.status(500).send('Server error');
     }
 };
+
 
 // Actualizar una convocatoria existente
 const updateConvocatoria = async (req, res) => {

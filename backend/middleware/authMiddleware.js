@@ -6,11 +6,12 @@ const authenticateToken = (req, res, next) => {
     const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) return res.status(401).json({ message: 'Token no proporcionado' });
-
+    // Verificar el token
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ message: 'Token no válido' });
 
         req.user = user; // Guardamos el usuario en req.user para usarlo en las rutas
+        console.log("Usuario autenticado:", req.user); // Log del usuario autenticado
         next();
     });
 };
