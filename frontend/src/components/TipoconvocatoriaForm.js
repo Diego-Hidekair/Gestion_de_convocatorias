@@ -1,16 +1,12 @@
 // src/components/TipoconvocatoriaForm.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const TipoconvocatoriaForm = () => {
     const navigate = useNavigate();
-    const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '' });
-
-    useEffect(() => {
-        // No se requieren datos adicionales en el formulario
-    }, []);
+    const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '', Titulo: '' });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -26,9 +22,7 @@ const TipoconvocatoriaForm = () => {
         }
 
         try {
-            await axios.post('http://localhost:5000/tipo-convocatorias', {
-                Nombre_convocatoria: tipoConvocatoria.Nombre_convocatoria
-            });
+            await axios.post('http://localhost:5000/tipo-convocatorias', tipoConvocatoria);
             navigate('/tipoconvocatorias');
         } catch (error) {
             console.error('Error al crear tipo de convocatoria:', error);
@@ -48,6 +42,17 @@ const TipoconvocatoriaForm = () => {
                         onChange={handleChange}
                         className="form-control"
                         required
+                    />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Título:</label>
+                    <input
+                        type="text"
+                        name="Titulo"
+                        value={tipoConvocatoria.Titulo}
+                        onChange={handleChange}
+                        className="form-control"
+                        maxLength="500"
                     />
                 </div>
                 <button type="submit" className="btn btn-success">Crear Tipo de Convocatoria</button>

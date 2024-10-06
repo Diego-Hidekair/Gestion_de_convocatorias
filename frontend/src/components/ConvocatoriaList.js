@@ -40,7 +40,7 @@ const ConvocatoriaList = () => {
     });
 
     return (
-        <div className="degraded-background">
+        <div >
             <Container className="container-list">
                 <Row className="mb-4">
                     <Col>

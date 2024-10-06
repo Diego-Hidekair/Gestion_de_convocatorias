@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
-import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
-import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
-import '../Global.css';  // Importa el archivo CSS global
+import { Container, Card, CardBody, CardTitle, CardText, Button, Row, Col } from 'reactstrap';
+import { BsTrashFill } from "react-icons/bs";
+import { PiPencilLineBold } from "react-icons/pi";
+import '../Global.css';
 
 const TipoconvocatoriaList = () => {
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
@@ -14,7 +14,7 @@ const TipoconvocatoriaList = () => {
         const fetchTiposConvocatoria = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/tipo-convocatorias');
-                console.log(response.data); // Verificar la estructura de los datos
+                console.log(response.data);
                 setTiposConvocatoria(response.data);
             } catch (error) {
                 console.error('Error al obtener los tipos de convocatoria:', error);
@@ -52,12 +52,12 @@ const TipoconvocatoriaList = () => {
                     {tiposConvocatoria.map((tipo) => (
                         <Col sm="12" md="4" lg="4" key={tipo.id_tipoconvocatoria} className="mb-4">
                             <Card className="card-custom">
-                                <CardBody className="d-flex flex-column justify-content-between">
+                            <CardBody className="d-flex flex-column justify-content-between">
                                     <CardTitle tag="h5" className="text-center">
                                         {tipo.nombre_convocatoria} {/* Cambia aquí si es necesario */}
                                     </CardTitle>
                                     <div className="d-flex justify-content-between mt-3 button-group">
-                                    <Button color="warning" size="sm" tag={Link} to={`/tipoconvocatorias/editar/${tipo.id_tipoconvocatoria}`}>  
+                                        <Button color="warning" size="sm" tag={Link} to={`/tipoconvocatorias/editar/${tipo.id_tipoconvocatoria}`}>  
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>
                                         <Button color="danger" size="sm" onClick={() => handleDelete(tipo.id_tipoconvocatoria)} className="custom-button">

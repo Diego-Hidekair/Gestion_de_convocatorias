@@ -7,14 +7,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const TipoconvocatoriaEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '' });
+    const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '', Titulo: '' });
 
     useEffect(() => {
         const fetchTipoConvocatoria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/tipo-convocatorias/${id}`);
                 setTipoConvocatoria({
-                    Nombre_convocatoria: response.data.Nombre_convocatoria || ''
+                    Nombre_convocatoria: response.data.Nombre_convocatoria || '',
+                    Titulo: response.data.Titulo || '' // Agregar el campo Titulo
                 });
             } catch (error) {
                 console.error('Error al obtener el tipo de convocatoria:', error);
@@ -38,9 +39,7 @@ const TipoconvocatoriaEdit = () => {
         }
 
         try {
-            await axios.put(`http://localhost:5000/tipo-convocatorias/${id}`, {
-                Nombre_convocatoria: tipoConvocatoria.Nombre_convocatoria
-            });
+            await axios.put(`http://localhost:5000/tipo-convocatorias/${id}`, tipoConvocatoria);
             navigate('/tipoconvocatorias');
         } catch (error) {
             console.error('Error al actualizar el tipo de convocatoria:', error);
@@ -61,6 +60,17 @@ const TipoconvocatoriaEdit = () => {
                         onChange={handleChange}
                         className="form-control"
                         required
+                    />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Título:</label>
+                    <input
+                        type="text"
+                        name="Titulo"
+                        value={tipoConvocatoria.Titulo}
+                        onChange={handleChange}
+                        className="form-control"
+                        maxLength="500"
                     />
                 </div>
                 <button type="submit" className="btn btn-primary">Guardar Cambios</button>
