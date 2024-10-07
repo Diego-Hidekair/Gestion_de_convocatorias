@@ -106,7 +106,7 @@ const ConvocatoriaForm = () => {
     const handleNombreAutoFill = () => {
         const carreraNombre = carreras.find(c => c.id_carrera === parseInt(convocatoria.id_carrera))?.nombre_carrera || '';
         const nombreCompleto = `${prioridad} ${tituloConvocatoria} ${horario} PARA LA CARRERA DE ${carreraNombre} ${gestion}/${currentYear}`;
-
+    
         setConvocatoria((prevConvocatoria) => ({
             ...prevConvocatoria,
             nombre: nombreCompleto
@@ -116,13 +116,14 @@ const ConvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         handleNombreAutoFill();
-
+    
         const formattedConvocatoria = {
             ...convocatoria,
+            prioridad, // Agregar prioridad
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
         };
-
+    
         try {
             if (id) {
                 await axios.put(`http://localhost:5000/convocatorias/${id}`, formattedConvocatoria);
@@ -184,9 +185,11 @@ const ConvocatoriaForm = () => {
                                     <FormGroup>
                                         <Label>Prioridad</Label>
                                         <Input type="select" value={prioridad} onChange={(e) => { setPrioridad(e.target.value); handleNombreAutoFill(); }}>
-                                            <option>PRIMERA</option>
-                                            <option>SEGUNDA</option>
-                                            <option>TERCERA</option>
+                                            <option>Primera</option>
+                                            <option>Segunda</option>
+                                            <option>Tercera</option>
+                                            <option>Cuarta</option>
+                                            <option>Quinta</option>
                                         </Input>
                                     </FormGroup>
                                     <FormGroup>
