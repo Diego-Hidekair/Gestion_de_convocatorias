@@ -7,6 +7,7 @@ const getConvocatoriaMaterias = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT cm.id, cm.total_horas, cm.perfil_profesional, 
+                   cm.tiempo_trabajo, 
                    m.nombre AS nombre_materia,
                    c.nombre AS nombre_convocatoria
             FROM convocatoria_materia cm
@@ -32,6 +33,7 @@ const getConvocatoriaMateriaById = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT cm.id, cm.total_horas, cm.perfil_profesional, 
+                   cm.tiempo_trabajo,
                    m.nombre AS nombre_materia,
                    c.nombre AS nombre_convocatoria
             FROM convocatoria_materia cm
@@ -56,8 +58,8 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {
     try {
         let totalHorasConvocatoria = 0;
         let idsMaterias = [];
-
-        // Iterar sobre las materias seleccionadas y sumar las horas de cada una
+        
+        // Calcular el total de horas y realizar las inserciones
         for (const id_materia of materiasSeleccionadas) {
             const materiaResult = await pool.query(`
                 SELECT total_horas 
@@ -71,24 +73,23 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {
 
             totalHorasConvocatoria += materiaResult.rows[0].total_horas;
 
-            const result = await pool.query(`
-                INSERT INTO convocatoria_materia (id_convocatoria, id_materia, perfil_profesional, total_horas) 
-                VALUES ($1, $2, $3, $4) 
-                RETURNING id, id_materia;
-            `, [id_convocatoria, id_materia, perfil_profesional, materiaResult.rows[0].total_horas]);
+            const tiempoTrabajo = totalHorasConvocatoria >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
 
-            idsMaterias.push(result.rows[0].id_materia);  // Guardar los ids de las materias
+            const result = await pool.query(`
+                INSERT INTO convocatoria_materia (id_convocatoria, id_materia, perfil_profesional, total_horas, tiempo_trabajo) 
+                VALUES ($1, $2, $3, $4, $5) 
+                RETURNING id, id_materia;
+            `, [id_convocatoria, id_materia, perfil_profesional, materiaResult.rows[0].total_horas, tiempoTrabajo]);
+
+            idsMaterias.push(result.rows[0].id_materia);
         }
 
-        // Retornar el total de horas acumuladas y los ids de las materias
         res.status(201).json({ mensaje: 'Materias agregadas con éxito', totalHorasConvocatoria, idsMaterias });
     } catch (error) {
         console.error('Error creando convocatoria_materia:', error);
         res.status(500).json({ error: 'Error en el servidor' });
     }
 };
-
-
 
 // Actualizar una relación convocatoria-materia específica por id_convocatoria y id_materia
 const updateConvocatoriaMateria = async (req, res) => {

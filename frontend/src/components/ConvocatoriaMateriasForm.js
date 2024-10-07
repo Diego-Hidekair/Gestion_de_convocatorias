@@ -12,6 +12,7 @@ const ConvocatoriaMateriasForm = () => {
     const [perfilProfesional, setPerfilProfesional] = useState('');
     const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
     const [error, setError] = useState(null);
+    const [totalHoras, setTotalHoras] = useState(0);
 
     // Obtener las materias desde el backend
     useEffect(() => {
@@ -26,6 +27,12 @@ const ConvocatoriaMateriasForm = () => {
         };
         fetchMaterias();
     }, []);
+    
+    useEffect(() => {
+        // Calcular total de horas al modificar la lista de materias seleccionadas
+        const total = materiasSeleccionadas.reduce((acc, materia) => acc + materia.total_horas, 0);
+        setTotalHoras(total);
+    }, [materiasSeleccionadas]);
 
     // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
@@ -35,20 +42,21 @@ const ConvocatoriaMateriasForm = () => {
             return;
         }
     
+        const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
+    
         try {
             const response = await axios.post(`http://localhost:5000/convocatoria-materias/multiple`, {
-                id_convocatoria: id_convocatoria,
+                id_convocatoria,
                 materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
                 perfil_profesional: perfilProfesional,
+                tiempo_trabajo: tiempoTrabajo  // Añadimos el campo para ser enviado
             });
     
-            alert(`Materias agregadas exitosamente. Total de horas: ${response.data.totalHorasConvocatoria}`);
-            
-            // Asegúrate de que idsMaterias exista y tenga al menos un id_materia válido
-            const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
+            alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
     
+            const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
             if (firstIdMateria) {
-                navigate(`/honorarios/new/${id_convocatoria}/${firstIdMateria}`);  // Redirigir con el id_materia correcto
+                navigate(`/honorarios/new/${id_convocatoria}/${firstIdMateria}`);
             } else {
                 setError('No se pudo obtener el ID de la materia');
             }
@@ -58,29 +66,6 @@ const ConvocatoriaMateriasForm = () => {
             console.error(err);
         }
     };
-    /*const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
-            setError('Por favor, complete todos los campos');
-            return;
-        }
-
-        try {
-            const response = await axios.post(`http://localhost:5000/convocatoria-materias/multiple`, {
-                id_convocatoria: id_convocatoria,
-                materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
-                perfil_profesional: perfilProfesional,
-            });
-            console.log(`Enviando solicitud a: http://localhost:5000/convocatoria-materias/multiple`);
-
-            alert(`Materias agregadas exitosamente. Total de horas: ${response.data.totalHorasConvocatoria}`);
-            navigate(`/honorarios/new/${id_convocatoria}/${response.data.id_materia}`); // Asegúrate de que response.data.id_materia contenga el id correcto.
-
-        } catch (err) {
-            setError('Error al crear la ConvocatoriaMateria');
-            console.error(err);
-        }
-    };*/ 
 
     // Agregar una materia seleccionada a la lista
     const handleAddMateria = () => {
@@ -104,7 +89,6 @@ const ConvocatoriaMateriasForm = () => {
         <div className="container mt-4">
             <h2>Agregar materias a la Convocatoria</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-
             <form onSubmit={handleSubmit}>
                 {/* Seleccionar materia */}
                 <div className="mb-3">
@@ -121,15 +105,10 @@ const ConvocatoriaMateriasForm = () => {
                             </option>
                         ))}
                     </select>
-                    <button
-                        type="button"
-                        className="btn btn-secondary mt-2"
-                        onClick={handleAddMateria}
-                    >
+                    <button type="button" className="btn btn-secondary mt-2" onClick={handleAddMateria}>
                         Agregar Materia
                     </button>
                 </div>
-
                 {/* Mostrar materias seleccionadas */}
                 <div className="mb-3">
                     <h3>Materias Seleccionadas:</h3>
@@ -137,17 +116,16 @@ const ConvocatoriaMateriasForm = () => {
                         {materiasSeleccionadas.map((materia) => (
                             <li key={materia.id_materia} className="list-group-item">
                                 {materia.nombre}
-                                <button
-                                    type="button"
-                                    className="btn btn-danger btn-sm float-end"
-                                    onClick={() => handleRemoveMateria(materia.id_materia)}
-                                >
+                                <button type="button" className="btn btn-danger btn-sm float-end" onClick={() => handleRemoveMateria(materia.id_materia)}>
                                     Eliminar
                                 </button>
                             </li>
                         ))}
                     </ul>
                 </div>
+                <div className="mb-3">
+    <h4>Tiempo de Trabajo: {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}</h4>
+</div>
 
                 {/* Perfil Profesional */}
                 <div className="mb-3">
@@ -157,11 +135,10 @@ const ConvocatoriaMateriasForm = () => {
                         className="form-control"
                         value={perfilProfesional}
                         onChange={(e) => setPerfilProfesional(e.target.value)}
-                        placeholder="Ingrese el perfil profesional"
+                        placeholder="Ingrese el perfil profesional como ser Ingeniero Comercial"
                         required
                     />
                 </div>
-
                 <button type="submit" className="btn btn-primary">
                     Guardar
                 </button>
