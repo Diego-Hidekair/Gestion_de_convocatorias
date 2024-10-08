@@ -4,20 +4,20 @@ import { Link, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { Collapse, Nav, NavLink, DropdownItem, Button, UncontrolledDropdown, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { FiMenu } from 'react-icons/fi';
-import '../Global.css';
+import '../styles/Sidebar.css';
 
-const NavBar = ({ onLogout }) => {
+const NavBar = ({ onLogout }) => { // Elimina `toggleSidebar` aquí
     const [isOpen, setIsOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [role, setRole] = useState(''); // Rol del usuario
+    const [role, setRole] = useState(''); // rol del usuario
     const location = useLocation();
-
+    
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             setIsLoggedIn(true);
             const decodedToken = jwtDecode(token);
-            setRole(decodedToken.rol); // Actualiza el rol con el token decodificado
+            setRole(decodedToken.rol);
         }
     }, []);
 
@@ -25,7 +25,7 @@ const NavBar = ({ onLogout }) => {
         setIsOpen(false);
     }, [location]);
 
-    const toggleNav = () => {
+    const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
 
@@ -37,10 +37,10 @@ const NavBar = ({ onLogout }) => {
         if (onLogout) onLogout();
     };
 
-    const userId = localStorage.getItem('userId'); // Obtén el ID del usuario desde localStorage
+    const userId = localStorage.getItem('userId');
 
     const closeMenu = () => {
-        setIsOpen(false); // Cierra el menú al hacer clic en "Cerrar Menú"
+        setIsOpen(false);
     };
 
     useEffect(() => {
@@ -50,7 +50,7 @@ const NavBar = ({ onLogout }) => {
                 setIsOpen(false);
             }
         };
-    
+
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -61,32 +61,37 @@ const NavBar = ({ onLogout }) => {
         <div>
             {isLoggedIn && (
                 <>
-                    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-                        {/* Añade el logo */}
-                        <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="navbar-logo" />
-
-                        <div className="navbar-brand-custom">
-                            Gestión de <br /> Convocatorias
-                        </div>
+                    <nav className={`sidebar ${isOpen ? 'open' : ''}`} id="sidebar">
+                        {isOpen && (
+                            <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="navbar-logo" />
+                        )}
+                        {isOpen && (
+                            <div className="navbar-brand-custom">
+                                Gestión de <br /> Convocatorias
+                            </div>
+                        )}
                         <Collapse isOpen={isOpen} navbar>
                             <Nav vertical navbar className="sidebar-nav">
-                                <NavLink tag={Link} to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>
-                                    Facultades
-                                </NavLink>
-                                <NavLink tag={Link} to="/carreras" className={location.pathname === '/carreras' ? 'active' : ''}>
-                                    Carreras
-                                </NavLink>
-                                <NavLink tag={Link} to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>
-                                    Tipo de Convocatorias
-                                </NavLink>
-                                <NavLink tag={Link} to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>
-                                    Materias
-                                </NavLink>
+                                {/* Solo para usuarios con rol admin y vicerrectorado */}
+                                {(role === 'admin' || role === 'vicerrectorado') && (
+                                    <>
+                                        <NavLink tag={Link} to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>
+                                            <span className="nav-text">Facultades</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/carreras" className={location.pathname === '/carreras' ? 'active' : ''}>
+                                            <span className="nav-text">Carreras</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>
+                                            <span className="nav-text">Tipo de Convocatorias</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>
+                                            <span className="nav-text">Materias</span>
+                                        </NavLink>
+                                    </>
+                                )}
                                 <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
-                                    Convocatorias
+                                    <span className="nav-text">Convocatorias</span>
                                 </NavLink>
-
-                                {/* Menú desplegable para los Estados de Convocatoria */}
                                 <UncontrolledDropdown nav inNavbar>
                                     <DropdownToggle nav caret>
                                         Estados de Convocatoria
@@ -106,37 +111,30 @@ const NavBar = ({ onLogout }) => {
                                         </DropdownItem>
                                     </DropdownMenu>
                                 </UncontrolledDropdown>
-
-                                {/* Mostrar "Perfil de Usuario" solo si está logueado */}
                                 {userId && (
                                     <NavLink tag={Link} to={`/usuarios/me/${userId}`} className={location.pathname === `/usuarios/me/${userId}` ? 'active' : ''}>
-                                        Perfil de Usuario
+                                        <span className="nav-text">Perfil de Usuario</span>
                                     </NavLink>
                                 )}
-
-                                {/* Mostrar "Usuarios" solo si es administrador */}
+                                {/* Solo para usuarios con rol admin */}
                                 {role === 'admin' && (
                                     <NavLink tag={Link} to="/usuarios" className={location.pathname === '/usuarios' ? 'active' : ''}>
-                                        Usuarios
+                                        <span className="nav-text">Usuarios</span>
                                     </NavLink>
                                 )}
-
                                 <DropdownItem divider />
-
                                 <Button color="danger" onClick={handleLogout} className="logout-button">
                                     Cerrar Sesión
-                                </Button>
-
-                                {/* Botón para cerrar el menú */}
+                                </Button> 
                                 <Button className="close-menu-button" onClick={closeMenu}>
                                     Cerrar Menú
                                 </Button>
                             </Nav>
                         </Collapse>
-                    </div>
+                    </nav>
                     <div className="sidebar-toggle">
                         {!isOpen && (
-                            <Button onClick={toggleNav} className="toggle-button">
+                            <Button onClick={toggleSidebar} className="toggle-button">
                                 <FiMenu size={24} />
                             </Button>
                         )}

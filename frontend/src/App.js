@@ -36,60 +36,59 @@ import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import PDFGenerator from './components/PDFGenerator';
 import PDFViewer from './components/PDFViewer';
-import './Global.css';
+import './styles/App.css'; 
 
 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
 axios.defaults.baseURL = 'http://localhost:5000/';
 
 const App = () => {
-return (
-    <Router>
-        <AuthWrapper />
-    </Router>
-);
+    return (
+        <Router>
+            <AuthWrapper />
+        </Router>
+    );
 };
 
-
 const AuthWrapper = () => {
-const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [userRole, setUserRole] = useState(''); 
-const navigate = useNavigate();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isOpen, setIsOpen] = useState(false); // Agrega un estado para el sidebar
+    const [userRole, setUserRole] = useState('');
+    const navigate = useNavigate();
 
-useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        const expiryTime = JSON.parse(atob(token.split('.')[1])).exp * 1000;
-        const currentTime = Date.now();
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const expiryTime = JSON.parse(atob(token.split('.')[1])).exp * 1000;
+            const currentTime = Date.now();
 
-        if (currentTime >= expiryTime) {
-            localStorage.removeItem('token');
-            setIsAuthenticated(false);
-            navigate('/login');
-        } else {
-            const decodedToken = jwtDecode(token);
-            setUserRole(decodedToken.rol);
-            setIsAuthenticated(true);
-            const timeout = setTimeout(() => {
+            if (currentTime >= expiryTime) {
                 localStorage.removeItem('token');
                 setIsAuthenticated(false);
                 navigate('/login');
-            }, expiryTime - currentTime);
-            return () => clearTimeout(timeout);
+            } else {
+                const decodedToken = jwtDecode(token);
+                setUserRole(decodedToken.rol);
+                setIsAuthenticated(true);
+                const timeout = setTimeout(() => {
+                    localStorage.removeItem('token');
+                    setIsAuthenticated(false);
+                    navigate('/login');
+                }, expiryTime - currentTime);
+                return () => clearTimeout(timeout);
+            }
+        } else {
+            navigate('/login');
         }
-    } else {
-        navigate('/login');
-    }
-}, [navigate]);
+    }, [navigate]);
 
-
-useEffect(() => {
-    // Cambia el estilo del body dependiendo si está autenticado o no
-    if (isAuthenticated) {
-        document.body.className = "app-body"; // Clase para la aplicación después del login
-    } else {
-        document.body.className = "login-body"; // Clase para la página de login
-    }
-}, [isAuthenticated]);
+    useEffect(() => {
+        // Cambia el estilo del body dependiendo si está autenticado o no
+        if (isAuthenticated) {
+            document.body.className = "app-body"; // Clase para la aplicación después del login
+        } else {
+            document.body.className = "login-body"; // Clase para la página de login
+        }
+    }, [isAuthenticated]);
 
     const handleLogin = () => {
         setIsAuthenticated(true);
@@ -100,15 +99,19 @@ useEffect(() => {
         localStorage.removeItem('token');
         setIsAuthenticated(false);
         navigate('/login');
-    };  
+    };
+    const toggleSidebar = () => {
+        setIsOpen(!isOpen); 
+    };
 
     return (
-        <div>
+        <div className={`container-main ${isOpen ? 'open' : ''}`}>
+            <div className="background-shape"></div>
             {isAuthenticated ? (
                 <>
-                    <NavBar onLogout={handleLogout} />
+                    <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} />
                     <Routes>
-                        <Route path="/" element={<Navigate to="/carreras" />} />
+                        <Route path="/" element={<Navigate to="/redirect" />} /> 
                         <Route path="/redirect" element={<RedirectPage />} />
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/carreras/new" element={<CarreraForm />} />
@@ -143,7 +146,7 @@ useEffect(() => {
                     </Routes>
                 </>
             ) : (
-                <Routes>
+               <Routes>
                     <Route path="/login" element={<Login setAuth={handleLogin} />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="*" element={<Navigate to="/login" />} />

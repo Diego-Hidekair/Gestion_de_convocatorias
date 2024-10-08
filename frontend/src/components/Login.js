@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../Global.css';
+import '../styles/Login.css';
+
 
 axios.interceptors.request.use(
     (config) => {

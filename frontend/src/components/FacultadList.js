@@ -1,13 +1,14 @@
-//frontend/src/components/FacultadList.js
+// frontend/src/components/FacultadList.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
 import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
-import '../Global.css';  // Importa el archivo CSS global
+import '../styles/facultad.css'; // Importa el nuevo archivo CSS
+import { useLocation } from 'react-router-dom';
 
-const FacultadList = () => {
+const FacultadList = ({ isOpen }) => { // Recibimos la prop isOpen
     const [facultades, setFacultades] = useState([]);
 
     useEffect(() => {
@@ -32,16 +33,16 @@ const FacultadList = () => {
     };
 
     return (
-        <div >
+        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
             <Container className="container-list">
                 <Row className="mb-4">
                     <Col>
-                        <h1 className="text-center">Lista de Facultades</h1>
+                        <h1 className="text-center title-facultad">Lista de Facultades</h1>
                     </Col>
                 </Row>
                 <Row className="mb-3">
                     <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/facultades/new">
+                        <Button color="primary" tag={Link} to="/facultades/new" className="create-button">
                             Crear Nueva Facultad
                         </Button>
                     </Col>
@@ -52,10 +53,10 @@ const FacultadList = () => {
                         <Col sm="12" md="4" lg="4" key={facultad.id_facultad} className="mb-4">
                             <Card className="card-custom">
                                 <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center">
+                                    <CardTitle tag="h5" className="text-center facultad-name">
                                         {facultad.nombre_facultad}
                                     </CardTitle>
-                                    <div className="d-flex justify-content-between mt-3 button-group">
+                                    <div className="d-flex justify-content-center button-group">
                                         <Button color="warning" size="sm" tag={Link} to={`/facultades/edit/${facultad.id_facultad}`} className="custom-button">
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>

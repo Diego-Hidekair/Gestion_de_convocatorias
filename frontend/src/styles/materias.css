@@ -1,0 +1,49 @@
+/* frontend/src/styles/materia.css */
+
+/* Contenedor principal de la lista de materias */
+.materia-list-container {
+    min-height: 100vh;
+    padding-left: 80px; /* Ancho del sidebar cerrado */
+    padding-right: 20px;
+    background-color: rgba(0, 48, 73, 0.1); /* Fondo semitransparente */
+    transition: padding-left 0.3s ease-in-out;
+}
+.row{
+    background-color: rgba(0, 0, 0, 0.253)
+}
+
+.d-flex{
+    background-color: rgba(0, 47, 73, 0.767);
+}
+
+.materia-list-container.sidebar-open {
+    padding-left: 250px; /* Ancho del sidebar abierto */
+}
+
+.materia-list-container.sidebar-closed {
+    padding-left: 80px; /* Ancho del sidebar cerrado */
+}
+
+/* Estilo para el texto de la lista */
+.text-center {
+    color: white; /* Color del texto del título */
+}
+
+/* Estilo para los botones */
+.custom-button {
+    color: white;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+.custom-button:hover {
+    background-color: rgba(0, 0, 0, 0.1); /* Fondo al pasar el mouse */
+    color: black; /* Color del texto al pasar el mouse */
+    transform: scale(1.05); /* Efecto de zoom al pasar el mouse */
+}
+
+/* Estilo para el botón de crear materia */
+.create-button {
+    display: block;
+    margin: 0 auto 20px;
+}

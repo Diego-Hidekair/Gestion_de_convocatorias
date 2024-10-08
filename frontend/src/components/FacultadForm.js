@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const FacultadForm = () => {
+const FacultadForm = ({ isOpen }) => { // Recibe la prop isOpen
     const navigate = useNavigate();
     const [facultad, setFacultad] = useState({ nombre_facultad: '' });
 
@@ -24,7 +24,7 @@ const FacultadForm = () => {
     };
 
     return (
-        <div className="container">
+        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Contenedor que se adapta al sidebar */}
             <h1 className="my-4">Crear Nueva Facultad</h1>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">

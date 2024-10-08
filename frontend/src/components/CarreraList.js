@@ -5,10 +5,9 @@ import axios from 'axios';
 import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
 import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
-import '../Global.css';  // Importa el archivo CSS global
-import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/carrera.css';
 
-const CarreraList = () => {
+const CarreraList = ({ isOpen }) => { 
     const [carreras, setCarreras] = useState([]);
 
     useEffect(() => {
@@ -33,42 +32,34 @@ const CarreraList = () => {
     };
 
     return (
-        <div className="app-body">
+        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
             <Container className="container-list">
                 <Row className="mb-4">
                     <Col>
-                        <h1 className="text-center">Lista de Carreras</h1>
+                        <h1 className="text-center title-facultad">Lista de Carreras</h1>
                     </Col>
                 </Row>
                 <Row className="mb-3">
                     <Col className="text-center">
-                        <Button className="btn-primary" tag={Link} to="/carreras/new">
+                        <Button color="primary" tag={Link} to="/carreras/new" className="create-button">
                             Crear Nueva Carrera
                         </Button>
                     </Col>
                 </Row>
+
                 <Row>
                     {carreras.map((carrera) => (
                         <Col sm="12" md="4" lg="4" key={carrera.id_carrera} className="mb-4">
                             <Card className="card-custom">
                                 <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center card-title">
+                                    <CardTitle tag="h5" className="text-center facultad-name">
                                         {carrera.nombre_carrera}
                                     </CardTitle>
-                                    <div className="d-flex justify-content-between mt-3 button-group">
-                                        <Button
-                                            className="btn-warning custom-button"
-                                            size="sm"
-                                            tag={Link}
-                                            to={`/carreras/edit/${carrera.id_carrera}`}
-                                        >
+                                    <div className="d-flex justify-content-center button-group">
+                                        <Button color="warning" size="sm" tag={Link} to={`/carreras/edit/${carrera.id_carrera}`} className="custom-button">
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>
-                                        <Button
-                                            className="btn-danger custom-button"
-                                            size="sm"
-                                            onClick={() => handleDelete(carrera.id_carrera)}
-                                        >
+                                        <Button color="danger" size="sm" onClick={() => handleDelete(carrera.id_carrera)} className="custom-button">
                                             <BsTrashFill className="icon" /> Eliminar
                                         </Button>
                                     </div>
