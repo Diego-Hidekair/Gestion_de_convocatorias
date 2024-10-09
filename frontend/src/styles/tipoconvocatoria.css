@@ -27,9 +27,8 @@
 }
 
 /* Estilo para el texto de las tarjetas */
-.card-title,
 .facultad-name {
-    color: white; /* Color del texto blanco */
+    color: rgb(0, 0, 0); 
 }
 
 /* Estilo para los botones */

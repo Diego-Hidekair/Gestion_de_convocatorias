@@ -8,13 +8,6 @@
     background-color: rgba(0, 48, 73, 0.1); /* Fondo semitransparente */
     transition: padding-left 0.3s ease-in-out;
 }
-.row{
-    background-color: rgba(0, 0, 0, 0.253)
-}
-
-.d-flex{
-    background-color: rgba(0, 47, 73, 0.767);
-}
 
 .materia-list-container.sidebar-open {
     padding-left: 250px; /* Ancho del sidebar abierto */
@@ -26,7 +19,7 @@
 
 /* Estilo para el texto de la lista */
 .text-center {
-    color: white; /* Color del texto del título */
+    color: #2e3830; /* Color del texto del título */
 }
 
 /* Estilo para los botones */

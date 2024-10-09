@@ -6,7 +6,6 @@ import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstr
 import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
 import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
 import '../styles/facultad.css'; // Importa el nuevo archivo CSS
-import { useLocation } from 'react-router-dom';
 
 const FacultadList = ({ isOpen }) => { // Recibimos la prop isOpen
     const [facultades, setFacultades] = useState([]);
