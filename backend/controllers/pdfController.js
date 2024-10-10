@@ -4,6 +4,7 @@ const path = require('path');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
 const multer = require('multer');
+const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 
 // Configuración de multer
 const storage = multer.diskStorage({

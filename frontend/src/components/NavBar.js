@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { Collapse, Nav, NavLink, DropdownItem, Button, UncontrolledDropdown, DropdownToggle, DropdownMenu } from 'reactstrap';
-import { FiMenu } from 'react-icons/fi';
+import { FiMenu, FiUser, FiLogOut, FiHome, FiBook, FiSettings } from 'react-icons/fi';
 import '../styles/Sidebar.css';
 
-const NavBar = ({ onLogout }) => { // Elimina `toggleSidebar` aquí
+const NavBar = ({ onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [role, setRole] = useState(''); // rol del usuario
+    const [role, setRole] = useState('');
     const location = useLocation();
     
     useEffect(() => {
@@ -63,12 +63,12 @@ const NavBar = ({ onLogout }) => { // Elimina `toggleSidebar` aquí
                 <>
                     <nav className={`sidebar ${isOpen ? 'open' : ''}`} id="sidebar">
                         {isOpen && (
-                            <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="navbar-logo" />
-                        )}
-                        {isOpen && (
-                            <div className="navbar-brand-custom">
-                                Gestión de <br /> Convocatorias
-                            </div>
+                            <header className="sidebar-header">
+                                <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="navbar-logo" />
+                                <div className="navbar-brand-custom">
+                                    Gestión de <br /> Convocatorias
+                                </div>
+                            </header>
                         )}
                         <Collapse isOpen={isOpen} navbar>
                             <Nav vertical navbar className="sidebar-nav">
@@ -76,16 +76,20 @@ const NavBar = ({ onLogout }) => { // Elimina `toggleSidebar` aquí
                                 {(role === 'admin' || role === 'vicerrectorado') && (
                                     <>
                                         <NavLink tag={Link} to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>
-                                            <span className="nav-text">Facultades</span>
+                                            <FiHome className="nav-icon" />
+                                            {isOpen && <span className="nav-text">Facultades</span>}
                                         </NavLink>
                                         <NavLink tag={Link} to="/carreras" className={location.pathname === '/carreras' ? 'active' : ''}>
-                                            <span className="nav-text">Carreras</span>
+                                            <FiBook className="nav-icon" />
+                                            {isOpen && <span className="nav-text">Carreras</span>}
                                         </NavLink>
                                         <NavLink tag={Link} to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>
-                                            <span className="nav-text">Tipo de Convocatorias</span>
+                                            <FiUser className="nav-icon" />
+                                            {isOpen && <span className="nav-text">Tipo de Convocatorias</span>}
                                         </NavLink>
                                         <NavLink tag={Link} to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>
-                                            <span className="nav-text">Materias</span>
+                                            <FiSettings className="nav-icon" />
+                                            {isOpen && <span className="nav-text">Materias</span>}
                                         </NavLink>
                                     </>
                                 )}

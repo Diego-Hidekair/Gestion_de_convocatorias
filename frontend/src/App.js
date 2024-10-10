@@ -51,7 +51,7 @@ const App = () => {
 
 const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isOpen, setIsOpen] = useState(false); // Agrega un estado para el sidebar
+    const [isOpen, setIsOpen] = useState(false); 
     const [userRole, setUserRole] = useState('');
     const navigate = useNavigate();
 
@@ -108,13 +108,6 @@ const AuthWrapper = () => {
     return (
         <div 
             className={`container-main ${isOpen ? 'open' : ''}`}
-            style={{
-                backgroundImage: `url("/imagenes/d6f30bb4-efe2-4c9f-8900-f40c398868dd.jpg")`, // Aplica la imagen de fondo
-                backgroundSize: 'cover',
-                backgroundColor: 'rgba(21, 104, 167, 0.7)',
-                backgroundBlendMode: 'overlay', // Hace que el color sea visible en la capa superior
-                color: 'white',
-            }}
         >
             <div className="background-shape"></div>
             {isAuthenticated ? (

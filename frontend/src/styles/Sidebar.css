@@ -2,12 +2,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-/* Sidebar o NavBar */
 .sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 80px; /* Ajusta el ancho para cuando esté cerrada */
+    width: 80px;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7); 
     transition: width 0.3s ease-in-out;
@@ -15,28 +14,49 @@
     padding-top: 1.5rem;
     box-shadow: 5px 0 5px rgba(0, 0, 0, 0.3);
     font-family: 'Roboto', sans-serif;
-    overflow: hidden; /* Ocultar el contenido cuando esté cerrada */
+    overflow: hidden;
 }
+
+
+.sidebar .navbar-logo {
+    opacity: 1;
+}
+
+/* Ocultar texto de los enlaces cuando la sidebar está cerrada */
+.sidebar .nav-text {
+    display: inline; 
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
 /* Imagen del logo */
 .navbar-logo {
-    width: 100px; /* Tamaño reducido de la imagen */
+    width: 100px;
     margin: 10px auto;
     display: block;
     transition: opacity 0.3s ease-in-out;
 }
 
-
 .sidebar .navbar-logo {
-    opacity: 0; /* Oculta la imagen cuando el sidebar está cerrado */
+    opacity: 0;
 }
 
 .sidebar.open .navbar-logo {
-    opacity: 1; /* Muestra la imagen cuando el sidebar está abierto */
+    opacity: 1;
 }
 
+/* Ocultar texto de los enlaces cuando la sidebar está cerrada */
+.sidebar .nav-text {
+    display: none; /* Ocultar texto cuando esté cerrada */
+} 
 /* Icono del enlace */
 .nav-icon {
-    display: block; /* Muestra los iconos cuando el sidebar está cerrado */
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 10px;
 }
 
 .sidebar.open .nav-icon {
@@ -55,18 +75,16 @@
 
 /* Ocultar texto de los enlaces cuando la sidebar está cerrada */
 .sidebar.open .nav-text {
-    display: inline; /* Mostrar texto cuando esté abierta */
+    display: inline; 
 }
 
 .nav-text {
     display: none; /* Ocultar texto cuando esté cerrada */
 }
 
-/* Icono del enlace */
+/* Ajustes para mostrar íconos cuando la sidebar está cerrada */
 .sidebar .nav-icon {
-    font-size: 1.5rem;
-    color: rgba(255, 255, 255, 0.8);
-    display: block;
+    display: inline;
     text-align: center;
     margin-bottom: 1rem;
 }
@@ -98,7 +116,6 @@
     left: 0px; 
     z-index: 1100;
 }
-
 
 .toggle-button {
     background-color: transparent;

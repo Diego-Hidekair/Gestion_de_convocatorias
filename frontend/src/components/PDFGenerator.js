@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import axios from 'axios';
-const { PDFDocument: PDFLibDocument } = require('pdf-lib');
-
 
 const PDFGenerator = () => {
   const { id_convocatoria, id_honorario } = useParams();
@@ -17,7 +15,7 @@ const PDFGenerator = () => {
   useEffect(() => {
     const generarPDF = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
+        await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
         setPdfUrl(`http://localhost:5000/pdfs/convocatoria_${id_convocatoria}.pdf`);
         setLoading(false);
       } catch (error) {
