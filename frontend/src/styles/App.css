@@ -4,7 +4,7 @@
     background-color: rgba(21, 104, 167, 0.7); 
     background-image: url("/public/imagenes/d6f30bb4-efe2-4c9f-8900-f40c398868dd.jpg");
     background-size: cover;
-    background-position: center; /* Opcional: centra la imagen */
+    background-position: center; 
     background-repeat: no-repeat;
     color: white;
     margin: 0;

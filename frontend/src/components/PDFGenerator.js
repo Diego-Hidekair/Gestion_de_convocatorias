@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import axios from 'axios';
+const { PDFDocument: PDFLibDocument } = require('pdf-lib');
+
 
 const PDFGenerator = () => {
   const { id_convocatoria, id_honorario } = useParams();
@@ -37,24 +39,24 @@ const PDFGenerator = () => {
     const formData = new FormData();
     if (files.resolucion) formData.append('resolucion_path', files.resolucion);
     if (files.dictamen) formData.append('dictamen_path', files.dictamen);
-    if (files.otrosDocumentos) formData.append('carta_path', files.otrosDocumentos);  // Cambié el nombre a carta_path
+    if (files.otrosDocumentos) formData.append('carta_path', files.otrosDocumentos);  // Asegúrate de que coincida con 'carta_path'
 
     try {
-      const response = await axios.post(`http://localhost:5000/pdf/combinar/${id_convocatoria}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+        const response = await axios.post(`http://localhost:5000/pdf/combinar/${id_convocatoria}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
 
-      if (response.status === 200) {
-        // Navegar al visor del PDF combinado
-        navigate(`/pdf/view/${id_convocatoria}`);
-      } else {
-        throw new Error('Error al combinar documentos');
-      }
+        if (response.status === 200) {
+            // Navegar al visor del PDF combinado
+            navigate(`/pdf/view/${id_convocatoria}`);
+        } else {
+            throw new Error('Error al combinar documentos');
+        }
     } catch (error) {
-      console.error('Error al combinar documentos:', error);
-      setError('Error al combinar documentos.');
+        console.error('Error al combinar documentos:', error);
+        setError('Error al combinar documentos.');
     }
-  };
+};
 
   return (
     <div style={{ display: 'flex' }}>

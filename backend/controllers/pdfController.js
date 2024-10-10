@@ -326,7 +326,7 @@ exports.combinePDFs = [
 
             res.status(200).json({ message: 'PDF combinado con éxito', combinedPDFPath });
         } catch (error) {
-            console.error('Error combinando los PDFs:', error);
+            console.error('Error combinando los PDFs:', error); // Mensaje de error más detallado
             res.status(500).json({ error: 'Error combinando los PDFs' });
         }
     }
