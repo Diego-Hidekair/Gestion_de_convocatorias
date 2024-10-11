@@ -17,10 +17,6 @@
     padding-left: 80px; /* Ancho del sidebar cerrado */
 }
 
-/* Estilo para el texto de la lista */
-.text-center {
-    color: #2e3830; /* Color del texto del título */
-}
 
 /* Estilo para los botones */
 .custom-button {

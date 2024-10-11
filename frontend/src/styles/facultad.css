@@ -32,11 +32,27 @@
     color: #000;
 }
 
+.create-button{
+    color:#ffffff;
+    background-color: #0e6b28;
+    border-color: #3dc063;
+    border-radius: 2rem;
+}
+    
+
+.create-button:hover{
+    color:#ffffff;
+    background-color: #3dc063;
+    border-color: #0e6b28;
+    border-radius: 2rem;
+}
+
+
 /* Estilo para los botones */
 .custom-button {
-    color: white; /* Color del texto en los botones */
-    transition: all 0.3s ease; /* Transición suave para el hover */
-    margin: 0 5px; /* Espacio entre botones */
+    color: white; 
+    transition: all 0.3s ease; 
+    margin: 0 5px; 
 }
 
 .custom-button:hover {
@@ -47,10 +63,24 @@
 
 /* Estilo para los grupos de botones */
 .button-group {
-    display: flex; /* Alinear botones en fila */
-    justify-content: center; /* Centrar los botones */
+    display: flex; 
+    justify-content: center; 
 }
 
+.header-rectangle {
+    background-color: rgba(0, 48, 73, 0.8); /* Color de fondo */
+    padding: 20px; /* Espaciado interno */
+    border-radius: 2rem; /* Bordes redondeados (opcional) */
+    margin-bottom: 20px; /* Espaciado inferior */
+    text-align: center; /* Centrar el texto */
+    
+}
+
+.title-facultad  {
+    color: #fff; 
+    font-size: 2rem; 
+    font-weight: bold; 
+}
 
 
 

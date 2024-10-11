@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
-import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
-import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
-import '../styles/facultad.css'; // Importa el nuevo archivo CSS
+import { BsTrashFill } from "react-icons/bs";
+import { PiPencilLineBold } from "react-icons/pi";
+import '../styles/facultad.css';
 
-const FacultadList = ({ isOpen }) => { // Recibimos la prop isOpen
+const FacultadList = ({ isOpen }) => {
     const [facultades, setFacultades] = useState([]);
 
     useEffect(() => {
@@ -32,16 +32,14 @@ const FacultadList = ({ isOpen }) => { // Recibimos la prop isOpen
     };
 
     return (
-        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
+        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+            <div className="header-rectangle">
+                <h1 className="text-center title-facultad">Lista de Facultades</h1>
+            </div>
             <Container className="container-list">
-                <Row className="mb-4">
-                    <Col>
-                        <h1 className="text-center title-facultad">Lista de Facultades</h1>
-                    </Col>
-                </Row>
                 <Row className="mb-3">
                     <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/facultades/new" className="create-button">
+                        <Button color="primary"  tag={Link} to="/facultades/new" className="create-button">
                             Crear Nueva Facultad
                         </Button>
                     </Col>

@@ -46,7 +46,7 @@
 
 /* Estilo para los botones */
 .custom-button {
-    color: white; /* Color del texto en los botones */
+    color: white; 
     transition: all 0.3s ease; /* Transición suave para el hover */
     margin: 0 5px; /* Espacio entre botones */
 }
