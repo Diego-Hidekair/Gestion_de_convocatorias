@@ -27,13 +27,13 @@ import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
-import NavBar from './components/NavBar';
 import UsuarioList from './components/UsuarioList';
 import UsuarioForm from './components/UsuarioForm';
 import UsuarioEdit from './components/UsuarioEdit';
 import UsuarioPerfil from './components/UsuarioPerfil';
 import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
+import NavBar from './components/NavBar';
 import PDFGenerator from './components/PDFGenerator';
 import PDFViewer from './components/PDFViewer';
 import './styles/App.css';
@@ -101,15 +101,13 @@ const AuthWrapper = () => {
         setIsAuthenticated(false);
         navigate('/login');
     };
+    
     const toggleSidebar = () => {
         setIsOpen(!isOpen); 
     };
-
     return (
-        <div 
-            className={`container-main ${isOpen ? 'open' : ''}`}
-        >
-            <div className="background-shape"></div>
+        <div className={`app-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+            <div className="background-app"></div>
             {isAuthenticated ? (
                 <>
                     <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} />
@@ -149,7 +147,7 @@ const AuthWrapper = () => {
                     </Routes>
                 </>
             ) : (
-            <Routes>
+                <Routes>
                     <Route path="/login" element={<Login setAuth={handleLogin} />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="*" element={<Navigate to="/login" />} />

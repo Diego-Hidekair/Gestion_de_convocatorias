@@ -1,64 +1,79 @@
 /* frontend/src/styles/carrera.css */
-
-/* Contenedor principal de la lista de carreras */
-.facultad-list-container {
-    min-height: 100vh; /* Asegura que el contenedor ocupe al menos la altura de la pantalla */
-    padding-left: 80px; /* Espacio por defecto igual al ancho del sidebar cerrado */
-    padding-right: 20px; /* Espacio a la derecha, puedes ajustarlo */
-    background-color: rgba(0, 48, 73, 0.1); /* Color de fondo semitransparente */
-    transition: padding-left 0.3s ease-in-out; /* Animación suave al cambiar el padding */
+@import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400&display=swap');
+/* Aquí puedes definir la fuente de Verona si la tienes o encontrar una alternativa */
+/* Estilo para el contenedor principal */
+.carrera-list-container {
+    padding: 20px;
+    transition: padding-left 0.3s ease;
 }
 
-.container-list 
-{
-    background-color: #fffff0;
-    border-radius: 3%;
-    padding: 2rem;
-
-}
-.d-flex{
-    background-color: rgba(190, 46, 46, 0.5);
-    color: black;
+/* Rectángulo para el título */
+.titulo-carrera-rectangulo {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0,0,0,0.2));
+    padding: 15px 20px;
+    text-align: center;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
 }
 
-
-/* Estilo para el contenedor cuando el sidebar está abierto */
-.facultad-list-container.sidebar-open {
-    padding-left: 250px; /* Espacio igual al ancho del sidebar abierto */
+.text-center-carrera {
+    font-family: 'Arvo', serif;
+    font-size: 3rem;
+    color: white;
 }
 
-/* Estilo para el contenedor cuando el sidebar está cerrado */
-.facultad-list-container.sidebar-closed {
-    padding-left: 80px; /* Mantiene el padding de 80px cuando el sidebar está cerrado */
+/* Estilo para el botón de crear */
+.create-button-carrera {
+    color: white;
+    background-color: #0d234a;
+    border: none;
+    font-family: 'Verona', sans-serif;
+    font-size: 20px;
+    transition: all 0.3s ease;
 }
 
-/* Estilo para las tarjetas de carreras */
-.card-custom {
-    background-color: rgba(173, 17, 3, 0.5); /* Color rojo semitransparente */
-    border: none; /* Sin borde */
-    transition: transform 0.3s ease; /* Animación para el hover */
+.create-button-carrera:hover {
+    background-color: white;
+    color: #0d234a;
+    
 }
 
-/* Estilo para el texto de las tarjetas */
-.facultad-name {
-    color: white; /* Color del texto blanco */
+/* Estilo para las tarjetas de carrera */
+.cuadro-carrera {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo para los botones */
-.custom-button {
-    color: white; 
-    transition: all 0.3s ease; /* Transición suave para el hover */
-    margin: 0 5px; /* Espacio entre botones */
+.body-carrera {
+    background-color: #d8747e; /* Rojo que combina con el azul */
+    border-radius: 10px;
+    padding: 20px;
 }
 
-.custom-button:hover {
-    background-color: rgba(0, 0, 0, 0.1); /* Cambiar fondo al pasar el mouse */
-    color: black; /* Cambiar el color del texto a negro */
-    transform: scale(1.05); /* Aumentar el tamaño del botón */
+.text-center-carrera {
+    font-family: 'Verona', sans-serif;
+    color: white;
+    font-size: 1.2rem;
 }
 
-/* Estilo para los grupos de botones */
-.button-group {
-    display: flex; /* Alinear botones en fila */
-    justify-content: center; /* Centrar los botones */
+.boton-grupo-carrera {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+/* Estilo para los botones dentro de las tarjetas */
+.custom-button-carrera {
+    color: white;
+    background-color: #0d234a;
+    border: none;
+    font-family: 'Verona', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.custom-button-carrera:hover {
+    background-color: white;
+    color: #0d234a;
 }

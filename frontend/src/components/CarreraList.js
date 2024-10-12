@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
-import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
-import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
+import { BsTrashFill } from "react-icons/bs";
+import { PiPencilLineBold } from "react-icons/pi";
 import '../styles/carrera.css';
 
 const CarreraList = ({ isOpen }) => { 
@@ -32,16 +32,14 @@ const CarreraList = ({ isOpen }) => {
     };
 
     return (
-        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
-            <Container className="container-list">
-                <Row className="mb-4">
-                    <Col>
-                        <h1 className="text-center title-facultad">Lista de Carreras</h1>
-                    </Col>
-                </Row>
+        <div className={`carrera-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> 
+            <Container className="contenedor-lista-carrera">
+                <div className="titulo-carrera-rectangulo">
+                    <h1 className="text-center-carrera">Lista de Carreras</h1>
+                </div>
                 <Row className="mb-3">
-                    <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/carreras/new" className="create-button">
+                    <Col className="text-center-carrera">
+                        <Button color="primary" tag={Link} to="/carreras/new" className="create-button-carrera">
                             Crear Nueva Carrera
                         </Button>
                     </Col>
@@ -50,17 +48,17 @@ const CarreraList = ({ isOpen }) => {
                 <Row>
                     {carreras.map((carrera) => (
                         <Col sm="12" md="4" lg="4" key={carrera.id_carrera} className="mb-4">
-                            <Card className="card-custom">
-                                <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center facultad-name">
+                            <Card className="cuadro-carrera">
+                                <CardBody className="body-carrera">
+                                    <CardTitle tag="h5" className="text-center-carrera">
                                         {carrera.nombre_carrera}
                                     </CardTitle>
-                                    <div className="d-flex justify-content-center button-group">
-                                        <Button color="warning" size="sm" tag={Link} to={`/carreras/edit/${carrera.id_carrera}`} className="custom-button">
-                                            <PiPencilLineBold className="icon" /> Editar
+                                    <div className="boton-grupo-carrera">
+                                        <Button color="warning" size="sm" tag={Link} to={`/carreras/edit/${carrera.id_carrera}`} >
+                                            <PiPencilLineBold className="icon-carrera" /> Editar
                                         </Button>
-                                        <Button color="danger" size="sm" onClick={() => handleDelete(carrera.id_carrera)} className="custom-button">
-                                            <BsTrashFill className="icon" /> Eliminar
+                                        <Button color="danger" size="sm" onClick={() => handleDelete(carrera.id_carrera)} >
+                                            <BsTrashFill className="icon-carrera" /> Eliminar
                                         </Button>
                                     </div>
                                 </CardBody>

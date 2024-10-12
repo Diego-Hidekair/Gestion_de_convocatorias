@@ -10,7 +10,23 @@
     margin: 0;
     font-family: 'Roboto', sans-serif;
 }
+/* Contenedor principal que respeta el sidebar */
+.app-container {
+    position: relative;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    min-height: 100vh;
+}
+/* Cuando el sidebar está cerrado */
+.app-container.sidebar-closed {
+    margin-left: 1rem;
+    width: calc(100% - 80px);
+}
 
+/* Cuando el sidebar está abierto */
+.app-container.sidebar-open {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
 /* Contenedor principal que respeta el sidebar */
 .container-main {
     position: relative;
@@ -29,13 +45,13 @@ html, body {
     height: 100%;
 }
 
-.background-shape {
+.background-app {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(21, 104, 167, 0.7); /* Transparencia para ver el fondo */
-    z-index: -1; /* Se asegura de que el fondo quede detrás del contenido */
+    background: rgba(0, 0, 0, 0.0); 
+    z-index: -1; 
 }
 

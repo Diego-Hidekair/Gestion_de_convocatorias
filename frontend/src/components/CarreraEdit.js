@@ -58,16 +58,16 @@ const CarreraEdit = () => {
     }
 
     return (
-        <div className="degraded-background">
-            <Container className="my-5">
-                <Row className="mb-4">
+        <div className="degraded-background-carrera">
+            <Container className="contenerdor-carrera">
+                <Row className="mb-4-carrera">
                     <Col>
-                        <h1 className="text-center">Editar Carrera</h1>
+                        <h1 className="text-center-carrera">Editar Carrera</h1>
                     </Col>
                 </Row>
-                <Row className="justify-content-center">
+                <Row className="contenido-carrera">
                     <Col md={6}>
-                        <div className="card-content">
+                        <div className="nombre-carrera">
                             <Form onSubmit={handleSubmit}>
                                 <FormGroup>
                                     <Label for="nombre_carrera">Nombre de la Carrera</Label>

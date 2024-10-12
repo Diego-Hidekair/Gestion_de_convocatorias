@@ -46,7 +46,7 @@ const Login = ({ setAuth }) => {
             navigate('/redirect');
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
-        }
+        } 
     };
 
     return (
@@ -55,7 +55,7 @@ const Login = ({ setAuth }) => {
                 <img src="/imagenes/logo_login.jpg" alt="Logo" className="login-logo" />
                 <h3 className="login-title">Acceso</h3>
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group mb-3">
+                    <div className="form-group-login">
                         <input 
                             type="text" 
                             name="id" 
@@ -66,7 +66,7 @@ const Login = ({ setAuth }) => {
                             className="form-control" 
                         />
                     </div>
-                    <div className="form-group mb-3">
+                    <div className="form-group-login">
                         <input 
                             type="password" 
                             name="Contraseña" 

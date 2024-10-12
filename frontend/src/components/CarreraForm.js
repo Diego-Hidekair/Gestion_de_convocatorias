@@ -55,25 +55,25 @@ const CarreraForm = () => {
     };
 
     return (
-        <div className="degraded-background">
+        <div className="degraded-background-carrera">
             <Container>
-                <Row className="mb-4">
+                <Row className="mb-4-carrera">
                     <Col>
-                        <h1 className="text-center">Crear Nueva Carrera</h1>
+                        <h1 className="text-center-carera">Crear Nueva Carrera</h1>
                     </Col>
                 </Row>
                 {successMessage && (  // Mostrar el mensaje de éxito si existe
                     <Row>
                         <Col>
-                            <Alert color="success" className="text-center">
+                            <Alert color="success" className="text-center-carrera">
                                 {successMessage}
                             </Alert>
                         </Col>
                     </Row>
                 )}
-                <Row className="justify-content-center">
+                <Row className="justify-content-center-carrera">
                     <Col md={6}>
-                        <div className="card-content">
+                        <div className="cuadro-carrera">
                             <Form onSubmit={handleSubmit}>
                                 <FormGroup>
                                     <Label for="nombre_carrera">Nombre de la Carrera</Label>
@@ -104,7 +104,7 @@ const CarreraForm = () => {
                                         ))}
                                     </Input>
                                 </FormGroup>
-                                <Button color="primary" type="submit" block className="custom-button">
+                                <Button color="primary" type="submit" block className="custom-button-carrera">
                                     Guardar
                                 </Button>
                             </Form>

@@ -1,96 +1,29 @@
 /* frontend/src/styles/facultad.css */
-
-
-/* Contenedor principal de la lista de facultades */
-.facultad-list-container {
-    min-height: 100vh; /* Asegura que el contenedor ocupe al menos la altura de la pantalla */
-    padding-left: 80px; /* Espacio por defecto igual al ancho del sidebar cerrado */
-    padding-right: 20px; /* Espacio a la derecha, puedes ajustarlo */
-    background-color: rgba(0, 48, 73, 0.1); /* Color de fondo semitransparente */
-    transition: padding-left 0.3s ease-in-out; /* Animación suave al cambiar el padding */
-}
-
-/* Estilo para el contenedor cuando el sidebar está abierto */
-.facultad-list-container.sidebar-open {
-    padding-left: 250px; /* Espacio igual al ancho del sidebar abierto */
-}
-
-/* Estilo para el contenedor cuando el sidebar está cerrado */
-.facultad-list-container.sidebar-closed {
-    padding-left: 80px; /* Mantiene el padding de 80px cuando el sidebar está cerrado */
-}
-
-/* Estilo para las tarjetas de facultades */
-.card-custom {
-    background-color: rgba(173, 17, 3, 0.5); 
-    border: none;
-    transition: transform 0.3s ease; /* Animación para el hover */
-}
-
-/* Estilo para el texto de las tarjetas */
-.facultad-name {
-    color: #000;
-}
-
-.create-button{
-    color:#ffffff;
+.create-button {
+    color: #ffffff;
     background-color: #0e6b28;
     border-color: #3dc063;
     border-radius: 2rem;
 }
-    
 
-.create-button:hover{
-    color:#ffffff;
+.create-button:hover {
+    color: #ffffff;
     background-color: #3dc063;
     border-color: #0e6b28;
     border-radius: 2rem;
 }
 
-
-/* Estilo para los botones */
-.custom-button {
-    color: white; 
-    transition: all 0.3s ease; 
-    margin: 0 5px; 
-}
-
-.custom-button:hover {
-    background-color: rgba(0, 0, 0, 0.1); /* Cambiar fondo al pasar el mouse */
-    color: black; /* Cambiar el color del texto a negro */
-    transform: scale(1.05); /* Aumentar el tamaño del botón */
-}
-
-/* Estilo para los grupos de botones */
-.button-group {
-    display: flex; 
-    justify-content: center; 
-}
-
 .header-rectangle {
-    background-color: rgba(0, 48, 73, 0.8); /* Color de fondo */
-    padding: 20px; /* Espaciado interno */
-    border-radius: 2rem; /* Bordes redondeados (opcional) */
-    margin-bottom: 20px; /* Espaciado inferior */
-    text-align: center; /* Centrar el texto */
+    background-color: rgba(0, 48, 73, 0.8);
+    padding: 20px;
+    border-radius: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.title-facultad {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
     
 }
-
-.title-facultad  {
-    color: #fff; 
-    font-size: 2rem; 
-    font-weight: bold; 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-

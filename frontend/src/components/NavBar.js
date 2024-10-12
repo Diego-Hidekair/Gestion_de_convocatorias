@@ -65,7 +65,7 @@ const NavBar = ({ onLogout }) => {
                         {isOpen && (
                             <header className="sidebar-header">
                                 <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="navbar-logo" />
-                                <div className="navbar-brand-custom">
+                                <div className="navbar-titulo">
                                     Gestión de <br /> Convocatorias
                                 </div>
                             </header>
