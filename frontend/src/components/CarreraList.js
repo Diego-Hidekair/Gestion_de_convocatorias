@@ -35,9 +35,9 @@ const CarreraList = ({ isOpen }) => {
         <div className={`carrera-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> 
             <Container className="contenedor-lista-carrera">
                 <div className="titulo-carrera-rectangulo">
-                    <h1 className="text-center-carrera">Lista de Carreras</h1>
+                    <h1 className="text-titulo">Lista de Carreras</h1>
                 </div>
-                <Row className="mb-3">
+                <Row className="mb-3-carrera">
                     <Col className="text-center-carrera">
                         <Button color="primary" tag={Link} to="/carreras/new" className="create-button-carrera">
                             Crear Nueva Carrera
@@ -45,9 +45,9 @@ const CarreraList = ({ isOpen }) => {
                     </Col>
                 </Row>
 
-                <Row>
+                <Row className="cuadros-informacion">
                     {carreras.map((carrera) => (
-                        <Col sm="12" md="4" lg="4" key={carrera.id_carrera} className="mb-4">
+                        <Col sm="12" md="4" lg="4" key={carrera.id_carrera} className="mb-4-carrera">
                             <Card className="cuadro-carrera">
                                 <CardBody className="body-carrera">
                                     <CardTitle tag="h5" className="text-center-carrera">
