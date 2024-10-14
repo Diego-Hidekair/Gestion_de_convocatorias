@@ -7,9 +7,9 @@ const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
-                   tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
-                   ca.nombre_carrera AS nombre_carrera, 
-                   f.nombre_facultad AS nombre_facultad
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                ca.nombre_carrera AS nombre_carrera, 
+                f.nombre_facultad AS nombre_facultad
             FROM convocatorias c
             LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera 
@@ -28,9 +28,9 @@ const getConvocatoriaById = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin, 
-                   tc.nombre_convocatoria AS tipo_convocatoria, 
-                   ca.nombre_carrera AS carrera, 
-                   f.nombre_facultad AS facultad
+                tc.nombre_convocatoria AS tipo_convocatoria, 
+                ca.nombre_carrera AS carrera, 
+                f.nombre_facultad AS facultad
             FROM convocatorias c
             JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             JOIN carrera ca ON c.id_carrera = ca.id_carrera
@@ -53,9 +53,9 @@ const getConvocatoriasByEstado = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
-                   tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
-                   ca.nombre_carrera AS nombre_carrera, 
-                   f.nombre_facultad AS nombre_facultad
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                ca.nombre_carrera AS nombre_carrera, 
+                f.nombre_facultad AS nombre_facultad
             FROM convocatorias c
             LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera
@@ -138,4 +138,3 @@ const deleteConvocatoria = async (req, res) => {
 };
 
 module.exports = { getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado };
- 

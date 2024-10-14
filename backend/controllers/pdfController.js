@@ -131,12 +131,12 @@ exports.generatePDF = async (req, res) => {
                 </p>
                 <p class="notas">
                     Nota.- Se deja claramente establecido que NO podrán participar Profesionales que
-                           presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y 
-                           profesionales que trabajen en instituciones privadas a Tiempo Completo.
+                        presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y 
+                        profesionales que trabajen en instituciones privadas a Tiempo Completo.
                 </p>
                 <p><strong>2.) REQUISITOS MÍNIMOS HABILITANTES INDISPENSABLES:</strong></p>
                 <p><strong>a)</strong> Carta de postulación <strong>(dirigida al señor Rector)</strong>, especificando
-                 el ítem y las asignaturas a la que postula.</p>
+                el ítem y las asignaturas a la que postula.</p>
                 <p><strong>b)</strong> Currículum vitae debidamente documentado, adjuntando fotocopias simples 
                 (incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).
                 La Universidad se reservará el derecho de solicitar la presentación de los documentos originales en cualquier 
@@ -181,16 +181,16 @@ exports.generatePDF = async (req, res) => {
 
                 <p><strong>a)</strong> Producción intelectual (libros, ensayos, folletos, artículos de revistas y otros) que será valorado en el proceso de calificación</p>
                 <p><u>La no presentación de uno de los requisitos MÍNIMOS HABILITANTES, dará lugar a la inhabilitación
-                 de su postulación.</u></p>
+                de su postulación.</u></p>
                 <p>El profesional que resulte ganador tiene la obligación de presentar de manera obligatoria para la firma de contrato, la siguiente documentación:</p>
                 <p>1) Certificado CENVI emitido por el Consejo de la Magistratura.</p>
                 <p>2) Certificado actualizado de no tener antecedentes penales (REJAP) emitido por el Consejo de la
-                 Magistratura.</p>
-                 Se deja claramente establecido que la documentación presentada no será devuelta.
+                Magistratura.</p>
+                Se deja claramente establecido que la documentación presentada no será devuelta.
 
                 <p><strong>4.) HONORARIOS: </strong></p>
                 <p>La consultoría será cancelada con recursos institucionales y/o propios, a partir de fecha fijada en
-                 Contrato con el siguiente detalle:</p>
+                Contrato con el siguiente detalle:</p>
                 <table>
                     <tr>
                         <th>Docente Consultor de Línea</th>
@@ -321,9 +321,9 @@ exports.combinePDFs = [
 
             await pool.query('UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3 WHERE id_convocatoria = $4', 
                 [req.files['resolucion_path'] ? req.files['resolucion_path'][0].path : null,
-                 req.files['dictamen_path'] ? req.files['dictamen_path'][0].path : null,
-                 req.files['carta_path'] ? req.files['carta_path'][0].path : null,
-                 id_convocatoria]);
+                req.files['dictamen_path'] ? req.files['dictamen_path'][0].path : null,
+                req.files['carta_path'] ? req.files['carta_path'][0].path : null,
+                id_convocatoria]);
 
             res.status(200).json({ message: 'PDF combinado con éxito', combinedPDFPath });
         } catch (error) {

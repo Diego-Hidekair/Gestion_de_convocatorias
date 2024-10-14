@@ -64,7 +64,7 @@ const getTipoConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT tc.id_tipoconvocatoria, tc.nombre_convocatoria, 
-                   f.nombre_facultad, c.nombre_carrera
+                f.nombre_facultad, c.nombre_carrera
             FROM tipo_convocatoria tc
             INNER JOIN facultad f ON tc.cod_facultad = f.id_facultad
             INNER JOIN carrera c ON tc.cod_carrera = c.id_carrera

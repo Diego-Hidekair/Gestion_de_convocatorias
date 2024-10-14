@@ -6,8 +6,8 @@ const getHonorarios = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT h.id_honorario, h.id_convocatoria, h.id_tipoconvocatoria, h.pago_mensual,
-                   c.nombre AS nombre_convocatoria, 
-                   tc.nombre_convocatoria AS nombre_tipoconvocatoria
+                c.nombre AS nombre_convocatoria, 
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria
             FROM honorarios h
             LEFT JOIN convocatorias c ON h.id_convocatoria = c.id_convocatoria
             LEFT JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
@@ -26,8 +26,8 @@ const getHonorarioById = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT h.id_honorario, h.id_convocatoria, h.id_tipoconvocatoria, h.pago_mensual,
-                   c.nombre AS nombre_convocatoria, 
-                   tc.nombre_convocatoria AS nombre_tipoconvocatoria
+                c.nombre AS nombre_convocatoria, 
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria
             FROM honorarios h
             LEFT JOIN convocatorias c ON h.id_convocatoria = c.id_convocatoria
             LEFT JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
