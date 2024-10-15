@@ -21,8 +21,8 @@ const pool = new Pool({
 });
 
 pool.connect()
-  .then(() => console.log('Conexión a la base de datos exitosa'))
-  .catch(err => console.error('Error conectando a la base de datos', err));
+.then(() => console.log('Conexión a la base de datos exitosa'))
+.catch(err => console.error('Error conectando a la base de datos', err));
 
 // Middlewares
 app.use(cors({

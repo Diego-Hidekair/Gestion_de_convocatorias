@@ -46,14 +46,14 @@ const getHonorarioById = async (req, res) => {
 
 // Crear un nuevo honorario
 const crearHonorario = async (req, res) => {
-    const { id_convocatoria, id_tipoconvocatoria, pago_mensual } = req.body;
+    const { id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen } = req.body;
     try {
         const result = await pool.query(`
-            INSERT INTO honorarios (id_convocatoria, id_tipoconvocatoria, pago_mensual) 
-            VALUES ($1, $2, $3) RETURNING *
-        `, [id_convocatoria, id_tipoconvocatoria, pago_mensual]);
+            INSERT INTO honorarios (id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *
+        `, [id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen]);
         
-        res.status(201).json(result.rows[0]);  // Enviar el registro recién creado
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error creando honorarios:', error);
         res.status(500).json({ error: 'Error en el servidor' });
@@ -63,12 +63,12 @@ const crearHonorario = async (req, res) => {
 // Actualizar un honorario existente
 const updateHonorario = async (req, res) => {
     const { id } = req.params;
-    const { id_convocatoria, id_tipoconvocatoria, pago_mensual } = req.body;
+    const { id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen } = req.body;
 
     try {
         const result = await pool.query(
-            'UPDATE honorarios SET id_convocatoria = $1, id_tipoconvocatoria = $2, pago_mensual = $3 WHERE id_honorario = $4 RETURNING *',
-            [id_convocatoria, id_tipoconvocatoria, pago_mensual, id]
+            'UPDATE honorarios SET id_convocatoria = $1, id_tipoconvocatoria = $2, pago_mensual = $3, resolucion = $4, dictamen = $5 WHERE id_honorario = $6 RETURNING *',
+            [id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen, id]
         );
 
         if (result.rows.length === 0) {

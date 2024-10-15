@@ -6,7 +6,7 @@ const pdf = require('html-pdf');
 const multer = require('multer');
 const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 
-// Configuración de multer
+// configurar multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join(__dirname, '..', 'pdfs'));
@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Configuración de la base de datos
+// reconocer la base de datos
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -27,9 +27,9 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-// Función para generar el PDF usando HTML
+// aqui se podra generar el Pdf utilizando HTML
 exports.generatePDF = async (req, res) => {
-    const { id_convocatoria } = req.params;
+    const { id_convocatoria, id_honorario } = req.params;
 
     try {
         // Obtener los datos de la convocatoria
@@ -43,11 +43,17 @@ exports.generatePDF = async (req, res) => {
         `, [id_convocatoria]);
 
         const convocatoria = convocatoriaResult.rows[0];
+        console.log(`Convocatoria: ${JSON.stringify(convocatoria)}`);
+        
         if (!convocatoria) {
             return res.status(404).json({ error: "Convocatoria no encontrada" });
         }
 
-        // Obtener las materias asociadas a la convocatoria
+        if (convocatoria.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
+            return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
+        }
+
+         // Obtener las materias asociadas a la convocatoria
         const materiasResult = await pool.query(`
             SELECT m.codigomateria, m.nombre AS materia, cm.total_horas, cm.perfil_profesional, cm.tiempo_trabajo
             FROM convocatoria_materia cm
@@ -59,22 +65,39 @@ exports.generatePDF = async (req, res) => {
         const totalHoras = materias.reduce((sum, m) => sum + m.total_horas, 0);
         const tiempoTrabajo = materias.length > 0 ? materias[0].tiempo_trabajo : 'No definido';
 
-        // Obtener el pago mensual de la tabla honorarios
+        // Datos de la tabla honorarios
         const honorariosResult = await pool.query(`
-            SELECT pago_mensual 
-            FROM honorarios 
-            WHERE id_convocatoria = $1
-        `, [id_convocatoria]);
+            SELECT h.pago_mensual, h.dictamen, h.resolucion, tc.nombre_convocatoria
+            FROM honorarios h
+            JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            WHERE h.id_convocatoria = $1 AND h.id_honorario = $2
+        `, [id_convocatoria, id_honorario]);
+        
+        const honorarios = honorariosResult.rows[0];
 
-        const pagoMensual = honorariosResult.rows[0] ? honorariosResult.rows[0].pago_mensual : 'No definido';
+        if (!honorarios) {
+            return res.status(404).json({ error: "No se encontraron datos de honorarios para esta convocatoria y honorario." });
+        }
 
+        // Definir variables para uso posterior
+        const pagoMensual = honorarios.pago_mensual;
+        const dictamen = honorarios.dictamen;
+        const resolucion = honorarios.resolucion;
+
+        // Validación del tipo de convocatoria
+        if (honorarios.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
+            console.log(`Error: Nombre de convocatoria no coincide. Esperado: 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA', Recibido: '${honorarios.nombre_convocatoria}'`);
+            return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
+        }
+        
+        
         // HTML para el contenido del PDF
         const htmlContent = `
             <html>
             <head>
                 <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0 2cm; }
-                    h1, h2 { text-align: center; }
+                    body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
+                    h1, h2 { text-align: center; text-transform: uppercase; }
                     p { text-align: justify; }
                     .centrado { text-align: center; }
                     .left-align { text-align: left; }
@@ -85,21 +108,19 @@ exports.generatePDF = async (req, res) => {
                     strong { font-weight: bold; }
                     u { text-decoration: underline; }
                 </style>
-
             </head>
             <body>
                 <h1>${convocatoria.nombre}</h1>
                 <h2>${convocatoria.nombre_convocatoria}</h2>
                 <p>
                     Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
-                    mediante Dictamen N° 046; homologado por Resolución del Consejo Facultativo N° 295 
-                    de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
+                    mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
+                    <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
                     ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
-                    como Docente Consultor de Línea a <strong>${tiempoTrabajo}</strong> para la gestión académica ${new Date().getMonth() < 5 ? 1 : 2}/2024.
+                    como Docente Consultor de Línea a <strong>${tiempoTrabajo}</strong> para la gestión académica 
+                    ${new Date().getMonth() < 5 ? 1 : 2}/2024.
                 </p>
-                
-                <h3>Tiempo de trabajo: ${tiempoTrabajo}</h3> <!-- Mostrar el tiempo de trabajo aquí -->
-
+                <h3>Tiempo de trabajo: ${tiempoTrabajo}</h3>
                 <h2>MATERIAS OBJETO DE LA CONVOCATORIA:</h2>
                 <p><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></p>
                 <table>
@@ -122,8 +143,7 @@ exports.generatePDF = async (req, res) => {
                         `).join('')}
                     </tbody>
                 </table>
-                <h3>Total Horas: ${totalHoras}</h3> <!-- Mostrar el total de horas aquí -->
-
+                <h3>Total Horas: ${totalHoras}</h3>
                 <p class="notas">
                     Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por
                     la Universidad Boliviana que cumplan los requisitos mínimos habilitantes de acuerdo al
@@ -131,8 +151,8 @@ exports.generatePDF = async (req, res) => {
                 </p>
                 <p class="notas">
                     Nota.- Se deja claramente establecido que NO podrán participar Profesionales que
-                        presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y 
-                        profesionales que trabajen en instituciones privadas a Tiempo Completo.
+                    presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y 
+                    profesionales que trabajen en instituciones privadas a Tiempo Completo.
                 </p>
                 <p><strong>2.) REQUISITOS MÍNIMOS HABILITANTES INDISPENSABLES:</strong></p>
                 <p><strong>a)</strong> Carta de postulación <strong>(dirigida al señor Rector)</strong>, especificando
@@ -246,18 +266,24 @@ exports.generatePDF = async (req, res) => {
 
                 <p class="centrado"><strong>Vº Bº</strong></p>
 
-                <div style="text-align: right;">
+                <div class="right-aling">
                     <p><strong>M.Sc. Ing. David Soraide Lozano</strong><br/>
                     Vicerrector U.A.T.F.</p>
                 </div>
-            </body>
-
-            
+            </body>    
         </html>
         `;
 
-        // Configuración de opciones de html-pdf
-        const options = { format: 'Letter' };
+        // opciones para ordenar o corregir el html-pdf
+        const options = { 
+            format: 'Letter',
+            border: {
+                top: '4cm',
+                right: '2cm',
+                bottom: '2cm',
+                left: '2cm'
+            }
+        };
 
         // Crear el PDF a partir del HTML
         pdf.create(htmlContent, options).toFile(path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`), async (err, resPdf) => {

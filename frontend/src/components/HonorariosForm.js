@@ -1,5 +1,4 @@
 // frontend/src/components/HonorariosForm.js
- 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,11 +6,13 @@ import { useLocation } from 'react-router-dom';
 
 const HonorariosForm = () => {
     const location = useLocation();
-    const id_materia = location.state?.id_materia || null; // Validación
+    const id_materia = location.state?.id_materia || null;
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
     const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
+    const [resolucion, setResolucion] = useState('');
+    const [dictamen, setDictamen] = useState('');
     const [tiposConvocatorias, setTiposConvocatorias] = useState([]);
     const [error, setError] = useState(null);
 
@@ -25,29 +26,28 @@ const HonorariosForm = () => {
                 setError('Error al obtener los tipos de convocatorias. Por favor, inténtalo más tarde.');
             }
         };
-
         fetchTiposConvocatorias();
     }, []);
 
     // Enviar los datos seleccionados
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!id_convocatoria) {
             setError('No se ha seleccionado una convocatoria.');
             return;
         }
-    
+
         try {
             const response = await axios.post('http://localhost:5000/honorarios', {
                 id_convocatoria,
                 id_tipoconvocatoria: idTipoConvocatoria,
                 pago_mensual: pagoMensual,
+                resolucion: resolucion,
+                dictamen: dictamen
             });
     
-            const { id_honorario } = response.data;  // Guardar el id_honorario generado
-    
-            // Redirigir a la vista de generación de PDF con el id_honorario
+            const { id_honorario } = response.data;
             navigate(`/pdf/generar/${id_convocatoria}/${id_honorario}`);
         } catch (error) {
             console.error('Error creando honorario:', error);
@@ -95,6 +95,28 @@ const HonorariosForm = () => {
                         onChange={(e) => setPagoMensual(e.target.value)}
                         placeholder="Ingrese el pago mensual"
                         required
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Resolución:</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={resolucion}
+                        onChange={(e) => setResolucion(e.target.value)}
+                        placeholder="Ingrese el número de resolución"
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Dictamen:</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={dictamen}
+                        onChange={(e) => setDictamen(e.target.value)}
+                        placeholder="Ingrese el número de dictamen"
                     />
                 </div>
 

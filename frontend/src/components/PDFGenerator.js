@@ -14,19 +14,19 @@ const PDFGenerator = () => {
 
   useEffect(() => {
     const generarPDF = async () => {
-      try {
-        await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
-        setPdfUrl(`http://localhost:5000/pdfs/convocatoria_${id_convocatoria}.pdf`);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error generando el PDF:', error);
-        setError('Error al generar el PDF.');
-        setLoading(false);
-      }
+        try {
+            await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
+            setPdfUrl(`http://localhost:5000/pdfs/convocatoria_${id_convocatoria}.pdf`);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error generando el PDF:', error);
+            setError('Error al generar el PDF.');
+            setLoading(false);
+        }
     };
 
     generarPDF();
-  }, [id_convocatoria, id_honorario]);
+}, [id_convocatoria, id_honorario]);
 
   const handleFileUpload = (e) => {
     const { name, files: selectedFiles } = e.target;
@@ -55,6 +55,7 @@ const PDFGenerator = () => {
         setError('Error al combinar documentos.');
     }
 };
+
 
   return (
     <div style={{ display: 'flex' }}>
