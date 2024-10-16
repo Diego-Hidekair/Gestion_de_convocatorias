@@ -2,15 +2,23 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
-import { BsTrashFill } from "react-icons/bs"; // Ícono de eliminar
-import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
-import '../Global.css';  // Importa el archivo CSS global
+import { Container, Table, Button, Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { BsTrashFill } from "react-icons/bs";
+import { PiPencilLineBold } from "react-icons/pi";
+import { AiOutlineEye, AiOutlineDownload } from "react-icons/ai";
 
 const ConvocatoriaList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
     const [searchBy, setSearchBy] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Función para formatear la fecha
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES');
+    };
 
     useEffect(() => {
         const fetchConvocatorias = async () => {
@@ -33,6 +41,15 @@ const ConvocatoriaList = () => {
         }
     };
 
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
+
+    const handlePreview = (documentPath) => {
+        setPreviewUrl(`http://localhost:5000/${documentPath}`);
+        toggleModal();
+    };
+
     const filteredConvocatorias = convocatorias.filter(convocatoria => {
         if (!searchBy) return true;
         const value = convocatoria[searchBy]?.toString().toLowerCase();
@@ -40,25 +57,17 @@ const ConvocatoriaList = () => {
     });
 
     return (
-        <div >
-            <Container className="container-list">
-                <Row className="mb-4">
-                    <Col>
-                        <h1 className="text-center">Lista de Convocatorias</h1>
-                    </Col>
-                </Row>
-                <Row className="mb-3">
-                    <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/convocatorias/crear">
-                            Crear Nueva Convocatoria
-                        </Button>
-                    </Col>
-                </Row>
-
-                <div className="mb-3">
+        <Container className="container-list">
+            <h1 className="text-center mb-4">Lista de Convocatorias</h1>
+            
+            <div className="mb-3 d-flex justify-content-between">
+                <Button color="primary" tag={Link} to="/convocatorias/crear">
+                    Crear Nueva Convocatoria
+                </Button>
+                
+                <div>
                     <select className="form-select" value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
                         <option value="">Buscar por...</option>
-                        <option value="cod_convocatoria">Código</option>
                         <option value="nombre">Nombre</option>
                         <option value="fecha_inicio">Fecha de Inicio</option>
                         <option value="fecha_fin">Fecha de Fin</option>
@@ -66,31 +75,82 @@ const ConvocatoriaList = () => {
                         <option value="nombre_carrera">Carrera</option>
                         <option value="nombre_facultad">Facultad</option>
                     </select>
+                    <input
+                        type="text"
+                        placeholder="Buscar..."
+                        className="form-control"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
+            </div>
 
-                <Row>
+            <Table striped bordered responsive>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Fecha de Inicio</th>
+                        <th>Fecha de Fin</th>
+                        <th>Usuario</th>
+                        <th>Tipo de Convocatoria</th>
+                        <th>Carrera</th>
+                        <th>Facultad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
                     {filteredConvocatorias.map((convocatoria) => (
-                        <Col sm="12" md="4" lg="4" key={convocatoria.id_convocatoria} className="mb-4">
-                            <Card className="card-custom">
-                                <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center">
-                                        {convocatoria.nombre}
-                                    </CardTitle>
-                                    <div className="d-flex justify-content-between mt-3 button-group">
-                                        <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="custom-button">
-                                            <PiPencilLineBold className="icon" /> Editar
-                                        </Button>
-                                        <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button">
-                                            <BsTrashFill className="icon" /> Eliminar
-                                        </Button>
-                                    </div>
-                                </CardBody>
-                            </Card>
-                        </Col>
+                        <tr key={convocatoria.id_convocatoria}>
+                            <td>{convocatoria.nombre}</td>
+                            <td>{formatDate(convocatoria.fecha_inicio)}</td>
+                            <td>{formatDate(convocatoria.fecha_fin)}</td>
+                            <td>{convocatoria.id_usuario}</td>
+                            <td>{convocatoria.nombre_tipoconvocatoria}</td>
+                            <td>{convocatoria.nombre_carrera}</td>
+                            <td>{convocatoria.nombre_facultad}</td>
+                            <td>{convocatoria.estado}</td>
+                            <td>
+                                <div className="d-flex flex-column align-items-center">
+                                    <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="custom-button mb-1">
+                                        <PiPencilLineBold className="icon" /> Editar
+                                    </Button>
+                                    <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button mb-1">
+                                        <BsTrashFill className="icon" /> Eliminar
+                                    </Button>
+                                    
+                                    {/* Botones de Vista Previa y Descargar */}
+                                    {convocatoria.documento_path && (
+                                        <>
+                                            <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button mb-1">
+                                                <AiOutlineEye className="icon" /> Vista Previa
+                                            </Button>
+                                            <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="custom-button">
+                                                <AiOutlineDownload className="icon" /> Descargar
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </td>
+                        </tr>
                     ))}
-                </Row>
-            </Container>
-        </div>
+                </tbody>
+            </Table>
+
+            {/* Modal para Vista Previa */}
+            <Modal isOpen={isModalOpen} toggle={toggleModal} size="lg">
+                <ModalHeader toggle={toggleModal}>Vista Previa del PDF</ModalHeader>
+                <ModalBody>
+                    {previewUrl && (
+                        <iframe
+                            src={previewUrl}
+                            title="Vista Previa PDF"
+                            style={{ width: '100%', height: '500px' }}
+                        ></iframe>
+                    )}
+                </ModalBody>
+            </Modal>
+        </Container>
     );
 };
 

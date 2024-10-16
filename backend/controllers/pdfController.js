@@ -6,7 +6,7 @@ const pdf = require('html-pdf');
 const multer = require('multer');
 const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 
-// configurar multer
+// Configuración de multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join(__dirname, '..', 'pdfs'));
@@ -17,8 +17,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
-// reconocer la base de datos
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -43,12 +41,11 @@ exports.generatePDF = async (req, res) => {
         `, [id_convocatoria]);
 
         const convocatoria = convocatoriaResult.rows[0];
-        console.log(`Convocatoria: ${JSON.stringify(convocatoria)}`);
-        
+
         if (!convocatoria) {
             return res.status(404).json({ error: "Convocatoria no encontrada" });
         }
-
+        // Validación de tipo de convocatoria si es necesario
         if (convocatoria.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
             return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
         }
@@ -92,6 +89,7 @@ exports.generatePDF = async (req, res) => {
         
         
         // HTML para el contenido del PDF
+        
         const htmlContent = `
             <html>
             <head>
@@ -274,8 +272,8 @@ exports.generatePDF = async (req, res) => {
         </html>
         `;
 
-        // opciones para ordenar o corregir el html-pdf
-        const options = { 
+        // Opciones de formato del PDF
+        const options = {
             format: 'Letter',
             border: {
                 top: '4cm',
@@ -285,17 +283,17 @@ exports.generatePDF = async (req, res) => {
             }
         };
 
-        // Crear el PDF a partir del HTML
-        pdf.create(htmlContent, options).toFile(path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`), async (err, resPdf) => {
-            if (err) return console.log(err);
+        // Genera el PDF y lo guarda
+        const pdfPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`);
+        pdf.create(htmlContent, options).toFile(pdfPath, async (err, resPdf) => {
+            if (err) return res.status(500).json({ error: 'Error generando el PDF' });
 
-            const pdfPath = resPdf.filename;
+            // Actualiza la base de datos con la ruta del PDF generado
+            await pool.query(`
+                UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2
+            `, [`pdfs/convocatoria_${id_convocatoria}.pdf`, id_convocatoria]);
 
-            // Actualizar la base de datos con la ruta del PDF generado
-            await pool.query('UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2', [pdfPath, id_convocatoria]);
-
-            // Enviar respuesta al cliente
-            res.status(200).json({ message: 'PDF generado con éxito', pdfPath });
+            res.status(200).json({ message: 'PDF generado y guardado con éxito', pdfPath });
         });
 
     } catch (error) {
@@ -319,7 +317,6 @@ exports.combinePDFs = [
             const basePDFBytes = fs.readFileSync(basePDFPath);
             const basePDFDoc = await PDFLibDocument.load(basePDFBytes);
 
-            // Verifica y carga los PDFs adicionales
             if (req.files['resolucion_path']) {
                 const resolucionBytes = fs.readFileSync(req.files['resolucion_path'][0].path);
                 const resolucionDoc = await PDFLibDocument.load(resolucionBytes);
@@ -353,7 +350,7 @@ exports.combinePDFs = [
 
             res.status(200).json({ message: 'PDF combinado con éxito', combinedPDFPath });
         } catch (error) {
-            console.error('Error combinando los PDFs:', error); // Mensaje de error más detallado
+            console.error('Error combinando los PDFs:', error); 
             res.status(500).json({ error: 'Error combinando los PDFs' });
         }
     }

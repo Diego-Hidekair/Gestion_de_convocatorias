@@ -6,14 +6,23 @@ const pool = require('../db');
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT c.id_convocatoria, c.cod_convocatoria, c.nombre, c.fecha_inicio, c.fecha_fin,
+            SELECT 
+                c.id_convocatoria, 
+                c.cod_convocatoria, 
+                c.nombre, 
+                c.fecha_inicio, 
+                c.fecha_fin, 
+                c.id_usuario, 
+                c.estado,
                 tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
                 ca.nombre_carrera AS nombre_carrera, 
-                f.nombre_facultad AS nombre_facultad
+                f.nombre_facultad AS nombre_facultad,
+                d.documento_path  
             FROM convocatorias c
             LEFT JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN carrera ca ON c.id_carrera = ca.id_carrera 
             LEFT JOIN facultad f ON c.id_facultad = f.id_facultad
+            LEFT JOIN documentos d ON d.id_convocatoria = c.id_convocatoria 
             ORDER BY c.cod_convocatoria
         `);
         res.json(result.rows);
