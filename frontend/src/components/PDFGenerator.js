@@ -9,87 +9,94 @@ const PDFGenerator = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [files, setFiles] = useState({ resolucion: null, dictamen: null, otrosDocumentos: null });
+  const [files, setFiles] = useState({ resolucion: null, dictamen: null, carta: null });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const generarPDF = async () => {
-        try {
-            await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
-            setPdfUrl(`http://localhost:5000/pdfs/convocatoria_${id_convocatoria}.pdf`);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error generando el PDF:', error);
-            setError('Error al generar el PDF.');
-            setLoading(false);
-        }
+// Función para generar el PDF inicial
+useEffect(() => {
+  const generarPDF = async () => {
+    try {
+      await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
+      setPdfUrl(`http://localhost:5000/pdf/view/${id_convocatoria}`);
+      setLoading(false);
+      console.log('PDF generado correctamente.');
+      } catch (error) {
+        console.error('Error generando el PDF:', error);
+        setError('Error al generar el PDF.');
+        setLoading(false);
+      }
     };
-
     generarPDF();
-}, [id_convocatoria, id_honorario]);
+  }, [id_convocatoria, id_honorario]);
+  console.log('ID Convocatoria:', id_convocatoria);
+console.log('ID Honorario:', id_honorario);
 
+
+  // Manejar la carga de archivos
   const handleFileUpload = (e) => {
     const { name, files: selectedFiles } = e.target;
     setFiles((prevFiles) => ({ ...prevFiles, [name]: selectedFiles[0] }));
+    console.log('Archivo subido:', name, selectedFiles[0]);
   };
 
-  const handleGenerateDocument = async () => {
-    const formData = new FormData();
-    if (files.resolucion) formData.append('resolucion_path', files.resolucion);
-    if (files.dictamen) formData.append('dictamen_path', files.dictamen);
-    if (files.otrosDocumentos) formData.append('carta_path', files.otrosDocumentos);  // Asegúrate de que coincida con 'carta_path'
+ // Función para combinar el PDF con documentos adicionales
+ const handleGenerateDocument = async () => {
+  const formData = new FormData();
+  if (files.resolucion) formData.append('resolucion_path', files.resolucion);
+  if (files.dictamen) formData.append('dictamen_path', files.dictamen);
+  if (files.carta) formData.append('carta_path', files.carta);
+  console.log('Archivos para combinar:', files);
 
-    try {
-        const response = await axios.post(`http://localhost:5000/pdf/combinar/${id_convocatoria}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-
-        if (response.status === 200) {
-            // Navegar al visor del PDF combinado
-            navigate(`/pdf/view/${id_convocatoria}`);
-        } else {
-            throw new Error('Error al combinar documentos');
-        }
-    } catch (error) {
-        console.error('Error al combinar documentos:', error);
-        setError('Error al combinar documentos.');
-    }
+  try {
+    await axios.post(`http://localhost:5000/pdf/combine/${id_convocatoria}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    console.log('PDF combinado correctamente.');
+    navigate(`/pdf/view/${id_convocatoria}`);
+  } catch (error) {
+    console.error('Error combinando el PDF:', error);
+    setError('Error al combinar el PDF.');
+  }
 };
 
+if (loading) {
+  return <Spinner color="primary" />;
+}
 
-  return (
-    <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1 }}>
-        {loading ? (
-          <Spinner color="primary">Loading...</Spinner>
-        ) : error ? (
-          <p>{error}</p>
-        ) : pdfUrl ? (
-          <iframe src={pdfUrl} width="100%" height="500px" title="Vista previa PDF"></iframe>
-        ) : (
-          <p>No se pudo cargar el PDF.</p>
-        )}
-      </div>
-      <div style={{ flex: 1, marginLeft: '20px' }}>
-        <h3>Subir documentos</h3>
-        <div>
-          <label>Subir Resolución:</label>
-          <input type="file" name="resolucion" onChange={handleFileUpload} />
-        </div>
-        <div style={{ marginTop: '10px' }}>
-          <label>Subir Dictamen:</label>
-          <input type="file" name="dictamen" onChange={handleFileUpload} />
-        </div>
-        <div style={{ marginTop: '10px' }}>
-          <label>Otros Documentos:</label>
-          <input type="file" name="otrosDocumentos" onChange={handleFileUpload} />
-        </div>
-        <div style={{ marginTop: '20px' }}>
-          <button onClick={handleGenerateDocument}>Generar Documento</button>
-        </div>
-      </div>
+if (error) {
+  return <div>{error}</div>;
+}
+
+
+return (
+  <div>
+    <h1>Generador y combinador de PDF</h1>
+    
+    <iframe
+      title="Vista previa del PDF"
+      src={pdfUrl}
+      width="100%"
+      height="500px"
+      frameBorder="0"
+    ></iframe>
+    
+    <div>
+      <label>
+        Resolución:
+        <input type="file" name="resolucion" onChange={handleFileUpload} />
+      </label>
+      <label>
+        Dictamen:
+        <input type="file" name="dictamen" onChange={handleFileUpload} />
+      </label>
+      <label>
+        Otros Documentos (Carta):
+        <input type="file" name="carta" onChange={handleFileUpload} />
+      </label>
+      <button onClick={handleGenerateDocument}>Generar Documento Final</button>
     </div>
-  );
+  </div>
+);
 };
 
 export default PDFGenerator;
