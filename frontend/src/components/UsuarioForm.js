@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const UsuarioForm = () => {
     const [usuario, setUsuario] = useState({
-        id: '',
+        id_usuario: '',  
         Nombres: '',
         Apellido_paterno: '',
         Apellido_materno: '',
@@ -29,11 +29,9 @@ const UsuarioForm = () => {
             const response = await axios.post('http://localhost:5000/usuarios', usuario, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
-            // Asegúrate de que la respuesta sea exitosa
             if (response.status === 201) {
-                // Reiniciar el estado del usuario para limpiar el formulario
                 setUsuario({
-                    id: '',
+                    id_usuario: '', 
                     Nombres: '',
                     Apellido_paterno: '',
                     Apellido_materno: '',
@@ -41,7 +39,6 @@ const UsuarioForm = () => {
                     Contraseña: '',
                     Celular: ''
                 });
-                // Redirigir con mensaje
                 navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } }); 
             }
         } catch (error) {
@@ -55,8 +52,8 @@ const UsuarioForm = () => {
             <h2>Crear Usuario</h2>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                    <label>id de ingreso</label>
-                    <input type="text" className="form-control" name="id" value={usuario.id} onChange={handleChange} required />
+                    <label>ID de Usuario</label> {/* Cambio aquí */}
+                    <input type="text" className="form-control" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required /> {/* Cambio aquí */}
                 </div>
 
                 <div className="mb-3">
@@ -74,7 +71,7 @@ const UsuarioForm = () => {
                 <div className="mb-3">
                     <label>Rol</label>
                     <select className="form-control" name="Rol" value={usuario.Rol} onChange={handleChange} required>
-                        <option value="">Seleccione rol</option> {/* Opción predeterminada */}
+                        <option value="">Seleccione rol</option>
                         <option value="admin">Admin</option>
                         <option value="usuario">Usuario</option>
                         <option value="secretaria">Secretaria</option>

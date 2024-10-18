@@ -20,9 +20,9 @@ axios.interceptors.request.use(
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
-        id: '',
+        id_usuario: '',
         Contraseña: ''
-    });
+    }); 
 
     const navigate = useNavigate();
 
@@ -56,15 +56,15 @@ const Login = ({ setAuth }) => {
                 <h3 className="login-title">Acceso</h3>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group-login">
-                        <input 
-                            type="text" 
-                            name="id" 
-                            placeholder="ID" 
-                            value={formData.id} 
-                            onChange={handleChange} 
-                            required 
-                            className="form-control" 
-                        />
+                    <input 
+                        type="text" 
+                        name="id_usuario" 
+                        placeholder="ID de Usuario" 
+                        value={formData.id_usuario} 
+                        onChange={handleChange} 
+                        required 
+                        className="form-control" 
+                    />
                     </div>
                     <div className="form-group-login">
                         <input 

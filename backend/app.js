@@ -7,11 +7,10 @@ const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
 
-
-// Importar el middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
+const usuarioRoutes = require('./routes/usuarioRoutes');
 
-// Configuración de la base de datos
+// base de datos para reconocer de mejor manera
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -21,8 +20,8 @@ const pool = new Pool({
 });
 
 pool.connect()
-.then(() => console.log('Conexión a la base de datos exitosa'))
-.catch(err => console.error('Error conectando a la base de datos', err));
+    .then(() => console.log('Conexión a la base de datos exitosa'))
+    .catch(err => console.error('Error conectando a la base de datos', err));
 
 // Middlewares
 app.use(cors({
@@ -33,13 +32,11 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
-
-
-// Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
+app.use('/usuarios', usuarioRoutes); 
 
-// Importar las rutas
+// Otras rutas
 const routes = [
     { path: '/facultades', route: './routes/facultadRoutes' },
     { path: '/carreras', route: './routes/carreraRoutes' },
@@ -50,14 +47,11 @@ const routes = [
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
-    { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/honorarios', route: './routes/honorariosRoutes' }
 ];
 
-// Usar las rutas
 routes.forEach(r => app.use(r.path, require(r.route)));
 
-// Middleware para rutas no encontradas
 app.use((req, res, next) => {
     res.status(404).json({ error: "Ruta no encontrada" });
 });
@@ -67,9 +61,18 @@ app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
 });
 
-// Ruta protegida para obtener el perfil del usuario autenticado
-app.get('/usuarios/me', authenticateToken, (req, res) => {
-    res.json(req.user);
+// Manejador de errores global
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
+});
+
+// verificar la conexión
+routes.forEach(r => app.use(r.path, require(r.route)));
+
+// Middleware para rutas no encontradas
+app.use((req, res, next) => {
+    res.status(404).json({ error: "Ruta no encontrada" });
 });
 
 // Manejador de errores global

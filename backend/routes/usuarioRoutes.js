@@ -4,14 +4,11 @@ const router = express.Router();
 const { createUser, getUsuarios, deleteUser, updateUser, getCurrentUser, getUsuarioById } = require('../controllers/usuarioController');
 const { authenticateToken, authorizeAdmin } = require('../middleware/authMiddleware');
 
-// Rutas para la gestión de usuarios
-router.get('/', authenticateToken, authorizeAdmin, getUsuarios); // Lista de usuarios protegida
-router.get('/:id', authenticateToken, getUsuarioById); // Usuario por ID protegido
-router.post('/', authenticateToken, authorizeAdmin, createUser); // Crear usuario protegido
-router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser); // Eliminar usuario protegido
-router.put('/:id', authenticateToken, authorizeAdmin, updateUser); // Actualizar usuario protegido
-router.get('/me', authenticateToken, getCurrentUser); // Obtener el usuario actual protegido
+router.get('/me', authenticateToken, getCurrentUser);
+router.get('/', authenticateToken, authorizeAdmin, getUsuarios);
+router.get('/:id', authenticateToken, getUsuarioById);
+router.post('/', authenticateToken, authorizeAdmin, createUser);
+router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser);
+router.put('/:id', authenticateToken, authorizeAdmin, updateUser);
 
 module.exports = router;
-
-
