@@ -83,7 +83,7 @@ const NavBar = ({ onLogout }) => {
                                             <FiBook className="nav-icon" />
                                             {isOpen && <span className="nav-text">Carreras</span>}
                                         </NavLink>
-                                        <NavLink tag={Link} to="/tipoconvocatorias" className={location.pathname === '/tipoconvocatorias' ? 'active' : ''}>
+                                        <NavLink tag={Link} to="/tipos-convocatorias" className={location.pathname === '/tipos-convocatorias' ? 'active' : ''}>
                                             <FiUser className="nav-icon" />
                                             {isOpen && <span className="nav-text">Tipo de Convocatorias</span>}
                                         </NavLink>

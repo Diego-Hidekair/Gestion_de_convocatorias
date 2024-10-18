@@ -12,7 +12,8 @@ const TipoconvocatoriaEdit = () => {
     useEffect(() => {
         const fetchTipoConvocatoria = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/tipo-convocatorias/${id}`);
+                const response = await axios.get(`http://localhost:5000/tipos-convocatorias/${id}`); 
+                
                 setTipoConvocatoria({
                     Nombre_convocatoria: response.data.Nombre_convocatoria || '',
                     Titulo: response.data.Titulo || '' // Agregar el campo Titulo
@@ -39,8 +40,9 @@ const TipoconvocatoriaEdit = () => {
         }
 
         try {
-            await axios.put(`http://localhost:5000/tipo-convocatorias/${id}`, tipoConvocatoria);
-            navigate('/tipoconvocatorias');
+            await axios.put(`http://localhost:5000/tipos-convocatorias/${id}`, tipoConvocatoria); 
+            
+            navigate('/tipos-convocatorias');
         } catch (error) {
             console.error('Error al actualizar el tipo de convocatoria:', error);
             alert("Hubo un error al actualizar la convocatoria. Intenta nuevamente.");

@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const TipoconvocatoriaForm = () => {
     const navigate = useNavigate();
     const [tipoConvocatoria, setTipoConvocatoria] = useState({ Nombre_convocatoria: '', Titulo: '' });
+    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,15 +21,21 @@ const TipoconvocatoriaForm = () => {
             alert("Por favor, complete el campo del nombre de convocatoria.");
             return;
         }
+        if (tipoConvocatoria.Titulo.length > 200) {
+            alert("El título no puede exceder los 200 caracteres.");
+            return;
+        }
 
         try {
-            await axios.post('http://localhost:5000/tipo-convocatorias', tipoConvocatoria);
-            navigate('/tipoconvocatorias');
+            await axios.post('http://localhost:5000/tipos-convocatorias', tipoConvocatoria);
+
+            navigate('/tipos-convocatorias');
         } catch (error) {
             console.error('Error al crear tipo de convocatoria:', error);
         }
     };
 
+    
     return (
         <div className="container mt-4">
             <h1 className="mb-4">Crear Nuevo Tipo de Convocatoria</h1>

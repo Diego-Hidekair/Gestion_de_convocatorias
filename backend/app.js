@@ -40,7 +40,7 @@ app.use('/usuarios', usuarioRoutes);
 const routes = [
     { path: '/facultades', route: './routes/facultadRoutes' },
     { path: '/carreras', route: './routes/carreraRoutes' },
-    { path: '/tipo-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
+    { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' }, 
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
     { path: '/materias', route: './routes/materiaRoutes' },
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },

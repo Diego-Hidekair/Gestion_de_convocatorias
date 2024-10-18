@@ -13,7 +13,7 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
     useEffect(() => {
         const fetchTiposConvocatoria = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/tipo-convocatorias');
+                const response = await axios.get('http://localhost:5000/tipos-convocatorias'); 
                 setTiposConvocatoria(response.data);
             } catch (error) {
                 console.error('Error al obtener los tipos de convocatoria:', error);
@@ -24,7 +24,7 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/tipo-convocatorias/${id}`);
+            await axios.delete(`http://localhost:5000/tipos-convocatorias/${id}`); 
             setTiposConvocatoria(tiposConvocatoria.filter(tipo => tipo.id_tipoconvocatoria !== id));
         } catch (error) {
             console.error('Error al eliminar el tipo de convocatoria:', error);
@@ -41,7 +41,7 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
                 </Row>
                 <Row className="mb-3">
                     <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/tipoconvocatorias/crear" className="create-button">
+                        <Button color="primary" tag={Link} to="/tipos-convocatorias/crear" className="create-button">
                             Crear Nuevo Tipo de Convocatoria
                         </Button>
                     </Col>
@@ -56,7 +56,7 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
                                         {tipo.nombre_convocatoria}
                                     </CardTitle>
                                     <div className="d-flex justify-content-center button-group">
-                                        <Button color="warning" size="sm" tag={Link} to={`/tipoconvocatorias/editar/${tipo.id_tipoconvocatoria}`} className="custom-button">
+                                        <Button color="warning" size="sm" tag={Link} to={`/tipos-convocatorias/editar/${tipo.id_tipoconvocatoria}`} className="custom-button">
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>
                                         <Button color="danger" size="sm" onClick={() => handleDelete(tipo.id_tipoconvocatoria)} className="custom-button">

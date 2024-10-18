@@ -128,9 +128,13 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />
                         <Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />
                         <Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />
-                        <Route path="/tipoconvocatorias" element={<TipoconvocatoriaList />} />
-                        <Route path="/tipoconvocatorias/crear" element={<TipoconvocatoriaForm />} />
-                        <Route path="/tipoconvocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
+
+                        
+
+                        <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} /> 
+                        <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} /> 
+                        <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} /> 
+
                         <Route path="/materias" element={<MateriaList />} />
                         <Route path="/materias/crear" element={<MateriaForm />} />
                         <Route path="/materias/editar/:id" element={<MateriaEdit />} />
