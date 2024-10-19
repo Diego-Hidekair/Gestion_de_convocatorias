@@ -69,27 +69,17 @@ exports.deleteTipoConvocatoria = async (req, res) => {
 
     try {
         await client.query('BEGIN');
-
-        // Elimina todas las filas dependientes en la tabla honorarios
         const deleteHonorarios = await client.query('DELETE FROM honorarios WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
         console.log('Honorarios eliminados:', deleteHonorarios.rowCount);
-
-        // Elimina todas las filas dependientes en la tabla convocatoria_materia
-        const deleteConvocatoriaMaterias = await client.query('DELETE FROM convocatoria_materia WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
-        console.log('Convocatoria materias eliminadas:', deleteConvocatoriaMaterias.rowCount);
-
-        // Elimina todas las convocatorias que referencian este tipo de convocatoria
+        const deleteConvocatoriaMaterias = await client.query('DELETE FROM convocatorias_materias WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
+        console.log('Convocatorias materias eliminadas:', deleteConvocatoriaMaterias.rowCount);
         const deleteConvocatorias = await client.query('DELETE FROM convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]);
         console.log('Convocatorias eliminadas:', deleteConvocatorias.rowCount);
-
-        // Finalmente, elimina el tipo de convocatoria
         const result = await client.query('DELETE FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1 RETURNING *', [req.params.id]);
         await client.query('COMMIT');
-
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Tipo de convocatoria no encontrado' });
         }
-
         res.status(200).json({ message: 'Tipo de convocatoria eliminado' });
     } catch (error) {
         await client.query('ROLLBACK');
