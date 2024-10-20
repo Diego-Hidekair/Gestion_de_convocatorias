@@ -1,5 +1,4 @@
 // frontend/src/components/ConvocatoriaForm.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -17,18 +16,17 @@ const ConvocatoriaForm = () => {
         fecha_inicio: null,
         fecha_fin: null,
         id_tipoconvocatoria: '',
-        id_carrera: '',
-        id_facultad: ''
+        id_programa: ''
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
-    const [carreras, setCarreras] = useState([]);
-    const [facultades, setFacultades] = useState([]);
+    const [programas, setProgramas] = useState([]); 
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
     const [prioridad, setPrioridad] = useState('PRIMERA');
     const [horario, setHorario] = useState('TIEMPO COMPLETO');
     const [gestion, setGestion] = useState('GESTION 1');
     const currentYear = new Date().getFullYear();
+    
 
     useEffect(() => {
         const today = new Date();
@@ -57,15 +55,12 @@ const ConvocatoriaForm = () => {
 
         const fetchData = async () => {
             try {
-                const [tiposResponse, carrerasResponse, facultadesResponse] = await Promise.all([
-                    axios.get('http://localhost:5000/tipo-convocatorias'),
-                    axios.get('http://localhost:5000/carreras'),
-                    axios.get('http://localhost:5000/facultades'),
+                const [tiposResponse, programasResponse] = await Promise.all([
+                    axios.get('http://localhost:5000/tipos-convocatorias'), 
+                    axios.get('http://localhost:5000/carreras'), 
                 ]);
-                console.log('Tipos de Convocatoria:', tiposResponse.data); // Verificar que la data sea correcta
                 setTiposConvocatoria(tiposResponse.data);
-                setCarreras(carrerasResponse.data);
-                setFacultades(facultadesResponse.data);
+                setProgramas(programasResponse.data); 
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -81,10 +76,9 @@ const ConvocatoriaForm = () => {
             id_tipoconvocatoria: tipoId,
         }));
 
-        // Encuentra el tipo de convocatoria seleccionado para obtener el título
         const selectedTipo = tiposConvocatoria.find(tipo => tipo.id_tipoconvocatoria === parseInt(tipoId));
-        setTituloConvocatoria(selectedTipo ? selectedTipo.titulo : ''); // Asegúrate de que estás usando la propiedad correcta
-        handleNombreAutoFill(); // Actualiza el nombre de convocatoria
+        setTituloConvocatoria(selectedTipo ? selectedTipo.titulo : '');
+        handleNombreAutoFill();
     };
 
     const handleChange = (e) => {
@@ -93,7 +87,7 @@ const ConvocatoriaForm = () => {
             ...prevConvocatoria,
             [name]: value,
         }));
-        handleNombreAutoFill(); // Actualiza el nombre automáticamente al cambiar la carrera
+        handleNombreAutoFill();
     };
 
     const handleDateChange = (name, date) => {
@@ -104,8 +98,8 @@ const ConvocatoriaForm = () => {
     };
 
     const handleNombreAutoFill = () => {
-        const carreraNombre = carreras.find(c => c.id_carrera === parseInt(convocatoria.id_carrera))?.nombre_carrera || '';
-        const nombreCompleto = `${prioridad} ${tituloConvocatoria} ${horario} PARA LA CARRERA DE ${carreraNombre} ${gestion}/${currentYear}`;
+        const programaNombre = programas.find(p => p.id_programa === parseInt(convocatoria.id_programa))?.nombre_carrera || '';
+        const nombreCompleto = `${prioridad} ${tituloConvocatoria} ${horario} PARA EL PROGRAMA DE ${programaNombre} ${gestion}/${currentYear}`;
     
         setConvocatoria((prevConvocatoria) => ({
             ...prevConvocatoria,
@@ -119,9 +113,11 @@ const ConvocatoriaForm = () => {
     
         const formattedConvocatoria = {
             ...convocatoria,
-            prioridad, // Agregar prioridad
+            prioridad,
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
+            horario,
+            gestion 
         };
     
         try {
@@ -135,6 +131,7 @@ const ConvocatoriaForm = () => {
             }
         } catch (error) {
             console.error('Error submitting form:', error);
+            alert('Hubo un error al crear la convocatoria. Por favor, revisa los datos.');
         }
     };
 
@@ -173,13 +170,13 @@ const ConvocatoriaForm = () => {
                                     <FormGroup>
                                         <Label for="nombre">Nombre de Convocatoria</Label>
                                         <Input
-                                            type="textarea" // Cambiar a textarea para un cuadro más grande
+                                            type="textarea" 
                                             name="nombre"
                                             id="nombre"
                                             value={convocatoria.nombre}
                                             readOnly
                                             required
-                                            style={{ height: '200px' }} // Ajustar la altura como desees
+                                            style={{ height: '200px' }} 
                                         />
                                     </FormGroup>
                                     <FormGroup>
@@ -228,39 +225,19 @@ const ConvocatoriaForm = () => {
                                     <Row>
                                         <Col>
                                             <FormGroup>
-                                                <Label for="id_carrera">Carrera</Label>
+                                                <Label for="id_programa">Carrera</Label>
                                                 <Input
                                                     type="select"
-                                                    name="id_carrera"
-                                                    id="id_carrera"
-                                                    value={convocatoria.id_carrera}
+                                                    name="id_programa"
+                                                    id="id_programa"
+                                                    value={convocatoria.id_programa}
                                                     onChange={(e) => { handleChange(e); handleNombreAutoFill(); }}
                                                     required
                                                 >
                                                     <option value="">Seleccione una carrera</option>
-                                                    {carreras.map((carrera) => (
-                                                        <option key={carrera.id_carrera} value={carrera.id_carrera}>
-                                                            {carrera.nombre_carrera}
-                                                        </option>
-                                                    ))}
-                                                </Input>
-                                            </FormGroup>
-                                        </Col>
-                                        <Col>
-                                            <FormGroup>
-                                                <Label for="id_facultad">Facultad</Label>
-                                                <Input
-                                                    type="select"
-                                                    name="id_facultad"
-                                                    id="id_facultad"
-                                                    value={convocatoria.id_facultad}
-                                                    onChange={handleChange}
-                                                    required
-                                                >
-                                                    <option value="">Seleccione una facultad</option>
-                                                    {facultades.map((facultad) => (
-                                                        <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                                                            {facultad.nombre_facultad}
+                                                    {programas.map((programa) => (
+                                                        <option key={programa.id_programa} value={programa.id_programa}>
+                                                            {programa.nombre_carrera}
                                                         </option>
                                                     ))}
                                                 </Input>

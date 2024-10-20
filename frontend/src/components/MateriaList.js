@@ -1,10 +1,7 @@
 // src/components/MateriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { Container, Table, Button } from 'reactstrap';
-import { BsTrashFill } from "react-icons/bs";
-import { PiPencilLineBold } from "react-icons/pi";
+import { Container, Table } from 'reactstrap';
 import '../styles/materias.css';
 
 const MateriaList = ({ isOpen }) => {
@@ -23,20 +20,10 @@ const MateriaList = ({ isOpen }) => {
         fetchMaterias();
     }, []);
 
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/materias/${id}`);
-            setMaterias(materias.filter((materia) => materia.id_materia !== id));
-        } catch (error) {
-            console.error('Error al eliminar la materia:', error);
-        }
-    };
-
     return (
         <div className={`materia-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <Container className="container-list-materias">
                 <h2 className="text-center">Lista de Materias</h2>
-                <Link to="/materias/crear" className="btn btn-primary mb-3 create-button">Crear Materia</Link>
                 <Table dark hover striped>
                     <thead>
                         <tr>
@@ -47,7 +34,6 @@ const MateriaList = ({ isOpen }) => {
                             <th>Horas Laboratorio</th>
                             <th>Total Horas</th>
                             <th>Carrera</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,15 +45,7 @@ const MateriaList = ({ isOpen }) => {
                                 <td>{materia.horas_practica}</td>
                                 <td>{materia.horas_laboratorio}</td>
                                 <td>{materia.total_horas}</td>
-                                <td>{materia.id_carrera}</td>
-                                <td>
-                                    <Link to={`/materias/editar/${materia.id_materia}`} className="btn btn-warning btn-sm custom-button">
-                                        <PiPencilLineBold className="icon" /> Editar
-                                    </Link>
-                                    <Button onClick={() => handleDelete(materia.id_materia)} color="danger" size="sm" className="custom-button">
-                                        <BsTrashFill className="icon" /> Eliminar
-                                    </Button>
-                                </td>
+                                <td>{materia.id_programa}</td>
                             </tr>
                         ))}
                     </tbody>

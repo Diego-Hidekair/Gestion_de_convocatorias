@@ -17,19 +17,23 @@ const createUser = async (req, res) => {
     const { id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular } = req.body;
 
     try {
+        // Validar roles
         const validRoles = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
         if (!validRoles.includes(Rol)) {
             return res.status(400).json({ error: 'Rol inválido' });
         }
 
+        // Comprobar si ya existe el usuario
         const existingUser = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
         if (existingUser.rows.length > 0) {
             return res.status(400).json({ error: 'El id ya está en uso' });
         }
 
+        // Generar hash de contraseña
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(Contraseña, salt);
 
+        // Insertar nuevo usuario
         const newUser = await pool.query(
             'INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
             [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular]
@@ -50,6 +54,7 @@ const updateUser = async (req, res) => {
         let hashedPassword;
         let updatedUser;
 
+        // Si se proporciona una contraseña, hashéala
         if (Contraseña) {
             const salt = await bcrypt.genSalt(10);
             hashedPassword = await bcrypt.hash(Contraseña, salt);
@@ -76,7 +81,13 @@ const deleteUser = async (req, res) => {
     const { id_usuario } = req.params;
 
     try {
-        await pool.query('DELETE FROM usuarios WHERE id_usuario = $1', [id_usuario]);
+        const result = await pool.query('DELETE FROM usuarios WHERE id_usuario = $1 RETURNING *', [id_usuario]);
+
+        // Si no se eliminó ningún usuario, envía un error 404
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
         res.json({ message: 'Usuario eliminado' });
     } catch (error) {
         console.error(error.message);
@@ -84,10 +95,13 @@ const deleteUser = async (req, res) => {
     }
 };
 
+
 const getUsuarioById = async (req, res) => {
     const { id_usuario } = req.params;
     try {
         const result = await pool.query('SELECT id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios WHERE id_usuario = $1', [id_usuario]);
+
+        // Si no encuentra al usuario, devuelve un error 404
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -97,6 +111,7 @@ const getUsuarioById = async (req, res) => {
         res.status(500).json({ error: 'Error en el servidor al obtener el usuario' });
     }
 };
+
 
 const getCurrentUser = async (req, res) => {
     const userId = req.user.id_usuario; 

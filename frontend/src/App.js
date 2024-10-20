@@ -4,11 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
-import CarreraForm from './components/CarreraForm';
-import CarreraEdit from './components/CarreraEdit';
 import FacultadList from './components/FacultadList';
-import FacultadEdit from './components/FacultadEdit';
-import FacultadForm from './components/FacultadForm';
 import ConvocatoriaList from './components/ConvocatoriaList';
 import ConvocatoriaForm from './components/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/ConvocatoriaEdit';
@@ -20,8 +16,6 @@ import TipoconvocatoriaList from './components/TipoconvocatoriaList';
 import TipoconvocatoriaForm from './components/TipoconvocatoriaForm';
 import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
 import MateriaList from './components/MateriaList';
-import MateriaForm from './components/MateriaForm';
-import MateriaEdit from './components/MateriaEdit';
 import ConvocatoriaMateriasEdit from './components/ConvocatoriaMateriasEdit';
 import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import Login from './components/Login';
@@ -105,6 +99,7 @@ const AuthWrapper = () => {
     const toggleSidebar = () => {
         setIsOpen(!isOpen); 
     };
+    
     return (
         <div className={`app-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <div className="background-app"></div>
@@ -115,11 +110,7 @@ const AuthWrapper = () => {
                         <Route path="/" element={<Navigate to="/redirect" />} /> 
                         <Route path="/redirect" element={<RedirectPage />} />
                         <Route path="/carreras" element={<CarreraList />} />
-                        <Route path="/carreras/new" element={<CarreraForm />} />
-                        <Route path="/carreras/edit/:id" element={<CarreraEdit />} />
                         <Route path="/facultades" element={<FacultadList />} />
-                        <Route path="/facultades/edit/:id" element={<FacultadEdit />} />
-                        <Route path="/facultades/new" element={<FacultadForm />} />
                         <Route path="/convocatorias" element={<ConvocatoriaList />} />
                         <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
@@ -128,23 +119,17 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />
                         <Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />
                         <Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />
-
-                        
-
                         <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} /> 
                         <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} /> 
                         <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} /> 
-
                         <Route path="/materias" element={<MateriaList />} />
-                        <Route path="/materias/crear" element={<MateriaForm />} />
-                        <Route path="/materias/editar/:id" element={<MateriaEdit />} />
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
-                        <Route path="/usuarios/edit/:id" element={<UsuarioEdit />} />
-                        <Route path="/usuarios/me/:id" element={<UsuarioPerfil />} />
+                        <Route path="/usuarios/edit/:id_usuario" element={<UsuarioEdit />} />                        
+                        <Route path="/usuarios/me/:id_usuario" element={<UsuarioPerfil />} />
                         <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
                         <Route path="/pdf/view/:id_convocatoria" element={<PDFViewer />} /> 

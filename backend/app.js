@@ -7,8 +7,8 @@ const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
 
+// middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
-const usuarioRoutes = require('./routes/usuarioRoutes');
 
 // base de datos para reconocer de mejor manera
 const pool = new Pool({
@@ -34,31 +34,32 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
-app.use('/usuarios', usuarioRoutes); 
+//app.use('/usuarios', usuarioRoutes); 
 
 // Otras rutas
 const routes = [
-    { path: '/facultades', route: './routes/facultadRoutes' },
-    { path: '/carreras', route: './routes/carreraRoutes' },
+    { path: '/facultades', route: './routes/facultadRoutes' }, // solo get
+    { path: '/carreras', route: './routes/carreraRoutes' },     // solo get
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' }, 
-    { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
-    { path: '/materias', route: './routes/materiaRoutes' },
+    { path: '/convocatorias', route: './routes/convocatoriaRoutes' },           
+    { path: '/materias', route: './routes/materiaRoutes' }, //solo get                
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
-    { path: '/honorarios', route: './routes/honorariosRoutes' }
+    { path: '/honorarios', route: './routes/honorariosRoutes' },
 ];
 
 routes.forEach(r => app.use(r.path, require(r.route)));
 
-app.use((req, res, next) => {
-    res.status(404).json({ error: "Ruta no encontrada" });
-});
-
-// Ruta de prueba para verificar la conexión
+// Ruta para verificar la conexión
 app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
+});
+
+// Manejador de errores para rutas no encontradas
+app.use((req, res, next) => {
+    res.status(404).json({ error: "Ruta no encontrada" });
 });
 
 // Manejador de errores global
@@ -83,7 +84,7 @@ app.use((err, req, res, next) => {
 
 // Cerrar sesión al finalizar el servidor
 const shutdown = () => {
-    console.log('Shutting down gracefully...');
+    console.log('Cerrando el servidor de manera segura...');
     process.exit();
 };
 

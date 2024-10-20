@@ -1,3 +1,4 @@
+
 // frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -14,7 +15,7 @@ const ConvocatoriaList = () => {
     const [previewUrl, setPreviewUrl] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Función para formatear la fecha
+    
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('es-ES');
@@ -72,8 +73,7 @@ const ConvocatoriaList = () => {
                         <option value="fecha_inicio">Fecha de Inicio</option>
                         <option value="fecha_fin">Fecha de Fin</option>
                         <option value="nombre_tipoconvocatoria">Tipo de Convocatoria</option>
-                        <option value="nombre_carrera">Carrera</option>
-                        <option value="nombre_facultad">Facultad</option>
+                        <option value="nombre_programa">Carrera</option> 
                     </select>
                     <input
                         type="text"
@@ -93,8 +93,7 @@ const ConvocatoriaList = () => {
                         <th>Fecha de Fin</th>
                         <th>Usuario</th>
                         <th>Tipo de Convocatoria</th>
-                        <th>Carrera</th>
-                        <th>Facultad</th>
+                        <th>Carrera</th> 
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -107,8 +106,7 @@ const ConvocatoriaList = () => {
                             <td>{formatDate(convocatoria.fecha_fin)}</td>
                             <td>{convocatoria.id_usuario}</td>
                             <td>{convocatoria.nombre_tipoconvocatoria}</td>
-                            <td>{convocatoria.nombre_carrera}</td>
-                            <td>{convocatoria.nombre_facultad}</td>
+                            <td>{convocatoria.nombre_programa}</td>
                             <td>{convocatoria.estado}</td>
                             <td>
                                 <div className="d-flex flex-column align-items-center">
@@ -118,8 +116,6 @@ const ConvocatoriaList = () => {
                                     <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button mb-1">
                                         <BsTrashFill className="icon" /> Eliminar
                                     </Button>
-                                    
-                                    {/* Botones de Vista Previa y Descargar */}
                                     {convocatoria.documento_path && (
                                         <>
                                             <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button mb-1">
@@ -137,7 +133,6 @@ const ConvocatoriaList = () => {
                 </tbody>
             </Table>
 
-            {/* Modal para Vista Previa */}
             <Modal isOpen={isModalOpen} toggle={toggleModal} size="lg">
                 <ModalHeader toggle={toggleModal}>Vista Previa del PDF</ModalHeader>
                 <ModalBody>

@@ -6,9 +6,11 @@ const { authenticateToken, authorizeAdmin } = require('../middleware/authMiddlew
 
 router.get('/me', authenticateToken, getCurrentUser);
 router.get('/', authenticateToken, authorizeAdmin, getUsuarios);
-router.get('/:id', authenticateToken, getUsuarioById);
+router.get('/:id_usuario', authenticateToken, getUsuarioById);
 router.post('/', authenticateToken, authorizeAdmin, createUser);
-router.delete('/:id', authenticateToken, authorizeAdmin, deleteUser);
-router.put('/:id', authenticateToken, authorizeAdmin, updateUser);
+router.delete('/:id_usuario', authenticateToken, authorizeAdmin, deleteUser);
+router.put('/:id_usuario', authenticateToken, authorizeAdmin, updateUser);
+
+
 
 module.exports = router;

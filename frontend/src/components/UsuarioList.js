@@ -30,18 +30,19 @@ const UsuarioList = () => {
         }
     }, [location.state]);
 
-    const deleteUser = async (id_usuario) => {
+    const deleteUser = async (id_usuario) => {  
         if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
             try {
                 await axios.delete(`http://localhost:5000/usuarios/${id_usuario}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-                setUsuarios(usuarios.filter(user => user.id_usuario !== id_usuario)); 
+                setUsuarios(prevUsuarios => prevUsuarios.filter(user => user.id_usuario !== id_usuario));
             } catch (error) {
                 console.error('Error al eliminar el usuario', error);
             }
         }
     };
+    
     
     return (
         <div className="container mt-5">

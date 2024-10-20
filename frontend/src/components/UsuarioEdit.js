@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const UsuarioEdit = () => {
-    const { id } = useParams(); // Asegúrate de que 'id' se obtenga correctamente
+    const { id_usuario } = useParams();  // Asegúrate de que 'id' se obtenga correctamente
     const navigate = useNavigate();
 
     // Inicializa el estado con valores por defecto
@@ -20,33 +20,32 @@ const UsuarioEdit = () => {
 
     useEffect(() => {
         const fetchUsuario = async () => {
-            if (!id) {
+            if (!id_usuario) {
                 console.error('El ID del usuario es indefinido.');
                 return;
             }
-
+        
             try {
-                const response = await axios.get(`/usuarios/${id}`, {
+                const response = await axios.get(`http://localhost:5000/usuarios/${id_usuario}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-
-                const { Nombres, Apellido_paterno, Apellido_materno, Rol, Celular } = response.data;
-
+                
+                // Ajusta los campos según los nombres de la base de datos
                 setUsuario({
-                    Nombres: Nombres || '',
-                    Apellido_paterno: Apellido_paterno || '',
-                    Apellido_materno: Apellido_materno || '',
-                    Rol: Rol || '',
-                    Contraseña: '', // No mostrar la contraseña
-                    Celular: Celular || ''
+                    Nombres: response.data.nombres || '',
+                    Apellido_paterno: response.data.apellido_paterno || '',
+                    Apellido_materno: response.data.apellido_materno || '',
+                    Rol: response.data.rol || '',
+                    Contraseña: '',  // No enviar la contraseña al cargar
+                    Celular: response.data.celular || ''
                 });
             } catch (error) {
                 console.error('Error al obtener los datos del usuario:', error);
             }
         };
-
+    
         fetchUsuario();
-    }, [id]);
+    }, [id_usuario]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -56,15 +55,15 @@ const UsuarioEdit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsProcessing(true);
-
+    
         try {
             // Evita enviar la contraseña vacía si no ha sido modificada
             const usuarioAEnviar = { ...usuario };
             if (!usuarioAEnviar.Contraseña) {
-                delete usuarioAEnviar.Contraseña; // No envía contraseña si está vacía
+                delete usuarioAEnviar.Contraseña;  // No envía la contraseña si está vacía
             }
-
-            await axios.put(`/usuarios/${id}`, usuarioAEnviar, {
+    
+            await axios.put(`/usuarios/${id_usuario}`, usuarioAEnviar, {  
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
             navigate('/usuarios');
@@ -73,7 +72,7 @@ const UsuarioEdit = () => {
         } finally {
             setIsProcessing(false);
         }
-    };
+    };    
 
     return (
         <div className="container">

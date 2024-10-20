@@ -2,10 +2,10 @@
 
 const pool = require('../db');
 
-// obtener los datos de los tipos de convocatoria
+// mostrar los tipos de convocatoria
 exports.getAllTiposConvocatoria = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM tipos_convocatorias'); 
+        const result = await pool.query('SELECT * FROM tipos_convocatorias');
         res.status(200).json(result.rows);
     } catch (error) {
         console.error('Error al obtener los tipos de convocatoria:', error);
@@ -13,10 +13,10 @@ exports.getAllTiposConvocatoria = async (req, res) => {
     }
 };
 
-// un tipo de convocatoria por sui ID
+// mostrar el tipo de convocatoria pro la id 
 exports.getTipoConvocatoriaById = async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]); 
+        const result = await pool.query('SELECT * FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]);
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Tipo de convocatoria no encontrado' });
         }
@@ -27,12 +27,12 @@ exports.getTipoConvocatoriaById = async (req, res) => {
     }
 };
 
-//nuevo tipo de convocatoria
+// nuevo convocatoria
 exports.createTipoConvocatoria = async (req, res) => {
     const { Nombre_convocatoria, Titulo } = req.body;
     try {
         if (!Nombre_convocatoria) {
-            return res.status(400).json({ message: 'El nombre de convocatoria es requerido' });
+            return res.status(400).json({ message: 'El nombre de la convocatoria es requerido' });
         }
 
         const result = await pool.query(
@@ -46,7 +46,7 @@ exports.createTipoConvocatoria = async (req, res) => {
     }
 };
 
-// Actualizar
+// actualizar
 exports.updateTipoConvocatoria = async (req, res) => {
     const { Nombre_convocatoria, Titulo } = req.body;
     try {
@@ -64,19 +64,18 @@ exports.updateTipoConvocatoria = async (req, res) => {
     }
 };
 
+// borrar
 exports.deleteTipoConvocatoria = async (req, res) => {
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
-        const deleteHonorarios = await client.query('DELETE FROM honorarios WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
-        console.log('Honorarios eliminados:', deleteHonorarios.rowCount);
-        const deleteConvocatoriaMaterias = await client.query('DELETE FROM convocatorias_materias WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
-        console.log('Convocatorias materias eliminadas:', deleteConvocatoriaMaterias.rowCount);
-        const deleteConvocatorias = await client.query('DELETE FROM convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]);
-        console.log('Convocatorias eliminadas:', deleteConvocatorias.rowCount);
+        await client.query('DELETE FROM honorarios WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
+        await client.query('DELETE FROM convocatorias_materias WHERE id_convocatoria IN (SELECT id_convocatoria FROM convocatorias WHERE id_tipoconvocatoria = $1)', [req.params.id]);
+        await client.query('DELETE FROM convocatorias WHERE id_tipoconvocatoria = $1', [req.params.id]);
         const result = await client.query('DELETE FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1 RETURNING *', [req.params.id]);
         await client.query('COMMIT');
+
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Tipo de convocatoria no encontrado' });
         }
