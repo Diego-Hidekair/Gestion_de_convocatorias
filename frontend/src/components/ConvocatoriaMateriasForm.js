@@ -1,7 +1,6 @@
 // frontend/src/components/ConvocatoriaMateriasForm.js
-
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from 'axios'; 
 import { useNavigate, useParams } from 'react-router-dom';
 
 const ConvocatoriaMateriasForm = () => { 
@@ -14,7 +13,6 @@ const ConvocatoriaMateriasForm = () => {
     const [error, setError] = useState(null);
     const [totalHoras, setTotalHoras] = useState(0);
 
-    // Obtener las materias desde el backend
     useEffect(() => {
         const fetchMaterias = async () => {
             try {
@@ -28,14 +26,12 @@ const ConvocatoriaMateriasForm = () => {
         fetchMaterias();
     }, []);
     
-    useEffect(() => {
-        // Calcular total de horas al modificar la lista de materias seleccionadas
+    useEffect(() => {//total de hora en la lista de materias seleccionadas 
         const total = materiasSeleccionadas.reduce((acc, materia) => acc + materia.total_horas, 0);
         setTotalHoras(total);
     }, [materiasSeleccionadas]);
 
-    // Enviar los datos seleccionados
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {//datos seleccionados se envia al backend
         e.preventDefault();
         if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
             setError('Por favor, complete todos los campos');
@@ -45,11 +41,11 @@ const ConvocatoriaMateriasForm = () => {
         const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
     
         try {
-            const response = await axios.post(`http://localhost:5000/convocatoria-materias/multiple`, {
+            const response = await axios.post(`http://localhost:5000/convocatoria_materias/new/:id_convocatoria`, {
                 id_convocatoria,
                 materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
                 perfil_profesional: perfilProfesional,
-                tiempo_trabajo: tiempoTrabajo  // Añadimos el campo para ser enviado
+                tiempo_trabajo: tiempoTrabajo  
             });
     
             alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
@@ -67,8 +63,7 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
-    // Agregar una materia seleccionada a la lista
-    const handleAddMateria = () => {
+    const handleAddMateria = () => {//se seleciona la amteria y se agrega a la lista
         const materia = materias.find(m => m.id_materia === parseInt(materiaSeleccionada));
         if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
             setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
@@ -78,10 +73,9 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
-    // Eliminar una materia seleccionada
-    const handleRemoveMateria = (id) => {
+    const handleRemoveMateria = (id_materia) => {//eliminar la materia de la lista seleccionada
         if (window.confirm('¿Estás seguro de que deseas eliminar esta materia?')) {
-            setMateriasSeleccionadas(materiasSeleccionadas.filter(m => m.id_materia !== id));
+            setMateriasSeleccionadas(materiasSeleccionadas.filter(m => m.id_materia !== id_materia));
         }
     };
 
@@ -90,7 +84,6 @@ const ConvocatoriaMateriasForm = () => {
             <h2>Agregar materias a la Convocatoria</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
-                {/* Seleccionar materia */}
                 <div className="mb-3">
                     <label className="form-label">Seleccionar Materia:</label>
                     <select
@@ -109,7 +102,6 @@ const ConvocatoriaMateriasForm = () => {
                         Agregar Materia
                     </button>
                 </div>
-                {/* Mostrar materias seleccionadas */}
                 <div className="mb-3">
                     <h3>Materias Seleccionadas:</h3>
                     <ul className="list-group">
@@ -124,10 +116,8 @@ const ConvocatoriaMateriasForm = () => {
                     </ul>
                 </div>
                 <div className="mb-3">
-    <h4>Tiempo de Trabajo: {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}</h4>
-</div>
-
-                {/* Perfil Profesional */}
+                    <h4>Tiempo de Trabajo: {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}</h4>
+                </div>
                 <div className="mb-3">
                     <label className="form-label">Perfil Profesional:</label>
                     <input

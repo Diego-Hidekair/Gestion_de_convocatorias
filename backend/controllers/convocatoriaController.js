@@ -124,12 +124,17 @@ const updateConvocatoria = async (req, res) => {
     }
 };
 
-// Eliminar una convocatoria
+// Eliminar 
 const deleteConvocatoria = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
-        await pool.query('DELETE FROM convocatoria_materia WHERE id_convocatoria = $1', [id_convocatoria]);
+        // Eliminar de la tabla correcta de convocatorias_materias
+        await pool.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id_convocatoria]);
+        
+        // Eliminar de la tabla honorarios (si existe)
         await pool.query('DELETE FROM honorarios WHERE id_convocatoria = $1', [id_convocatoria]);
+        
+        // Eliminar de la tabla principal de convocatorias
         const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
 
         if (result.rows.length === 0) {

@@ -1,14 +1,13 @@
 // backend/routes/convocatoriaMateriaRoutes.js
 const express = require('express');
 const router = express.Router();
-const convocatoriaMateriaController = require('../controllers/convocatoriaMateriaController');
+const {getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria} = require('../controllers/convocatoriaMateriaController');
 
-// Rutas para gestionar las materias de una convocatoria
-router.get('/:id_convocatoria', convocatoriaMateriaController.getConvocatoriaMaterias);
-//router.post('/', convocatoriaMateriaController.createConvocatoriaMateriaMultiple); // Cambia esto para usar la versión múltiple
-router.post('/multiple', convocatoriaMateriaController.createConvocatoriaMateriaMultiple);
-router.delete('/:id', convocatoriaMateriaController.deleteConvocatoriaMateria);
-router.get('/convocatoria-materias/:id_convocatoria/:id_materia', convocatoriaMateriaController.getConvocatoriaMateriaById);
-router.put('/convocatoria-materias/:id_convocatoria/:id_materia', convocatoriaMateriaController.updateConvocatoriaMateria);
+// Rutas
+router.get('/convocatorias-materias/:id_convocatoria/materias', getConvocatoriaMaterias);
+router.get('/convocatorias-materias/:id_convocatoria/materia/:id_materia', getConvocatoriaMateriaById);
+router.post('/convocatorias-materias/:id_convocatoria/materias', createConvocatoriaMateriaMultiple);
+router.put('/convocatorias-materias/:id_convocatoria/materia/:id_materia', updateConvocatoriaMateria);
+router.delete('/convocatorias-materias/materia/:id_materias', deleteConvocatoriaMateria);
 
 module.exports = router;
