@@ -40,7 +40,7 @@ const routes = [
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' }, 
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },           
     { path: '/materias', route: './routes/materiaRoutes' }, // solo get             
-    { path: '/convocatorias-materias', route: './routes/convocatoriaMateriaRoutes' },
+    { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
