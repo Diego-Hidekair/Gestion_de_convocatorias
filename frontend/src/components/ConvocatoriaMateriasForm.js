@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; 
 import { useNavigate, useParams } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const ConvocatoriaMateriasForm = () => { 
     const { id_convocatoria } = useParams();
@@ -26,12 +27,12 @@ const ConvocatoriaMateriasForm = () => {
         fetchMaterias();
     }, []);
     
-    useEffect(() => {//total de hora en la lista de materias seleccionadas 
+    useEffect(() => {//total de horas de las materias seleccionadas
         const total = materiasSeleccionadas.reduce((acc, materia) => acc + materia.total_horas, 0);
         setTotalHoras(total);
     }, [materiasSeleccionadas]);
 
-    const handleSubmit = async (e) => {//datos seleccionados se envia al backend
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
             setError('Por favor, complete todos los campos');
@@ -39,26 +40,24 @@ const ConvocatoriaMateriasForm = () => {
         }
     
         const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
-    
+
         try {
-            const response = await axios.post(`http://localhost:5000/convocatoria_materias/new/:id_convocatoria`, {
+            const response = await axios.post('http://localhost:5000/convocatoria-materias/multiple', {
                 id_convocatoria,
                 materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
                 perfil_profesional: perfilProfesional,
-                tiempo_trabajo: tiempoTrabajo  
+                tiempo_trabajo: tiempoTrabajo 
             });
     
             alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
-    
             const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
             if (firstIdMateria) {
                 navigate(`/honorarios/new/${id_convocatoria}/${firstIdMateria}`);
             } else {
                 setError('No se pudo obtener el ID de la materia');
             }
-    
         } catch (err) {
-            setError('Error al crear la ConvocatoriaMateria');
+            setError('Error al agregar materias');
             console.error(err);
         }
     };

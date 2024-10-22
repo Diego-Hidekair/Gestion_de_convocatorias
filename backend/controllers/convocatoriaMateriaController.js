@@ -1,8 +1,7 @@
 // backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
-// Obtener todas las materias asociadas a una convocatoria
-const getConvocatoriaMaterias = async (req, res) => {
+const getConvocatoriaMaterias = async (req, res) => {//obetner los datos de convocatoria materia
     const { id_convocatoria } = req.params;
     try {
         const result = await pool.query(`
@@ -27,8 +26,7 @@ const getConvocatoriaMaterias = async (req, res) => {
     }
 };
 
-// Obtener una relación convocatoria-materia específica por id_convocatoria y id_materia
-const getConvocatoriaMateriaById = async (req, res) => {
+const getConvocatoriaMateriaById = async (req, res) => {// obtener una relación convocatoria-materia específica por id_convocatoria y id_materia
     const { id_convocatoria, id_materia } = req.params;
     try {
         const result = await pool.query(`
@@ -53,7 +51,7 @@ const getConvocatoriaMateriaById = async (req, res) => {
     }
 };
 
-const createConvocatoriaMateriaMultiple = async (req, res) => {
+const createConvocatoriaMateriaMultiple = async (req, res) => {//crea una nueva convocatorias-materias
     const { id_convocatoria, materiasSeleccionadas, perfil_profesional } = req.body;
     try {
         let idsMaterias = [];
@@ -89,8 +87,7 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {
     }
 };
 
-// Actualizar una relación convocatoria-materia específica por id_convocatoria y id_materia
-const updateConvocatoriaMateria = async (req, res) => {
+const updateConvocatoriaMateria = async (req, res) => {//actualizar
     const { id_convocatoria, id_materia } = req.params;
     const { perfil_profesional } = req.body;
     try {
@@ -101,9 +98,9 @@ const updateConvocatoriaMateria = async (req, res) => {
         `, [perfil_profesional, id_convocatoria, id_materia]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
-        }
-        
+            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada', id_convocatoria, id_materia });
+        }        
+
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Error actualizando convocatorias_materias:', error);
@@ -111,15 +108,14 @@ const updateConvocatoriaMateria = async (req, res) => {
     }
 };
 
-// Eliminar una relación convocatoria-materia
-const deleteConvocatoriaMateria = async (req, res) => {
+const deleteConvocatoriaMateria = async (req, res) => {//eliminar
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM convocatorias_materias WHERE id_materias = $1 RETURNING *', [id]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
-        }
+            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada', id_convocatoria, id_materia });
+        }        
 
         res.json(result.rows[0]);
     } catch (error) {
@@ -128,4 +124,4 @@ const deleteConvocatoriaMateria = async (req, res) => {
     }
 };
 
-module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria};
+module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria };
