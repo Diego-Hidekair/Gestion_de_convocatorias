@@ -20,7 +20,7 @@ const HonorariosForm = () => {
     useEffect(() => {
         const fetchTiposConvocatorias = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/tipo-convocatorias');
+                const response = await axios.get('http://localhost:5000/tipos-convocatorias');
                 setTiposConvocatorias(response.data);
             } catch (err) {
                 setError('Error al obtener los tipos de convocatorias. Por favor, inténtalo más tarde.');

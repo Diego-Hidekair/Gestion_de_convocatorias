@@ -10,7 +10,7 @@ const getHonorarios = async (req, res) => {
                 tc.nombre_convocatoria AS nombre_tipoconvocatoria
             FROM honorarios h
             LEFT JOIN convocatorias c ON h.id_convocatoria = c.id_convocatoria
-            LEFT JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN tipos_convocatorias tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
             ORDER BY h.id_honorario
         `);
         res.status(200).json(result.rows);
@@ -30,7 +30,7 @@ const getHonorarioById = async (req, res) => {
                 tc.nombre_convocatoria AS nombre_tipoconvocatoria
             FROM honorarios h
             LEFT JOIN convocatorias c ON h.id_convocatoria = c.id_convocatoria
-            LEFT JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN tipos_convocatorias tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
             WHERE h.id_honorario = $1
         `, [id]);
         
