@@ -16,7 +16,7 @@ const ConvocatoriaEdit = () => {
         fecha_fin: '',
         id_tipoconvocatoria: '',
         id_carrera: '',
-        id_facultad: ''
+        id_facultad: '' 
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);

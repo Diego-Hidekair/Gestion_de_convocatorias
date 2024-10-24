@@ -16,17 +16,18 @@ const ConvocatoriaForm = () => {
         fecha_inicio: null,
         fecha_fin: null,
         id_tipoconvocatoria: '',
-        id_programa: ''
+        id_programa: '',
+        id_facultad: '' // Añadimos el campo para facultad
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
-    const [programas, setProgramas] = useState([]); 
+    const [programas, setProgramas] = useState([]);
+    const [facultades, setFacultades] = useState([]); // Añadimos el estado de facultades
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
     const [prioridad, setPrioridad] = useState('PRIMERA');
     const [horario, setHorario] = useState('TIEMPO COMPLETO');
     const [gestion, setGestion] = useState('GESTION 1');
     const currentYear = new Date().getFullYear();
-    
 
     useEffect(() => {
         const today = new Date();
@@ -55,12 +56,14 @@ const ConvocatoriaForm = () => {
 
         const fetchData = async () => {
             try {
-                const [tiposResponse, programasResponse] = await Promise.all([
+                const [tiposResponse, programasResponse, facultadesResponse] = await Promise.all([
                     axios.get('http://localhost:5000/tipos-convocatorias'), 
                     axios.get('http://localhost:5000/carreras'), 
+                    axios.get('http://localhost:5000/facultades'), // Obtener facultades
                 ]);
                 setTiposConvocatoria(tiposResponse.data);
                 setProgramas(programasResponse.data); 
+                setFacultades(facultadesResponse.data); // Guardar las facultades
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -100,7 +103,7 @@ const ConvocatoriaForm = () => {
     const handleNombreAutoFill = () => {
         const programaNombre = programas.find(p => p.id_programa === parseInt(convocatoria.id_programa))?.nombre_carrera || '';
         const nombreCompleto = `${prioridad} ${tituloConvocatoria} ${horario} PARA EL PROGRAMA DE ${programaNombre} ${gestion}/${currentYear}`;
-    
+
         setConvocatoria((prevConvocatoria) => ({
             ...prevConvocatoria,
             nombre: nombreCompleto
@@ -110,16 +113,16 @@ const ConvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         handleNombreAutoFill();
-    
+
         const formattedConvocatoria = {
             ...convocatoria,
             prioridad,
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
             horario,
-            gestion 
+            gestion
         };
-    
+
         try {
             if (id) {
                 await axios.put(`http://localhost:5000/convocatorias/${id}`, formattedConvocatoria);
@@ -178,6 +181,24 @@ const ConvocatoriaForm = () => {
                                             required
                                             style={{ height: '200px' }} 
                                         />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Label for="id_facultad">Facultad</Label> {/* Agregamos el campo de facultad */}
+                                        <Input
+                                            type="select"
+                                            name="id_facultad"
+                                            id="id_facultad"
+                                            value={convocatoria.id_facultad}
+                                            onChange={handleChange}
+                                            required
+                                        >
+                                            <option value="">Seleccione una facultad</option>
+                                            {facultades.map((facultad) => (
+                                                <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                                    {facultad.nombre_facultad}
+                                                </option>
+                                            ))}
+                                        </Input>
                                     </FormGroup>
                                     <FormGroup>
                                         <Label>Prioridad</Label>

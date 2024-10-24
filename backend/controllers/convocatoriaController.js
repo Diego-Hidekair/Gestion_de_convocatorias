@@ -1,7 +1,7 @@
 // backend/controllers/convocatoriaController.js
 const pool = require('../db');
 
-// mostrar convocatorias
+//mostrar todas las convocatorias
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
@@ -14,11 +14,13 @@ const getConvocatorias = async (req, res) => {
                 c.estado,
                 tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
                 p.nombre_carrera AS nombre_programa,  
+                f.nombre_facultad AS nombre_facultad,  -- Incluimos la facultad
                 u.nombres AS nombre_usuario,  
                 d.documento_path  
             FROM convocatorias c
             LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa 
+            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  -- Join con facultad
             LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
             LEFT JOIN documentos d ON d.id_convocatoria = c.id_convocatoria
             ORDER BY c.id_convocatoria
@@ -41,14 +43,16 @@ const getConvocatoriaById = async (req, res) => {
                 c.fecha_fin, 
                 tc.nombre_convocatoria AS tipo_convocatoria, 
                 p.nombre_carrera AS programa,
+                f.nombre_facultad AS facultad,  -- Incluimos la facultad
                 u.nombres AS nombre_usuario
             FROM convocatorias c
             LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa
+            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  -- Join con facultad
             LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
             WHERE c.id_convocatoria = $1
         `, [id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
@@ -87,15 +91,17 @@ const createConvocatoria = async (req, res) => {
     console.log("Datos recibidos:", req.body);
     try {
         const id_usuario = req.user.id; 
-        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body; 
+        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
         
-        const result = await pool.query(
-            `INSERT INTO convocatorias (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_usuario, prioridad, gestion) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-            [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_usuario, prioridad, gestion]
+        const result = await pool.query(`
+            INSERT INTO convocatorias 
+            (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            RETURNING *`,
+            [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion]
         );
 
-        res.status(201).json(result.rows[0]); 
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error al crear la convocatoria:', error);
         res.status(500).send('Error al crear la convocatoria');
@@ -105,13 +111,14 @@ const createConvocatoria = async (req, res) => {
 // actualizar
 const updateConvocatoria = async (req, res) => {
     const { id } = req.params;
-    const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
+    const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
     try {
-        const result = await pool.query(
-            `UPDATE convocatorias 
-            SET horario = $1, nombre = $2, fecha_inicio = $3, fecha_fin = $4, id_tipoconvocatoria = $5, id_programa = $6, prioridad = $7, gestion = $8
-            WHERE id_convocatoria = $9 RETURNING *`,
-            [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion, id]
+        const result = await pool.query(`
+            UPDATE convocatorias 
+            SET horario = $1, nombre = $2, fecha_inicio = $3, fecha_fin = $4, id_tipoconvocatoria = $5, id_programa = $6, id_facultad = $7, prioridad = $8, gestion = $9
+            WHERE id_convocatoria = $10 
+            RETURNING *`,
+            [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion, id]
         );
 
         if (result.rows.length === 0) {
@@ -128,13 +135,8 @@ const updateConvocatoria = async (req, res) => {
 const deleteConvocatoria = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
-        // Eliminar de la tabla correcta de convocatorias_materias
         await pool.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id_convocatoria]);
-        
-        // Eliminar de la tabla honorarios (si existe)
         await pool.query('DELETE FROM honorarios WHERE id_convocatoria = $1', [id_convocatoria]);
-        
-        // Eliminar de la tabla principal de convocatorias
         const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
 
         if (result.rows.length === 0) {

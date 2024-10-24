@@ -1,4 +1,3 @@
-
 // frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -15,7 +14,6 @@ const ConvocatoriaList = () => {
     const [previewUrl, setPreviewUrl] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('es-ES');
@@ -74,6 +72,7 @@ const ConvocatoriaList = () => {
                         <option value="fecha_fin">Fecha de Fin</option>
                         <option value="nombre_tipoconvocatoria">Tipo de Convocatoria</option>
                         <option value="nombre_programa">Carrera</option> 
+                        <option value="nombre_facultad">Facultad</option> {/* Nueva opción de búsqueda */}
                     </select>
                     <input
                         type="text"
@@ -94,6 +93,7 @@ const ConvocatoriaList = () => {
                         <th>Usuario</th>
                         <th>Tipo de Convocatoria</th>
                         <th>Carrera</th> 
+                        <th>Facultad</th> {/* Nueva columna de facultad */}
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -107,6 +107,7 @@ const ConvocatoriaList = () => {
                             <td>{convocatoria.id_usuario}</td>
                             <td>{convocatoria.nombre_tipoconvocatoria}</td>
                             <td>{convocatoria.nombre_programa}</td>
+                            <td>{convocatoria.nombre_facultad}</td> {/* Mostrar facultad */}
                             <td>{convocatoria.estado}</td>
                             <td>
                                 <div className="d-flex flex-column align-items-center">

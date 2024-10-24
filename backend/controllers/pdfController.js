@@ -1,12 +1,11 @@
 // backend/controllers/pdfController.js
 const fs = require('fs');
-const path = require('path');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
 const multer = require('multer');
 const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 
-// configurando el multer (almacenamientos)
+// configurando almacenamientos (multer)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -18,7 +17,20 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-// aqui se podra generar el Pdf utilizando HTML
+// Función auxiliar para generar el buffer del PDF
+const generarPDFBuffer = (htmlContent, options) => {
+    return new Promise((resolve, reject) => {
+        pdf.create(htmlContent, options).toBuffer((err, buffer) => {
+            if (err) {
+                console.error('Error en la generación del PDF:', err);
+                return reject(err);
+            }
+            resolve(buffer);
+        });
+    });
+};
+
+// generar el pdf mediante html
 exports.generatePDF = async (req, res) => {
     const { id_convocatoria, id_honorario } = req.params;
     
@@ -26,32 +38,43 @@ exports.generatePDF = async (req, res) => {
     console.log('ID Honorario:', id_honorario);
 
     try {
-        // Obtener los datos de la convocatoria
+        // Obtener datos para el pdf de convocatoria
         const convocatoriaResult = await pool.query(`
-            SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.nombre_carrera, f.nombre_facultad
+            SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.Nombre_carrera, f.Nombre_facultad
             FROM convocatorias c
-            JOIN tipo_convocatoria tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            JOIN carrera ca ON c.id_carrera = ca.id_carrera
-            JOIN facultad f ON c.id_facultad = f.id_facultad
+            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            JOIN alm_programas ca ON c.id_programa = ca.id_programa
+            JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
             WHERE c.id_convocatoria = $1
         `, [id_convocatoria]);
-
+        
         const convocatoria = convocatoriaResult.rows[0];
         console.log('Convocatoria:', convocatoria);
 
-        if (!convocatoria) {
-            return res.status(404).json({ error: "Convocatoria no encontrada" });
+         // obteniendo datos de honorarios
+        const honorariosResult = await pool.query(`
+            SELECT h.pago_mensual, h.dictamen, h.resolucion, tc.nombre_convocatoria
+            FROM honorarios h
+            JOIN tipos_convocatorias tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            WHERE h.id_convocatoria = $1 AND h.id_honorario = $2
+        `, [id_convocatoria, id_honorario]);
+
+        const honorarios = honorariosResult.rows[0];
+        console.log('honorarios:', honorarios);
+
+        if (!convocatoria || !honorarios) {
+            return res.status(404).json({ error: "Datos de convocatoria o honorarios no encontrados" });
         }
 
         if (convocatoria.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
             return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
         }
 
-         //AGREGAR materias a la  convocatoria
+         //ver o mostrar las  materias a la  convocatoria
         const materiasResult = await pool.query(`
             SELECT m.codigomateria, m.nombre AS materia, cm.total_horas, cm.perfil_profesional, cm.tiempo_trabajo
-            FROM convocatoria_materia cm
-            JOIN materia m ON cm.id_materia = m.id_materia
+            FROM convocatorias_materias cm
+            JOIN planes.pln_materias m ON cm.id_materia = m.id_materia
             WHERE cm.id_convocatoria = $1
         `, [id_convocatoria]);
 
@@ -59,19 +82,6 @@ exports.generatePDF = async (req, res) => {
         console.log('Materias:', materias);
         const totalHoras = materias.reduce((sum, m) => sum + m.total_horas, 0);
         const tiempoTrabajo = materias.length > 0 ? materias[0].tiempo_trabajo : 'No definido';
-
-
-        // obteniendo los datos de la tabla honorarios
-        const honorariosResult = await pool.query(`
-            SELECT h.pago_mensual, h.dictamen, h.resolucion, tc.nombre_convocatoria
-            FROM honorarios h
-            JOIN tipo_convocatoria tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            WHERE h.id_convocatoria = $1 AND h.id_honorario = $2
-        `, [id_convocatoria, id_honorario]);
-
-        
-        const honorarios = honorariosResult.rows[0];
-        console.log('Honorarios:', honorarios);
 
         if (!honorarios) {
             return res.status(404).json({ error: "No se encontraron datos de honorarios para esta convocatoria y honorario." });
@@ -81,10 +91,9 @@ exports.generatePDF = async (req, res) => {
             console.log(`Error: Nombre de convocatoria no coincide. Esperado: 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA', Recibido: '${honorarios.nombre_convocatoria}'`);
             return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
         }
-        
-        
-        // HTML para el contenido del PDF
-        
+        const pagoMensual = honorarios.pago_mensual;
+
+        //generar contenido pdf
         const htmlContent = `
             <html>
             <head>
@@ -267,7 +276,6 @@ exports.generatePDF = async (req, res) => {
         </html>
         `;
 
-        // Opciones de formato del PDF
         const options = {
             format: 'Letter',
             border: {
@@ -277,90 +285,80 @@ exports.generatePDF = async (req, res) => {
                 left: '2cm'
             }
         };
+        // Generar el buffer del PDF
+        const pdfBuffer = await generarPDFBuffer(htmlContent, options);
 
-        const pdfBuffer = await pdf.create(htmlContent, options).toBuffer();
-
+        // Actualizar la base de datos con el contenido binario (BYTEA)
         await pool.query(`
             UPDATE documentos SET 
                 documento_path = $1,
-                resolucion_path = $2, 
-                dictamen_path = $3, 
-                carta_path = $4 
+                resolucion_path = $2,
+                dictamen_path = $3,  
+                carta_path = $4        
             WHERE id_convocatoria = $5
         `, [
-            pdfBuffer,
-            req.files['resolucion_path'] ? req.files['resolucion_path'][0].buffer : null,
-            req.files['dictamen_path'] ? req.files['dictamen_path'][0].buffer : null,
-            req.files['carta_path'] ? req.files['carta_path'][0].buffer : null,
-            id_convocatoria
+            pdfBuffer, // documento_path (PDF como BYTEA)
+            null,
+            null,
+            null,  
+            id_convocatoria  // ID de la convocatoria
         ]);
-        res.status(200).json({ message: 'PDF generado y almacenado en la base de datos con éxito' });
-    } catch (error) {
-        console.error('Error generando el PDF:', error);
-        res.status(500).json({ error: 'Error generando el PDF' });
-    }
-};
-  /*      
-        console.log('Combined PDF Buffer:', combinedPDFBuffer);
-console.log('Archivos Subidos:', {
-    resolucion_path: req.files['resolucion_path'],
-    dictamen_path: req.files['dictamen_path'],
-    carta_path: req.files['carta_path']
-});*/
+         // Enviar respuesta de éxito
+        res.status(200).json({ message: 'PDF generado y almacenado con éxito en la base de datos' });
+        } catch (error) {
+            console.error('Error generando el PDF:', error);
+            res.status(500).json({ error: 'Error generando el PDF' });
+        }
+    };
 
-        /*const pdfPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`);
-        pdf.create(htmlContent, options).toFile(pdfPath, async (err, resPdf) => {
-            if (err) return res.status(500).json({ error: 'Error generando el PDF' });
-
-            // Actualiza la base de datos con la ruta del PDF generado
-            await pool.query(`
-                UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2
-            `, [`pdfs/convocatoria_${id_convocatoria}.pdf`, id_convocatoria]);
-
-            res.status(200).json({ message: 'PDF generado y guardado con éxito', pdfPath });
-        });*/
-
-// combinar pdfs
+// Combinar PDFs
 exports.combinePDFs = [
     upload.fields([{ name: 'resolucion_path' }, { name: 'dictamen_path' }, { name: 'carta_path' }]),
     async (req, res) => {
         const { id_convocatoria } = req.params;
 
         try {
-            const pdfBufferResult = await pool.query(`
-                SELECT documento_path FROM documentos WHERE id_convocatoria = $1
-            `, [id_convocatoria]);
+            const basePDFPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}.pdf`);
+            if (!fs.existsSync(basePDFPath)) {
+                return res.status(404).json({ error: 'PDF base no encontrado' });
+            }
 
-            const basePDFDoc = await PDFLibDocument.load(pdfBufferResult.rows[0].documento_path);
+            const basePDFBytes = fs.readFileSync(basePDFPath);
+            const basePDFDoc = await PDFLibDocument.load(basePDFBytes);
 
+            // Verifica y carga los PDFs adicionales
             if (req.files['resolucion_path']) {
-                const resolucionBuffer = req.files['resolucion_path'][0].buffer;
-                const resolucionDoc = await PDFLibDocument.load(resolucionBuffer);
+                const resolucionBytes = fs.readFileSync(req.files['resolucion_path'][0].path);
+                const resolucionDoc = await PDFLibDocument.load(resolucionBytes);
                 const pages = await basePDFDoc.copyPages(resolucionDoc, resolucionDoc.getPageIndices());
                 pages.forEach(page => basePDFDoc.addPage(page));
             }
 
             if (req.files['dictamen_path']) {
-                const dictamenBuffer = req.files['dictamen_path'][0].buffer;
-                const dictamenDoc = await PDFLibDocument.load(dictamenBuffer);
+                const dictamenBytes = fs.readFileSync(req.files['dictamen_path'][0].path);
+                const dictamenDoc = await PDFLibDocument.load(dictamenBytes);
                 const pages = await basePDFDoc.copyPages(dictamenDoc, dictamenDoc.getPageIndices());
                 pages.forEach(page => basePDFDoc.addPage(page));
             }
 
             if (req.files['carta_path']) {
-                const cartaBuffer = req.files['carta_path'][0].buffer;
-                const cartaDoc = await PDFLibDocument.load(cartaBuffer);
+                const cartaBytes = fs.readFileSync(req.files['carta_path'][0].path);
+                const cartaDoc = await PDFLibDocument.load(cartaBytes);
                 const pages = await basePDFDoc.copyPages(cartaDoc, cartaDoc.getPageIndices());
                 pages.forEach(page => basePDFDoc.addPage(page));
             }
 
-            const combinedPDFBuffer = await basePDFDoc.save();
+            const combinedPDFPath = path.join(__dirname, '..', 'pdfs', `convocatoria_${id_convocatoria}_combinado.pdf`);
+            const combinedPDFBytes = await basePDFDoc.save();
+            fs.writeFileSync(combinedPDFPath, combinedPDFBytes);
 
-            await pool.query(`
-                UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2
-            `, [combinedPDFBuffer, id_convocatoria]);
+            await pool.query('UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3 WHERE id_convocatoria = $4', 
+                [req.files['resolucion_path'] ? req.files['resolucion_path'][0].path : null,
+                req.files['dictamen_path'] ? req.files['dictamen_path'][0].path : null,
+                req.files['carta_path'] ? req.files['carta_path'][0].path : null,
+                id_convocatoria]);
 
-            res.status(200).json({ message: 'PDF combinado y guardado con éxito en la base de datos' });
+            res.status(200).json({ message: 'PDF combinado con éxito', combinedPDFPath });
         } catch (error) {
             console.error('Error combinando los PDFs:', error);
             res.status(500).json({ error: 'Error combinando los PDFs' });
