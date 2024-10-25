@@ -29,7 +29,7 @@ const HonorariosForm = () => {
         fetchTiposConvocatorias();
     }, []);
 
-    // Enviar los datos seleccionados
+    // Enviar los datos seleccionados 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
