@@ -87,16 +87,16 @@ const ConvocatoriaEdit = () => {
     return (
         <div className="degraded-background">
             <Container className="container-list">
-                <Row className="mb-4">
+                <Row className="convocatoria_mb-4">
                     <Col>
-                        <h1 className="text-center">Editar Convocatoria</h1>
+                        <h1 className="convocatoria_text-center">Editar Convocatoria</h1>
                     </Col>
                 </Row>
                 <Row>
-                    <Col sm="12" md="8" lg="6" className="mx-auto">
-                        <Card className="card-custom">
+                    <Col sm="12" md="8" lg="6" className="convocatoria_mx-auto">
+                        <Card className="convocatoria_card-custom">
                             <CardBody>
-                                <CardTitle tag="h5" className="text-center mb-4">Formulario de Convocatoria</CardTitle>
+                                <CardTitle tag="h5" className="convocatoria_text-center convocatoria_mb-4">Formulario de Convocatoria</CardTitle>
                                 <Form onSubmit={handleSubmit}>
                                     <FormGroup>
                                         <Label for="cod_convocatoria">Código</Label>
@@ -207,7 +207,7 @@ const ConvocatoriaEdit = () => {
                                             </FormGroup>
                                         </Col>
                                     </Row>
-                                    <Button color="primary" type="submit" className="mt-3">Actualizar</Button>
+                                    <Button color="primary" type="submit" className="convocatoria_mt-3">Actualizar</Button>
                                 </Form>
                             </CardBody>
                         </Card>

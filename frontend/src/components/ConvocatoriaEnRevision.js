@@ -37,21 +37,21 @@ const ConvocatoriaEnRevision = () => {
     return (
         <div className="degraded-background">
             <Container className="container-list">
-                <Row className="mb-4">
+                <Row className="convocatoria_mb-4">
                     <Col>
-                        <h1 className="text-center">Convocatorias en Revisión</h1>
+                        <h1 className="convocatoria_text-center">Convocatorias en Revisión</h1>
                     </Col>
                 </Row>
 
                 <Row>
                     {convocatorias.length === 0 ? (
                         <Col>
-                            <h5 className="text-center">No hay convocatorias en revisión.</h5>
+                            <h5 className="convocatoria_text-center">No hay convocatorias en revisión.</h5>
                         </Col>
                     ) : (
                         convocatorias.map((convocatoria) => (
-                            <Col sm="12" md="4" lg="4" key={convocatoria.id_convocatoria} className="mb-4">
-                                <Card className="card-custom">
+                            <Col sm="12" md="4" lg="4" key={convocatoria.id_convocatoria} className="convocatoria_mb-4">
+                                <Card className="convocatoria_card-custom">
                                     <CardBody className="d-flex flex-column justify-content-between">
                                         <CardTitle tag="h5" className="text-center">
                                             {convocatoria.nombre}
