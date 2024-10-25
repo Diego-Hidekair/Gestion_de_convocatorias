@@ -10,3 +10,5 @@ router.post('/combinar/:id_convocatoria', pdfController.combinePDFs);
 router.get('/combinado/:id_convocatoria', pdfController.viewCombinedPDF);
 
 module.exports = router;
+
+

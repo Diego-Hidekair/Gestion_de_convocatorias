@@ -35,11 +35,11 @@ app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 // Rutas
 const routes = [
-    { path: '/facultades', route: './routes/facultadRoutes' },//vistas
-    { path: '/carreras', route: './routes/carreraRoutes' },//vistas
+    { path: '/facultades', route: './routes/facultadRoutes' },
+    { path: '/carreras', route: './routes/carreraRoutes' },
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
-    { path: '/materias', route: './routes/materiaRoutes' },//vistas
+    { path: '/materias', route: './routes/materiaRoutes' },
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },

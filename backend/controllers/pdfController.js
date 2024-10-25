@@ -1,5 +1,6 @@
 // backend/controllers/pdfController.js
 const fs = require('fs');
+const path = require('path');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
 const multer = require('multer');
