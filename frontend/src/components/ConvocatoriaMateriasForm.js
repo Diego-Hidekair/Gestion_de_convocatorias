@@ -79,14 +79,14 @@ const ConvocatoriaMateriasForm = () => {
     };
 
     return (
-        <div className="container mt-4">
+        <div className="container-conv-mat mt-4-conv-mat">
             <h2>Agregar materias a la Convocatoria</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Seleccionar Materia:</label>
+                <div className="mb-3-conv-mat">
+                    <label className="form-label-conv-mat">Seleccionar Materia:</label>
                     <select
-                        className="form-control"
+                        className="form-control-conv-mat"
                         value={materiaSeleccionada}
                         onChange={(e) => setMateriaSeleccionada(e.target.value)}
                     >
@@ -97,38 +97,38 @@ const ConvocatoriaMateriasForm = () => {
                             </option>
                         ))}
                     </select>
-                    <button type="button" className="btn btn-secondary mt-2" onClick={handleAddMateria}>
+                    <button type="button" className="btn-conv-mat btn-secondary-conv-mat mt-2-conv-mat" onClick={handleAddMateria}>
                         Agregar Materia
                     </button>
                 </div>
-                <div className="mb-3">
+                <div className="mb-3-conv-mat">
                     <h3>Materias Seleccionadas:</h3>
-                    <ul className="list-group">
+                    <ul className="list-group-conv-mat">
                         {materiasSeleccionadas.map((materia) => (
-                            <li key={materia.id_materia} className="list-group-item">
+                            <li key={materia.id_materia} className="list-group-item-conv-mat">
                                 {materia.nombre}
-                                <button type="button" className="btn btn-danger btn-sm float-end" onClick={() => handleRemoveMateria(materia.id_materia)}>
+                                <button type="button-conv-mat" className="btn-conv-mat btn-danger-conv-mat btn-sm-conv-mat float-end-conv-mat" onClick={() => handleRemoveMateria(materia.id_materia)}>
                                     Eliminar
                                 </button>
                             </li>
                         ))}
                     </ul>
                 </div>
-                <div className="mb-3">
+                <div className="mb-3-conv-mat">
                     <h4>Tiempo de Trabajo: {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}</h4>
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Perfil Profesional:</label>
+                <div className="mb-3-conv-mat">
+                    <label className="form-label-conv-mat">Perfil Profesional:</label>
                     <input
                         type="text"
-                        className="form-control"
+                        className="form-control-conv-mat"
                         value={perfilProfesional}
                         onChange={(e) => setPerfilProfesional(e.target.value)}
                         placeholder="Ingrese el perfil profesional como ser Ingeniero Comercial"
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary-conv-mat">
                     Guardar
                 </button>
             </form>

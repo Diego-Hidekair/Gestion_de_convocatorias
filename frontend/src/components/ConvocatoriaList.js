@@ -56,16 +56,16 @@ const ConvocatoriaList = () => {
     });
 
     return (
-        <Container className="container-list">
-            <h1 className="text-center mb-4">Lista de Convocatorias</h1>
+        <Container className="container-list-convocatoria">
+            <h1 className="text-center-convocatoria mb-4-convocatoria">Lista de Convocatorias</h1>
             
-            <div className="mb-3 d-flex justify-content-between">
+            <div className="mb-3-convocatoria d-flex-convocatoria justify-content-between-convocatoria">
                 <Button color="primary" tag={Link} to="/convocatorias/crear">
                     Crear Nueva Convocatoria
                 </Button>
                 
                 <div>
-                    <select className="form-select" value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
+                    <select className="form-select-convocatoria" value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
                         <option value="">Buscar por...</option>
                         <option value="nombre">Nombre</option>
                         <option value="fecha_inicio">Fecha de Inicio</option>
@@ -77,7 +77,7 @@ const ConvocatoriaList = () => {
                     <input
                         type="text"
                         placeholder="Buscar..."
-                        className="form-control"
+                        className="form-control-convocatoria"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -110,19 +110,19 @@ const ConvocatoriaList = () => {
                             <td>{convocatoria.nombre_facultad}</td> {/* Mostrar facultad */}
                             <td>{convocatoria.estado}</td>
                             <td>
-                                <div className="d-flex flex-column align-items-center">
-                                    <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="custom-button mb-1">
+                                <div className="d-flex-convocatoria flex-column-convocatoria align-items-center-convocatoria">
+                                    <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="custom-button-convocatoria mb-1-convocatoria">
                                         <PiPencilLineBold className="icon" /> Editar
                                     </Button>
-                                    <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button mb-1">
+                                    <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button-convocatoria mb-1-convocatoria">
                                         <BsTrashFill className="icon" /> Eliminar
                                     </Button>
                                     {convocatoria.documento_path && (
                                         <>
-                                            <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button mb-1">
+                                            <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button-convocatoria mb-1-convocatoria">
                                                 <AiOutlineEye className="icon" /> Vista Previa
                                             </Button>
-                                            <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="custom-button">
+                                            <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="custom-button-convocatoria">
                                                 <AiOutlineDownload className="icon" /> Descargar
                                             </Button>
                                         </>

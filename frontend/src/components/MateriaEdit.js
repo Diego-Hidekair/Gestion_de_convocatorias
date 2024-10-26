@@ -60,7 +60,7 @@ const MateriaEdit = () => {
     };
 
     return (
-        <div className="container">
+        <div className="container-materia">
             <h2>Editar Materia</h2>
             <form onSubmit={handleSubmit}>
                 <div>

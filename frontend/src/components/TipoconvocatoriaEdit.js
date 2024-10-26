@@ -50,32 +50,32 @@ const TipoconvocatoriaEdit = () => {
     };
 
     return (
-        <div className="container mt-4">
-            <h1 className="mb-4">Editar Tipo de Convocatoria</h1>
+        <div className="container-tipo-conv mt-4-tipo-conv">
+            <h1 className="mb-4-tipo-conv">Editar Tipo de Convocatoria</h1>
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Nombre de Convocatoria:</label>
+                <div className="mb-3-tipo-conv">
+                    <label className="form-label-tipo-conv">Nombre de Convocatoria:</label>
                     <input
                         type="text"
                         name="Nombre_convocatoria"
                         value={tipoConvocatoria.Nombre_convocatoria}
                         onChange={handleChange}
-                        className="form-control"
+                        className="form-control-tipo-conv"
                         required
                     />
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Título:</label>
+                <div className="mb-3-tipo-conv">
+                    <label className="form-label-tipo-conv">Título:</label>
                     <input
                         type="text"
                         name="Titulo"
                         value={tipoConvocatoria.Titulo}
                         onChange={handleChange}
-                        className="form-control"
+                        className="form-control-tipo-conv"
                         maxLength="500"
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Guardar Cambios</button>
+                <button type="submit" className="btn-tipo-conv btn-primary-tipo-conv">Guardar Cambios</button>
             </form>
         </div>
     );

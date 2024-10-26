@@ -64,15 +64,15 @@ const HonorariosForm = () => {
     };
 
     return (
-        <div className="container mt-4">
+        <div className="container-honorarios mt-4-honorarios">
             <h2>Crear Honorario</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Seleccionar Tipo de Convocatoria:</label>
+                <div className="mb-3-honorarios">
+                    <label className="form-label-honorarios">Seleccionar Tipo de Convocatoria:</label>
                     <select
-                        className="form-control"
+                        className="form-control-honorarios"
                         value={idTipoConvocatoria}
                         onChange={(e) => setIdTipoConvocatoria(e.target.value)}
                         required
@@ -86,11 +86,11 @@ const HonorariosForm = () => {
                     </select>
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Pago Mensual:</label>
+                <div className="mb-3-honorarios">
+                    <label className="form-label-honorarios">Pago Mensual:</label>
                     <input
                         type="number"
-                        className="form-control"
+                        className="form-control-honorarios"
                         value={pagoMensual}
                         onChange={(e) => setPagoMensual(e.target.value)}
                         placeholder="Ingrese el pago mensual"
@@ -98,30 +98,30 @@ const HonorariosForm = () => {
                     />
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Resolución:</label>
+                <div className="mb-3-honorarios">
+                    <label className="form-label-honorarios">Resolución:</label>
                     <input
                         type="text"
-                        className="form-control"
+                        className="form-control-honorarios"
                         value={resolucion}
                         onChange={(e) => setResolucion(e.target.value)}
                         placeholder="Ingrese el número de resolución"
                     />
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Dictamen:</label>
+                <div className="mb-3-honorarios">
+                    <label className="form-label-honorarios">Dictamen:</label>
                     <input
                         type="text"
-                        className="form-control"
+                        className="form-control-honorarios"
                         value={dictamen}
                         onChange={(e) => setDictamen(e.target.value)}
                         placeholder="Ingrese el número de dictamen"
                     />
                 </div>
 
-                <button type="submit" className="btn btn-primary">Siguiente</button>
-                <button type="button" className="btn btn-secondary ml-2" onClick={handleBack}>Volver</button>
+                <button type="submit" className="btn-honorarios btn-primary-honorarios">Siguiente</button>
+                <button type="button" className="btn-honorarios btn-secondary-honorarios ml-2-honorarios" onClick={handleBack}>Volver</button>
             </form>
         </div>
     );

@@ -25,20 +25,20 @@ const FacultadForm = ({ isOpen }) => { // Recibe la prop isOpen
 
     return (
         <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Contenedor que se adapta al sidebar */}
-            <h1 className="my-4">Crear Nueva Facultad</h1>
+            <h1 className="facultad-list-my-4">Crear Nueva Facultad</h1>
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="nombre_facultad" className="form-label">Nombre:</label>
+                <div className="facultad-list-mb-3">
+                    <label htmlFor="nombre_facultad" className="facultad-list-form-label">Nombre:</label>
                     <input
                         type="text"
                         id="nombre_facultad"
                         name="nombre_facultad"
-                        className="form-control"
+                        className="facultad-list-form-control"
                         value={facultad.nombre_facultad}
                         onChange={handleChange}
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Crear Facultad</button>
+                <button type="submit" className="facultad-list-btn facultad-list-btn-primary">Crear Facultad</button>
             </form>
         </div>
     );

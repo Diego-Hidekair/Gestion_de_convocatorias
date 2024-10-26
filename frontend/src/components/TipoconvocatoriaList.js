@@ -32,16 +32,16 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
     };
 
     return (
-        <div className={`facultad-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
-            <Container className="container-list">
-                <Row className="mb-4">
+        <div className={`container-tipo-conv ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
+            <Container className="container-list-tipo-conv">
+                <Row className="mb-4-tipo-conv">
                     <Col>
-                        <h1 className="text-center title-facultad">Lista de Tipos de Convocatoria</h1>
+                        <h1 className="text-center-tipo-conv title-facultad-tipo-conv">Lista de Tipos de Convocatoria</h1>
                     </Col>
                 </Row>
-                <Row className="mb-3">
-                    <Col className="text-center">
-                        <Button color="primary" tag={Link} to="/tipos-convocatorias/crear" className="create-button">
+                <Row className="mb-3-tipo-conv">
+                    <Col className="text-center-tipo-conv">
+                        <Button color="primary" tag={Link} to="/tipos-convocatorias/crear" className="create-button-tipo-conv">
                             Crear Nuevo Tipo de Convocatoria
                         </Button>
                     </Col>
@@ -49,13 +49,13 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
 
                 <Row>
                     {tiposConvocatoria.map((tipo) => (
-                        <Col sm="12" md="4" lg="4" key={tipo.id_tipoconvocatoria} className="mb-4">
-                            <Card className="card-custom">
-                                <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center">
+                        <Col sm="12" md="4" lg="4" key={tipo.id_tipoconvocatoria} className="mb-4-tipo-conv">
+                            <Card className="card-custom-tipo-conv">
+                                <CardBody className="d-flex-tipo-conv flex-column-tipo-conv justify-content-between-tipo-conv">
+                                    <CardTitle tag="h5" className="text-center-tipo-conv">
                                         {tipo.nombre_convocatoria}
                                     </CardTitle>
-                                    <div className="d-flex justify-content-center button-group">
+                                    <div className="d-flex-tipo-conv justify-content-center-tipo-conv button-group-tipo-conv">
                                         <Button color="warning" size="sm" tag={Link} to={`/tipos-convocatorias/editar/${tipo.id_tipoconvocatoria}`} className="custom-button">
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>

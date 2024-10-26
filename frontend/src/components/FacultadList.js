@@ -21,16 +21,16 @@ const FacultadList = ({ isOpen }) => {
 
     return (
         <div className={`container-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <div className="header-rectangle">
-                <h1 className="text-center title-facultad">Lista de Facultades</h1>
+            <div className="facultad-list-header-rectangle">
+                <h1 className="facultad-list-text-center facultad-list-title-facultad">Lista de Facultades</h1>
             </div>
-            <Container className="container-list">
+            <Container className="facultad-list-container-list">
                 <Row>
                     {facultades.map((facultad) => (
-                        <Col sm="12" md="4" lg="4" key={facultad.id_facultad} className="mb-4">
-                            <Card className="card-custom">
-                                <CardBody className="d-flex flex-column justify-content-between">
-                                    <CardTitle tag="h5" className="text-center facultad-name">
+                        <Col sm="12" md="4" lg="4" key={facultad.id_facultad} className="facultad-list-mb-4">
+                            <Card className="facultad-list-card-custom">
+                                <CardBody className="facultad-list-d-flex facultad-list-flex-column facultad-list-justify-content-between">
+                                    <CardTitle tag="h5" className="facultad-list-text-center facultad-list-facultad-name">
                                         {facultad.nombre_facultad}
                                     </CardTitle>
                                 </CardBody>

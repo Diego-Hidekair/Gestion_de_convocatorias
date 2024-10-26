@@ -40,7 +40,7 @@ console.log('ID Honorario:', id_honorario);
   };
 
  // Función para combinar el PDF con documentos adicionales
- const handleGenerateDocument = async () => {
+const handleGenerateDocument = async () => {
   const formData = new FormData();
   if (files.resolucion) formData.append('resolucion_path', files.resolucion);
   if (files.dictamen) formData.append('dictamen_path', files.dictamen);

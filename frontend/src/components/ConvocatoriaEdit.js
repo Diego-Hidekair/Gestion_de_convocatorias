@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label, Input, Row, Col } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../Global.css';
 
 const ConvocatoriaEdit = () => {
     const { id } = useParams();
@@ -85,18 +84,18 @@ const ConvocatoriaEdit = () => {
     };
 
     return (
-        <div className="degraded-background">
-            <Container className="container-list">
-                <Row className="convocatoria_mb-4">
+        <div className="degraded-background-convocatoria">
+            <Container className="container-list-convocatoria">
+                <Row className="mb-4-convocatoria">
                     <Col>
-                        <h1 className="convocatoria_text-center">Editar Convocatoria</h1>
+                        <h1 className="text-center-convocatoria">Editar Convocatoria</h1>
                     </Col>
                 </Row>
                 <Row>
-                    <Col sm="12" md="8" lg="6" className="convocatoria_mx-auto">
-                        <Card className="convocatoria_card-custom">
+                    <Col sm="12" md="8" lg="6" className="mx-auto-convocatoria">
+                        <Card className="card-custom-convocatoria">
                             <CardBody>
-                                <CardTitle tag="h5" className="convocatoria_text-center convocatoria_mb-4">Formulario de Convocatoria</CardTitle>
+                                <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
                                 <Form onSubmit={handleSubmit}>
                                     <FormGroup>
                                         <Label for="cod_convocatoria">Código</Label>
@@ -207,7 +206,7 @@ const ConvocatoriaEdit = () => {
                                             </FormGroup>
                                         </Col>
                                     </Row>
-                                    <Button color="primary" type="submit" className="convocatoria_mt-3">Actualizar</Button>
+                                    <Button color="primary" type="submit" className="mt-3-convocatoria">Actualizar</Button>
                                 </Form>
                             </CardBody>
                         </Card>

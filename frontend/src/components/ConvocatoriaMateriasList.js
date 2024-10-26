@@ -37,7 +37,7 @@ const ConvocatoriaMateriasList = () => {
     if (error) return <p>{error}</p>;
 
     return (
-        <div className="container">
+        <div className="container-conv-mat">
             <h2>Lista de Convocatorias</h2>
             <ul>
                 {convocatorias.map((convocatoria) => (

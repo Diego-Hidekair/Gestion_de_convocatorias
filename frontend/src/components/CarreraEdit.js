@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Form, FormGroup, Label, Input, Button, Row, Col } from 'reactstrap';
-import '../Global.css';  // Importa el archivo CSS global
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarreraEdit = () => {

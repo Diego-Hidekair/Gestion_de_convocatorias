@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Solo usar useNavigate
 import { Container, Form, FormGroup, Label, Input, Button, Row, Col, Alert } from 'reactstrap'; // Importar Alert
-import '../Global.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CarreraForm = () => {

@@ -21,12 +21,12 @@ const CarreraList = ({ isOpen }) => {
 
     return (
         <div className={`carrera-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> 
-            <Container className="contenedor-lista-carrera">
+            <Container className="carrera-list-container">
                 <div className="titulo-carrera-rectangulo">
-                    <h1 className="text-titulo">Lista de Carreras</h1>
+                    <h1 className="text-titulo-carrera">Lista de Carreras</h1>
                 </div>
 
-                <Row className="cuadros-informacion">
+                <Row className="cuadros-informacion-carrera">
                     {carreras.map((carrera) => (
                         <Col sm="12" md="4" lg="4" key={carrera.id_programa} className="mb-4-carrera">
                             <Card className="cuadro-carrera">

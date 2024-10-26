@@ -44,7 +44,7 @@ const MateriaForm = () => {
     };
 
     return (
-        <div className="container">
+        <div className="container-materia">
             <h2>Crear Materia</h2>
             <form onSubmit={handleSubmit}>
                 <div>

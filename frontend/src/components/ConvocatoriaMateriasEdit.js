@@ -51,34 +51,34 @@ const ConvocatoriaMateriasEdit = () => {
     if (!materia) return <p>Cargando datos...</p>;
 
     return (
-        <div className="container mt-4">
+        <div className="container-conv-mat mt-4-conv-mat">
             <h2>Editar Materia de la Convocatoria</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Perfil Profesional:</label>
+                <div className="mb-3-conv-mat">
+                    <label className="form-label-conv-mat">Perfil Profesional:</label>
                     <input
                         type="text"
-                        className="form-control"
+                        className="form-control-conv-mat"
                         value={perfilProfesional}
                         onChange={(e) => setPerfilProfesional(e.target.value)}
                         required
                     />
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Total Horas:</label>
+                <div className="mb-3-conv-mat">
+                    <label className="form-label-conv-mat">Total Horas:</label>
                     <input
                         type="number"
-                        className="form-control"
+                        className="form-control-conv-mat"
                         value={totalHoras}
                         onChange={(e) => setTotalHoras(e.target.value)}
                         required
                     />
                 </div>
 
-                <button type="submit" className="btn btn-primary">Guardar Cambios</button>
+                <button type="submit" className="btn btn-primary-conv-mat">Guardar Cambios</button>
             </form>
         </div>
     );

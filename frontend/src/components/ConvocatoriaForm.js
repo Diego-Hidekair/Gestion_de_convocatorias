@@ -6,7 +6,6 @@ import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label, I
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../Global.css';
 
 const ConvocatoriaForm = () => {
     const { id } = useParams();
@@ -141,16 +140,16 @@ const ConvocatoriaForm = () => {
     return (
         <div>
             <Container >
-                <Row className="mb-4">
+                <Row className="mb-4-convocatoria">
                     <Col>
-                        <h1 className="text-center">{id ? 'Editar' : 'Registrar'} Convocatoria</h1>
+                        <h1 className="text-center-convocatoria">{id ? 'Editar' : 'Registrar'} Convocatoria</h1>
                     </Col>
                 </Row>
                 <Row>
-                    <Col sm="12" md="8" lg="6" className="mx-auto">
-                        <Card className="card-custom">
+                    <Col sm="12" md="8" lg="6" className="mx-auto-convocatoria">
+                        <Card className="card-custom-convocatoria">
                             <CardBody>
-                                <CardTitle tag="h5" className="text-center mb-4">Formulario de Convocatoria</CardTitle>
+                                <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
                                 <Form onSubmit={handleSubmit}>
                                     <FormGroup>
                                         <Label for="id_tipoconvocatoria">Tipo de Convocatoria</Label>
@@ -237,7 +236,7 @@ const ConvocatoriaForm = () => {
                                                     selected={convocatoria.fecha_fin}
                                                     onChange={(date) => handleDateChange('fecha_fin', date)}
                                                     dateFormat="yyyy-MM-dd"
-                                                    className="form-control"
+                                                    className="form-control-convocatoria"
                                                     required
                                                 />
                                             </FormGroup>
@@ -279,7 +278,7 @@ const ConvocatoriaForm = () => {
                                     <Button
                                         color="primary"
                                         type="submit"
-                                        className="mt-3"
+                                        className="mt-3-convocatoria"
                                     >
                                         {id ? 'Actualizar' : 'Siguiente'}
                                     </Button>

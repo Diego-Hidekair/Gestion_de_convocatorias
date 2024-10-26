@@ -23,7 +23,7 @@ const MateriaList = ({ isOpen }) => {
     return (
         <div className={`materia-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <Container className="container-list-materias">
-                <h2 className="text-center">Lista de Materias</h2>
+                <h2 className="text-center-materia">Lista de Materias</h2>
                 <Table dark hover striped>
                     <thead>
                         <tr>
