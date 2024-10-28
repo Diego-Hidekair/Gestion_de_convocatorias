@@ -2,87 +2,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Gotham:wght@400&display=swap');
 
-/* Aquí puedes definir la fuente de Verona si la tienes o encontrar una alternativa */
-/* Estilo para el contenedor principal */
+/* Contenedor principal con fondo azul */
 .carrera-list-container {
-    padding: 20px;
-    transition: padding-left 0.3s ease;
+    background-color: #0d234a; 
+    padding: 30px;
+    border-radius: 1rem;
+    transition: padding-left 0.3s ease; 
+    margin:2rem;
 }
 
-.cuadros-informacion{
-    background-color: rgba(255, 255, 255, 0.6);
-    padding: 2rem;
-    border-radius: 2rem;
-}
-
-.mb-4-carrera{
-    padding: 1rem;
-}
-
-/* Rectángulo para el título */
+/* Título dentro de un rectángulo con estilo */
 .titulo-carrera-rectangulo {
     font-family: 'Arvo', serif;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0,0,0,0.2));
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2));
     padding: 15px 20px;
     text-align: center;
     border-radius: 1rem;
     margin-bottom: 2rem;
+    color: white;
 }
 
+/* Contenedor de los cuadros de información */
+.cuadros-informacion-carrera {
+    background-color: rgba(13, 35, 74, 0.8); /* Azul oscuro translúcido */
+    padding: 2rem;
+    border-radius: 1rem;
+}
+
+/* Tarjetas de carrera con fondo blanco y sombra roja */
+.cuadro-carrera {
+    background-color: white;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(216, 116, 126, 0.5); /* Sombra roja suave */
+    margin-bottom: 1rem;
+    padding: 15px;
+}
+
+/* Texto de cada tarjeta de carrera */
 .text-center-carrera {
     font-family: 'Gotham', sans-serif;
-    color: white;
-    font-size: 1rem;
+    color: #0d234a; /* Azul oscuro */
+    font-size: 1.1rem;
+    text-align: center;
 }
 
-
-/* Estilo para el botón de crear */
-.create-button-carrera {
-    color: white;
-    background-color: #0d234a;
-    border: none;
-    font-family: 'Verona', sans-serif;
-    font-size: 20px;
-    transition: all 0.3s ease;
-}
-
-.create-button-carrera:hover {
-    background-color: white;
-    color: #0d234a;
-    
-}
-
-/* Estilo para las tarjetas de carrera */
-.cuadro-carrera {
-    background-color: rgba(255, 255, 255, 0.5);
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
+/* Contenedor de cada tarjeta */
 .body-carrera {
-    background-color: #d8747e; /* Rojo que combina con el azul */
     border-radius: 10px;
     padding: 20px;
-}
-
-
-.boton-grupo-carrera {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 15px;
-}
-
-/* Estilo para los botones dentro de las tarjetas */
-.custom-button-carrera {
-    color: white;
-    background-color: #0d234a;
-    border: none;
-    font-family: 'Verona', sans-serif;
-    transition: all 0.3s ease;
-}
-
-.custom-button-carrera:hover {
-    background-color: white;
-    color: #0d234a;
+    text-align: center;
 }

@@ -11,6 +11,4 @@ router.post('/', authenticateToken, authorizeAdmin, createUser);
 router.delete('/:id_usuario', authenticateToken, authorizeAdmin, deleteUser);
 router.put('/:id_usuario', authenticateToken, authorizeAdmin, updateUser);
 
-
-
 module.exports = router;

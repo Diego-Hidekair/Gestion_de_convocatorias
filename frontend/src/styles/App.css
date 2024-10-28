@@ -2,56 +2,46 @@
 
 .app-body {
     background-color: rgba(21, 104, 167, 0.7); 
-    background-image: url("/public/imagenes/fondo_azul_1.jpg"); /* Asegúrate de que la ruta sea correcta */
+    background-image: url("/public/imagenes/blanco_con_azul.jpg");
     background-size: cover;
-    background-position: center; 
+    background-position: center;
     background-repeat: no-repeat;
     color: white;
-    margin: 0;
     font-family: 'Roboto', sans-serif;
+    margin: 0;
 }
-/* Contenedor principal que respeta el sidebar */
+
+/* Contenedor principal con margen adaptable al Sidebar */
 .app-container {
-    position: relative;
     transition: margin-left 0.3s ease, width 0.3s ease;
     min-height: 100vh;
+    position: relative;
 }
-/* Cuando el sidebar está cerrado */
+
+/* Estilo para cuando el sidebar está cerrado */
 .app-container.sidebar-closed {
-    margin-left: 1rem;
+    margin-left: 80px;
     width: calc(100% - 80px);
 }
 
-/* Cuando el sidebar está abierto */
+/* Estilo para cuando el sidebar está abierto */
 .app-container.sidebar-open {
     margin-left: 250px;
     width: calc(100% - 250px);
 }
-/* Contenedor principal que respeta el sidebar */
-.container-main {
-    position: relative;
-    margin-left: 80px; /* Espacio para el sidebar cerrado */
-    padding: 20px; /* Relleno interno */
-    min-height: 100vh; /* Ocupa la altura completa de la pantalla */
-    transition: margin-left 0.3s ease; /* Animación de transición para el margen */
-}
 
-.container-main.open {
-    margin-left: 250px; /* Espacio para el sidebar abierto */
+/* Ajuste de fondo transparente detrás del contenido */
+.background-app {
+    position: rel;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.0);
+    z-index: -1;
 }
 
 /* Ajusta la altura del contenedor al tamaño de la ventana */
 html, body {
     height: 100%;
 }
-
-.background-app {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.0); 
-    z-index: -1; 
-}
-

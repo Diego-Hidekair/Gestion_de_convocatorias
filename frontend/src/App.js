@@ -32,7 +32,6 @@ import PDFGenerator from './components/PDFGenerator';
 import PDFViewer from './components/PDFViewer';
 import './styles/App.css';
 
-axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
 axios.defaults.baseURL = 'http://localhost:5000/';
 
 const App = () => {
@@ -53,7 +52,8 @@ const AuthWrapper = () => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            const expiryTime = JSON.parse(atob(token.split('.')[1])).exp * 1000;
+            const decodedToken = jwtDecode(token);
+            const expiryTime = decodedToken.exp * 1000;
             const currentTime = Date.now();
 
             if (currentTime >= expiryTime) {
@@ -61,15 +61,13 @@ const AuthWrapper = () => {
                 setIsAuthenticated(false);
                 navigate('/login');
             } else {
-                const decodedToken = jwtDecode(token);
                 setUserRole(decodedToken.rol);
                 setIsAuthenticated(true);
-                const timeout = setTimeout(() => {
+                setTimeout(() => {
                     localStorage.removeItem('token');
                     setIsAuthenticated(false);
                     navigate('/login');
                 }, expiryTime - currentTime);
-                return () => clearTimeout(timeout);
             }
         } else {
             navigate('/login');
@@ -77,12 +75,7 @@ const AuthWrapper = () => {
     }, [navigate]);
 
     useEffect(() => {
-        // estilo si esta en inicio de sesion y ya logeado
-        if (isAuthenticated) {
-            document.body.className = "app-body"; 
-        } else {
-            document.body.className = "login-body"; 
-        }
+        document.body.className = isAuthenticated ? "app-body" : "login-body";
     }, [isAuthenticated]);
 
     const handleLogin = () => {
@@ -97,7 +90,7 @@ const AuthWrapper = () => {
     };
     
     const toggleSidebar = () => {
-        setIsOpen(!isOpen); 
+        setIsOpen(!isOpen);
     };
     
     return (
@@ -134,7 +127,7 @@ const AuthWrapper = () => {
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
                         <Route path="/pdf/view/:id_convocatoria" element={<PDFViewer />} /> 
                     </Routes>
-                </>
+                    </>
             ) : (
                 <Routes>
                     <Route path="/login" element={<Login setAuth={handleLogin} />} />

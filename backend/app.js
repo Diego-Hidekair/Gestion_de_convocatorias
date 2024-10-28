@@ -22,7 +22,7 @@ pool.connect()
     .then(() => console.log('Conexión a la base de datos exitosa'))
     .catch(err => console.error('Error conectando a la base de datos', err));
 
-app.use(cors({ //middlewares
+app.use(cors({
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -45,9 +45,10 @@ const routes = [
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/honorarios', route: './routes/honorariosRoutes' },
+    { path: '/usuarios', route: './routes/usuarioRoutes' } 
 ];
 
-routes.forEach(r => app.use(r.path, require(r.route)));
+routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));
 
 // Ruta de verificación
 app.get('/', (req, res) => {
@@ -76,8 +77,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
 });
 
-
-const shutdown = () => {//cerrar sesión cuando se cierra el servidor
+const shutdown = () => {
     console.log('Cerrando el servidor de manera segura...');
     process.exit();
 };

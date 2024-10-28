@@ -1,11 +1,12 @@
-// frontend/src/components/ConvocatoriaList.js
+// frontend/src/components/ConvocatoriaList.js 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Container, Table, Button, Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Container, Table, Button, Modal, ModalHeader, ModalBody, Row, Col } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs";
 import { PiPencilLineBold } from "react-icons/pi";
 import { AiOutlineEye, AiOutlineDownload } from "react-icons/ai";
+import '../styles/convocatoria.css';
 
 const ConvocatoriaList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
@@ -56,15 +57,18 @@ const ConvocatoriaList = () => {
     });
 
     return (
-        <Container className="container-list-convocatoria">
-            <h1 className="text-center-convocatoria mb-4-convocatoria">Lista de Convocatorias</h1>
-            
-            <div className="mb-3-convocatoria d-flex-convocatoria justify-content-between-convocatoria">
-                <Button color="primary" tag={Link} to="/convocatorias/crear">
+        <Container className="container-list-convocatoria mt-4">
+            <Row className="mb-4">
+                <Col>
+                    <h1 className="text-center-convocatoria">Lista de Convocatorias</h1>
+                </Col>
+            </Row>
+            <div className="mb-3 d-flex justify-content-between align-items-center">
+                <Button className="custom-button-convocatoria" color="success" tag={Link} to="/convocatorias/crear">
                     Crear Nueva Convocatoria
                 </Button>
                 
-                <div>
+                <div className="search-container-convocatoria">
                     <select className="form-select-convocatoria" value={searchBy} onChange={(e) => setSearchBy(e.target.value)}>
                         <option value="">Buscar por...</option>
                         <option value="nombre">Nombre</option>
@@ -72,7 +76,7 @@ const ConvocatoriaList = () => {
                         <option value="fecha_fin">Fecha de Fin</option>
                         <option value="nombre_tipoconvocatoria">Tipo de Convocatoria</option>
                         <option value="nombre_programa">Carrera</option> 
-                        <option value="nombre_facultad">Facultad</option> {/* Nueva opción de búsqueda */}
+                        <option value="nombre_facultad">Facultad</option>
                     </select>
                     <input
                         type="text"
@@ -84,16 +88,17 @@ const ConvocatoriaList = () => {
                 </div>
             </div>
 
-            <Table striped bordered responsive>
+            <Table className="table-convocatoria" bordered borderless hover size="" striped>
+
                 <thead>
-                    <tr>
+                    <tr >
                         <th>Nombre</th>
                         <th>Fecha de Inicio</th>
                         <th>Fecha de Fin</th>
                         <th>Usuario</th>
                         <th>Tipo de Convocatoria</th>
-                        <th>Carrera</th> 
-                        <th>Facultad</th> {/* Nueva columna de facultad */}
+                        <th>Carrera</th>
+                        <th>Facultad</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -107,23 +112,24 @@ const ConvocatoriaList = () => {
                             <td>{convocatoria.id_usuario}</td>
                             <td>{convocatoria.nombre_tipoconvocatoria}</td>
                             <td>{convocatoria.nombre_programa}</td>
-                            <td>{convocatoria.nombre_facultad}</td> {/* Mostrar facultad */}
+                            <td>{convocatoria.nombre_facultad}</td>
                             <td>{convocatoria.estado}</td>
                             <td>
-                                <div className="d-flex-convocatoria flex-column-convocatoria align-items-center-convocatoria">
-                                    <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`} className="custom-button-convocatoria mb-1-convocatoria">
-                                        <PiPencilLineBold className="icon" /> Editar
+                                <div className="d-flex flex-column align-items-center">
+                                    <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`}>
+                                        <PiPencilLineBold className="icon-convocatoria" /> Editar
                                     </Button>
-                                    <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="custom-button-convocatoria mb-1-convocatoria">
-                                        <BsTrashFill className="icon" /> Eliminar
+                                    <br /><br />
+                                    <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)}>
+                                        <BsTrashFill className="icon-convocatoria" /> Eliminar
                                     </Button>
                                     {convocatoria.documento_path && (
                                         <>
-                                            <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button-convocatoria mb-1-convocatoria">
-                                                <AiOutlineEye className="icon" /> Vista Previa
+                                            <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button-convocatoria mb-1">
+                                                <AiOutlineEye className="icon-convocatoria" /> Vista Previa
                                             </Button>
-                                            <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="custom-button-convocatoria">
-                                                <AiOutlineDownload className="icon" /> Descargar
+                                            <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download>
+                                                <AiOutlineDownload className="icon-convocatoria" /> Descargar
                                             </Button>
                                         </>
                                     )}
@@ -150,4 +156,4 @@ const ConvocatoriaList = () => {
     );
 };
 
-export default ConvocatoriaList;
+export default ConvocatoriaList; 

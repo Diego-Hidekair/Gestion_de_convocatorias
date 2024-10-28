@@ -1,7 +1,7 @@
-// frontend/src/components/CarreraList.js
+// frontend/src/components/CarreraList.js 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Card, CardBody, CardTitle, Row, Col } from 'reactstrap'; // No necesitas el botón
+import { Container, Card, CardBody, CardTitle, Row, Col } from 'reactstrap';
 import '../styles/carrera.css';
 
 const CarreraList = ({ isOpen }) => { 
@@ -25,7 +25,6 @@ const CarreraList = ({ isOpen }) => {
                 <div className="titulo-carrera-rectangulo">
                     <h1 className="text-titulo-carrera">Lista de Carreras</h1>
                 </div>
-
                 <Row className="cuadros-informacion-carrera">
                     {carreras.map((carrera) => (
                         <Col sm="12" md="4" lg="4" key={carrera.id_programa} className="mb-4-carrera">
