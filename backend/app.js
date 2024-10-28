@@ -46,6 +46,7 @@ const routes = [
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' } 
+    
 ];
 
 routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));

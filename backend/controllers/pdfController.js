@@ -35,11 +35,7 @@ const generarPDFBuffer = (htmlContent, options) => {
 exports.generatePDF = async (req, res) => {
     const { id_convocatoria, id_honorario } = req.params;
     
-    console.log('ID Convocatoria:', id_convocatoria);
-    console.log('ID Honorario:', id_honorario);
-
     try {
-        // Obtener datos para el pdf de convocatoria
         const convocatoriaResult = await pool.query(`
             SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.Nombre_carrera, f.Nombre_facultad
             FROM convocatorias c
@@ -64,7 +60,7 @@ exports.generatePDF = async (req, res) => {
         console.log('honorarios:', honorarios);
 
         if (!convocatoria || !honorarios) {
-            return res.status(404).json({ error: "Datos de convocatoria o honorarios no encontrados" });
+            return res.status(404).json({ error: "Datos no encontrados" });
         }
 
         if (convocatoria.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
@@ -286,9 +282,30 @@ exports.generatePDF = async (req, res) => {
                 left: '2cm'
             }
         };
-        // Generar el buffer del PDF
+
         const pdfBuffer = await generarPDFBuffer(htmlContent, options);
 
+        const documentoExistente = await pool.query(`
+            SELECT 1 FROM documentos WHERE id_convocatoria = $1
+        `, [id_convocatoria]);
+
+        if (documentoExistente.rowCount > 0) {
+            await pool.query(`
+                UPDATE documentos SET 
+                    documento_path = $1,
+                    resolucion_path = $2,
+                    dictamen_path = $3,
+                    carta_path = $4        
+                WHERE id_convocatoria = $5
+            `, [pdfBuffer, null, null, null, id_convocatoria]);
+        } else {
+            await pool.query(`
+                INSERT INTO documentos (id_convocatoria, documento_path, resolucion_path, dictamen_path, carta_path) 
+                VALUES ($1, $2, $3, $4, $5)
+            `, [id_convocatoria, pdfBuffer, null, null, null]);
+        }
+
+        
         // Actualizar la base de datos con el contenido binario (BYTEA)
         await pool.query(`
             UPDATE documentos SET 
@@ -298,13 +315,12 @@ exports.generatePDF = async (req, res) => {
                 carta_path = $4        
             WHERE id_convocatoria = $5
         `, [
-            pdfBuffer, // documento_path (PDF como BYTEA)
+            pdfBuffer, 
             null,
             null,
             null,  
-            id_convocatoria  // ID de la convocatoria
+            id_convocatoria 
         ]);
-         // Enviar respuesta de éxito
         res.status(200).json({ message: 'PDF generado y almacenado con éxito en la base de datos' });
         } catch (error) {
             console.error('Error generando el PDF:', error);
@@ -375,14 +391,14 @@ exports.viewCombinedPDF = async (req, res) => {
         const pdfResult = await pool.query(`
             SELECT documento_path FROM documentos WHERE id_convocatoria = $1
         `, [id_convocatoria]);
-        
-        if (pdfResult.rows[0].documento_path) {
+
+        if (pdfResult.rows[0] && pdfResult.rows[0].documento_path) {
             res.setHeader('Content-Type', 'application/pdf');
             res.send(pdfResult.rows[0].documento_path); // Enviar el contenido BYTEA
         } else {
             res.status(404).json({ error: 'PDF no encontrado' });
         }
-        
+
     } catch (error) {
         console.error('Error visualizando el PDF:', error);
         res.status(500).json({ error: 'Error visualizando el PDF' });

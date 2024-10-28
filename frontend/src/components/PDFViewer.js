@@ -1,4 +1,3 @@
-// frontend/src/components/PDFViewer.js
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -13,21 +12,24 @@ const PDFViewer = () => {
     const fetchCombinedPDF = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/pdf/combinado/${id_convocatoria}`, {
-          responseType: 'blob', // Importante para manejar archivos
+          responseType: 'blob',
         });
-
         const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
         const pdfUrl = URL.createObjectURL(pdfBlob);
         setPdfUrl(pdfUrl);
-        setLoading(false);
       } catch (error) {
         console.error('Error obteniendo el PDF combinado:', error);
         setError('Error al cargar el PDF combinado.');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchCombinedPDF();
+
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl); 
+    };
   }, [id_convocatoria]);
 
   return (
