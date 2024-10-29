@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Container, Table, Button, Modal, ModalHeader, ModalBody, Row, Col } from 'reactstrap';
+import { Container, Button, Modal, ModalHeader, ModalBody, Row, Col, Card, CardBody, CardTitle, CardText } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs";
 import { PiPencilLineBold } from "react-icons/pi";
 import { AiOutlineEye, AiOutlineDownload } from "react-icons/ai";
@@ -50,7 +50,10 @@ const ConvocatoriaList = () => {
         toggleModal();
     };
 
-    const filteredConvocatorias = convocatorias.filter(convocatoria => {
+    // Ordenar las convocatorias antes de aplicar el filtro
+    const sortedConvocatorias = convocatorias.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const filteredConvocatorias = sortedConvocatorias.filter(convocatoria => {
         if (!searchBy) return true;
         const value = convocatoria[searchBy]?.toString().toLowerCase();
         return value?.includes(searchTerm.toLowerCase());
@@ -88,57 +91,38 @@ const ConvocatoriaList = () => {
                 </div>
             </div>
 
-            <Table className="table-convocatoria" bordered borderless hover size="" striped>
-
-                <thead>
-                    <tr >
-                        <th>Nombre</th>
-                        <th>Fecha de Inicio</th>
-                        <th>Fecha de Fin</th>
-                        <th>Usuario</th>
-                        <th>Tipo de Convocatoria</th>
-                        <th>Carrera</th>
-                        <th>Facultad</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredConvocatorias.map((convocatoria) => (
-                        <tr key={convocatoria.id_convocatoria}>
-                            <td>{convocatoria.nombre}</td>
-                            <td>{formatDate(convocatoria.fecha_inicio)}</td>
-                            <td>{formatDate(convocatoria.fecha_fin)}</td>
-                            <td>{convocatoria.id_usuario}</td>
-                            <td>{convocatoria.nombre_tipoconvocatoria}</td>
-                            <td>{convocatoria.nombre_programa}</td>
-                            <td>{convocatoria.nombre_facultad}</td>
-                            <td>{convocatoria.estado}</td>
-                            <td>
-                                <div className="d-flex flex-column align-items-center">
-                                    <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`}>
-                                        <PiPencilLineBold className="icon-convocatoria" /> Editar
+            {filteredConvocatorias.map((convocatoria) => (
+                <Card key={convocatoria.id_convocatoria} className="convocatoria-card mb-3">
+                    <CardBody>
+                        <CardTitle tag="h5" className="convocatoria-title">{convocatoria.nombre}</CardTitle>
+                        <CardText className="convocatoria-details">
+                            <strong>Fecha de Inicio:</strong> {formatDate(convocatoria.fecha_inicio)} | 
+                            <strong> Fecha de Fin:</strong> {formatDate(convocatoria.fecha_fin)} | 
+                            <strong> Tipo:</strong> {convocatoria.nombre_tipoconvocatoria} | 
+                            <strong> Carrera:</strong> {convocatoria.nombre_programa} | 
+                            <strong> Facultad:</strong> {convocatoria.nombre_facultad}
+                        </CardText>
+                        <div className="d-flex justify-content-end">
+                            <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`}>
+                                <PiPencilLineBold className="icon-convocatoria" /> Editar
+                            </Button>
+                            <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="mx-2">
+                                <BsTrashFill className="icon-convocatoria" /> Eliminar
+                            </Button>
+                            {convocatoria.documento_path && (
+                                <>
+                                    <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)}>
+                                        <AiOutlineEye className="icon-convocatoria" /> Vista Previa
                                     </Button>
-                                    <br /><br />
-                                    <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)}>
-                                        <BsTrashFill className="icon-convocatoria" /> Eliminar
+                                    <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="mx-2">
+                                        <AiOutlineDownload className="icon-convocatoria" /> Descargar
                                     </Button>
-                                    {convocatoria.documento_path && (
-                                        <>
-                                            <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)} className="custom-button-convocatoria mb-1">
-                                                <AiOutlineEye className="icon-convocatoria" /> Vista Previa
-                                            </Button>
-                                            <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download>
-                                                <AiOutlineDownload className="icon-convocatoria" /> Descargar
-                                            </Button>
-                                        </>
-                                    )}
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+                                </>
+                            )}
+                        </div>
+                    </CardBody>
+                </Card>
+            ))}
 
             <Modal isOpen={isModalOpen} toggle={toggleModal} size="lg">
                 <ModalHeader toggle={toggleModal}>Vista Previa del PDF</ModalHeader>
@@ -156,4 +140,4 @@ const ConvocatoriaList = () => {
     );
 };
 
-export default ConvocatoriaList; 
+export default ConvocatoriaList;
