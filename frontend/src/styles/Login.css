@@ -1,32 +1,55 @@
 /* frontend/src/styles/Login.css */
-
-/*fondo de color login*/
-.login-body {
-    background: linear-gradient(to left, #940a0d, #1E3C72); 
-    height: 100vh;
+/* Estilo general de la página */
+.login-page {
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin: 0;
+    justify-content: center;
+    height: 100vh;
+    background: #f5f5f5;
 }
 
-/* contenedor del login */
+/* Contenedor principal dividido en dos columnas */
 .login-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    width: 80%;
+    max-width: 900px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-/* Caja de login */
-.login-box {
-    background-color: rgba(0, 0, 0, 0.7); /**transparencia*/
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+/* Columna izquierda (formulario de login) */
+.login-form-container {
+    flex: 1;
+    background: #fff;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+/* Contenedor del título e imagen pequeña */
+.login-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.mini-logo {
+    width: 160px;
+    height: 80px;
+    border-radius: 1rem;
+    margin-right: 50px;
+    background-color: rgba(0,0,0,0.2);
+}
+
+.login-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
     text-align: center;
-    width: 400px;
-    max-width: 400px; 
 }
 
 /* Botón de login */
@@ -40,33 +63,62 @@
     cursor: pointer;
     font-weight: bold;
     display: inline-block;
+    margin-top: 10px;
 }
 
 .btn-login:hover {
-    background-color: #1E3C72; 
+    background-color: #ff6b6b;
 }
 
-/* espacios a rellenar e iniciar sesion */
+/* Campos del formulario */
 .form-control {
-    background-color: rgb(255, 255, 255);
-    border: none;
+    background-color: rgb(245, 245, 245);
+    border: 1px solid #ddd;
     border-radius: 25px;
     padding: 10px;
     margin-bottom: 15px;
     width: 100%;
-    color: #fff; 
+    color: #333;
 }
 
-/*imagen del logo */
-.login-logo {
-    max-width: 200px; 
-    height: auto;
+/* Footer de copyright */
+.login-footer {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    font-size: 12px;
+    color: #666;
 }
 
-/* título del login */
-.login-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #fff;
+/* Columna derecha (imagen de fondo) */
+.login-background-image {
+    flex: 1;
+    background-image: url('/public/imagenes/universidad-fondo.jpg'); /* Usa la imagen en la carpeta "public/imagenes" */
+    background-size: cover;
+    background-position: center;
+}
+
+/* Barra superior */
+.top-bar {
+    background-color: #c0c0c0; /* Color plomo */
+    padding: 10px; /* Espaciado */
+    position: fixed; /* Fijo en la parte superior */
+    width: 100%; /* Ocupa todo el ancho */
+    z-index: 1000; /* Asegura que esté por encima del resto */
+}
+
+/* Logo en la barra superior */
+.logo {
+    width: 10rem; /* Ajusta el tamaño según necesites */
+    height: auto; /* Mantiene la relación de aspecto */
+}
+
+/* Estilo general de la página */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #f5f5f5;
+    padding-top: 60px; /* Para evitar que el contenido quede detrás de la barra superior */
 }
