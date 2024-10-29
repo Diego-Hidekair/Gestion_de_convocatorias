@@ -43,51 +43,55 @@ const UsuarioForm = () => {
             }
         } catch (error) {
             console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
-            console.log('Estado del error:', error.response ? error.response.status : 'No hay respuesta del servidor');
         }
     };
 
     return (
-        <div className="container mt-5">
-            <h2>Crear Usuario</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label>ID de Usuario</label> {/* Cambio aquí */}
-                    <input type="text" className="form-control" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required /> {/* Cambio aquí */}
+        <div className="container-user mt-5-user">
+            <h2 className="title-user">Crear Usuario</h2>
+            <form onSubmit={handleSubmit} className="form-user">
+                <div className="row mb-3-user">
+                    <div className="col-md-6">
+                        <label className="label-user">ID de Usuario</label>
+                        <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="label-user">Nombres</label>
+                        <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
+                    </div>
                 </div>
-
-                <div className="mb-3">
-                    <label>Nombres</label>
-                    <input type="text" className="form-control" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
+                <div className="row mb-3-user">
+                    <div className="col-md-6">
+                        <label className="label-user">Apellido Paterno</label>
+                        <input type="text" className="form-control-user" name="Apellido_paterno" value={usuario.Apellido_paterno} onChange={handleChange} required />
+                    </div>
+                    <div className="col-md-6">
+                        <label className="label-user">Apellido Materno</label>
+                        <input type="text" className="form-control-user" name="Apellido_materno" value={usuario.Apellido_materno} onChange={handleChange} required />
+                    </div>
                 </div>
-                <div className="mb-3">
-                    <label>Apellido Paterno</label>
-                    <input type="text" className="form-control" name="Apellido_paterno" value={usuario.Apellido_paterno} onChange={handleChange} required />
+                <div className="row mb-3-user">
+                    <div className="col-md-6">
+                        <label className="label-user">Rol</label>
+                        <select className="form-control-user" name="Rol" value={usuario.Rol} onChange={handleChange} required>
+                            <option value="">Seleccione rol</option>
+                            <option value="admin">Admin</option>
+                            <option value="usuario">Usuario</option>
+                            <option value="secretaria">Secretaria</option>
+                            <option value="decanatura">Decanatura</option>
+                            <option value="vicerrectorado">Vicerrectorado</option>
+                        </select>
+                    </div>
+                    <div className="col-md-6">
+                        <label className="label-user">Celular</label>
+                        <input type="text" className="form-control-user" name="Celular" value={usuario.Celular} onChange={handleChange} required />
+                    </div>
                 </div>
-                <div className="mb-3">
-                    <label>Apellido Materno</label>
-                    <input type="text" className="form-control" name="Apellido_materno" value={usuario.Apellido_materno} onChange={handleChange} required />
+                <div className="mb-3-user">
+                    <label className="label-user">Contraseña</label>
+                    <input type="password" className="form-control-user" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
                 </div>
-                <div className="mb-3">
-                    <label>Rol</label>
-                    <select className="form-control" name="Rol" value={usuario.Rol} onChange={handleChange} required>
-                        <option value="">Seleccione rol</option>
-                        <option value="admin">Admin</option>
-                        <option value="usuario">Usuario</option>
-                        <option value="secretaria">Secretaria</option>
-                        <option value="decanatura">Decanatura</option>
-                        <option value="vicerrectorado">Vicerrectorado</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label>Contraseña</label>
-                    <input type="password" className="form-control" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
-                </div>
-                <div className="mb-3">
-                    <label>Celular</label>
-                    <input type="text" className="form-control" name="Celular" value={usuario.Celular} onChange={handleChange} required />
-                </div>
-                <button type="submit" className="btn btn-primary">Crear Usuario</button>
+                <button type="submit" className="btn-user btn-primary-user">Crear Usuario</button>
             </form>
         </div>
     );

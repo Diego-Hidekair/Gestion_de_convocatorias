@@ -49,13 +49,14 @@ const Login = ({ setAuth }) => {
 
     return (
         <>
-            {/* Barra superior con el logo */}
             <div className="top-bar">
                 <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="logo" />
             </div>
+            <footer className="login-footer">
+                ©-UATF-2024-Diego-Fajardo
+            </footer>
             <div className="login-page">
                 <div className="login-container">
-                    {/* Columna izquierda para el formulario */}
                     <div className="login-form-container">
                         <div className="login-title-container">
                             <h2 className="login-title">LOGIN</h2>
@@ -90,9 +91,6 @@ const Login = ({ setAuth }) => {
                                 Ingresar
                             </button>
                         </form>
-                        <footer className="login-footer">
-                            UATF-2024-Diego-Fajardo
-                        </footer>
                     </div>
                     <div className="login-background-image"></div>
                 </div>

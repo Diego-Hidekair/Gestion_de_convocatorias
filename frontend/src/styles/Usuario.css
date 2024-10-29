@@ -1,0 +1,196 @@
+/* frontend/src/styles/Usuario.css */ 
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap');
+
+/* Estilos generales */
+.container-user {
+    margin: 12rem;
+    margin-top: 2rem;
+    background-color: #00639a;
+    padding: 2rem;
+    border-radius: 2rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: #fff;
+}
+
+.title-user {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.alert-user {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #28a745;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 5px;
+}
+
+.btn-user {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    margin-right: 0.5rem;
+    border: none; /* Eliminar bordes de los botones */
+    cursor: pointer; /* Cambiar el cursor para indicar que es clickeable */
+    transition: background-color 0.3s; /* Transición suave para el fondo */
+}
+
+.btn-primary-user {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-primary-user:hover {
+    background-color: #0056b3; /* Cambio en hover */
+}
+
+.btn-success-user {
+    background-color: #136827;
+    color: #fff;
+}
+
+.btn-danger-user {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.usuarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.usuario-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    color: #333;
+    transition: transform 0.3s;
+}
+
+.usuario-card:hover {
+    transform: translateY(-5px);
+}
+
+.perfil-content-user {
+    display: flex; 
+    align-items:normal; 
+    margin:2rem;
+    padding: 2rem;
+}
+
+.perfil-image-user {
+    width: 300px; /* Ajusta el tamaño de la imagen */
+    height: 300px; /* Mantén la imagen cuadrada */
+    border-radius: 50%; /* Hacer la imagen redonda */
+    object-fit: cover; /* Mantener la proporción de la imagen */
+    border: 2px solid #fff; /* Borde blanco alrededor de la imagen */
+    margin-right: 2rem; /* Espacio entre la imagen y el texto */
+}
+
+.usuario-info-container-user {
+    background-color: rgba(0, 0, 0, 0.5)
+    ; /* Fondo blanco */
+    border-radius: 2rem; /* Bordes redondeados */
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.8); /* Sombra sutil */
+    color: #333; /* Color de texto del contenedor */
+    display: grid; /* Usar grid para organizar los datos */
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 1rem; /* Espacio entre las celdas */
+}
+
+.usuario-id-user,
+.usuario-name-user,
+.usuario-apellido-paterno-user,
+.usuario-apellido-materno-user,
+.usuario-role-user,
+.usuario-phone-user {
+    margin: 0.5rem 0;
+    font-size: 1.1rem; 
+    background-color: #0056b3;
+    color: white;
+    border-radius: 2rem;
+    padding: 1rem;
+}
+
+.loading-user {
+    color: #fff; /* Color de texto para el mensaje de carga */
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* Estilos del encabezado */
+.header-app {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(45deg, rgba(0, 33, 74, 0.8) 50%, rgba(160, 0, 2, 0.8) 50%);
+    padding: 0.6rem 4rem;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    font-family: 'Noto Serif', serif;
+}
+
+.header-app h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-icon {
+    font-size: 1.8rem;
+    margin-right: 0.5rem;
+}
+
+.footer-app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(45deg, rgba(0, 33, 74, 0.8) 50%, rgba(160, 0, 2, 0.8) 50%);
+    padding: 0.1rem;
+    color: white;
+    font-size: 0.9rem;
+    font-family: 'Noto Serif', serif;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos del formulario */
+.form-user {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.mb-3-user {
+    margin-bottom: 1rem;
+}
+
+.label-user {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.form-control-user {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 2rem;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    color: #333;
+}

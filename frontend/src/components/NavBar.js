@@ -1,9 +1,9 @@
 // frontend/src/components/NavBar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import { Collapse, Nav, NavLink, DropdownItem, Button, UncontrolledDropdown, DropdownToggle, DropdownMenu } from 'reactstrap';
-import { FiMenu, FiUser, FiLogOut, FiHome, FiBook, FiSettings } from 'react-icons/fi';
+import { FiMenu, FiUser,FiUsers, FiActivity, FiBookOpen, FiClipboard, FiLayers, FiHome, FiBook} from 'react-icons/fi';
 import '../styles/Sidebar.css';
 
 const NavBar = ({ onLogout }) => {
@@ -39,10 +39,6 @@ const NavBar = ({ onLogout }) => {
 
     const userId = localStorage.getItem('userId');
 
-    const closeMenu = () => {
-        setIsOpen(false);
-    };
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             const sidebar = document.querySelector('.sidebar');
@@ -72,7 +68,6 @@ const NavBar = ({ onLogout }) => {
                         )}
                         <Collapse isOpen={isOpen} navbar>
                             <Nav vertical navbar className="sidebar-nav">
-                                {/* Solo para usuarios con rol admin y vicerrectorado */}
                                 {(role === 'admin' || role === 'vicerrectorado') && (
                                     <>
                                         <NavLink tag={Link} to="/facultades" className={location.pathname === '/facultades' ? 'active' : ''}>
@@ -84,20 +79,22 @@ const NavBar = ({ onLogout }) => {
                                             {isOpen && <span className="nav-text">Carreras</span>}
                                         </NavLink>
                                         <NavLink tag={Link} to="/tipos-convocatorias" className={location.pathname === '/tipos-convocatorias' ? 'active' : ''}>
-                                            <FiUser className="nav-icon" />
+                                            <FiLayers className="nav-icon" />
                                             {isOpen && <span className="nav-text">Tipo de Convocatorias</span>}
                                         </NavLink>
                                         <NavLink tag={Link} to="/materias" className={location.pathname === '/materias' ? 'active' : ''}>
-                                            <FiSettings className="nav-icon" />
+                                            <FiBookOpen className="nav-icon" />
                                             {isOpen && <span className="nav-text">Materias</span>}
                                         </NavLink>
                                     </>
                                 )}
                                 <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
+                                    <FiClipboard  className="nav-icon" />
                                     <span className="nav-text">Convocatorias</span>
                                 </NavLink>
                                 <UncontrolledDropdown nav inNavbar>
                                     <DropdownToggle nav caret>
+                                        <FiActivity  className="nav-icon" />
                                         Estados de Convocatoria
                                     </DropdownToggle>
                                     <DropdownMenu end>
@@ -117,21 +114,20 @@ const NavBar = ({ onLogout }) => {
                                 </UncontrolledDropdown>
                                 {userId && (
                                     <NavLink tag={Link} to={`/usuarios/me/${userId}`} className={location.pathname === `/usuarios/me/${userId}` ? 'active' : ''}>
+                                        <FiUser className="nav-icon" />
                                         <span className="nav-text">Perfil de Usuario</span>
                                     </NavLink>
                                 )}
-                                {/* Solo para usuarios con rol admin */}
                                 {role === 'admin' && (
                                     <NavLink tag={Link} to="/usuarios" className={location.pathname === '/usuarios' ? 'active' : ''}>
+                                        <FiUsers className="nav-icon" />
                                         <span className="nav-text">Usuarios</span>
                                     </NavLink>
                                 )}
+                                <br></br>
                                 <DropdownItem divider />
                                 <Button color="danger" onClick={handleLogout} className="logout-button">
                                     Cerrar Sesión
-                                </Button> 
-                                <Button className="close-menu-button" onClick={closeMenu}>
-                                    Cerrar Menú
                                 </Button>
                             </Nav>
                         </Collapse>

@@ -1,15 +1,16 @@
 /* frontend/src/styles/App.css */
 
 .app-body {
-    background-color: rgba(21, 104, 167, 0.7); 
+    background-color: rgba(255, 255, 255, 0.7); 
     background-image: url("/public/imagenes/blanco_con_azul.jpg");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: repeat;
     color: white;
     font-family: 'Roboto', sans-serif;
     margin: 0;
 }
+
 
 /* Contenedor principal con margen adaptable al Sidebar */
 .app-container {

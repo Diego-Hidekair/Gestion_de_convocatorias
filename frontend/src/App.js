@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import FacultadList from './components/FacultadList';
 import ConvocatoriaList from './components/ConvocatoriaList';
@@ -44,10 +44,11 @@ const App = () => {
 
 const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isOpen, setIsOpen] = useState(false); 
+    const [isOpen, setIsOpen] = useState(false);
     const [userRole, setUserRole] = useState('');
+    const [userName, setUserName] = useState('');
+    const [userLastName, setUserLastName] = useState('');
     const navigate = useNavigate();
-
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -62,6 +63,8 @@ const AuthWrapper = () => {
                 navigate('/login');
             } else {
                 setUserRole(decodedToken.rol);
+                setUserName(decodedToken.nombre);
+                setUserLastName(decodedToken.apellido_paterno);
                 setIsAuthenticated(true);
                 setTimeout(() => {
                     localStorage.removeItem('token');
@@ -88,7 +91,7 @@ const AuthWrapper = () => {
         setIsAuthenticated(false);
         navigate('/login');
     };
-    
+
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
@@ -98,6 +101,16 @@ const AuthWrapper = () => {
             <div className="background-app"></div>
             {isAuthenticated ? (
                 <>
+                    <header className="header-app">    
+                        <h1>Aplicación Web de Gestión de Convocatorias</h1>
+                        <div className="user-info">
+                            <i className="user-icon fas fa-user-circle"></i>
+                            <span>{userName} {userLastName}</span>
+                        </div>
+                        <div>
+                            <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="logo" />
+                        </div>
+                    </header>
                     <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} />
                     <Routes>
                         <Route path="/" element={<Navigate to="/redirect" />} /> 
@@ -127,7 +140,10 @@ const AuthWrapper = () => {
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
                         <Route path="/pdf/view/:id_convocatoria" element={<PDFViewer />} /> 
                     </Routes>
-                    </>
+                    <footer className="footer-app">
+                        <p>Copyright © UATF - Diego Fajardo</p>
+                    </footer>
+                </>
             ) : (
                 <Routes>
                     <Route path="/login" element={<Login setAuth={handleLogin} />} />
@@ -135,7 +151,6 @@ const AuthWrapper = () => {
                     <Route path="*" element={<Navigate to="/login" />} />
                 </Routes>
             )}
-            
         </div>
     );
 };

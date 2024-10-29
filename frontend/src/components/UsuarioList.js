@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';
+import '../styles/Usuario.css';
 
 const UsuarioList = () => {
     const [usuarios, setUsuarios] = useState([]);
@@ -43,45 +44,30 @@ const UsuarioList = () => {
         }
     };
     
-    
     return (
-        <div className="container mt-5">
-            <h2>Lista de Usuarios</h2>
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
-            <Link to="/usuarios/new" className="btn btn-success mb-3">Crear Nuevo Usuario</Link>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombres</th>
-                        <th>Apellido Paterno</th>
-                        <th>Apellido Materno</th>
-                        <th>Rol</th>
-                        <th>Celular</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {usuarios.map((usuario) => (
-                        <tr key={usuario.id_usuario}>  
-                            <td>{usuario.id_usuario}</td>  
-                            <td>{usuario.nombres}</td>
-                            <td>{usuario.apellido_paterno}</td>
-                            <td>{usuario.apellido_materno}</td>
-                            <td>{usuario.rol}</td>
-                            <td>{usuario.celular}</td>
-                            <td>
-                                <Link to={`/usuarios/edit/${usuario.id_usuario}`} className="btn btn-primary btn-sm"> {/* Cambio aquí */}
-                                    Editar
-                                </Link>
-                                <button onClick={() => deleteUser(usuario.id_usuario)} className="btn btn-danger btn-sm ms-2"> {/* Cambio aquí */}
-                                    Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div className="container-user mt-5-user">
+            <h2 className="title-user">Lista de Usuarios</h2>
+            {successMessage && <div className="alert-user alert-success-user">{successMessage}</div>}
+            <Link to="/usuarios/new" className="btn-user btn-success-user mb-3-user">Crear Nuevo Usuario</Link>
+            
+            <div className="usuarios-grid">
+                {usuarios.map((usuario) => (
+                    <div key={usuario.id_usuario} className="usuario-card">
+                        <h5 className="usuario-id">ID: {usuario.id_usuario}</h5>
+                        <p className="usuario-name"><strong>Nombre:</strong> {usuario.nombres} {usuario.apellido_paterno} {usuario.apellido_materno}</p>
+                        <p className="usuario-role"><strong>Rol:</strong> {usuario.rol}</p>
+                        <p className="usuario-phone"><strong>Celular:</strong> {usuario.celular}</p>
+                        <div className="usuario-actions">
+                            <Link to={`/usuarios/edit/${usuario.id_usuario}`} className="btn-user btn-primary-user">
+                                Editar
+                            </Link>
+                            <button onClick={() => deleteUser(usuario.id_usuario)} className="btn-user btn-danger-user ms-2-user">
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
