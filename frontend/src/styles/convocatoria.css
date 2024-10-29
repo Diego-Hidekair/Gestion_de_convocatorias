@@ -2,9 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Gotham:wght@400&display=swap');
 
-/* Contenedor principal con fondo azul */
+/* Contenedor principal */
 .container-list-convocatoria {
-    background-color: #0d234a;
+    background-color: #00639a;
     padding: 20px;
     border-radius: 1rem;
     color: white;
@@ -13,7 +13,7 @@
 /* Título */
 .text-center-convocatoria {
     font-family: 'Arvo', serif;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2));
+    background: linear-gradient(90deg, rgba(0, 99, 154, 1), rgba(0, 99, 154, 1));
     padding: 15px 20px;
     text-align: center;
     border-radius: 1rem;
@@ -21,6 +21,8 @@
     color: white;
 }
 
+
+/* Contenedor de búsqueda */
 .search-container-convocatoria {
     display: flex;
     align-items: center;
@@ -30,27 +32,33 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Campos de formulario */
 .form-select-convocatoria, .form-control-convocatoria {
     border-radius: 2rem;
     background-color: #00639a;
-    color: #f1f1f1;
+    color: #000000;
     padding: 0.5rem;
     border: 1px solid #ffffff;
     margin: 0 5px;
 }
 
-/* Efectos al enfocar el campo de búsqueda */
+.form-control-convocatoria, .form-control{
+color: #ffffff;
+background-color: #00639a;
+}
+
 .form-select-convocatoria:focus, .form-control-convocatoria:focus {
     background-color: #ffffff;
     outline: none;
-    color: black;
+    color: #00639a;
     border-color: #00639a;
     box-shadow: 0 0 5px rgba(216, 116, 126, 0.5);
 }
 
+/* Tabla */
 .table-convocatoria {
     background-color: #ffffff;
-    border-radius: 15px; /* Esquinas redondeadas */
+    border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     overflow: hidden;
     margin-top: 20px;
@@ -60,7 +68,7 @@
     border: 1px solid #ddd;
 }
 
-.table-convocatoria th {
+.table-convocatoria th, .table-convocatoria thead th {
     background-color: #00639a;
     color: white;
     font-weight: bold;
@@ -73,33 +81,51 @@
 }
 
 .table-convocatoria tbody tr:nth-child(even) {
-    background-color: #f9f9f9; /* Color alternativo para filas */
+    background-color: #f9f9f9;
 }
 
-.table-convocatoria thead th {
-    background-color: #00639a;
-    color: white;
-    font-weight: bold;
-    padding: 15px;
-}
-
-
+/* Botones personalizados */
 .custom-button-convocatoria { 
-    transition: background-color 0.3s, 
-    color 0.3s, 
-    transform 0.3s; 
+    transition: background-color 0.3s, color 0.3s, transform 0.3s; 
     border-color: #ffffff; 
     padding: 1rem; 
     margin: 5px; 
-    font-family: 'Arvo', serif; 
+    font-family: 'Arvo', serif;
+    background-color: #ffffff;
+    color: #060a16;
 }
 
-.custom-button-convocatoria { 
-    background-color: rgb(255, 255, 255); 
-    color: #060a16; 
-    transform: translateY(-2px); 
+.custom-button-convocatoria:hover {
+    transform: translateY(-2px);
 }
 
-.modal-body-convocatoria { padding: 20px; }
+/* Modal */
+.modal-body-convocatoria {
+    padding: 20px;
+}
 
-.icon-convocatoria { margin-right: 5px; }
+/* Iconos */
+.icon-convocatoria {
+    margin-right: 5px;
+}
+
+/* Tarjeta de convocatoria */
+.convocatoria-card {
+    background-color: #da1c1c;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+}
+
+.convocatoria-title {
+    font-family: 'Arvo', serif;
+    color: #0d234a;
+}
+
+.convocatoria-details {
+    font-family: 'Gotham', sans-serif;
+    color: #333;
+    margin: 0.5rem 0;
+}
+
+

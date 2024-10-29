@@ -6,6 +6,7 @@ import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label, I
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/convocatoria.css';
 
 const ConvocatoriaForm = () => {
     const { id } = useParams();
@@ -137,16 +138,16 @@ const ConvocatoriaForm = () => {
         }
     };
 
-    return (
+return (
         <div>
-            <Container >
+            <Container className="container-list-convocatoria">
                 <Row className="mb-4-convocatoria">
                     <Col>
                         <h1 className="text-center-convocatoria">{id ? 'Editar' : 'Registrar'} Convocatoria</h1>
                     </Col>
                 </Row>
                 <Row>
-                    <Col sm="12" md="8" lg="6" className="mx-auto-convocatoria">
+                    <Col >
                         <Card className="card-custom-convocatoria">
                             <CardBody>
                                 <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
@@ -157,6 +158,7 @@ const ConvocatoriaForm = () => {
                                             type="select"
                                             name="id_tipoconvocatoria"
                                             id="id_tipoconvocatoria"
+                                            className="form-select-convocatoria"
                                             value={convocatoria.id_tipoconvocatoria}
                                             onChange={handleTipoConvocatoriaChange}
                                             required
@@ -171,22 +173,24 @@ const ConvocatoriaForm = () => {
                                     </FormGroup>
                                     <FormGroup>
                                         <Label for="nombre">Nombre de Convocatoria</Label>
-                                        <Input
+                                        <Input 
                                             type="textarea" 
                                             name="nombre"
                                             id="nombre"
                                             value={convocatoria.nombre}
                                             readOnly
                                             required
+                                            className="form-control-convocatoria"
                                             style={{ height: '200px' }} 
                                         />
                                     </FormGroup>
                                     <FormGroup>
-                                        <Label for="id_facultad">Facultad</Label> {/* Agregamos el campo de facultad */}
+                                        <Label for="id_facultad">Facultad</Label>
                                         <Input
                                             type="select"
                                             name="id_facultad"
                                             id="id_facultad"
+                                            className="form-select-convocatoria"
                                             value={convocatoria.id_facultad}
                                             onChange={handleChange}
                                             required
@@ -201,7 +205,12 @@ const ConvocatoriaForm = () => {
                                     </FormGroup>
                                     <FormGroup>
                                         <Label>Prioridad</Label>
-                                        <Input type="select" value={prioridad} onChange={(e) => { setPrioridad(e.target.value); handleNombreAutoFill(); }}>
+                                        <Input
+                                            type="select"
+                                            value={prioridad}
+                                            onChange={(e) => { setPrioridad(e.target.value); handleNombreAutoFill(); }}
+                                            className="form-select-convocatoria"
+                                        >
                                             <option>Primera</option>
                                             <option>Segunda</option>
                                             <option>Tercera</option>
@@ -211,7 +220,12 @@ const ConvocatoriaForm = () => {
                                     </FormGroup>
                                     <FormGroup>
                                         <Label>Horario</Label>
-                                        <Input type="select" value={horario} onChange={(e) => { setHorario(e.target.value); handleNombreAutoFill(); }}>
+                                        <Input
+                                            type="select"
+                                            value={horario}
+                                            onChange={(e) => { setHorario(e.target.value); handleNombreAutoFill(); }}
+                                            className="form-select-convocatoria"
+                                        >
                                             <option>TIEMPO COMPLETO</option>
                                             <option>TIEMPO HORARIO</option>
                                         </Input>
@@ -223,7 +237,7 @@ const ConvocatoriaForm = () => {
                                                 <DatePicker
                                                     selected={convocatoria.fecha_inicio}
                                                     dateFormat="yyyy-MM-dd"
-                                                    className="form-control"
+                                                    className="form-control-convocatoria"
                                                     readOnly
                                                     required
                                                 />
@@ -242,34 +256,32 @@ const ConvocatoriaForm = () => {
                                             </FormGroup>
                                         </Col>
                                     </Row>
-                                    <Row>
-                                        <Col>
-                                            <FormGroup>
-                                                <Label for="id_programa">Carrera</Label>
-                                                <Input
-                                                    type="select"
-                                                    name="id_programa"
-                                                    id="id_programa"
-                                                    value={convocatoria.id_programa}
-                                                    onChange={(e) => { handleChange(e); handleNombreAutoFill(); }}
-                                                    required
-                                                >
-                                                    <option value="">Seleccione una carrera</option>
-                                                    {programas.map((programa) => (
-                                                        <option key={programa.id_programa} value={programa.id_programa}>
-                                                            {programa.nombre_carrera}
-                                                        </option>
-                                                    ))}
-                                                </Input>
-                                            </FormGroup>
-                                        </Col>
-                                    </Row>
+                                    <FormGroup>
+                                        <Label for="id_programa">Carrera</Label>
+                                        <Input
+                                            type="select"
+                                            name="id_programa"
+                                            id="id_programa"
+                                            className="form-select-convocatoria"
+                                            value={convocatoria.id_programa}
+                                            onChange={(e) => { handleChange(e); handleNombreAutoFill(); }}
+                                            required
+                                        >
+                                            <option value="">Seleccione una carrera</option>
+                                            {programas.map((programa) => (
+                                                <option key={programa.id_programa} value={programa.id_programa}>
+                                                    {programa.nombre_carrera}
+                                                </option>
+                                            ))}
+                                        </Input>
+                                    </FormGroup>
                                     <FormGroup>
                                         <Label>Gestión</Label>
                                         <Input
                                             type="select"
                                             value={gestion}
                                             onChange={(e) => { setGestion(e.target.value); handleNombreAutoFill(); }}
+                                            className="form-select-convocatoria"
                                         >
                                             <option>GESTION 1</option>
                                             <option>GESTION 2</option>
@@ -278,7 +290,7 @@ const ConvocatoriaForm = () => {
                                     <Button
                                         color="primary"
                                         type="submit"
-                                        className="mt-3-convocatoria"
+                                        className="custom-button-convocatoria"
                                     >
                                         {id ? 'Actualizar' : 'Siguiente'}
                                     </Button>
