@@ -103,18 +103,15 @@ const ConvocatoriaList = () => {
                             <strong> Facultad:</strong> {convocatoria.nombre_facultad}
                         </CardText>
                         <div className="d-flex justify-content-end">
-                            <Button color="warning" size="sm" tag={Link} to={`/convocatorias/${convocatoria.id_convocatoria}/editar`}>
-                                <PiPencilLineBold className="icon-convocatoria" /> Editar
-                            </Button>
                             <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="mx-2">
                                 <BsTrashFill className="icon-convocatoria" /> Eliminar
                             </Button>
                             {convocatoria.documento_path && (
                                 <>
-                                    <Button color="info" size="sm" onClick={() => handlePreview(convocatoria.documento_path)}>
+                                    <Button color="warning" size="sm" onClick={() => handlePreview(convocatoria.documento_path)}>
                                         <AiOutlineEye className="icon-convocatoria" /> Vista Previa
                                     </Button>
-                                    <Button color="secondary" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="mx-2">
+                                    <Button color="success" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="mx-2">
                                         <AiOutlineDownload className="icon-convocatoria" /> Descargar
                                     </Button>
                                 </>

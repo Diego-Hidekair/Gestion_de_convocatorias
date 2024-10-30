@@ -1,9 +1,9 @@
 // frontend/src/components/NavBar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { Collapse, Nav, NavLink, DropdownItem, Button, UncontrolledDropdown, DropdownToggle, DropdownMenu } from 'reactstrap';
-import { FiMenu, FiUser,FiUsers, FiActivity, FiBookOpen, FiClipboard, FiLayers, FiHome, FiBook} from 'react-icons/fi';
+import { FiMenu, FiUser, FiUsers, FiActivity, FiBookOpen, FiClipboard, FiLayers, FiHome, FiBook } from 'react-icons/fi';
 import '../styles/Sidebar.css';
 
 const NavBar = ({ onLogout }) => {
@@ -89,12 +89,12 @@ const NavBar = ({ onLogout }) => {
                                     </>
                                 )}
                                 <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
-                                    <FiClipboard  className="nav-icon" />
+                                    <FiClipboard className="nav-icon" />
                                     <span className="nav-text">Convocatorias</span>
                                 </NavLink>
                                 <UncontrolledDropdown nav inNavbar>
                                     <DropdownToggle nav caret>
-                                        <FiActivity  className="nav-icon" />
+                                        <FiActivity className="nav-icon" />
                                         Estados de Convocatoria
                                     </DropdownToggle>
                                     <DropdownMenu end>
@@ -124,21 +124,22 @@ const NavBar = ({ onLogout }) => {
                                         <span className="nav-text">Usuarios</span>
                                     </NavLink>
                                 )}
-                                <br></br>
+                                <br />
                                 <DropdownItem divider />
                                 <Button color="danger" onClick={handleLogout} className="logout-button">
                                     Cerrar Sesión
                                 </Button>
                             </Nav>
                         </Collapse>
+                        
                     </nav>
+                    
                     <div className="sidebar-toggle">
-                        {!isOpen && (
-                            <Button onClick={toggleSidebar} className="toggle-button">
-                                <FiMenu size={24} />
-                            </Button>
-                        )}
+                        <Button onClick={toggleSidebar} className="toggle-button">
+                            <FiMenu size={24} />
+                        </Button>
                     </div>
+                    
                 </>
             )}
         </div>

@@ -65,6 +65,16 @@
     margin-bottom: 1rem;
 }
 
+.nav-icon-close {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 10px;
+    display: inline;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+
 .sidebar.open .nav-icon {
     display: inline;
 }
@@ -99,7 +109,28 @@
     border: none;
     color: white;
     cursor: pointer;
+    padding-left: 1.5rem;
     font-size: 1.5rem;
+}
+.toggle-button:hover{
+    background-color:  rgba(255, 255, 255, 0.5);
+    padding: auto;
 }
 
 
+
+.sidebar-icons-close {
+    display:list-item;
+    justify-content: 40px;
+    padding: 4rem 1rem ; /* Espaciado superior e inferior */
+}
+
+
+.nav-icon-close {
+    font-size: 1.6rem; /* Ajusta el tamaño del ícono */
+}
+
+/* Ocultar íconos al abrir el sidebar */
+.hidden {
+    display: none;
+}
