@@ -1,6 +1,79 @@
-/* frontend/src/styles/tipoconvocatoria.css */
+/* Contenedor principal */
+.container-list-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
 
-/* Contenedor principal de la lista de tipos de convocatoria */
-.facultad-list-container {
-    composes: container-list-container from './Diseños_paginas.css';
+/* Estilos de encabezado */
+.facultad-list-header-rectangle {
+    background-color: rgba(0, 48, 73, 0.8);
+    padding: 20px;
+    border-radius: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.facultad-list-title-facultad {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Botón de creación */
+.create-button {
+    color: #ffffff;
+    background-color: #0e6b28;
+    border-color: #3dc063;
+    border-radius: 2rem;
+}
+
+.create-button:hover {
+    background-color: #3dc063;
+    border-color: #0e6b28;
+}
+
+/* Diseño de tarjetas */
+.facultad-list-container-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.facultad-list-card-custom {
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.facultad-list-text-center {
+    text-align: center;
+}
+
+.facultad-list-d-flex {
+    display: flex;
+}
+
+.facultad-list-flex-column {
+    flex-direction: column;
+}
+
+.facultad-list-justify-content-between {
+    justify-content: space-between;
+}
+
+.facultad-list-mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 15px;
+}
+
+.custom-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }

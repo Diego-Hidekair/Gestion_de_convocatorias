@@ -4,7 +4,6 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Container, Button, Modal, ModalHeader, ModalBody, Row, Col, Card, CardBody, CardTitle, CardText } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs";
-import { PiPencilLineBold } from "react-icons/pi";
 import { AiOutlineEye, AiOutlineDownload } from "react-icons/ai";
 import '../styles/convocatoria.css';
 

@@ -1,4 +1,4 @@
-// src/components/TipoconvocatoriaList.js
+// src/components/TipoconvocatoriaList.js 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -32,16 +32,14 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
     };
 
     return (
-        <div className={`container-tipo-conv ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
-            <Container className="container-list-tipo-conv">
-                <Row className="mb-4-tipo-conv">
-                    <Col>
-                        <h1 className="text-center-tipo-conv title-facultad-tipo-conv">Lista de Tipos de Convocatoria</h1>
-                    </Col>
-                </Row>
+        <div className={`container-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}> {/* Aplicamos la clase basada en isOpen */}
+            <div className="facultad-list-header-rectangle">
+                <h1 className="facultad-list-text-center facultad-list-title-facultad">Lista de Tipos de Convocatoria</h1>
+            </div>
+            <Container className="facultad-list-container-list">
                 <Row className="mb-3-tipo-conv">
                     <Col className="text-center-tipo-conv">
-                        <Button color="primary" tag={Link} to="/tipos-convocatorias/crear" className="create-button-tipo-conv">
+                        <Button color="primary" tag={Link} to="/tipos-convocatorias/crear" className="create-button">
                             Crear Nuevo Tipo de Convocatoria
                         </Button>
                     </Col>
@@ -49,13 +47,13 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
 
                 <Row>
                     {tiposConvocatoria.map((tipo) => (
-                        <Col sm="12" md="4" lg="4" key={tipo.id_tipoconvocatoria} className="mb-4-tipo-conv">
-                            <Card className="card-custom-tipo-conv">
-                                <CardBody className="d-flex-tipo-conv flex-column-tipo-conv justify-content-between-tipo-conv">
-                                    <CardTitle tag="h5" className="text-center-tipo-conv">
+                        <Col sm="12" md="4" lg="4" key={tipo.id_tipoconvocatoria} className="facultad-list-mb-4">
+                            <Card className="facultad-list-card-custom">
+                                <CardBody className="facultad-list-d-flex facultad-list-flex-column facultad-list-justify-content-between">
+                                    <CardTitle tag="h5" className="facultad-list-text-center facultad-list-facultad-name">
                                         {tipo.nombre_convocatoria}
                                     </CardTitle>
-                                    <div className="d-flex-tipo-conv justify-content-center-tipo-conv button-group-tipo-conv">
+                                    <div className="button-group">
                                         <Button color="warning" size="sm" tag={Link} to={`/tipos-convocatorias/editar/${tipo.id_tipoconvocatoria}`} className="custom-button">
                                             <PiPencilLineBold className="icon" /> Editar
                                         </Button>

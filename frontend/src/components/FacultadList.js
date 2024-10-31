@@ -1,7 +1,7 @@
 // frontend/src/components/FacultadList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Card, CardBody, CardTitle, Row, Col, Button } from 'reactstrap';
+import { Container, Card, CardBody, CardTitle, Row, Col } from 'reactstrap';
 import '../styles/facultad.css'; 
 
 const FacultadList = ({ isOpen }) => {

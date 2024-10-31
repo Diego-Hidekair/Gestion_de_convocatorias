@@ -4,7 +4,7 @@
 
 /* Contenedor principal con fondo azul */
 .carrera-list-container {
-    background-color: #0d234a; 
+    background-color: #00639a; 
     padding: 30px;
     border-radius: 1rem;
     transition: padding-left 0.3s ease; 
@@ -12,7 +12,7 @@
 }
 
 /* Título dentro de un rectángulo con estilo */
-.titulo-carrera-rectangulo {
+.titulo-carrera-rectangulo { 
     font-family: 'Arvo', serif;
     background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2));
     padding: 15px 20px;
@@ -20,11 +20,11 @@
     border-radius: 1rem;
     margin-bottom: 2rem;
     color: white;
-}
+} 
 
 /* Contenedor de los cuadros de información */
 .cuadros-informacion-carrera {
-    background-color: rgba(13, 35, 74, 0.8); /* Azul oscuro translúcido */
+    background:linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)); /* Azul oscuro translúcido */
     padding: 2rem;
     border-radius: 1rem;
 }
