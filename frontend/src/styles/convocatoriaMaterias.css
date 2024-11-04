@@ -1,0 +1,139 @@
+/* frontend/src/styles/convocatoriaMaterias.css */
+@import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gotham:wght@400&display=swap');
+
+/* Contenedor principal */
+.container-conv-mat {
+    background-color: #00639a;
+    padding: 20px;
+    border-radius: 1rem;
+    color: white;
+    font-family: 'Gotham', sans-serif;
+    max-width: 80rem; 
+    margin: 2rem auto; 
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 5); 
+}
+
+/* Título */
+.titutlo-conv-mat{
+    font-family: 'Arvo', serif;
+    background: linear-gradient(90deg, rgb(0, 0, 0, 0.5), rgb(0, 0, 0, 0.5));
+    padding: 15px;
+    border-radius: 1rem;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Campos de formulario */
+.form-label-conv-mat {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.form-control-conv-mat, .form-select-conv-mat {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    border-radius: 1rem;
+    border: 1px solid #ffffff;
+    padding: 10px;
+    font-family: 'Gotham', sans-serif;
+}
+
+.form-control-conv-mat::placeholder {
+    color: #0000008e;
+    
+}
+
+.form-control-conv-mat:focus, .form-select-conv-mat:focus {
+    background-color: #ffffff;
+    color: #000000;
+    outline: none;
+    
+}
+
+/* Botón de agregar materia */
+.btn-conv-mat {
+    background-color: #014114;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 1rem;
+    font-family: 'Arvo', serif;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.btn-conv-mat:hover {
+    background-color: #ffffff;
+    transform: translateY(-2px);
+    color: black;
+}
+
+/* Lista de materias seleccionadas */
+.list-group-conv-mat {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 10px;
+    padding: 10px;
+}
+
+.list-group-item-conv-mat {
+    color: #0d234a;
+    font-family: 'Gotham', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border: 1px solid #dddddd;
+}
+
+.list-group-item-conv-mat:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Botón de eliminar */
+.btn-danger-conv-mat {
+    background-color: #c11a1a;
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+}
+
+.btn-danger-conv-mat:hover {
+    background-color: #a71515;
+}
+
+/* Tiempo de trabajo */
+h4 {
+    color: #ffffff;
+    font-family: 'Gotham', sans-serif;
+    margin-top: 20px;
+}
+
+/* Botón de guardar */
+.btn-primary-conv-mat {
+    background-color: #0d234a;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 1rem;
+    font-family: 'Arvo', serif;
+    transition: background-color 0.3s, transform 0.3s;
+    border: none;
+    margin-top: 20px;
+}
+
+.btn-primary-conv-mat:hover {
+    background-color: #0a1a3a;
+    transform: translateY(-2px);
+}
+
+/* Error message */
+p {
+    color: #ff4d4f;
+    font-family: 'Gotham', sans-serif;
+    font-weight: bold;
+}

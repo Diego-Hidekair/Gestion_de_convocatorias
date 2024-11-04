@@ -1,56 +1,68 @@
 // src/components/MateriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Table } from 'reactstrap';
 import '../styles/materias.css';
 
 const MateriaList = ({ isOpen }) => {
     const [materias, setMaterias] = useState([]);
+    // eslint-disable-next-line no-unused-vars
+    const [carreras, setCarreras] = useState([]);
 
     useEffect(() => {
-        const fetchMaterias = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/materias');
-                setMaterias(response.data);
+                const materiasResponse = await axios.get('http://localhost:5000/materias');
+                const carrerasResponse = await axios.get('http://localhost:5000/carreras');
+
+                const materiasWithCarreras = materiasResponse.data.map((materia) => {
+                    const carrera = carrerasResponse.data.find(
+                        (c) => c.id_programa === materia.id_programa
+                    );
+                    return {
+                        ...materia,
+                        nombre_carrera: carrera ? carrera.nombre_carrera : 'Desconocido'
+                    };
+                });
+
+                setMaterias(materiasWithCarreras);
+                setCarreras(carrerasResponse.data);
             } catch (error) {
-                console.error('Error al obtener las materias:', error);
+                console.error('Error al obtener las materias y carreras:', error);
             }
         };
 
-        fetchMaterias();
+        fetchData();
     }, []);
 
     return (
         <div className={`materia-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <Container className="container-list-materias">
-                <h2 className="text-center-materia">Lista de Materias</h2>
-                <Table dark hover striped>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>Horas Teoría</th>
-                            <th>Horas Práctica</th>
-                            <th>Horas Laboratorio</th>
-                            <th>Total Horas</th>
-                            <th>Carrera</th>
+            <h2 className="text-center-materia">Lista de Materias</h2>
+            <table className="custom-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Horas Teoría</th>
+                        <th>Horas Práctica</th>
+                        <th>Horas Laboratorio</th>
+                        <th>Total Horas</th>
+                        <th>Carrera</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {materias.map((materia) => (
+                        <tr key={materia.codigomateria}>
+                            <td>{materia.codigomateria}</td>
+                            <td>{materia.nombre}</td>
+                            <td>{materia.horas_teoria}</td>
+                            <td>{materia.horas_practica}</td>
+                            <td>{materia.horas_laboratorio}</td>
+                            <td>{materia.total_horas}</td>
+                            <td>{materia.nombre_carrera}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {materias.map((materia) => (
-                            <tr key={materia.id_materia}>
-                                <td>{materia.codigomateria}</td>
-                                <td>{materia.nombre}</td>
-                                <td>{materia.horas_teoria}</td>
-                                <td>{materia.horas_practica}</td>
-                                <td>{materia.horas_laboratorio}</td>
-                                <td>{materia.total_horas}</td>
-                                <td>{materia.id_programa}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </Container>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

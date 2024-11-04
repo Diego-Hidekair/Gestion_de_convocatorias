@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/convocatoriaMaterias.css';
 
 const ConvocatoriaMateriasForm = () => { 
     const { id_convocatoria } = useParams();
@@ -80,7 +81,7 @@ const ConvocatoriaMateriasForm = () => {
 
     return (
         <div className="container-conv-mat mt-4-conv-mat">
-            <h2>Agregar materias a la Convocatoria</h2>
+            <h2 className="titutlo-conv-mat">Agregar materias a la Convocatoria</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="mb-3-conv-mat">

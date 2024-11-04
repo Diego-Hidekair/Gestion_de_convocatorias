@@ -17,12 +17,12 @@ const ConvocatoriaForm = () => {
         fecha_fin: null,
         id_tipoconvocatoria: '',
         id_programa: '',
-        id_facultad: '' // Añadimos el campo para facultad
+        id_facultad: ''
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [programas, setProgramas] = useState([]);
-    const [facultades, setFacultades] = useState([]); // Añadimos el estado de facultades
+    const [facultades, setFacultades] = useState([]); 
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
     const [prioridad, setPrioridad] = useState('PRIMERA');
     const [horario, setHorario] = useState('TIEMPO COMPLETO');
@@ -59,11 +59,11 @@ const ConvocatoriaForm = () => {
                 const [tiposResponse, programasResponse, facultadesResponse] = await Promise.all([
                     axios.get('http://localhost:5000/tipos-convocatorias'), 
                     axios.get('http://localhost:5000/carreras'), 
-                    axios.get('http://localhost:5000/facultades'), // Obtener facultades
+                    axios.get('http://localhost:5000/facultades'), 
                 ]);
                 setTiposConvocatoria(tiposResponse.data);
                 setProgramas(programasResponse.data); 
-                setFacultades(facultadesResponse.data); // Guardar las facultades
+                setFacultades(facultadesResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -152,7 +152,7 @@ return (
                             <CardBody>
                                 <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
                                 <Form onSubmit={handleSubmit}>
-                                    <FormGroup>
+                                    <FormGroup className="conv-dis">
                                         <Label for="id_tipoconvocatoria">Tipo de Convocatoria</Label>
                                         <Input
                                             type="select"
@@ -170,8 +170,8 @@ return (
                                                 </option>
                                             ))}
                                         </Input>
-                                    </FormGroup>
-                                    <FormGroup>
+                                    </FormGroup >
+                                    <FormGroup className="conv-dis">
                                         <Label for="nombre">Nombre de Convocatoria</Label>
                                         <Input 
                                             type="textarea" 
@@ -184,7 +184,7 @@ return (
                                             style={{ height: '200px' }} 
                                         />
                                     </FormGroup>
-                                    <FormGroup>
+                                    <FormGroup className="conv-dis">
                                         <Label for="id_facultad">Facultad</Label>
                                         <Input
                                             type="select"
@@ -203,7 +203,7 @@ return (
                                             ))}
                                         </Input>
                                     </FormGroup>
-                                    <FormGroup>
+                                    <FormGroup className="conv-dis">
                                         <Label>Prioridad</Label>
                                         <Input
                                             type="select"
@@ -218,7 +218,7 @@ return (
                                             <option>Quinta</option>
                                         </Input>
                                     </FormGroup>
-                                    <FormGroup>
+                                    <FormGroup className="conv-dis">
                                         <Label>Horario</Label>
                                         <Input
                                             type="select"
@@ -232,7 +232,7 @@ return (
                                     </FormGroup>
                                     <Row>
                                         <Col>
-                                            <FormGroup>
+                                            <FormGroup className="conv-dis">
                                                 <Label for="fecha_inicio">Fecha de Inicio</Label>
                                                 <DatePicker
                                                     selected={convocatoria.fecha_inicio}
@@ -244,7 +244,7 @@ return (
                                             </FormGroup>
                                         </Col>
                                         <Col>
-                                            <FormGroup>
+                                            <FormGroup className="conv-dis">
                                                 <Label for="fecha_fin">Fecha de Fin</Label>
                                                 <DatePicker
                                                     selected={convocatoria.fecha_fin}
@@ -256,7 +256,7 @@ return (
                                             </FormGroup>
                                         </Col>
                                     </Row>
-                                    <FormGroup>
+                                    <FormGroup className="conv-dis">
                                         <Label for="id_programa">Carrera</Label>
                                         <Input
                                             type="select"
@@ -275,7 +275,7 @@ return (
                                             ))}
                                         </Input>
                                     </FormGroup>
-                                    <FormGroup>
+                                    <FormGroup className="conv-dis">
                                         <Label>Gestión</Label>
                                         <Input
                                             type="select"

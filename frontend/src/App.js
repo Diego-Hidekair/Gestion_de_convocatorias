@@ -141,7 +141,7 @@ const AuthWrapper = () => {
                         <Route path="/pdf/view/:id_convocatoria" element={<PDFViewer />} /> 
                     </Routes>
                     <footer className="footer-app">
-                        <p>Copyright © UATF - Diego Fajardo</p>
+                        <p className="titulo-pie">Copyright © UATF - Diego Fajardo</p>
                     </footer>
                 </>
             ) : (

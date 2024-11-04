@@ -1,12 +1,79 @@
-/* frontend/src/styles/materia.css */
+/* frontend/src/styles/materias.css */
 
 /* Contenedor principal de la lista de materias */
 .materia-list-container {
-    composes: container-list-container from './Diseños_paginas.css';
+    padding: 20px;
+    margin: auto;
+    max-width: 900px;
+    background-color: #00639a;
+    border-radius: 1rem;
 }
 
-/* Estilo específico para el botón de crear materia */
-.create-button {
-    display: block;
-    margin: 0 auto 20px;
+/* Título centrado de la página */
+.text-center-materia {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-family: 'Arvo', serif;
+}
+
+/* Estilo de la tabla */
+.custom-table {
+    width: 100%;
+    margin: 0 auto;
+    background-color: #00639a;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.custom-table th {
+    background-color: #00639a;
+    color: #ffffff;
+    font-family: 'Arvo', serif;
+    padding: 10px;
+    text-align: left;
+}
+
+.custom-table td {
+    padding: 10px;
+    color: #000000;
+    transition: all 0.4s ease;
+}
+
+/* Filas impares */
+.custom-table tr:nth-child(odd) {
+    background-color: #00639a;
+    font-family: 'Arvo', serif;
+}
+
+/* Filas pares */
+.custom-table tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* Hover en la fila completa */
+.custom-table tr:hover {
+    background-color: #ffffff98;
+}
+
+/* Hover sobre las celdas */
+.custom-table td:hover {
+    font-family: 'Arvo', serif;
+    background-color: #00639a;
+    color: #ffffff;
+    font-weight: bold;
+    transform: translate3d(6px, -6px, 0);
+    transition-delay: 0s;
+    transition-duration: 0.4s;
+    transition-property: all;
+}
+
+
+
+.custom-table tbody:hover tr:hover td {
+    color: #ffffff;
+    font-family: 'Arvo', serif;
 }
