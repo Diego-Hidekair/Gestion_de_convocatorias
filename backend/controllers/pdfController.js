@@ -4,7 +4,7 @@ const path = require('path');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
 const multer = require('multer');
-const { PDFDocument: PDFLibDocument } = require('pdf-lib');
+//const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 const { PDFDocument } = require('pdf-lib');
 
 // Configurando almacenamiento (multer)
@@ -285,13 +285,30 @@ exports.generatePDF = async (req, res) => {
         };
 
         const pdfBuffer = await generarPDFBuffer(htmlContent, options);
+        console.log('PDF Buffer generado:', pdfBuffer);
         
         // Actualizar o insertar en la base de datos
         const documentoExistente = await pool.query(`
             SELECT 1 FROM documentos WHERE id_convocatoria = $1
         `, [id_convocatoria]);
 
+        console.log('Iniciando combinación de PDFs para id_convocatoria:', id_convocatoria);
+const documento = await pool.query(`
+    SELECT documento_path, resolucion_path, dictamen_path, carta_path 
+    FROM documentos WHERE id_convocatoria = $1
+`, [id_convocatoria]);
+
+if (documento.rowCount === 0) {
+    console.error('Documento no encontrado en la base de datos.');
+    return res.status(404).json({ error: "Documento no encontrado" });
+}
+
+// Log the available paths
+const { documento_path, resolucion_path, dictamen_path, carta_path } = documento.rows[0];
+console.log('Paths obtenidos:', { documento_path, resolucion_path, dictamen_path, carta_path });
+
         if (documentoExistente.rowCount > 0) {
+            console.log('Actualizando documento existente en la base de datos...');
             await pool.query(`
                 UPDATE documentos SET 
                     documento_path = $1,
@@ -301,6 +318,7 @@ exports.generatePDF = async (req, res) => {
                 WHERE id_convocatoria = $5
             `, [pdfBuffer, null, null, null, id_convocatoria]);
         } else {
+            console.log('Insertando nuevo documento en la base de datos...');
             await pool.query(`
                 INSERT INTO documentos (id_convocatoria, documento_path, resolucion_path, dictamen_path, carta_path) 
                 VALUES ($1, $2, $3, $4, $5)
