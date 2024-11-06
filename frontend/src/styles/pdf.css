@@ -1,0 +1,89 @@
+/* frontend/src/styles/pdf.css */
+
+/* Contenedor principal */
+.pdf-generator-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background-color: #00639a;
+    padding: 10px;
+    border-radius: 1rem;
+    color: white;
+    max-width: 90rem;
+    margin: 0 auto;
+}
+
+/* Sección de botones */
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    color: #0d234a;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 40%;
+}
+
+/* Botones y etiquetas */
+.upload-form label {
+    font-size: 1rem;
+    font-family: 'Arvo', serif;
+    color: #333;
+}
+
+.upload-form input[type="file"] {
+    display: block;
+    margin-top: 5px;
+    padding: 8px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    color: #0d234a;
+}
+
+.upload-form button {
+    font-family: 'Arvo', serif;
+    background-color: #ffffff;
+    color: #00639a;
+    padding: 10px;
+    border: 1px solid #ffffff;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.upload-form button:hover {
+    background-color: #004a72;
+    color: white;
+    transform: translateY(-2px);
+}
+
+  /* Vista previa del PDF */
+.pdf-preview-container {
+    width: 55%;
+    margin-left: 20px;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pdf-preview {
+    width: 100%;
+    height: 500px;
+    border: none;
+}
+
+  /* Título */
+.pdf-generator-title {
+    font-family: 'Arvo', serif;
+    text-align: center;
+    font-size: 1.8rem;
+    background: linear-gradient(90deg, rgba(0, 99, 154, 1), rgba(0, 99, 154, 1));
+    color: white;
+    padding: 15px;
+    border-radius: 1rem;
+    margin-bottom: 20px;
+}
+

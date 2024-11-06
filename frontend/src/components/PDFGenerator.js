@@ -1,8 +1,10 @@
 // frontend/src/components/PDFGenerator.js
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import axios from 'axios';
+import '../styles/pdf.css';
 
 const PDFGenerator = () => {
   const { id_convocatoria, id_honorario } = useParams();
@@ -12,8 +14,7 @@ const PDFGenerator = () => {
   const [files, setFiles] = useState({ resolucion: null, dictamen: null, carta: null });
   const navigate = useNavigate();
 
-//genera le pd y lo muestra inicial
-useEffect(() => {
+  useEffect(() => {
     const generarPDF = async () => {
       try {
         await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
@@ -29,26 +30,23 @@ useEffect(() => {
     generarPDF();
   }, [id_convocatoria, id_honorario]);
 
-  // Manejar la carga de archivos
   const handleFileUpload = (e) => {
     const { name, files: selectedFiles } = e.target;
     setFiles((prevFiles) => ({ ...prevFiles, [name]: selectedFiles[0] }));
   };
 
- // conbinar pdf
-const handleGenerateDocument = async () => {
+  const handleGenerateDocument = async () => {
     const formData = new FormData();
     if (files.resolucion) formData.append('resolucion_path', files.resolucion);
     if (files.dictamen) formData.append('dictamen_path', files.dictamen);
     if (files.carta) formData.append('carta_path', files.carta);
-
 
     try {
       await axios.post(`http://localhost:5000/pdf/combinar/${id_convocatoria}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log('PDF combinado correctamente.');
-      navigate(`/pdf/view/${id_convocatoria}`); 
+      navigate(`/pdf/view/${id_convocatoria}`);
     } catch (error) {
       console.error('Error combinando el PDF:', error);
       setError('Error al combinar el PDF.');
@@ -60,15 +58,13 @@ const handleGenerateDocument = async () => {
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="error-message">{error}</div>;
   }
 
-
   return (
-    <div>
-      <h1>Generador y combinador de PDF</h1>
-      <iframe title="Vista previa del PDF" src={pdfUrl} width="100%" height="500px" frameBorder="0"></iframe>
-      <div>
+    <div className="pdf-generator-container">
+      <div className="upload-form">
+        <h1 className="pdf-generator-title">Generador y combinador de PDF</h1>
         <label>
           Resolución:
           <input type="file" name="resolucion" onChange={handleFileUpload} />
@@ -78,10 +74,13 @@ const handleGenerateDocument = async () => {
           <input type="file" name="dictamen" onChange={handleFileUpload} />
         </label>
         <label>
-          Otros Documentos (Carta):
+          Otros Documentos :
           <input type="file" name="carta" onChange={handleFileUpload} />
         </label>
         <button onClick={handleGenerateDocument}>Generar Documento Final</button>
+      </div>
+      <div className="pdf-preview-container">
+        <iframe title="Vista previa del PDF" src={pdfUrl} className="pdf-preview"></iframe>
       </div>
     </div>
   );
