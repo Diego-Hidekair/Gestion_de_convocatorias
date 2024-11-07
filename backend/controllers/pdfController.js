@@ -7,7 +7,7 @@ const multer = require('multer');
 //const { PDFDocument: PDFLibDocument } = require('pdf-lib');
 const { PDFDocument } = require('pdf-lib');
 
-// Configurando almacenamiento (multer)
+// Configuración de almacenamiento (multer)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -32,10 +32,28 @@ const generarPDFBuffer = (htmlContent, options) => {
     });
 };
 
+// Función auxiliar para combinar PDFs
+const combinarPDFs = async (documento_path, resolucion_path, dictamen_path, carta_path) => {
+    const pdfFinal = await PDFDocument.create();
+
+    async function agregarPDF(buffer) {
+        const pdfDoc = await PDFDocument.load(buffer);
+        const [page] = await pdfFinal.copyPages(pdfDoc, [0]);
+        pdfFinal.addPage(page);
+    }
+
+    if (documento_path) await agregarPDF(documento_path);
+    if (resolucion_path) await agregarPDF(resolucion_path);
+    if (dictamen_path) await agregarPDF(dictamen_path);
+    if (carta_path) await agregarPDF(carta_path);
+
+    return await pdfFinal.save();
+};
+
 // Generar el PDF mediante HTML
 exports.generatePDF = async (req, res) => {
     const { id_convocatoria, id_honorario } = req.params;
-    
+
     try {
         const convocatoriaResult = await pool.query(`
             SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.Nombre_carrera, f.Nombre_facultad
@@ -150,39 +168,39 @@ exports.generatePDF = async (req, res) => {
         `;
         /*************** */
 
-        async function combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path) {
-            const pdfFinal = await PDFDocument.create();
-        
-            async function agregarPDF(buffer) {
-                const pdfDoc = await PDFDocument.load(buffer);
-                const [page] = await pdfFinal.copyPages(pdfDoc, [0]);
-                pdfFinal.addPage(page);
-            }
-        
-            if (documento_path) await agregarPDF(documento_path);
-            if (resolucion_path) await agregarPDF(resolucion_path);
-            if (dictamen_path) await agregarPDF(dictamen_path);
-            if (carta_path) await agregarPDF(carta_path);
-        
-            return await pdfFinal.save();
+    const options = {
+        format: 'Letter',
+        border: {
+            top: '4cm',
+            right: '2cm',
+            bottom: '2cm',
+            left: '2cm'
         }
+    };
+
+    async function combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path) {
+        const pdfFinal = await PDFDocument.create();
+    
+        async function agregarPDF(buffer) {
+            const pdfDoc = await PDFDocument.load(buffer);
+            const [page] = await pdfFinal.copyPages(pdfDoc, [0]);
+            pdfFinal.addPage(page);
+        }
+        if (documento_path) await agregarPDF(documento_path);
+        if (resolucion_path) await agregarPDF(resolucion_path);
+        if (dictamen_path) await agregarPDF(dictamen_path);
+        if (carta_path) await agregarPDF(carta_path);
+
+        return await pdfFinal.save();
+    }
 
         /*************** */
 
-        const options = {
-            format: 'Letter',
-            border: {
-                top: '4cm',
-                right: '2cm',
-                bottom: '2cm',
-                left: '2cm'
-            }
-        };
+        
 
-        const pdfBuffer = await generarPDFBuffer(htmlContent, options);
-        console.log('PDF Buffer generado:', pdfBuffer);
+    const pdfBuffer = await generarPDFBuffer(htmlContent, options);
 
-// Log the available paths
+// Obtener documentos existentes en la base de datos
 const documento = await pool.query(`
     SELECT documento_path, resolucion_path, dictamen_path, carta_path 
     FROM documentos WHERE id_convocatoria = $1
@@ -191,18 +209,14 @@ const documento = await pool.query(`
 let { documento_path, resolucion_path, dictamen_path, carta_path } = documento.rowCount > 0 ? documento.rows[0] : {};
 
 documento_path = pdfBuffer;
-
 console.log('Paths obtenidos:', { documento_path, resolucion_path, dictamen_path, carta_path });
+        // Combina los PDFs usando la función auxiliar
         const pdfCombinado = await combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path);
+        // Guarda el PDF combinado en la base de datos
         if (documento.rowCount > 0) {
-            await pool.query(`
-                UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2
-            `, [pdfCombinado, id_convocatoria]);
+            await pool.query(`UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2`, [pdfCombinado, id_convocatoria]);
         } else {
-            await pool.query(`
-                INSERT INTO documentos (id_convocatoria, documento_path, resolucion_path, dictamen_path, carta_path) 
-                VALUES ($1, $2, $3, $4, $5)
-            `, [id_convocatoria, pdfCombinado, null, null, null]);
+            await pool.query(`INSERT INTO documentos (id_convocatoria, documento_path, resolucion_path, dictamen_path, carta_path) VALUES ($1, $2, $3, $4, $5)`, [id_convocatoria, pdfCombinado, null, null, null]);
         }
         res.status(200).json({ message: 'PDF generado y almacenado con éxito en la base de datos' });
     } catch (error) {
@@ -211,102 +225,59 @@ console.log('Paths obtenidos:', { documento_path, resolucion_path, dictamen_path
     }
 };
 
-// Combinar PDFs
 // Función para combinar PDFs y actualizar documento_path en la base de datos
 exports.combinePDFs = async (req, res) => {
-    const { id } = req.params;
+    const { id_convocatoria } = req.params;
 
     try {
-        // Conectar con la base de datos
         const client = await pool.connect();
-
-        // 1. Obtener el PDF base en documento_path y los posibles adicionales (resolucion, dictamen, carta)
         const queryResult = await client.query(
-            `SELECT documento_path, resolucion_path, dictamen_path, carta_path FROM documentos WHERE id_documentos = $1`,
-            [id]
+            `SELECT documento_path, resolucion_path, dictamen_path, carta_path FROM documentos WHERE id_convocatoria = $1`,
+            [id_convocatoria]
         );
-
         if (queryResult.rows.length === 0) {
             return res.status(404).json({ error: 'Documento no encontrado.' });
         }
-
         let { documento_path, resolucion_path, dictamen_path, carta_path } = queryResult.rows[0];
-
-        // Verificar si el PDF base está disponible
         if (!documento_path) {
             return res.status(400).json({ error: 'El PDF base no se encuentra disponible en documento_path.' });
         }
-
-        // 2. Subir archivos adicionales si fueron proporcionados en la solicitud
         if (req.files && req.files.resolucion) {
             resolucion_path = req.files.resolucion[0].buffer;
-            await client.query(
-                `UPDATE documentos SET resolucion_path = $1 WHERE id_documentos = $2`,
-                [resolucion_path, id]
-            );
         }
         if (req.files && req.files.dictamen) {
             dictamen_path = req.files.dictamen[0].buffer;
-            await client.query(
-                `UPDATE documentos SET dictamen_path = $1 WHERE id_documentos = $2`,
-                [dictamen_path, id]
-            );
         }
         if (req.files && req.files.carta) {
             carta_path = req.files.carta[0].buffer;
-            await client.query(
-                `UPDATE documentos SET carta_path = $1 WHERE id_documentos = $2`,
-                [carta_path, id]
-            );
         }
+        const pdfCombinado = await combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path);
 
-        // 3. Cargar los documentos disponibles en pdf-lib para combinarlos
-        const pdfDoc = await PDFDocument.load(documento_path); // PDF base
-        const additionalDocs = [];
+        await client.query(`UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2`, [pdfCombinado, id_convocatoria]);
 
-        if (resolucion_path) additionalDocs.push(await PDFDocument.load(resolucion_path));
-        if (dictamen_path) additionalDocs.push(await PDFDocument.load(dictamen_path));
-        if (carta_path) additionalDocs.push(await PDFDocument.load(carta_path));
-
-        for (const additionalDoc of additionalDocs) {
-            const copiedPages = await pdfDoc.copyPages(additionalDoc, additionalDoc.getPageIndices());
-            copiedPages.forEach((page) => pdfDoc.addPage(page));
-        }
-
-        // 4. Guardar el PDF combinado en documento_path
-        const pdfBytes = await pdfDoc.save();
-        await client.query(
-            `UPDATE documentos SET documento_path = $1 WHERE id_documentos = $2`,
-            [pdfBytes, id]
-        );
-
-        // 5. Devolver el PDF combinado
         res.setHeader('Content-Type', 'application/pdf');
-        res.send(pdfBytes);
+        res.send(pdfCombinado);
 
-        // Liberar el cliente de la conexión de base de datos
         client.release();
     } catch (error) {
         console.error('Error al combinar PDFs:', error);
         res.status(500).json({ error: 'Error al combinar PDFs.' });
     }
 };
-// para poder ver el pdf combinado
+
+// Función para visualizar el PDF combinado
 exports.viewCombinedPDF = async (req, res) => {
     const { id_convocatoria } = req.params;
 
     try {
-        const pdfResult = await pool.query(`
-            SELECT documento_path FROM documentos WHERE id_convocatoria = $1
-        `, [id_convocatoria]);
+        const pdfResult = await pool.query(`SELECT documento_path FROM documentos WHERE id_convocatoria = $1`, [id_convocatoria]);
 
         if (pdfResult.rows[0] && pdfResult.rows[0].documento_path) {
             res.setHeader('Content-Type', 'application/pdf');
-            res.send(pdfResult.rows[0].documento_path); // Enviar el contenido BYTEA
+            res.send(pdfResult.rows[0].documento_path);
         } else {
             res.status(404).json({ error: 'PDF no encontrado' });
         }
-
     } catch (error) {
         console.error('Error visualizando el PDF:', error);
         res.status(500).json({ error: 'Error visualizando el PDF' });
