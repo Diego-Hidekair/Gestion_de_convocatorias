@@ -37,6 +37,7 @@ const combinarPDFs = async (documento_path, resolucion_path, dictamen_path, cart
     const pdfFinal = await PDFDocument.create();
 
     async function agregarPDF(buffer) {
+        if (!buffer) return;
         const pdfDoc = await PDFDocument.load(buffer);
         const [page] = await pdfFinal.copyPages(pdfDoc, [0]);
         pdfFinal.addPage(page);
@@ -218,6 +219,8 @@ console.log('Paths obtenidos:', { documento_path, resolucion_path, dictamen_path
         } else {
             await pool.query(`INSERT INTO documentos (id_convocatoria, documento_path, resolucion_path, dictamen_path, carta_path) VALUES ($1, $2, $3, $4, $5)`, [id_convocatoria, pdfCombinado, null, null, null]);
         }
+        console.log('Actualizando base de datos con pdf combinado');
+
         res.status(200).json({ message: 'PDF generado y almacenado con éxito en la base de datos' });
     } catch (error) {
         console.error('Error generando el PDF:', error);

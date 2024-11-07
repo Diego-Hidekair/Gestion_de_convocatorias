@@ -46,7 +46,7 @@ const PDFGenerator = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log('PDF combinado correctamente.');
-      navigate(`/pdf/view/${id_convocatoria}`);
+      navigate(`/pdf/combinado/${id_convocatoria}`);
     } catch (error) {
       console.error('Error combinando el PDF:', error);
       setError('Error al combinar el PDF.');
