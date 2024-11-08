@@ -1,17 +1,25 @@
-/* frontend/src/styles/convocatoria.css */
+/* frontend/src/styles/convocatoria.css */ 
 @import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Gotham:wght@400&display=swap');
 
+/* Estilos generales */
+body {
+    font-family: 'Gotham', sans-serif;
+}
+
 /* Contenedor principal */
-.container-list-convocatoria {
+.container-list-convocatoria,
+.container-list-conv-estado {
     background-color: #00639a;
     padding: 20px;
     border-radius: 1rem;
     color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Título */
-.text-center-convocatoria {
+.text-center-convocatoria,
+.text-center-conv-estado {
     font-family: 'Arvo', serif;
     background: linear-gradient(90deg, rgba(0, 99, 154, 1), rgba(0, 99, 154, 1));
     padding: 15px;
@@ -20,7 +28,6 @@
     text-align: center;
     margin-bottom: 20px;
 }
-
 
 /* Contenedor de búsqueda */
 .search-container-convocatoria {
@@ -33,21 +40,19 @@
 }
 
 /* Campos de formulario */
-.form-select-convocatoria, .form-control-convocatoria {
+.form-select-convocatoria, 
+.form-control-convocatoria, 
+.form-control {
     border-radius: 2rem;
     background-color: #00639a;
-    color: #000000;
+    color: #ffffff;
     padding: 0.5rem;
     border: 1px solid #ffffff;
     margin: 0 5px;
 }
 
-.form-control-convocatoria, .form-control{
-color: #ffffff;
-background-color: #00639a;
-}
-
-.form-select-convocatoria:focus, .form-control-convocatoria:focus {
+.form-select-convocatoria:focus, 
+.form-control-convocatoria:focus {
     background-color: #ffffff;
     outline: none;
     color: #000000;
@@ -67,7 +72,8 @@ background-color: #00639a;
     border: 1px solid #ddd;
 }
 
-.table-convocatoria th, .table-convocatoria thead th {
+.table-convocatoria th, 
+.table-convocatoria thead th {
     background-color: #00639a;
     color: white;
     font-weight: bold;
@@ -84,22 +90,36 @@ background-color: #00639a;
 }
 
 /* Botones personalizados */
-.custom-button-convocatoria { 
-    transition: background-color 0.3s, color 0.3s, transform 0.3s; 
-    border-color: #ffffff; 
-    padding: 1rem; 
-    margin: 5px; 
+.custom-button-convocatoria, 
+.custom-button-conv-estado {
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+    border-color: #ffffff;
+    padding: 1rem;
+    margin: 5px;
     font-family: 'Arvo', serif;
     background-color: #ffffff;
     color: #060a16;
+    border-radius: 10px;
 }
 
-.custom-button-convocatoria:hover {
+.custom-button-convocatoria:hover, 
+.custom-button-conv-estado:hover {
     transform: translateY(-2px);
 }
 
+.custom-button-conv-estado {
+    background-color: #ff9800;
+}
+
+.custom-button-conv-estado:hover {
+    background-color: #ff5722;
+    color: white;
+    transform: translateY(-3px);
+}
+
 /* Modal */
-.modal-body-convocatoria {
+.modal-body-convocatoria, 
+.modal-body-conv-estado {
     padding: 20px;
 }
 
@@ -108,32 +128,37 @@ background-color: #00639a;
     margin-right: 5px;
 }
 
-/* Tarjeta de convocatoria */
-.convocatoria-card {
-    background-color: #da1c1c;
-    border-radius: 0.5rem;
+/* Tarjeta */
+.card-custom-conv-estado {
+    background-color: #00639a;
+    border-radius: 0.75rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    padding: 1rem;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
-.convocatoria-title {
-    font-family: 'Arvo', serif;
-    color: #0d234a;
-}
-
-.convocatoria-details {
+/* Título de la tarjeta */
+.card-custom-conv-estado .text-center-conv-estado {
     font-family: 'Gotham', sans-serif;
-    color: #333;
-    margin: 0.5rem 0;
+    color: #fff;
+    font-weight: bold;
 }
 
-.conv-dis{
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    .container-list-conv-estado {
+        padding: 15px;
+    }
+
+    .card-custom-conv-estado {
+        margin-bottom: 10px;
+    }
+}
+
+/* Estilo adicional para los contenedores de estado de convocatoria */
+.conv-dis {
     background-color: #00639a;
     border-radius: 1rem;
     color: #ffffff;
-    padding-left: 10% ;
-    padding-top: 2%;
-    padding-right: 10%;
-    padding-bottom: 2%;
+    padding: 2% 10%;
 }
-

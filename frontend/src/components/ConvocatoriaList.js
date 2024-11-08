@@ -1,8 +1,8 @@
-// frontend/src/components/ConvocatoriaList.js 
+// frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Container, Button, Modal, ModalHeader, ModalBody, Row, Col, Card, CardBody, CardTitle, CardText } from 'reactstrap';
+import { Container, Button, Modal, ModalHeader, ModalBody, Row, Col, Card, CardBody, CardTitle, CardText, Alert } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs";
 import { AiOutlineEye, AiOutlineDownload } from "react-icons/ai";
 import '../styles/convocatoria.css';
@@ -13,6 +13,7 @@ const ConvocatoriaList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -44,12 +45,28 @@ const ConvocatoriaList = () => {
         setIsModalOpen(!isModalOpen);
     };
 
-    const handlePreview = (documentPath) => {
-        setPreviewUrl(`http://localhost:5000/${documentPath}`);
+    const handlePreview = (idConvocatoria) => {
+        setPreviewUrl(`http://localhost:5000/pdf/combinado/${idConvocatoria}`);
         toggleModal();
     };
 
-    // Ordenar las convocatorias antes de aplicar el filtro
+    const handleDownload = async (idConvocatoria) => {
+        try {
+            setShowAlert(true);
+            setTimeout(() => setShowAlert(false), 3000);
+            const response = await axios.get(`http://localhost:5000/pdf/download/${idConvocatoria}`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `documento_${idConvocatoria}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error descargando el documento:', error);
+        }
+    };
     const sortedConvocatorias = convocatorias.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const filteredConvocatorias = sortedConvocatorias.filter(convocatoria => {
@@ -105,12 +122,13 @@ const ConvocatoriaList = () => {
                             <Button color="danger" size="sm" onClick={() => handleDelete(convocatoria.id_convocatoria)} className="mx-2">
                                 <BsTrashFill className="icon-convocatoria" /> Eliminar
                             </Button>
-                            {convocatoria.documento_path && (
+                            {convocatoria.id_convocatoria && convocatoria.documento_path && (
                                 <>
-                                    <Button color="warning" size="sm" onClick={() => handlePreview(convocatoria.documento_path)}>
-                                        <AiOutlineEye className="icon-convocatoria" /> Vista Previa
+                                    <Button color="warning" size="sm" onClick={() => handlePreview(convocatoria.id_convocatoria)} className="mx-2">
+                                        <AiOutlineEye className="view-icon" /> Vista previa
                                     </Button>
-                                    <Button color="success" size="sm" href={`http://localhost:5000/${convocatoria.documento_path}`} download className="mx-2">
+
+                                    <Button color="success" size="sm" onClick={() => handleDownload(convocatoria.id_convocatoria)} className="mx-2">
                                         <AiOutlineDownload className="icon-convocatoria" /> Descargar
                                     </Button>
                                 </>
@@ -120,15 +138,26 @@ const ConvocatoriaList = () => {
                 </Card>
             ))}
 
+            {/* Alerta de descarga iniciada */}
+            {showAlert && (
+                <Alert color="info" isOpen={showAlert}>
+                    Descarga iniciada
+                </Alert>
+            )}
+
+            {/* Modal para la vista previa del PDF */}
             <Modal isOpen={isModalOpen} toggle={toggleModal} size="lg">
                 <ModalHeader toggle={toggleModal}>Vista Previa del PDF</ModalHeader>
                 <ModalBody>
-                    {previewUrl && (
+                    {previewUrl ? (
                         <iframe
                             src={previewUrl}
                             title="Vista Previa PDF"
-                            style={{ width: '100%', height: '500px' }}
-                        ></iframe>
+                            width="100%"
+                            height="500px"
+                        />
+                    ) : (
+                        <p>Cargando vista previa...</p>
                     )}
                 </ModalBody>
             </Modal>
@@ -137,3 +166,4 @@ const ConvocatoriaList = () => {
 };
 
 export default ConvocatoriaList;
+

@@ -1,12 +1,16 @@
+// frontend/src/components/PDFViewer.js
+
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../styles/pdf.css';
 
 const PDFViewer = () => {
   const { id_convocatoria } = useParams();
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCombinedPDF = async () => {
@@ -33,16 +37,23 @@ const PDFViewer = () => {
   }, [id_convocatoria]);
 
   return (
-    <div>
-      {loading ? (
-        <p>Cargando PDF combinado...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : pdfUrl ? (
-        <iframe src={pdfUrl} width="100%" height="600px" title="Vista previa PDF Combinado"></iframe>
-      ) : (
-        <p>No se pudo cargar el PDF combinado.</p>
-      )}
+    <div className="pdf-viewer-container">
+      <div className="button-section">
+        <button onClick={() => navigate(-1)}>Atrás</button>
+        <button onClick={() => window.open(pdfUrl, '_blank')}>Guardar PDF</button>
+        <button onClick={() => navigate('/convocatorias')}>Terminar</button>
+      </div>
+      <div className="pdf-preview-container">
+        {loading ? ( 
+          <p>Cargando PDF combinado...</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : pdfUrl ? (
+          <iframe src={pdfUrl} className="pdf-preview" title="Vista previa PDF Combinado"></iframe>
+        ) : (
+          <p>No se pudo cargar el PDF combinado.</p>
+        )}
+      </div>
     </div>
   );
 };

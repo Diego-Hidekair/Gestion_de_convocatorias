@@ -286,3 +286,22 @@ exports.viewCombinedPDF = async (req, res) => {
         res.status(500).json({ error: 'Error visualizando el PDF' });
     }
 };
+
+exports.downloadCombinedPDF = async (req, res) => {
+    const { id_convocatoria } = req.params;
+
+    try {
+        const pdfResult = await pool.query(`SELECT documento_path FROM documentos WHERE id_convocatoria = $1`, [id_convocatoria]);
+
+        if (pdfResult.rows[0] && pdfResult.rows[0].documento_path) {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename="documento.pdf"'); // Esto fuerza la descarga
+            res.send(pdfResult.rows[0].documento_path);
+        } else {
+            res.status(404).json({ error: 'PDF no encontrado' });
+        }
+    } catch (error) {
+        console.error('Error descargando el PDF:', error);
+        res.status(500).json({ error: 'Error descargando el PDF' });
+    }
+};
