@@ -234,17 +234,25 @@ exports.combinePDFs = async (req, res) => {
 
     try {
         const client = await pool.connect();
+
+        // Obtener los documentos desde la base de datos
         const queryResult = await client.query(
             `SELECT documento_path, resolucion_path, dictamen_path, carta_path FROM documentos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
+        
         if (queryResult.rows.length === 0) {
             return res.status(404).json({ error: 'Documento no encontrado.' });
         }
+
         let { documento_path, resolucion_path, dictamen_path, carta_path } = queryResult.rows[0];
+
+        // Validar que el documento principal esté disponible
         if (!documento_path) {
             return res.status(400).json({ error: 'El PDF base no se encuentra disponible en documento_path.' });
         }
+
+        // Añadir archivos subidos desde el frontend
         if (req.files && req.files.resolucion) {
             resolucion_path = req.files.resolucion[0].buffer;
         }
@@ -254,12 +262,22 @@ exports.combinePDFs = async (req, res) => {
         if (req.files && req.files.carta) {
             carta_path = req.files.carta[0].buffer;
         }
+
+        // Guardar en la base de datos
+await pool.query(`
+    UPDATE documentos
+    SET resolucion_path = $1, dictamen_path = $2, carta_path = $3
+    WHERE id_convocatoria = $4
+`, [resolucion_path, dictamen_path, carta_path, id_convocatoria]);
+
+        console.log('PDFs a combinar:', { documento_path, resolucion_path, dictamen_path, carta_path });
+
         const pdfCombinado = await combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path);
 
         await client.query(`UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2`, [pdfCombinado, id_convocatoria]);
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.send(pdfCombinado);
+        res.end(pdfCombinado); // Cambiar de res.send a res.end
 
         client.release();
     } catch (error) {
