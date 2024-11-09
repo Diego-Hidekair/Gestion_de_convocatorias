@@ -9,14 +9,14 @@
     background-color: #00639a;
     padding: 2rem;
     border-radius: 2rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
     color: #fff;
 }
 
 .title-user {
     font-family: 'Arvo', serif;
     background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2));
-    padding: 15px 20px;
+    padding: 1.5rem 2rem;
     text-align: center;
     border-radius: 1rem;
     margin-bottom: 2rem;
@@ -26,16 +26,16 @@
 .alert-user {
     padding: 1rem;
     margin-bottom: 1rem;
-    border: 1px solid #28a745;
+    border: 0.1rem solid #28a745;
     background-color: #d4edda;
     color: #155724;
-    border-radius: 5px;
+    border-radius: 0.5rem;
 }
 
 .btn-user {
     font-size: 1rem;
     padding: 0.5rem 1rem;
-    border-radius: 5px;
+    border-radius: 0.5rem;
     margin-right: 0.5rem;
     border: none; /* Eliminar bordes de los botones */
     cursor: pointer; /* Cambiar el cursor para indicar que es clickeable */
@@ -63,22 +63,22 @@
 
 .usuarios-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(20.5rem, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
 }
 
 .usuario-card {
     background-color: #ffffff;
-    border-radius: 8px;
+    border-radius: 0.8rem;
     padding: 1.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.15);
     color: #333;
     transition: transform 0.3s;
 }
 
 .usuario-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-0.5rem);
 }
 
 .perfil-content-user {
@@ -89,11 +89,11 @@
 }
 
 .perfil-image-user {
-    width: 300px; /* Ajusta el tamaño de la imagen */
-    height: 300px; /* Mantén la imagen cuadrada */
+    width: 30rem; /* Ajusta el tamaño de la imagen */
+    height: 30rem; /* Mantén la imagen cuadrada */
     border-radius: 50%; /* Hacer la imagen redonda */
     object-fit: cover; /* Mantener la proporción de la imagen */
-    border: 2px solid #fff; /* Borde blanco alrededor de la imagen */
+    border: 0.2rem solid #000; /* Borde blanco alrededor de la imagen */
     margin-right: 2rem; /* Espacio entre la imagen y el texto */
 }
 
@@ -102,7 +102,7 @@
     ; /* Fondo blanco */
     border-radius: 2rem; /* Bordes redondeados */
     padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.8); /* Sombra sutil */
+    box-shadow: 0  0.2rem 0.5rem rgba(0, 0, 0, 0.8); /* Sombra sutil */
     color: #333; /* Color de texto del contenedor */
     display: grid; /* Usar grid para organizar los datos */
     grid-template-columns: 1fr 1fr; /* Dos columnas */
@@ -168,7 +168,7 @@
     position: fixed;
     bottom: 0;
     width: 100%;
-    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -0.2rem 0.6rem rgba(0, 0, 0, 0.1);
 }
 
 .titulo-pie{
@@ -196,7 +196,7 @@
     width: 100%;
     padding: 0.5rem;
     border-radius: 2rem;
-    border: 1px solid #ddd;
+    border: 0.1rem solid #ddd;
     font-size: 1rem;
     color: #333;
 }

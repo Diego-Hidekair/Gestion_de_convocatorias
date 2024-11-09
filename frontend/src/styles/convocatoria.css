@@ -11,10 +11,10 @@ body {
 .container-list-convocatoria,
 .container-list-conv-estado {
     background-color: #00639a;
-    padding: 20px;
+    padding: 2rem;
     border-radius: 1rem;
     color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0rem 0.4rem 0.8rem rgba(0, 0, 0, 0.1);
 }
 
 /* Título */
@@ -22,11 +22,11 @@ body {
 .text-center-conv-estado {
     font-family: 'Arvo', serif;
     background: linear-gradient(90deg, rgba(0, 99, 154, 1), rgba(0, 99, 154, 1));
-    padding: 15px;
+    padding: 1rem;
     border-radius: 1rem;
     color: white;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 1rem;
 }
 
 /* Contenedor de búsqueda */
@@ -34,9 +34,9 @@ body {
     display: flex;
     align-items: center;
     background-color: #00639a;
-    padding: 10px;
+    padding: 0.5rem;
     border-radius: 2rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
 }
 
 /* Campos de formulario */
@@ -47,8 +47,8 @@ body {
     background-color: #00639a;
     color: #ffffff;
     padding: 0.5rem;
-    border: 1px solid #ffffff;
-    margin: 0 5px;
+    border: 0.1rem solid #ffffff;
+    margin: 0 0.5rem;
 }
 
 .form-select-convocatoria:focus, 
@@ -62,14 +62,14 @@ body {
 /* Tabla */
 .table-convocatoria {
     background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 1rem;
+    box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.15);
     overflow: hidden;
-    margin-top: 20px;
+    margin-top: 1.5rem;
     text-align: center;
     font-family: 'Gotham', sans-serif;
     color: #0d234a;
-    border: 1px solid #ddd;
+    border: 1rem solid #ddd;
 }
 
 .table-convocatoria th, 
@@ -77,12 +77,12 @@ body {
     background-color: #00639a;
     color: white;
     font-weight: bold;
-    padding: 15px;
+    padding: 2rem;
 }
 
 .table-convocatoria td {
-    padding: 10px;
-    border-top: 1px solid #ddd;
+    padding: 1rem;
+    border-top: 1rem solid #ddd;
 }
 
 .table-convocatoria tbody tr:nth-child(even) {
@@ -95,16 +95,16 @@ body {
     transition: background-color 0.3s, color 0.3s, transform 0.3s;
     border-color: #ffffff;
     padding: 1rem;
-    margin: 5px;
+    margin: 0.5rem;
     font-family: 'Arvo', serif;
     background-color: #ffffff;
     color: #060a16;
-    border-radius: 10px;
+    border-radius: 1rem;
 }
 
 .custom-button-convocatoria:hover, 
 .custom-button-conv-estado:hover {
-    transform: translateY(-2px);
+    transform: translateY(-0.2rem);
 }
 
 .custom-button-conv-estado {
@@ -114,27 +114,27 @@ body {
 .custom-button-conv-estado:hover {
     background-color: #ff5722;
     color: white;
-    transform: translateY(-3px);
+    transform: translateY(-0.3rem);
 }
 
 /* Modal */
 .modal-body-convocatoria, 
 .modal-body-conv-estado {
-    padding: 20px;
+    padding: 2rem;
 }
 
 /* Iconos */
 .icon-convocatoria {
-    margin-right: 5px;
+    margin-right: 0.5rem;
 }
 
 /* Tarjeta */
 .card-custom-conv-estado {
     background-color: #00639a;
     border-radius: 0.75rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    padding: 15px;
-    margin-bottom: 15px;
+    box-shadow: 0rem 0.4rem 0.8rem rgba(0, 0, 0, 0.15);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 /* Título de la tarjeta */
@@ -145,13 +145,13 @@ body {
 }
 
 /* Diseño responsivo */
-@media (max-width: 768px) {
+@media (max-width: 75rem) {
     .container-list-conv-estado {
-        padding: 15px;
+        padding: 1.5rem;
     }
 
     .card-custom-conv-estado {
-        margin-bottom: 10px;
+        margin-bottom: 1rem;
     }
 }
 

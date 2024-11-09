@@ -5,7 +5,7 @@
 /* Contenedor principal con fondo azul */
 .carrera-list-container {
     background-color: #00639a; 
-    padding: 30px;
+    padding: 1rem;
     border-radius: 1rem;
     transition: padding-left 0.3s ease; 
     margin:2rem;
@@ -15,7 +15,7 @@
 .titulo-carrera-rectangulo { 
     font-family: 'Arvo', serif;
     background: linear-gradient(90deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2));
-    padding: 15px 20px;
+    padding: 1rem 2rem;
     text-align: center;
     border-radius: 1rem;
     margin-bottom: 2rem;
@@ -33,10 +33,10 @@
 .cuadro-carrera {
     background-color: white;
     border: none;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(216, 116, 126, 0.5); /* Sombra roja suave */
+    border-radius: 1rem;
+    box-shadow: 0rem 0.4rem 0.1rem rgba(216, 116, 126, 0.5); /* Sombra roja suave */
     margin-bottom: 1rem;
-    padding: 15px;
+    padding: 1rem;
 }
 
 /* Texto de cada tarjeta de carrera */
@@ -49,7 +49,7 @@
 
 /* Contenedor de cada tarjeta */
 .body-carrera {
-    border-radius: 10px;
-    padding: 20px;
+    border-radius: 1rem;
+    padding: 2rem;
     text-align: center;
 }

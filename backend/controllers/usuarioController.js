@@ -19,7 +19,7 @@ const createUser = async (req, res) => {
         const validRoles = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
         if (!validRoles.includes(Rol)) {
             return res.status(400).json({ error: 'Rol inválido' });
-        }
+        }   
         const existingUser = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
         if (existingUser.rows.length > 0) {
             return res.status(400).json({ error: 'El id ya está en uso' });

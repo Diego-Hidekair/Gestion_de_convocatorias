@@ -2,9 +2,9 @@
 
 /* Contenedor principal de la lista de materias */
 .materia-list-container {
-    padding: 20px;
+    padding: 2rem;
     margin: auto;
-    max-width: 900px;
+    max-width: 90rem;
     background-color: #00639a;
     border-radius: 1rem;
 }
@@ -12,7 +12,7 @@
 /* Título centrado de la página */
 .text-center-materia {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 2rem;
     color: #ffffff;
     font-family: 'Arvo', serif;
 }
@@ -23,7 +23,7 @@
     margin: 0 auto;
     background-color: #00639a;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 1rem;
     text-align: left;
     border-radius: 1rem;
     overflow: hidden;
@@ -33,12 +33,12 @@
     background-color: #00639a;
     color: #ffffff;
     font-family: 'Arvo', serif;
-    padding: 10px;
+    padding: 1rem;
     text-align: left;
 }
 
 .custom-table td {
-    padding: 10px;
+    padding: 1rem;
     color: #000000;
     transition: all 0.4s ease;
 }
@@ -65,7 +65,7 @@
     background-color: #00639a;
     color: #ffffff;
     font-weight: bold;
-    transform: translate3d(6px, -6px, 0);
+    transform: translate3d(0.6rem, -0.6rem, 0);
     transition-delay: 0s;
     transition-duration: 0.4s;
     transition-property: all;
