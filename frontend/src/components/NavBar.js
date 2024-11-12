@@ -129,7 +129,7 @@ const NavBar = ({ onLogout }) => {
                                 <Button color="danger" onClick={handleLogout} className="logout-button">
                                     Cerrar Sesión
                                 </Button>
-                            </Nav>
+                            </Nav> 
                         </Collapse>
                         
                     </nav>

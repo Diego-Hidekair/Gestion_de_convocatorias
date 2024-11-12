@@ -18,7 +18,7 @@
 }
 
 /* Estilo para el logo del sidebar */
-.sidebar .navbar-logo {
+.sidebar .navbar-logo { 
     width: 100px;
     margin: 10px auto;
     display: block;

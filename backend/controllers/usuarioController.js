@@ -84,7 +84,7 @@ const deleteUser = async (req, res) => {
         console.error(error.message);
         res.status(500).json({ error: 'Error en el servidor al eliminar el usuario' });
     }
-};
+}; 
 
 
 const getUsuarioById = async (req, res) => {

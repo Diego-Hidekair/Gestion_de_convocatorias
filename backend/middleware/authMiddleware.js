@@ -19,7 +19,15 @@ const authorizeAdmin = (req, res, next) => {
     if (req.user.rol !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden acceder a esta ruta.' });
     }
+    next(); 
+};
+
+//acceso solo para secretarias 
+const verificarRolSecretaria = (req, res, next) => {
+    if (req.user.rol !== 'secretaria') {
+        return res.status(403).json({ error: 'Acceso denegado: rol no autorizado' });
+    }
     next();
 };
 
-module.exports = { authenticateToken, authorizeAdmin };
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria };

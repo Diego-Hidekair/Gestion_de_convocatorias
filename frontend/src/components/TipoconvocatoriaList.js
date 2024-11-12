@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Container, Card, CardBody, CardTitle, Button, Row, Col } from 'reactstrap';
 import { BsTrashFill } from "react-icons/bs";
 import { PiPencilLineBold } from "react-icons/pi";
-import '../styles/tipoconvocatoria.css'; // Importar el nuevo archivo CSS
+import '../styles/tipoconvocatoria.css'; 
 
 const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
@@ -41,7 +41,10 @@ const TipoconvocatoriaList = ({ isOpen }) => { // Recibimos la prop isOpen
                     <Col className="text-center-tipo-conv">
                         <Button color="primary" tag={Link} to="/tipos-convocatorias/crear" className="create-button">
                             Crear Nuevo Tipo de Convocatoria
+                            
                         </Button>
+                        <br></br>
+                        <br></br>
                     </Col>
                 </Row>
 

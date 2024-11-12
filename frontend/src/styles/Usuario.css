@@ -89,16 +89,17 @@
 }
 
 .perfil-image-user {
-    width: 30rem; /* Ajusta el tamaño de la imagen */
-    height: 30rem; /* Mantén la imagen cuadrada */
-    border-radius: 50%; /* Hacer la imagen redonda */
-    object-fit: cover; /* Mantener la proporción de la imagen */
-    border: 0.2rem solid #000; /* Borde blanco alrededor de la imagen */
-    margin-right: 2rem; /* Espacio entre la imagen y el texto */
+    width: 30rem; 
+    height: 30rem; 
+    border-radius: 50%;
+    background-color: #00000056;
+    object-fit: cover; 
+    border: 0.2rem solid #000;
+    margin-right: 2rem; 
 }
 
 .usuario-info-container-user {
-    background-color: rgba(255, 255, 255, 1)
+    background-color: rgb(255, 255, 255)
     ; /* Fondo blanco */
     border-radius: 2rem; /* Bordes redondeados */
     padding: 1rem;
@@ -117,8 +118,8 @@
 .usuario-phone-user {
     margin: 0.5rem 0;
     font-size: 1.1rem; 
-    background-color: #00639a;
-    color: white;
+    background-color: #6c99db;
+    color: rgb(10, 10, 10);
     border-radius: 2rem;
     padding: 1rem;
 }
