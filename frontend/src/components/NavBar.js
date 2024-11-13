@@ -1,9 +1,9 @@
 // frontend/src/components/NavBar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode'; // Corrige el import de jwtDecode sin llaves
 import { Collapse, Nav, NavLink, DropdownItem, Button, UncontrolledDropdown, DropdownToggle, DropdownMenu } from 'reactstrap';
-import { FiMenu, FiUser, FiUsers, FiActivity, FiBookOpen, FiClipboard, FiLayers, FiHome, FiBook } from 'react-icons/fi';
+import { FiMenu, FiUser, FiUsers, FiActivity, FiBookOpen, FiClipboard, FiLayers, FiHome, FiBook, FiCheckSquare, FiFileText } from 'react-icons/fi';
 import '../styles/Sidebar.css';
 
 const NavBar = ({ onLogout }) => {
@@ -11,7 +11,7 @@ const NavBar = ({ onLogout }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState('');
     const location = useLocation();
-    
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -88,10 +88,22 @@ const NavBar = ({ onLogout }) => {
                                         </NavLink>
                                     </>
                                 )}
-                                <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
-                                    <FiClipboard className="nav-icon" />
-                                    <span className="nav-text">Convocatorias</span>
-                                </NavLink>
+                                {role === 'secretaria' && (
+                                    <>
+                                        <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
+                                            <FiClipboard className="nav-icon" />
+                                            <span className="nav-text">Convocatorias</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/crear" className={location.pathname === '/convocatorias/crear' ? 'active' : ''}>
+                                            <FiCheckSquare className="nav-icon" />
+                                            <span className="nav-text">Crear Convocatoria</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/creadas" className={location.pathname === '/convocatorias/creadas' ? 'active' : ''}>
+                                            <FiFileText className="nav-icon" />
+                                            <span className="nav-text">Convocatorias Creadas</span>
+                                        </NavLink>
+                                    </>
+                                )} 
                                 <UncontrolledDropdown nav inNavbar>
                                     <DropdownToggle nav caret>
                                         <FiActivity className="nav-icon" />
@@ -108,7 +120,7 @@ const NavBar = ({ onLogout }) => {
                                             Observado
                                         </DropdownItem>
                                         <DropdownItem tag={Link} to="/convocatorias/estado/revisado" className={location.pathname === '/convocatorias/estado/revisado' ? 'active' : ''}>
-                                            Revisado
+                                            Publicado
                                         </DropdownItem>
                                     </DropdownMenu>
                                 </UncontrolledDropdown>
@@ -131,7 +143,6 @@ const NavBar = ({ onLogout }) => {
                                 </Button>
                             </Nav> 
                         </Collapse>
-                        
                     </nav>
                     
                     <div className="sidebar-toggle">
@@ -139,7 +150,6 @@ const NavBar = ({ onLogout }) => {
                             <FiMenu size={24} />
                         </Button>
                     </div>
-                    
                 </>
             )}
         </div>

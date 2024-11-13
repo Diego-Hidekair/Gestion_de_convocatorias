@@ -6,9 +6,13 @@ const jwt = require('jsonwebtoken');
 // generar token
 const generateToken = (user) => {
     return jwt.sign(
-        { id_usuario: user.id_usuario, rol: user.rol }, 
+        { 
+            id_usuario: user.id_usuario, 
+            rol: user.rol,
+            id_facultad: user.id_facultad 
+        }, 
         process.env.JWT_SECRET,
-        { expiresIn: '4h' } //en cuatro hora expira el toquen y te bota del sistema al login
+        { expiresIn: '4h' } 
     );
 };
 

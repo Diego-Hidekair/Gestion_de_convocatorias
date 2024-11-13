@@ -41,6 +41,8 @@ const UsuarioPerfil = () => {
                     <p className="usuario-apellido-materno-user">Apellido Materno: {usuario.apellido_materno}</p>
                     <p className="usuario-role-user">Rol: {usuario.rol}</p>
                     <p className="usuario-phone-user">Celular: {usuario.celular}</p>
+                    <p className="usuario-phone-user">Facultad: {usuario.nombre_facultad}</p>
+                    <p className="usuario-phone-user">Carrera: {usuario.nombre_carrera}</p>
                 </div>
             </div>
         </div>

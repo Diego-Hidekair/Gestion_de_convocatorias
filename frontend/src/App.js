@@ -8,6 +8,7 @@ import FacultadList from './components/FacultadList';
 import ConvocatoriaList from './components/ConvocatoriaList';
 import ConvocatoriaForm from './components/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/ConvocatoriaEdit';
+import ConvocatoriaListSecretaria from './components/ConvocatoriaList_secretaria';
 import ConvocatoriaParaRevision from './components/ConvocatoriaParaRevision';
 import ConvocatoriaEnRevision from './components/ConvocatoriaEnRevision';
 import ConvocatoriaObservado from './components/ConvocatoriaObservado';
@@ -111,14 +112,19 @@ const AuthWrapper = () => {
                             <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="logo" />
                         </div>
                     </header>
-                    <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} />
+                    <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} userRole={userRole} />
                     <Routes>
-                        <Route path="/" element={<Navigate to="/redirect" />} /> 
+                    <Route path="/" element={<Navigate to="/redirect" />} /> 
                         <Route path="/redirect" element={<RedirectPage />} />
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/facultades" element={<FacultadList />} />
                         <Route path="/convocatorias" element={<ConvocatoriaList />} />
-                        <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
+                        {userRole === 'secretaria' && (
+                            <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
+                        )}
+                        {userRole === 'secretaria' && (
+                            <Route path="/convocatorias/creadas" element={<ConvocatoriaListSecretaria />} />
+                        )} 
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                         <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />

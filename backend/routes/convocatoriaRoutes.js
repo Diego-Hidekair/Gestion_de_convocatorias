@@ -1,4 +1,4 @@
-// backend/routes/convocatoriaRoutes.js
+// backend/routes/convocatoriaRoutes.js 
 const express = require('express');
 const router = express.Router();
 const convocatoriaController = require('../controllers/convocatoriaController');
@@ -16,5 +16,8 @@ router.get('/estado/:estado', authenticateToken, convocatoriaController.getConvo
 
 // Ruta para actualizar solo el estado de una convocatoria
 router.patch('/:id/estado', authenticateToken, verificarRolSecretaria, convocatoriaController.updateEstadoConvocatoria); 
+
+// Nueva ruta para obtener convocatorias por facultad (solo para "secretaria")
+router.get('/facultad', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultad);
 
 module.exports = router;

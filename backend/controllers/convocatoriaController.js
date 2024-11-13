@@ -1,7 +1,6 @@
 // backend/controllers/convocatoriaController.js
 const pool = require('../db');
 
-//mostrar todas las convocatorias
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
@@ -14,13 +13,13 @@ const getConvocatorias = async (req, res) => {
                 c.estado,
                 tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
                 p.nombre_carrera AS nombre_programa,  
-                f.nombre_facultad AS nombre_facultad,  -- Incluimos la facultad
+                f.nombre_facultad AS nombre_facultad,  
                 u.nombres AS nombre_usuario,  
                 d.documento_path  
             FROM convocatorias c
             LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa 
-            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  -- Join con facultad
+            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  
             LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
             LEFT JOIN documentos d ON d.id_convocatoria = c.id_convocatoria
             ORDER BY c.id_convocatoria
@@ -30,6 +29,35 @@ const getConvocatorias = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// Mostrar convocatorias por facultad (solo para "secretaria")
+const getConvocatoriasByFacultad = async (req, res) => {
+    const {id_facultad } = req.user;  
+    try {
+        const result = await pool.query(`
+            SELECT 
+                c.id_convocatoria, 
+                c.nombre, 
+                c.fecha_inicio, 
+                c.fecha_fin, 
+                tc.nombre_convocatoria AS tipo_convocatoria, 
+                p.nombre_carrera AS programa,
+                f.nombre_facultad AS facultad,  
+                u.nombres AS nombre_usuario
+            FROM convocatorias c
+            LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa
+            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  
+            LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
+            WHERE f.id_facultad = $1
+        `, [id_facultad]);
+
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 
 // convocatoria por su id
 const getConvocatoriaById = async (req, res) => {
@@ -164,4 +192,4 @@ const deleteConvocatoria = async (req, res) => {
     }
 };
 
-module.exports = {  updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado };
+module.exports = {  getConvocatoriasByFacultad, updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado };

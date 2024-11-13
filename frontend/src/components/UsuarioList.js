@@ -26,7 +26,7 @@ const UsuarioList = () => {
         if (location.state && location.state.successMessage) {
             setSuccessMessage(location.state.successMessage);
             setTimeout(() => {
-                setSuccessMessage(''); 
+                setSuccessMessage('');
             }, 3000);
         }
     }, [location.state]);
@@ -57,6 +57,8 @@ const UsuarioList = () => {
                         <p className="usuario-name"><strong>Nombre:</strong> {usuario.nombres} {usuario.apellido_paterno} {usuario.apellido_materno}</p>
                         <p className="usuario-role"><strong>Rol:</strong> {usuario.rol}</p>
                         <p className="usuario-phone"><strong>Celular:</strong> {usuario.celular}</p>
+                        <p className="usuario-phone"><strong>Facultad:</strong> {usuario.nombre_facultad}</p>
+                        <p className="usuario-phone"><strong>Carrera:</strong> {usuario.nombre_carrera}</p>
                         <div className="usuario-actions">
                             <Link to={`/usuarios/edit/${usuario.id_usuario}`} className="btn-user btn-primary-user">
                                 Editar
