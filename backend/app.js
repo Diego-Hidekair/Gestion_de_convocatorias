@@ -23,9 +23,9 @@ pool.connect()
     .catch(err => console.error('Error conectando a la base de datos', err));
 
 app.use(cors({
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: 'http://localhost:3000',  
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],  
+    allowedHeaders: ['Content-Type', 'Authorization']  
 }));
 
 app.use(bodyParser.json());
@@ -45,23 +45,28 @@ const routes = [
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/honorarios', route: './routes/honorariosRoutes' },
-    { path: '/usuarios', route: './routes/usuarioRoutes' } 
-    
+    { path: '/usuarios', route: './routes/usuarioRoutes' }
 ];
 
+// Rutas de la API
 routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));
+
+// Nueva ruta para actualizar el estado de la convocatoria
+// Ya existe en `convocatoriaRoutes.js` como un PATCH, no es necesario repetirla aquí
+// const { updateEstadoConvocatoria } = require('./controllers/convocatoriaController');
+// app.patch('/convocatorias/:id/estado', authenticateToken, updateEstadoConvocatoria); // Comentado, ya está en las rutas
 
 // Ruta de verificación
 app.get('/', (req, res) => {
     res.send('API funcionando correctamente');
 });
 
-//errores 404
+// Errores 404
 app.use((req, res, next) => {
     res.status(404).json({ error: "Ruta no encontrada" });
 });
 
-//errores global
+// Errores globales
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
@@ -75,6 +80,6 @@ const shutdown = () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-//iniciar servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));

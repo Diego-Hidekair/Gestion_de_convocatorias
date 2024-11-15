@@ -86,25 +86,11 @@ const NavBar = ({ onLogout }) => {
                                             <FiBookOpen className="nav-icon" />
                                             {isOpen && <span className="nav-text">Materias</span>}
                                         </NavLink>
-                                    </>
-                                )}
-                                {role === 'secretaria' && (
-                                    <>
                                         <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
                                             <FiClipboard className="nav-icon" />
                                             <span className="nav-text">Convocatorias</span>
                                         </NavLink>
-                                        <NavLink tag={Link} to="/convocatorias/crear" className={location.pathname === '/convocatorias/crear' ? 'active' : ''}>
-                                            <FiCheckSquare className="nav-icon" />
-                                            <span className="nav-text">Crear Convocatoria</span>
-                                        </NavLink>
-                                        <NavLink tag={Link} to="/convocatorias/creadas" className={location.pathname === '/convocatorias/creadas' ? 'active' : ''}>
-                                            <FiFileText className="nav-icon" />
-                                            <span className="nav-text">Convocatorias Creadas</span>
-                                        </NavLink>
-                                    </>
-                                )} 
-                                <UncontrolledDropdown nav inNavbar>
+                                        <UncontrolledDropdown nav inNavbar>
                                     <DropdownToggle nav caret>
                                         <FiActivity className="nav-icon" />
                                         Estados de Convocatoria
@@ -124,6 +110,25 @@ const NavBar = ({ onLogout }) => {
                                         </DropdownItem>
                                     </DropdownMenu>
                                 </UncontrolledDropdown>
+                                    </>
+                                )}
+                                {role === 'secretaria' && (
+                                    <>
+                                        <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
+                                            <FiClipboard className="nav-icon" />
+                                            <span className="nav-text">Convocatorias</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/crear" className={location.pathname === '/convocatorias/crear' ? 'active' : ''}>
+                                            <FiCheckSquare className="nav-icon" />
+                                            <span className="nav-text">Crear Convocatoria</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/facultad" className={location.pathname === '/convocatorias/facultad' ? 'active' : ''}>
+                                            <FiFileText className="nav-icon" />
+                                            <span className="nav-text">Convocatorias Creadas</span>
+                                        </NavLink>
+                                    </>
+                                )} 
+                                
                                 {userId && (
                                     <NavLink tag={Link} to={`/usuarios/me/${userId}`} className={location.pathname === `/usuarios/me/${userId}` ? 'active' : ''}>
                                         <FiUser className="nav-icon" />

@@ -8,18 +8,21 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ message: 'Token no válido' });
+
+        console.log("Payload del token:", user);  
         req.user = user; 
-        next();
+        next(); 
     });
+    
 };
 
 // Middleware para verificar que el usuario es administrador
 const authorizeAdmin = (req, res, next) => {
-    console.log("Rol del usuario:", req.user.rol);
+    console.log("Rol del usuario:", req.user.rol);  
     if (req.user.rol !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden acceder a esta ruta.' });
     }
-    next(); 
+    next();  
 };
 
 // Middleware para verificar que el usuario tiene rol de "secretaria"

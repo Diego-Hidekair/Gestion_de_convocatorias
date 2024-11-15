@@ -1,10 +1,11 @@
 // backend/controllers/convocatoriaController.js
 const pool = require('../db');
 
+// Obtener todas las convocatorias
 const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT 
+            SELECT  
                 c.id_convocatoria, 
                 c.nombre, 
                 c.fecha_inicio, 
@@ -32,7 +33,11 @@ const getConvocatorias = async (req, res) => {
 
 // Mostrar convocatorias por facultad (solo para "secretaria")
 const getConvocatoriasByFacultad = async (req, res) => {
-    const {id_facultad } = req.user;  
+    const { id_facultad } = req.user;
+    if (!id_facultad) {
+        return res.status(400).json({ error: "El id de la facultad es requerido" });
+    }
+
     try {
         const result = await pool.query(`
             SELECT 
@@ -40,15 +45,18 @@ const getConvocatoriasByFacultad = async (req, res) => {
                 c.nombre, 
                 c.fecha_inicio, 
                 c.fecha_fin, 
-                tc.nombre_convocatoria AS tipo_convocatoria, 
-                p.nombre_carrera AS programa,
-                f.nombre_facultad AS facultad,  
-                u.nombres AS nombre_usuario
+                c.estado,
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                p.nombre_carrera AS nombre_programa,  
+                f.nombre_facultad AS nombre_facultad,  
+                u.nombres AS nombre_usuario,  
+                d.documento_path  
             FROM convocatorias c
             LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa
             LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  
             LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
+            LEFT JOIN documentos d ON d.id_convocatoria = c.id_convocatoria
             WHERE f.id_facultad = $1
         `, [id_facultad]);
 
@@ -58,8 +66,7 @@ const getConvocatoriasByFacultad = async (req, res) => {
     }
 };
 
-
-// convocatoria por su id
+// Obtener convocatoria por su id
 const getConvocatoriaById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -69,15 +76,18 @@ const getConvocatoriaById = async (req, res) => {
                 c.nombre, 
                 c.fecha_inicio, 
                 c.fecha_fin, 
-                tc.nombre_convocatoria AS tipo_convocatoria, 
-                p.nombre_carrera AS programa,
-                f.nombre_facultad AS facultad,  -- Incluimos la facultad
-                u.nombres AS nombre_usuario
+                c.estado,
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                p.nombre_carrera AS nombre_programa,
+                f.nombre_facultad AS nombre_facultad,
+                u.nombres AS nombre_usuario,
+                d.documento_path
             FROM convocatorias c
             LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
             LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa
-            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  -- Join con facultad
+            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad
             LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
+            LEFT JOIN documentos d ON d.id_convocatoria = c.id_convocatoria
             WHERE c.id_convocatoria = $1
         `, [id]);
 
@@ -148,10 +158,16 @@ const updateConvocatoria = async (req, res) => {
     }
 };
 
-// Actualizar solo el estado de la convocatoria
 const updateEstadoConvocatoria = async (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
+    const { rol} = req.user;
+
+    console.log('Rol del usuario:', rol);  
+
+    if (rol !== 'admin' && rol !== 'vicerrectorado') {
+        return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
+    }
 
     try {
         const result = await pool.query(`
@@ -172,13 +188,18 @@ const updateEstadoConvocatoria = async (req, res) => {
     }
 };
 
-
 // Eliminar 
 const deleteConvocatoria = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
+        // Eliminar los documentos relacionados con la convocatoria
+        await pool.query('DELETE FROM documentos WHERE id_convocatoria = $1', [id_convocatoria]);
+
+        // Eliminar los registros en convocatorias_materias y honorarios
         await pool.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id_convocatoria]);
         await pool.query('DELETE FROM honorarios WHERE id_convocatoria = $1', [id_convocatoria]);
+
+        // Eliminar la convocatoria
         const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
 
         if (result.rows.length === 0) {

@@ -123,7 +123,7 @@ const AuthWrapper = () => {
                             <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         )}
                         {userRole === 'secretaria' && (
-                            <Route path="/convocatorias/creadas" element={<ConvocatoriaListSecretaria />} />
+                            <Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />
                         )} 
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                         <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />

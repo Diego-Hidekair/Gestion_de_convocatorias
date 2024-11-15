@@ -8,7 +8,7 @@ const generateToken = (user) => {
     return jwt.sign(
         { 
             id_usuario: user.id_usuario, 
-            rol: user.rol,
+            rol: user.rol,  // Asegúrate de que 'rol' esté incluido aquí
             id_facultad: user.id_facultad 
         }, 
         process.env.JWT_SECRET,

@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Container, Button, Row, Col, Card, CardBody, CardTitle, CardText} from 'reactstrap';
-
+import { Container, Button, Row, Col, Card, CardBody, CardTitle, CardText } from 'reactstrap';
 import { AiOutlineEye } from "react-icons/ai";
 import '../styles/convocatoria.css';
 
 const ConvocatoriaListSecretaria = () => {
     const [convocatorias, setConvocatorias] = useState([]);
-    const [setPreviewUrl] = useState('');
+    const [previewUrl, setPreviewUrl] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchConvocatoriasSecretaria = async () => {
@@ -50,7 +49,8 @@ const ConvocatoriaListSecretaria = () => {
                             <strong>Fecha de Inicio:</strong> {formatDate(convocatoria.fecha_inicio)} | 
                             <strong> Fecha de Fin:</strong> {formatDate(convocatoria.fecha_fin)} | 
                             <strong> Tipo:</strong> {convocatoria.nombre_tipoconvocatoria} | 
-                            <strong> Carrera:</strong> {convocatoria.nombre_programa}
+                            <strong> Carrera:</strong> {convocatoria.nombre_programa} | 
+                            <strong> Facultad:</strong> {convocatoria.nombre_facultad}
                         </CardText>
                         <div className="d-flex justify-content-end">
                             <Button color="warning" size="sm" onClick={() => handlePreview(convocatoria.id_convocatoria)} className="mx-2">
