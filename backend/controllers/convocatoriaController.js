@@ -31,6 +31,43 @@ const getConvocatorias = async (req, res) => {
     }
 };
 
+// Obtener convocatorias por facultad y estado
+const getConvocatoriasByFacultadAndEstado = async (req, res) => {
+    const { estado } = req.params; // Estado de la convocatoria (p.ej., 'Publicado', 'Observado')
+    const { id_facultad } = req.user; // Facultad del usuario autenticado
+
+    if (!id_facultad) {
+        return res.status(400).json({ error: "El id de la facultad es requerido" });
+    }
+
+    try {
+        const result = await pool.query(`
+            SELECT 
+                c.id_convocatoria, 
+                c.nombre, 
+                c.fecha_inicio, 
+                c.fecha_fin, 
+                c.estado,
+                tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
+                p.nombre_carrera AS nombre_programa,  
+                f.nombre_facultad AS nombre_facultad,  
+                u.nombres AS nombre_usuario,  
+                d.documento_path  
+            FROM convocatorias c
+            LEFT JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            LEFT JOIN public.alm_programas p ON c.id_programa = p.id_programa
+            LEFT JOIN public.alm_programas_facultades f ON c.id_facultad = f.id_facultad  
+            LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
+            LEFT JOIN documentos d ON d.id_convocatoria = c.id_convocatoria
+            WHERE f.id_facultad = $1 AND c.estado = $2
+        `, [id_facultad, estado]);
+
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // Mostrar convocatorias por facultad (solo para "secretaria")
 const getConvocatoriasByFacultad = async (req, res) => {
     const { id_facultad } = req.user;

@@ -1,5 +1,5 @@
 // backend/routes/convocatoriaRoutes.js 
-const express = require('express');
+const express = require('express'); 
 const router = express.Router();
 const convocatoriaController = require('../controllers/convocatoriaController');
 const { authenticateToken, authorizeAdmin, verificarRolSecretaria } = require('../middleware/authMiddleware');
@@ -7,6 +7,7 @@ const { authenticateToken, authorizeAdmin, verificarRolSecretaria } = require('.
 // Rutas específicas antes de rutas dinámicas
 router.get('/facultad', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultad); 
 router.get('/estado/:estado', authenticateToken, convocatoriaController.getConvocatoriasByEstado); 
+router.get('/facultad/estado/:estado', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultadAndEstado);
 
 // Rutas dinámicas
 router.get('/', authenticateToken, convocatoriaController.getConvocatorias); 
@@ -17,6 +18,8 @@ router.delete('/:id_convocatoria', authenticateToken, authorizeAdmin, convocator
 
 // Ruta para actualizar solo el estado de una convocatoria
 router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEstadoConvocatoria); 
+
+
 
 module.exports = router;
 

@@ -152,7 +152,7 @@ const ConvocatoriaList = () => {
                         </CardText>
 
                         {/* Dropdown to select new estado */}
-                        {convocatoria.estado !== 'Revisado' && (
+                        {(userRole === 'admin' || userRole === 'vicerrectorado') && convocatoria.estado !== 'Revisado' && (
                             <Dropdown isOpen={statusDropdowns[convocatoria.id_convocatoria]} toggle={() => toggleStatusDropdown(convocatoria.id_convocatoria)}>
                                 <DropdownToggle caret>
                                     {convocatoria.estado || 'Seleccionar estado'}

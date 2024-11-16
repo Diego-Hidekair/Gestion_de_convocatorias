@@ -145,6 +145,7 @@ const AuthWrapper = () => {
                         <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
                         <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} /> 
+                        
                     </Routes>
                     <footer className="footer-app">
                         <p className="titulo-pie">Copyright © UATF - Diego Fajardo</p>

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Container, Card, CardBody, CardTitle, Button, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from 'reactstrap';
-import { PiPencilLineBold } from "react-icons/pi"; // Ícono de editar
+import { PiPencilLineBold } from "react-icons/pi"; 
 
 const ConvocatoriaEnRevision = () => {
     const [convocatorias, setConvocatorias] = useState([]);
@@ -72,7 +72,7 @@ const ConvocatoriaEnRevision = () => {
                                                 size="sm"
                                                 onClick={() => handleEditClick(convocatoria)}
                                                 className="custom-button-conv-estado"
-                                            >
+                                            >  
                                                 <PiPencilLineBold className="icon-conv-estado" /> Editar Estado
                                             </Button>
                                         </div>
