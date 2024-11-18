@@ -22,6 +22,3 @@ router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEsta
 
 
 module.exports = router;
-
-
-

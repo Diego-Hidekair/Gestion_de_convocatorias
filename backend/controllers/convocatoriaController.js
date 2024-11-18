@@ -197,23 +197,35 @@ const updateConvocatoria = async (req, res) => {
 
 const updateEstadoConvocatoria = async (req, res) => {
     const { id } = req.params;
-    const { estado } = req.body;
-    const { rol} = req.user;
+    const { estado, comentario_observado } = req.body;
+    const { rol, id_usuario } = req.user;
 
-    console.log('Rol del usuario:', rol);  
-
+    // Verificar que el rol sea "admin" o "vicerrectorado"
     if (rol !== 'admin' && rol !== 'vicerrectorado') {
         return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
     }
 
     try {
-        const result = await pool.query(`
+        // Si el estado se cambia a "Observado", incluir el comentario
+        let query = `
             UPDATE convocatorias 
             SET estado = $1 
             WHERE id_convocatoria = $2 
-            RETURNING *`,
-            [estado, id]
-        );
+            RETURNING *`;
+
+        const values = [estado, id];
+
+        if (estado === "Observado" && comentario_observado) {
+            query = `
+                UPDATE convocatorias 
+                SET estado = $1, comentario_observado = $2 
+                WHERE id_convocatoria = $3 
+                RETURNING *`;
+
+            values.push(comentario_observado); // Añadir comentario cuando el estado es "Observado"
+        }
+
+        const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
@@ -250,4 +262,4 @@ const deleteConvocatoria = async (req, res) => {
     }
 };
 
-module.exports = {  getConvocatoriasByFacultad, updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado };
+module.exports = {  getConvocatoriasByFacultad, updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado };

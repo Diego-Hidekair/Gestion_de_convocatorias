@@ -150,6 +150,78 @@ const NavBar = ({ onLogout }) => {
                                     </>
                                     
                                 )} 
+                                {role === 'decanatura' && (
+                                    <>
+                                        <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
+                                            <FiClipboard className="nav-icon" />
+                                            <span className="nav-text">Convocatorias</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/crear" className={location.pathname === '/convocatorias/crear' ? 'active' : ''}>
+                                            <FiCheckSquare className="nav-icon" />
+                                            <span className="nav-text">Crear Convocatoria</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/facultad" className={location.pathname === '/convocatorias/facultad' ? 'active' : ''}>
+                                            <FiFileText className="nav-icon" />
+                                            <span className="nav-text">Convocatorias Creadas</span>
+                                        </NavLink>
+                                        <UncontrolledDropdown nav inNavbar>
+                                    <DropdownToggle nav caret>
+                                        <FiActivity className="nav-icon" />
+                                        Estados de Convocatoria
+                                    </DropdownToggle>
+                                    <DropdownMenu end>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/para-revision" className={location.pathname === '/convocatorias/estado/para-revision' ? 'active' : ''}>
+                                            Para Revisión
+                                        </DropdownItem>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/en-revision" className={location.pathname === '/convocatorias/estado/en-revision' ? 'active' : ''}>
+                                            En Revisión
+                                        </DropdownItem>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/observado" className={location.pathname === '/convocatorias/estado/observado' ? 'active' : ''}>
+                                            Observado
+                                        </DropdownItem>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/revisado" className={location.pathname === '/convocatorias/estado/revisado' ? 'active' : ''}>
+                                            Publicado
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </UncontrolledDropdown> 
+                                    </>
+                                )} 
+                                {role === 'vicerrectorado' && (
+                                    <>
+                                        <NavLink tag={Link} to="/convocatorias" className={location.pathname === '/convocatorias' ? 'active' : ''}>
+                                            <FiClipboard className="nav-icon" />
+                                            <span className="nav-text">Convocatorias</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/crear" className={location.pathname === '/convocatorias/crear' ? 'active' : ''}>
+                                            <FiCheckSquare className="nav-icon" />
+                                            <span className="nav-text">Crear Convocatoria</span>
+                                        </NavLink>
+                                        <NavLink tag={Link} to="/convocatorias/facultad" className={location.pathname === '/convocatorias/facultad' ? 'active' : ''}>
+                                            <FiFileText className="nav-icon" />
+                                            <span className="nav-text">Convocatorias Creadas</span>
+                                        </NavLink>
+                                        <UncontrolledDropdown nav inNavbar>
+                                    <DropdownToggle nav caret>
+                                        <FiActivity className="nav-icon" />
+                                        Estados de Convocatoria
+                                    </DropdownToggle>
+                                    <DropdownMenu end>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/para-revision" className={location.pathname === '/convocatorias/estado/para-revision' ? 'active' : ''}>
+                                            Para Revisión
+                                        </DropdownItem>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/en-revision" className={location.pathname === '/convocatorias/estado/en-revision' ? 'active' : ''}>
+                                            En Revisión
+                                        </DropdownItem>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/observado" className={location.pathname === '/convocatorias/estado/observado' ? 'active' : ''}>
+                                            Observado
+                                        </DropdownItem>
+                                        <DropdownItem tag={Link} to="/convocatorias/estado/revisado" className={location.pathname === '/convocatorias/estado/revisado' ? 'active' : ''}>
+                                            Publicado
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </UncontrolledDropdown> 
+                                    </>
+                                )} 
                                 
                                 {userId && (
                                     <NavLink tag={Link} to={`/usuarios/me/${userId}`} className={location.pathname === `/usuarios/me/${userId}` ? 'active' : ''}>

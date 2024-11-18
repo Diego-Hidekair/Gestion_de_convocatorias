@@ -167,3 +167,49 @@ body {
 .eliminar-conv{
     color: black;
 }
+
+
+
+
+
+.dropdown-toggle {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}
+
+.estado-para-revision {
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+}
+
+.estado-en-revision {
+    background-color: orange;
+    color: white;
+    font-weight: bold;
+}
+
+.estado-observado {
+    background-color: #A8150D;
+    color: white;
+    font-weight: bold;
+}
+
+.estado-revisado {
+    background-color: green;
+    color: white;
+    font-weight: bold;
+}
+
+/* Clases generales */
+button {
+    border-radius: 0.5rem;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}

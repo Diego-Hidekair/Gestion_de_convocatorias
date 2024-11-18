@@ -14,11 +14,10 @@ const ConvocatoriaList = () => {
     const [previewUrl, setPreviewUrl] = useState('');
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false); // Estado para modal de vista previa
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Estado para modal de confirmación de eliminación
-    const [showAlert, setShowAlert] = useState(false);
+    const [setShowAlert] = useState(false);
     const [statusDropdowns, setStatusDropdowns] = useState({});
     const [message, setMessage] = useState({});
     const [idToDelete, setIdToDelete] = useState(null); 
-
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('es-ES');
@@ -151,9 +150,7 @@ const ConvocatoriaList = () => {
                             <strong> Estado:</strong> {convocatoria.estado}
                         </CardText>
 
-                        {/* Dropdown to select new estado */}
-                        {(userRole === 'admin' || userRole === 'vicerrectorado') && convocatoria.estado !== 'Revisado' && (
-                            <Dropdown isOpen={statusDropdowns[convocatoria.id_convocatoria]} toggle={() => toggleStatusDropdown(convocatoria.id_convocatoria)}>
+                        <Dropdown isOpen={statusDropdowns[convocatoria.id_convocatoria]} toggle={() => toggleStatusDropdown(convocatoria.id_convocatoria)}>
                                 <DropdownToggle caret>
                                     {convocatoria.estado || 'Seleccionar estado'}
                                 </DropdownToggle>
@@ -172,9 +169,10 @@ const ConvocatoriaList = () => {
                                     </DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
-                        )}
                         {message[convocatoria.id_convocatoria] && (
-                            <Alert color="success" className="mt-3">{message[convocatoria.id_convocatoria]}</Alert>
+                            <Alert color="success" className="mt-3" timeout={3000}>
+                                {message[convocatoria.id_convocatoria]}
+                            </Alert>
                         )}
 
                         <div className="d-flex justify-content-end">
