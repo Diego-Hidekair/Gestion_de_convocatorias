@@ -12,89 +12,92 @@ const ConvocatoriaObservado = () => {
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
-                const response = await axios.get('/convocatorias/estado/Observado');
+                const response = await axios.get('/convocatorias/estado/Observado'); // Obtener convocatorias en estado "Observado"
                 setConvocatorias(response.data);
             } catch (error) {
                 console.error('Error fetching convocatorias:', error);
             }
         };
-    
+
         fetchConvocatorias();
     }, []);
 
     const toggleModal = () => setModal(!modal);
 
     const handleEditClick = (convocatoria) => {
-        setSelectedConvocatoria(convocatoria);
-        setModal(true);
+        setSelectedConvocatoria(convocatoria); // Guardar la convocatoria seleccionada
+        setModal(true); // Abrir el modal
     };
 
     const handleEstadoChange = async () => {
         try {
+            // Actualizar el estado de la convocatoria seleccionada
             await axios.patch(`/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`, { estado: newEstado });
-            setConvocatorias(convocatorias.map(c => 
-                c.id_convocatoria === selectedConvocatoria.id_convocatoria 
-                    ? { ...c, estado: newEstado } 
+            // Actualizar la lista de convocatorias en el frontend
+            setConvocatorias(convocatorias.map(c =>
+                c.id_convocatoria === selectedConvocatoria.id_convocatoria
+                    ? { ...c, estado: newEstado }
                     : c
             ));
-            setModal(false);
+            setModal(false); // Cerrar el modal
         } catch (error) {
             console.error('Error updating convocatoria estado:', error);
         }
     };
 
     return (
-        <div className="degraded-background-conv-estado">
-            <Container className="container-list-conv-estado">
-                <Row className="mb-4-conv-estado">
+        <Container className="mt-4">
+            <Row className="mb-4">
+                <Col>
+                    <h1 className="text-center">Convocatorias Observadas</h1>
+                </Col>
+            </Row>
+            <Row>
+                {convocatorias.length === 0 ? (
                     <Col>
-                        <h1 className="text-center-conv-estado">Convocatorias Observadas</h1>
+                        <h5 className="text-center">No hay convocatorias observadas.</h5>
                     </Col>
-                </Row>
-
-                <Row>
-                    {convocatorias.length === 0 ? (
-                        <Col>
-                            <h5 className="text-center-conv-estado">No hay convocatorias observadas.</h5>
+                ) : (
+                    convocatorias.map((convocatoria) => (
+                        <Col sm="12" md="6" lg="4" key={convocatoria.id_convocatoria} className="mb-4">
+                            <Card>
+                                <CardBody>
+                                    <CardTitle tag="h5" className="text-center">
+                                        {convocatoria.nombre}
+                                    </CardTitle>
+                                    <p>
+                                        <strong>Estado:</strong> {convocatoria.estado}
+                                    </p>
+                                    <div className="d-flex justify-content-between">
+                                        <Button
+                                            color="primary"
+                                            onClick={() => handleEditClick(convocatoria)}
+                                        >
+                                            Editar Estado
+                                        </Button>
+                                    </div>
+                                </CardBody>
+                            </Card>
                         </Col>
-                    ) : (
-                        convocatorias.map((convocatoria) => (
-                            <Col sm="12" md="4" lg="4" key={convocatoria.id_convocatoria} className="mb-4-conv-estado">
-                                <Card className="card-custom-conv-estado">
-                                    <CardBody className="d-flex-conv-estado flex-column-conv-estado justify-content-between-conv-estado">
-                                        <CardTitle tag="h5" className="text-center-conv-estado">
-                                            {convocatoria.nombre}
-                                        </CardTitle>
-                                        <div className="d-flex-conv-estado justify-content-between-conv-estado mt-3-conv-estado button-group-conv-estado">
-                                            <Button
-                                                color="warning"
-                                                size="sm"
-                                                onClick={() => handleEditClick(convocatoria)}
-                                                className="custom-button-conv-estado"
-                                            >
-                                                Editar Estado
-                                            </Button>
-                                        </div>
-                                    </CardBody>
-                                </Card>
-                            </Col>
-                        ))
-                    )}
-                </Row>
+                    ))
+                )}
+            </Row>
 
+            {/* Modal para editar el estado */}
+            {selectedConvocatoria && (
                 <Modal isOpen={modal} toggle={toggleModal}>
-                    <ModalHeader toggle={toggleModal}>Cambiar Estado de la Convocatoria</ModalHeader>
+                    <ModalHeader toggle={toggleModal}>Editar Estado</ModalHeader>
                     <ModalBody>
                         <Form>
                             <FormGroup>
-                                <Label for="estado">Selecciona el nuevo estado</Label>
-                                <Input 
-                                    type="select" 
-                                    name="estado" 
-                                    id="estado" 
+                                <Label for="newEstado">Nuevo Estado</Label>
+                                <Input
+                                    type="select"
+                                    id="newEstado"
+                                    value={newEstado}
                                     onChange={(e) => setNewEstado(e.target.value)}
                                 >
-                                    <option value="">Selecciona el estado</option>
+                                    <option value="">Seleccionar estado</option>
                                     <option value="Para Revisión">Para Revisión</option>
                                     <option value="En Revisión">En Revisión</option>
                                     <option value="Observado">Observado</option>
@@ -104,12 +107,16 @@ const ConvocatoriaObservado = () => {
                         </Form>
                     </ModalBody>
                     <ModalFooter>
-                        <Button color="primary" onClick={handleEstadoChange}>Guardar</Button>
-                        <Button color="secondary" onClick={toggleModal}>Cancelar</Button>
+                        <Button color="primary" onClick={handleEstadoChange}>
+                            Guardar Cambios
+                        </Button>
+                        <Button color="secondary" onClick={toggleModal}>
+                            Cancelar
+                        </Button>
                     </ModalFooter>
                 </Modal>
-            </Container>
-        </div>
+            )}
+        </Container>
     );
 };
 

@@ -130,7 +130,7 @@ const ConvocatoriaMateriasForm = () => {
                     />
                 </div>
                 <button type="submit" className="btn btn-primary-conv-mat">
-                    Guardar
+                    Siguiente
                 </button>
             </form>
         </div>

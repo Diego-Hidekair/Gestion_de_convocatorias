@@ -1,7 +1,7 @@
 // frontend/src/components/ConvocatoriaEnRevision.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Card, CardBody, CardTitle, Button, Row, Col, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from 'reactstrap';
+import { Container, Card, CardBody, CardTitle, Button, Row, Col,  Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from 'reactstrap';
 import { PiPencilLineBold } from "react-icons/pi"; 
 
 const ConvocatoriaEnRevision = () => {
@@ -14,33 +14,31 @@ const ConvocatoriaEnRevision = () => {
         const fetchConvocatorias = async () => {
             try {
                 const response = await axios.get('/convocatorias/estado/En Revisión');
-                setConvocatorias(response.data);
+                setConvocatorias(response.data); // Guardar los datos obtenidos
             } catch (error) {
-                console.error('Error fetching convocatorias:', error);
+                console.error('Error al obtener las convocatorias:', error);
             }
         };
 
         fetchConvocatorias();
     }, []);
-
     const toggleModal = () => setModal(!modal);
-
     const handleEditClick = (convocatoria) => {
-        setSelectedConvocatoria(convocatoria);
-        setModal(true);
+        setSelectedConvocatoria(convocatoria); 
+        setModal(true); 
     };
-
     const handleEstadoChange = async () => {
         try {
             await axios.patch(`/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`, { estado: newEstado });
             setConvocatorias(convocatorias.map(c => 
                 c.id_convocatoria === selectedConvocatoria.id_convocatoria 
-                    ? { ...c, estado: newEstado } 
+                    ? { ...c, estado: newEstado } // Actualizar el estado
                     : c
             ));
-            setModal(false);
+
+            setModal(false); // Cerrar el modal
         } catch (error) {
-            console.error('Error updating convocatoria estado:', error);
+            console.error('Error al actualizar el estado de la convocatoria:', error);
         }
     };
 
@@ -52,7 +50,6 @@ const ConvocatoriaEnRevision = () => {
                         <h1 className="text-center-conv-estado">Convocatorias en Revisión</h1>
                     </Col>
                 </Row>
-
                 <Row>
                     {convocatorias.length === 0 ? (
                         <Col>

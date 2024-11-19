@@ -148,7 +148,7 @@ return (
                 </Row>
                 <Row>
                     <Col >
-                        <Card className="card-custom-convocatoria">
+                        <Card className="card-custom-convocatoria"> 
                             <CardBody>
                                 <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
                                 <Form onSubmit={handleSubmit}>

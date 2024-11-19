@@ -45,23 +45,7 @@ const combinarPDFs = async (...pdfBuffers) => {
     }
 
     return await pdfFinal.save();
-};/*const combinarPDFs = async (documento_path, resolucion_path, dictamen_path, carta_path) => {
-    const pdfFinal = await PDFDocument.create();
-
-    async function agregarPDF(buffer) {
-        if (!buffer) return;
-        const pdfDoc = await PDFDocument.load(buffer);
-        const [page] = await pdfFinal.copyPages(pdfDoc, [0]);
-        pdfFinal.addPage(page);
-    }
-
-    if (documento_path) await agregarPDF(documento_path);
-    if (resolucion_path) await agregarPDF(resolucion_path);
-    if (dictamen_path) await agregarPDF(dictamen_path);
-    if (carta_path) await agregarPDF(carta_path);
-
-    return await pdfFinal.save();
-};*/
+};
 
 // Generar el PDF mediante HTML
 exports.generatePDF = async (req, res) => {
@@ -194,7 +178,7 @@ exports.generatePDF = async (req, res) => {
         }
     };
 
-    async function combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path) {
+    async function combinarPDFs(documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario ) {
         const pdfFinal = await PDFDocument.create();
     
         async function agregarPDF(buffer) {
@@ -206,6 +190,9 @@ exports.generatePDF = async (req, res) => {
         if (resolucion_path) await agregarPDF(resolucion_path);
         if (dictamen_path) await agregarPDF(dictamen_path);
         if (carta_path) await agregarPDF(carta_path);
+        if (nota) await agregarPDF(nota);
+        if (certificado_item) await agregarPDF(certificado_item);
+        if (certificado_resumen_presupuestario) await agregarPDF(certificado_resumen_presupuestario);
 
         return await pdfFinal.save();
     }
@@ -278,7 +265,7 @@ exports.combinePDFs = async (req, res) => {
             return res.status(404).json({ error: 'Documento no encontrado.' });
         }
 
-        let { documento_path, resolucion_path, dictamen_path, carta_path } = queryResult.rows[0];
+        let { documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario} = queryResult.rows[0];
 
         // Validar que el documento principal esté disponible
         if (!documento_path) {
@@ -310,7 +297,7 @@ exports.combinePDFs = async (req, res) => {
         await pool.query(`
             UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3, nota = $4, certificado_item = $5, certificado_resumen_presupuestario = $6 WHERE id_convocatoria = $7 `, [resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria]);
 
-        console.log('PDFs a combinar:', { documento_path, resolucion_path, dictamen_path, carta_path });
+        console.log('PDFs a combinar:', { documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario });
 
         const pdfCombinado = await combinarPDFs( documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario );
 
