@@ -2,8 +2,8 @@
 const fs = require('fs');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
-const multer = require('multer');
 const { PDFDocument } = require('pdf-lib');
+const multer = require('multer');
 
 // Configuración de almacenamiento para multer
 const storage = multer.memoryStorage();
@@ -24,42 +24,43 @@ const generarPDFBuffer = (htmlContent, options) => {
         pdf.create(htmlContent, options).toBuffer((err, buffer) => {
             if (err) {
                 console.error('Error al generar PDF:', err);
-                return reject(err);
+                reject(err);
             }
             resolve(buffer);
         });
     });
 };
 
-// Función auxiliar para combinar PDFs
-
-const combinarPDFs = async (...pdfBuffers) => {
+// Función auxiliar para combinar múltiples PDFs
+const combinarPDFs = async (buffers) => {
     const pdfFinal = await PDFDocument.create();
 
-    for (const buffer of pdfBuffers) {
+    for (const buffer of buffers) {
         if (buffer) {
             const pdfDoc = await PDFDocument.load(buffer);
-            const [page] = await pdfFinal.copyPages(pdfDoc, [0]);
-            pdfFinal.addPage(page);
+            const pages = await pdfFinal.copyPages(pdfDoc, pdfDoc.getPageIndices());
+            pages.forEach((page) => pdfFinal.addPage(page));
         }
     }
-
-    return await pdfFinal.save();
+    return pdfFinal.save();
 };
 
-// Generar el PDF mediante HTML
+
+// Generar un PDF base desde HTML
 exports.generatePDF = async (req, res) => {
     const { id_convocatoria, id_honorario } = req.params;
 
     try {
-        const convocatoriaResult = await pool.query(`
-            SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.Nombre_carrera, f.Nombre_facultad
-            FROM convocatorias c
-            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            JOIN alm_programas ca ON c.id_programa = ca.id_programa
-            JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
-            WHERE c.id_convocatoria = $1
-        `, [id_convocatoria]);
+        // Consulta de datos necesarios para el PDF
+        const convocatoriaResult = await pool.query(
+            `SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.nombre_carrera, f.nombre_facultad
+             FROM convocatorias c
+             JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+             JOIN alm_programas ca ON c.id_programa = ca.id_programa
+             JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
+             WHERE c.id_convocatoria = $1`,
+            [id_convocatoria]
+        ); 
         
         const convocatoria = convocatoriaResult.rows[0];
         if (!convocatoria) {
@@ -75,7 +76,7 @@ exports.generatePDF = async (req, res) => {
         
         const honorarios = honorariosResult.rows[0];
         if (!honorarios) {
-            return res.status(404).json({ error: "Honorarios no encontrados" });
+            return res.status(404).json({ error: 'Honorarios no encontrados.' });
         }
 
         if (convocatoria.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {

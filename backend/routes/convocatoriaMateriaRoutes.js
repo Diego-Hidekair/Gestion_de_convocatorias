@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const convocatoriaMateriaController = require('../controllers/convocatoriaMateriaController');
 const { authenticateToken, authorizeAdmin, verificarRolSecretaria } = require('../middleware/authMiddleware');
+console.log(convocatoriaMateriaController);
 
 // Rutas para materias de convocatorias
 router.get('/:id_convocatoria', authenticateToken, convocatoriaMateriaController.getConvocatoriaMaterias); // acceso tanto para admin como secretaria

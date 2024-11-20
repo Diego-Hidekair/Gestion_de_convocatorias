@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import axios from 'axios';
 import '../styles/pdf.css';
-
+ 
 const PDFGenerator = () => {
   const { id_convocatoria, id_honorario } = useParams();
   const [pdfUrl, setPdfUrl] = useState(null);
