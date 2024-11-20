@@ -42,6 +42,5 @@ const verificarRolSecretaria = (req, res, next) => {
     next();
 };
 */
-
 module.exports = { authenticateToken, authorizeRole };
 //module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria,authorizeRole };
