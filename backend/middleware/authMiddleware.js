@@ -16,16 +16,7 @@ const authenticateToken = (req, res, next) => {
     
 };
 
-// Middleware para verificar roles dinámicamente
-const authorizeRole = (rolesPermitidos) => (req, res, next) => {
-    const { rol } = req.user;
-    if (!rolesPermitidos.includes(rol)) {
-        return res.status(403).json({ error: `Acceso denegado: Solo los roles permitidos (${rolesPermitidos.join(', ')}) pueden acceder a esta ruta.` });
-    }
-    next();
-};
-
-/*// Middleware para verificar que el usuario es administrador
+// Middleware para verificar que el usuario es administrador
 const authorizeAdmin = (req, res, next) => {
     console.log("Rol del usuario:", req.user.rol);  
     if (req.user.rol !== 'admin') {
@@ -41,6 +32,18 @@ const verificarRolSecretaria = (req, res, next) => {
     }
     next();
 };
-*/
+
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria};
+
+/*// Middleware para verificar roles dinámicamente
+const authorizeRole = (rolesPermitidos) => (req, res, next) => {
+    const { rol } = req.user;
+    if (!rolesPermitidos.includes(rol)) {
+        return res.status(403).json({ error: `Acceso denegado: Solo los roles permitidos (${rolesPermitidos.join(', ')}) pueden acceder a esta ruta.` });
+    }
+    next();
+};
+
 module.exports = { authenticateToken, authorizeRole };
-//module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria,authorizeRole };
+*/
+

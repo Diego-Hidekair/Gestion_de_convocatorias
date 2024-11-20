@@ -7,8 +7,8 @@ const multer = require('multer');
 
 // Configuración de almacenamiento para multer
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
+//const upload = multer({ storage });
+const upload = multer({ storage: storage });
 // Configuración de la base de datos
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -43,7 +43,7 @@ const combinarPDFs = async (buffers) => {
         }
     }
     return pdfFinal.save();
-};
+}; 
 
 
 // Generar un PDF base desde HTML
@@ -54,11 +54,11 @@ exports.generatePDF = async (req, res) => {
         // Consulta de datos necesarios para el PDF
         const convocatoriaResult = await pool.query(
             `SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.nombre_carrera, f.nombre_facultad
-             FROM convocatorias c
-             JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-             JOIN alm_programas ca ON c.id_programa = ca.id_programa
-             JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
-             WHERE c.id_convocatoria = $1`,
+            FROM convocatorias c
+            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            JOIN alm_programas ca ON c.id_programa = ca.id_programa
+            JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
+            WHERE c.id_convocatoria = $1`,
             [id_convocatoria]
         ); 
         
@@ -109,65 +109,10 @@ exports.generatePDF = async (req, res) => {
         //generar contenido pdf
         const htmlContent = `
             <html>
-            <head>
-                <style>
-                    body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
-                    h1, h2 { text-align: center; text-transform: uppercase; }
-                    p { text-align: justify; }
-                    .centrado { text-align: center; }
-                    .left-align { text-align: left; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { text-align: center; border: 1px solid black; padding: 8px; }
-                    th { background-color: #f2f2f2; }
-                    .notas { margin-top: 20px; }
-                    strong { font-weight: bold; }
-                    u { text-decoration: underline; }
-                </style>
-            </head>
-
-
-
-            
-
-            
-            <body>
-                <p>Señor:<br/>
-                Rector de la Universidad Autónoma “Tomás Frías”</p>
-                
-                <p>Postulación a la <strong>${convocatoria.prioridad}</strong> Convocatoria a Concurso de<br/>
-                Méritos para Provisión de...<br/>
-                Docente para la Carrera de <strong>${convocatoria.nombre_carrera}</strong> en calidad de Consultor de Línea<br/>
-                Gestión Académica <strong>${new Date().getMonth() < 6 ? 1 : 2}/2024</strong></p>
-                
-                <p>Ítem 1: <strong>${tiempoTrabajo}</strong></p>
-                
-                <p>Nombre del Postulante:<br/>
-                Celular y/o teléfono:</p>
-
-                <p>Presente</p>
-
-                <p>El plazo para la presentación de postulación fenece a horas 12 (medio día) del día 
-                <strong>${convocatoria.fecha_fin.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>, 
-                procediéndose con la apertura de sobres a horas 14:30 en oficinas de la Dirección Administrativa y Financiera D.A.F., 
-                las postulaciones presentadas fuera de plazo no serán tomadas en cuenta.</p>
-
-                <p class="centrado">Potosí, <strong>${convocatoria.fecha_inicio.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
-                
-                <div class="left-align">
-                    <p><strong>M. Sc. Lic. Alberto Morales Colque</strong><br/>
-                    Decano FF.CC.EE.FF.AA.</p>
-                </div>
-
-                <p class="centrado"><strong>Vº Bº</strong></p>
-
-                <div class="right-aling">
-                    <p><strong>M.Sc. Ing. David Soraide Lozano</strong><br/>
-                    Vicerrector U.A.T.F.</p>
-                </div>
-            </body>    
+            <head>prueba de genrador de documento</head>
+                {/*aqui hay contenido del pdf, pero lo saque para concentrarno en el codigo, este generador de pdf por html llama a casi a todos los datos de cada tabla que se menciona en el codigo*/}
         </html>
         `;
-        /*************** */
 
     const options = {
         format: 'Letter',
@@ -196,11 +141,7 @@ exports.generatePDF = async (req, res) => {
         if (certificado_resumen_presupuestario) await agregarPDF(certificado_resumen_presupuestario);
 
         return await pdfFinal.save();
-    }
-
-        /*************** */
-
-        
+    }   
 
     const pdfBuffer = await generarPDFBuffer(htmlContent, options);
 
@@ -251,7 +192,7 @@ console.log('Paths obtenidos:', {
     }
 };
 
-// Función para combinar PDFs y actualizar documento_path en la base de datos
+// Función para combinar PDFs y actualizar documento_path en la base de datos 
 exports.combinePDFs = async (req, res) => {
     const { id_convocatoria } = req.params;
 
@@ -260,59 +201,116 @@ exports.combinePDFs = async (req, res) => {
 
         // Obtener los documentos desde la base de datos
         const queryResult = await client.query(
-            `SELECT documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario FROM documentos WHERE id_convocatoria = $1`, [id_convocatoria] );
+            `SELECT documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario FROM documentos WHERE id_convocatoria = $1`, [id_convocatoria]
+        );
         
         if (queryResult.rows.length === 0) {
             return res.status(404).json({ error: 'Documento no encontrado.' });
         }
 
-        let { documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario} = queryResult.rows[0];
+        let { documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario } = queryResult.rows[0];
 
         // Validar que el documento principal esté disponible
         if (!documento_path) {
             return res.status(400).json({ error: 'El PDF base no se encuentra disponible en la base de datos.' });
         }
 
-        // Añadir archivos subidos desde el frontend
-        if (req.files && req.files.nota) {
-            nota = req.files.nota[0].buffer;
+        // Función para asegurar que los documentos sean Uint8Array
+        const ensureUint8Array = (doc) => {
+            if (Buffer.isBuffer(doc)) {
+                return new Uint8Array(doc);  // Convierte a Uint8Array si es Buffer
+            }
+            return doc;  // Si ya es un Uint8Array, no hace nada
+        };
+
+        // Convertir todos los documentos a Uint8Array
+        documento_path = ensureUint8Array(documento_path);
+        resolucion_path = ensureUint8Array(resolucion_path);
+        dictamen_path = ensureUint8Array(dictamen_path);
+        carta_path = ensureUint8Array(carta_path);
+        console.log('documento_path:', documento_path);
+        console.log('resolucion_path:', resolucion_path);
+        console.log('dictamen_path:', dictamen_path);
+        console.log('carta_path:', carta_path);
+
+        console.log('Archivos subidos:', req.files);
+        console.log('Archivos recibidos:', req.files);
+
+        // Verificación para asegurar que los documentos sean Uint8Array
+        if (![documento_path, resolucion_path, dictamen_path, carta_path].every(doc => doc instanceof Uint8Array)) {
+            return res.status(400).json({ error: 'Todos los documentos deben ser de tipo Uint8Array.' });
         }
-        if (req.files && req.files.certificado_item) {
-            certificado_item = req.files.certificado_item[0].buffer;
-        }
-        if (req.files && req.files.certificado_resumen_presupuestario) {
-            certificado_resumen_presupuestario = req.files.certificado_resumen_presupuestario[0].buffer;
-        }
-        
-        if (req.files && req.files.resolucion) {
-            resolucion_path = req.files.resolucion[0].buffer;
-        }
-        if (req.files && req.files.dictamen) {
-            dictamen_path = req.files.dictamen[0].buffer;
-        }
-        if (req.files && req.files.carta) {
-            carta_path = req.files.carta[0].buffer;
+        console.log('Tipo de documento_path:', documento_path instanceof Uint8Array);
+        console.log('Tipo de resolucion_path:', resolucion_path instanceof Uint8Array);
+        console.log('Tipo de dictamen_path:', dictamen_path instanceof Uint8Array);
+        console.log('Tipo de carta_path:', carta_path instanceof Uint8Array);
+        // Añadir archivos subidos desde el frontend, asegurándose de que sean válidos
+        if (req.files) {
+            if (req.files) {
+                if (req.files.resolucion) {
+                    resolucion_path = req.files.resolucion[0].buffer;
+                }
+                if (req.files.dictamen) {
+                    dictamen_path = req.files.dictamen[0].buffer;
+                }
+                if (req.files.carta) {
+                    carta_path = req.files.carta[0].buffer;
+                }
+            }
+            if (req.files.nota) {
+                nota = req.files.nota[0].buffer;
+            }
+            if (req.files.certificado_item) {
+                certificado_item = req.files.certificado_item[0].buffer;
+            }
+            if (req.files.certificado_resumen_presupuestario) {
+                certificado_resumen_presupuestario = req.files.certificado_resumen_presupuestario[0].buffer;
+            }
+            
         }
 
         // Guardar en la base de datos
         await pool.query(`
-            UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3, nota = $4, certificado_item = $5, certificado_resumen_presupuestario = $6 WHERE id_convocatoria = $7 `, [resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria]);
+            UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3, nota = $4, certificado_item = $5, certificado_resumen_presupuestario = $6 WHERE id_convocatoria = $7
+        `, [resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria]);
 
-        console.log('PDFs a combinar:', { documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario });
+        // Crear el arreglo de archivos a combinar después de la validación
+        const validateFile = (file) => {
+            return file && file instanceof Uint8Array;
+        };
 
-        const pdfCombinado = await combinarPDFs( documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario );
+        const filesToCombine = [
+            documento_path, resolucion_path, dictamen_path, carta_path,
+            nota, certificado_item, certificado_resumen_presupuestario
+        ].filter(file => validateFile(file));
 
+        // Comprobar si hay archivos válidos
+        if (filesToCombine.length === 0) {
+            return res.status(400).json({ error: 'No hay archivos válidos para combinar.' });
+        }
+
+        // Llamada a la función para combinar los PDFs
+        const pdfCombinado = await combinarPDFs(...filesToCombine);
+
+        // Actualizar el documento combinado en la base de datos
         await client.query(`UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2`, [pdfCombinado, id_convocatoria]);
 
+        // Responder con el PDF combinado
         res.setHeader('Content-Type', 'application/pdf');
-        res.end(pdfCombinado); // Cambiar de res.send a res.end
+        res.end(pdfCombinado);
 
         client.release();
     } catch (error) {
         console.error('Error al combinar PDFs:', error);
-        res.status(500).json({ error: 'Error al combinar PDFs.' });
+        return res.status(500).json({ 
+            error: 'Error al combinar PDFs.',
+            message: error.message,  // Esto puede ayudarte a obtener detalles sobre el error
+            stack: error.stack       // Si es necesario, puedes incluir el stack trace
+        });
     }
 };
+
+
 
 // Función para visualizar el PDF combinado
 exports.viewCombinedPDF = async (req, res) => {
