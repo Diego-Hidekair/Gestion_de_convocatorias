@@ -4,11 +4,18 @@ const { Pool } = require('pg');
 const pdf = require('html-pdf');
 const { PDFDocument } = require('pdf-lib');
 const multer = require('multer');
-z
+
 // Configuración de almacenamiento para multer
 const storage = multer.memoryStorage();
-//const upload = multer({ storage });
-const upload = multer({ storage: storage });
+const upload = multer().fields([
+    { name: 'resolucion', maxCount: 1 },
+    { name: 'dictamen', maxCount: 1 },
+    { name: 'carta', maxCount: 1 },
+    { name: 'nota', maxCount: 1 },
+    { name: 'certificado_item', maxCount: 1 },
+    { name: 'certificado_resumen_presupuestario', maxCount: 1 },
+]);
+
 // Configuración de la base de datos
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -31,10 +38,9 @@ const generarPDFBuffer = (htmlContent, options) => {
     });
 };
 
-// Función auxiliar para combinar múltiples PDFs
+// Función auxiliar para combinar PDFs
 const combinarPDFs = async (buffers) => {
     const pdfFinal = await PDFDocument.create();
-
     for (const buffer of buffers) {
         if (buffer) {
             const pdfDoc = await PDFDocument.load(buffer);
@@ -43,8 +49,7 @@ const combinarPDFs = async (buffers) => {
         }
     }
     return pdfFinal.save();
-}; 
-
+};
 
 // Generar un PDF base desde HTML
 exports.generatePDF = async (req, res) => {
@@ -203,110 +208,56 @@ exports.combinePDFs = async (req, res) => {
         const queryResult = await client.query(
             `SELECT documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario FROM documentos WHERE id_convocatoria = $1`, [id_convocatoria]
         );
-        
+
         if (queryResult.rows.length === 0) {
             return res.status(404).json({ error: 'Documento no encontrado.' });
         }
 
         let { documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario } = queryResult.rows[0];
 
-        // Validar que el documento principal esté disponible
-        if (!documento_path) {
-            return res.status(400).json({ error: 'El PDF base no se encuentra disponible en la base de datos.' });
+        // Verificación de archivos recibidos desde el frontend
+        if (req.files) {
+            resolucion_path = req.files.resolucion ? req.files.resolucion[0].buffer : resolucion_path;
+            dictamen_path = req.files.dictamen ? req.files.dictamen[0].buffer : dictamen_path;
+            carta_path = req.files.carta ? req.files.carta[0].buffer : carta_path;
+            nota = req.files.nota ? req.files.nota[0].buffer : nota;
+            certificado_item = req.files.certificado_item ? req.files.certificado_item[0].buffer : certificado_item;
+            certificado_resumen_presupuestario = req.files.certificado_resumen_presupuestario ? req.files.certificado_resumen_presupuestario[0].buffer : certificado_resumen_presupuestario;
         }
 
-        // Función para asegurar que los documentos sean Uint8Array
         const ensureUint8Array = (doc) => {
             if (Buffer.isBuffer(doc)) {
-                return new Uint8Array(doc);  // Convierte a Uint8Array si es Buffer
+                return new Uint8Array(doc);
             }
-            return doc;  // Si ya es un Uint8Array, no hace nada
+            return doc;
         };
 
-        // Convertir todos los documentos a Uint8Array
         documento_path = ensureUint8Array(documento_path);
         resolucion_path = ensureUint8Array(resolucion_path);
         dictamen_path = ensureUint8Array(dictamen_path);
         carta_path = ensureUint8Array(carta_path);
-        console.log('documento_path:', documento_path);
-        console.log('resolucion_path:', resolucion_path);
-        console.log('dictamen_path:', dictamen_path);
-        console.log('carta_path:', carta_path);
 
-        console.log('Archivos subidos:', req.files);
-        console.log('Archivos recibidos:', req.files);
+        // Combina los documentos
+        const pdfCombinado = await combinarPDFs([documento_path, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario]);
 
-        // Verificación para asegurar que los documentos sean Uint8Array
-        if (![documento_path, resolucion_path, dictamen_path, carta_path].every(doc => doc instanceof Uint8Array)) {
-            return res.status(400).json({ error: 'Todos los documentos deben ser de tipo Uint8Array.' });
-        }
-        console.log('Tipo de documento_path:', documento_path instanceof Uint8Array);
-        console.log('Tipo de resolucion_path:', resolucion_path instanceof Uint8Array);
-        console.log('Tipo de dictamen_path:', dictamen_path instanceof Uint8Array);
-        console.log('Tipo de carta_path:', carta_path instanceof Uint8Array);
-        // Añadir archivos subidos desde el frontend, asegurándose de que sean válidos
-        if (req.files) {
-            if (req.files) {
-                if (req.files.resolucion) {
-                    resolucion_path = req.files.resolucion[0].buffer;
-                }
-                if (req.files.dictamen) {
-                    dictamen_path = req.files.dictamen[0].buffer;
-                }
-                if (req.files.carta) {
-                    carta_path = req.files.carta[0].buffer;
-                }
-            }
-            if (req.files.nota) {
-                nota = req.files.nota[0].buffer;
-            }
-            if (req.files.certificado_item) {
-                certificado_item = req.files.certificado_item[0].buffer;
-            }
-            if (req.files.certificado_resumen_presupuestario) {
-                certificado_resumen_presupuestario = req.files.certificado_resumen_presupuestario[0].buffer;
-            }
-            
-        }
+        // Guarda el PDF combinado en la base de datos
+        await pool.query(
+            `UPDATE documentos SET 
+                documento_path = $1, 
+                resolucion_path = $2, 
+                dictamen_path = $3, 
+                carta_path = $4, 
+                nota = $5, 
+                certificado_item = $6, 
+                certificado_resumen_presupuestario = $7 
+            WHERE id_convocatoria = $8`,
+            [pdfCombinado, resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria]
+        );
 
-        // Guardar en la base de datos
-        await pool.query(`
-            UPDATE documentos SET resolucion_path = $1, dictamen_path = $2, carta_path = $3, nota = $4, certificado_item = $5, certificado_resumen_presupuestario = $6 WHERE id_convocatoria = $7
-        `, [resolucion_path, dictamen_path, carta_path, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria]);
-
-        // Crear el arreglo de archivos a combinar después de la validación
-        const validateFile = (file) => {
-            return file && file instanceof Uint8Array;
-        };
-
-        const filesToCombine = [
-            documento_path, resolucion_path, dictamen_path, carta_path,
-            nota, certificado_item, certificado_resumen_presupuestario
-        ].filter(file => validateFile(file));
-
-        // Comprobar si hay archivos válidos
-        if (filesToCombine.length === 0) {
-            return res.status(400).json({ error: 'No hay archivos válidos para combinar.' });
-        }
-
-        // Llamada a la función para combinar los PDFs
-        const pdfCombinado = await combinarPDFs(...filesToCombine);
-
-        // Actualizar el documento combinado en la base de datos
-        await client.query(`UPDATE documentos SET documento_path = $1 WHERE id_convocatoria = $2`, [pdfCombinado, id_convocatoria]);
-
-        // Responder con el PDF combinado
-        res.setHeader('Content-Type', 'application/pdf');
-        res.end(pdfCombinado);
-
-        client.release();
+        res.status(200).json({ message: 'PDF combinado y actualizado correctamente.' });
     } catch (error) {
-        console.error('Error al combinar PDFs:', error);
-        return res.status(500).json({ 
-            error: 'Error al combinar PDFs.',
-            message: error.message,  // Esto puede ayudarte a obtener detalles sobre el error
-            stack: error.stack       // Si es necesario, puedes incluir el stack trace
-        });
+        console.error('Error combinando los PDFs:', error);
+        res.status(500).json({ error: 'Error interno al combinar los PDFs' });
     }
 };
 
