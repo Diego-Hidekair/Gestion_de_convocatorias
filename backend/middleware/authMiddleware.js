@@ -1,6 +1,5 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
-
 // Middleware para autenticar el token JWT
 const authenticateToken = (req, res, next) => {
     const token = req.header('Authorization')?.split(' ')[1];

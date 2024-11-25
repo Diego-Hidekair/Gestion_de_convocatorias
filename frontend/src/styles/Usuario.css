@@ -205,3 +205,15 @@
 .container-user, .perfil-container-user {
     background-color: #ffffff;
 }
+
+
+.image-preview {
+    margin-top: 15px;
+}
+.preview-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+}
