@@ -2,117 +2,74 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../styles/Usuario.css';
-
-const DEFAULT_PROFILE_PICTURE = '/imagenes/avatar.png'; // Ruta de la foto predeterminada en el frontend
 
 const UsuarioForm = () => {
+    const [usuario, setUsuario] = useState({ id_usuario: '', Nombres: '', Apellido_paterno: '', Apellido_materno: '', Rol: '', Contraseña: '', Celular: '', id_facultad: '', id_programa: '', foto_perfil: null });
+    
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
-    const [previewImage, setPreviewImage] = useState(DEFAULT_PROFILE_PICTURE);
-    const [error, setError] = useState('');
+
     const navigate = useNavigate();
 
-    const [usuario, setUsuario] = useState({
-        id_usuario: '',
-        Nombres: '',
-        Apellido_paterno: '',
-        Apellido_materno: '',
-        Rol: '',
-        Contraseña: '',
-        Celular: '',
-        id_facultad: '',
-        id_programa: '',
-        foto_perfil: '',
-    });
-    
-     useEffect(() => {
-        const fetchFacultades = async () => {
+    useEffect(() => {
+        const fetchFacultadesYProgramas = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/facultades', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                });
-                setFacultades(response.data);
+                const [facultadesResponse, programasResponse] = await Promise.all([
+                    axios.get('http://localhost:5000/facultades', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                    axios.get('http://localhost:5000/programas', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                ]);
+                setFacultades(facultadesResponse.data);
+                setCarreras(programasResponse.data);
             } catch (error) {
-                console.error('Error al obtener facultades:', error);
+                console.error('Error al cargar facultades y programas:', error);
+            }
+        };
+    
+        fetchFacultadesYProgramas();
+    }, []);
+
+        const fetchCarreras = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/carreras', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                setCarreras(response.data);
+            } catch (error) {
+                console.error('Error al obtener carreras', error);
             }
         };
 
         fetchFacultades();
+        fetchCarreras();
     }, []);
-    
-    useEffect(() => {
-        if (usuario.id_facultad) {
-            const fetchCarreras = async () => {
-                try {
-                    const response = await axios.get(`http://localhost:5000/carreras/${usuario.id_facultad}`, {
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                    });
-                    setCarreras(response.data);
-                } catch (error) {
-                    console.error('Error al obtener carreras:', error);
-                }
-            };
-
-            fetchCarreras();
-        } else {
-            setCarreras([]);
-        }
-    }, [usuario.id_facultad]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setUsuario({ ...usuario, [name]: value });
-    };
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setUsuario({ ...usuario, foto_perfil: file });
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
+        setUsuario({
+            ...usuario,
+            [e.target.name]: e.target.value
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+    
         const formData = new FormData();
-
-        Object.keys(usuario).forEach((key) => {
-            if (key === 'foto_perfil' && usuario[key]) {
-                formData.append(key, usuario[key]);
-            } else if (key !== 'foto_perfil') {
-                formData.append(key, usuario[key]);
-            }
+        Object.entries(usuario).forEach(([key, value]) => {
+            formData.append(key, value);
         });
-
+    
         try {
-            await axios.post('http://localhost:5000/usuarios', formData, {
+            const response = await axios.post('http://localhost:5000/usuarios', formData, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'multipart/form-data',
-                },
+                    'Content-Type': 'multipart/form-data'
+                }
             });
-            setError('');
-            setUsuario({
-                id_usuario: '',
-                Nombres: '',
-                Apellido_paterno: '',
-                Apellido_materno: '',
-                Rol: '',
-                Contraseña: '',
-                Celular: '',
-                id_facultad: '',
-                id_programa: '',
-                foto_perfil: '',
-            });
-            setPreviewImage(DEFAULT_PROFILE_PICTURE);
-            navigate('/usuarios');
+            alert('Usuario creado exitosamente');
+            navigate('/usuarios'); // Redirige a la lista de usuarios
         } catch (error) {
-            setError(error.response ? error.response.data.message : 'Error al crear el usuario.');
+            console.error('Error al crear usuario:', error);
+            alert('Hubo un error al crear el usuario');
         }
     };
 
@@ -125,20 +82,6 @@ const UsuarioForm = () => {
                         <label className="label-user">ID de Usuario</label>
                         <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
                     </div>
-                    <div className="form-group">
-                    <label htmlFor="foto_perfil">Foto de Perfil</label>
-                    <input
-                        type="file"
-                        id="foto_perfil"
-                        name="foto_perfil"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                </div>
-                <div className="image-preview">
-                    <label>Vista previa:</label>
-                    <img src={previewImage} alt="Vista previa" className="preview-image" />
-                </div>
                     <div className="col-md-6">
                         <label className="label-user">Nombres</label>
                         <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
@@ -157,19 +100,23 @@ const UsuarioForm = () => {
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Facultad</label>
-                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleChange} required>
-                            <option value="">Seleccione facultad</option>
+                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad}
+                            onChange={(e) => setUsuario({ ...usuario, id_facultad: e.target.value })}
+                            required >
+                            <option value="">Seleccionar facultad</option>
                             {facultades.map(facultad => (
                                 <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                     {facultad.nombre_facultad}
                                 </option>
                             ))}
                         </select>
-                    </div>
                     <div className="col-md-6">
                         <label className="label-user">Programa</label>
-                        <select className="form-control-user" name="id_programa" value={usuario.id_programa} onChange={handleChange} required>
-                            <option value="">Seleccione programa</option>
+                        <select className="form-control-user" name="id_programa" value={usuario.id_programa}
+                            onChange={(e) => setUsuario({ ...usuario, id_programa: e.target.value })}
+                            required
+                        >
+                            <option value="">Seleccionar programa</option>
                             {carreras.map(carrera => (
                                 <option key={carrera.id_programa} value={carrera.id_programa}>
                                     {carrera.nombre_carrera}
@@ -181,11 +128,11 @@ const UsuarioForm = () => {
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Rol</label>
-                        <select className="form-control-user" name="Rol" value={usuario.Rol} onChange={handleChange} required>
-                            <option value="">Seleccione rol</option>
-                            <option value="admin">Admin</option>
+                        <select className="form-control-user" name="Rol" value={usuario.Rol}  onChange={(e) => setUsuario({ ...usuario, Rol: e.target.value })} required>
+                            <option value="">Seleccionar rol</option>
+                            <option value="admin">Administrador</option>
                             <option value="usuario">Usuario</option>
-                            <option value="secretaria">Secretaria</option>
+                            <option value="secretaria">Secretaría</option>
                             <option value="decanatura">Decanatura</option>
                             <option value="vicerrectorado">Vicerrectorado</option>
                         </select>
