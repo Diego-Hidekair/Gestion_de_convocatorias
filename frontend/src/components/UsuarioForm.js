@@ -4,29 +4,35 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const UsuarioForm = () => {
-    const [usuario, setUsuario] = useState({ id_usuario: '', Nombres: '', Apellido_paterno: '', Apellido_materno: '', Rol: '', Contraseña: '', Celular: '', id_facultad: '', id_programa: '', foto_perfil: null });
-    
+    const [usuario, setUsuario] = useState({
+        id_usuario: '',  
+        Nombres: '',
+        Apellido_paterno: '',
+        Apellido_materno: '',
+        Rol: '',
+        Contraseña: '',
+        Celular: '',
+        id_facultad: '', 
+        id_programa: '',
+        fotoPerfil: null
+    });
+
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchFacultadesYProgramas = async () => {
+        const fetchFacultades = async () => {
             try {
-                const [facultadesResponse, programasResponse] = await Promise.all([
-                    axios.get('http://localhost:5000/facultades', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                    axios.get('http://localhost:5000/programas', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-                ]);
-                setFacultades(facultadesResponse.data);
-                setCarreras(programasResponse.data);
+                const response = await axios.get('http://localhost:5000/facultades', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                setFacultades(response.data);
             } catch (error) {
-                console.error('Error al cargar facultades y programas:', error);
+                console.error('Error al obtener facultades', error);
             }
         };
-    
-        fetchFacultadesYProgramas();
-    }, []);
 
         const fetchCarreras = async () => {
             try {
@@ -44,32 +50,37 @@ const UsuarioForm = () => {
     }, []);
 
     const handleChange = (e) => {
-        setUsuario({
-            ...usuario,
-            [e.target.name]: e.target.value
-        });
+        if (e.target.name === 'fotoPerfil') {
+        setUsuario({ ...usuario, fotoPerfil: e.target.files[0] });
+    } else {
+        setUsuario({ ...usuario, [e.target.name]: e.target.value });
+    }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
         const formData = new FormData();
-        Object.entries(usuario).forEach(([key, value]) => {
-            formData.append(key, value);
-        });
-    
+        formData.append('fotoPerfil', usuario.fotoPerfil);
         try {
             const response = await axios.post('http://localhost:5000/usuarios', formData, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'multipart/form-data'
-                }
+            headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'multipart/form-data',},
             });
-            alert('Usuario creado exitosamente');
-            navigate('/usuarios'); // Redirige a la lista de usuarios
+            if (response.status === 201) {
+                setUsuario({
+                    id_usuario: '', 
+                    Nombres: '',
+                    Apellido_paterno: '',
+                    Apellido_materno: '',
+                    Rol: '',
+                    Contraseña: '',
+                    Celular: '',
+                    id_facultad: '', 
+                    id_programa: '' 
+                });
+                navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
+            }
         } catch (error) {
-            console.error('Error al crear usuario:', error);
-            alert('Hubo un error al crear el usuario');
+            console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
         }
     };
 
@@ -82,6 +93,7 @@ const UsuarioForm = () => {
                         <label className="label-user">ID de Usuario</label>
                         <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
                     </div>
+                    <input type="file" name="fotoPerfil" onChange={handleChange} />
                     <div className="col-md-6">
                         <label className="label-user">Nombres</label>
                         <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
@@ -100,23 +112,19 @@ const UsuarioForm = () => {
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Facultad</label>
-                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad}
-                            onChange={(e) => setUsuario({ ...usuario, id_facultad: e.target.value })}
-                            required >
-                            <option value="">Seleccionar facultad</option>
+                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleChange} required>
+                            <option value="">Seleccione facultad</option>
                             {facultades.map(facultad => (
                                 <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                     {facultad.nombre_facultad}
                                 </option>
                             ))}
                         </select>
+                    </div>
                     <div className="col-md-6">
                         <label className="label-user">Programa</label>
-                        <select className="form-control-user" name="id_programa" value={usuario.id_programa}
-                            onChange={(e) => setUsuario({ ...usuario, id_programa: e.target.value })}
-                            required
-                        >
-                            <option value="">Seleccionar programa</option>
+                        <select className="form-control-user" name="id_programa" value={usuario.id_programa} onChange={handleChange} required>
+                            <option value="">Seleccione programa</option>
                             {carreras.map(carrera => (
                                 <option key={carrera.id_programa} value={carrera.id_programa}>
                                     {carrera.nombre_carrera}
@@ -128,11 +136,11 @@ const UsuarioForm = () => {
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Rol</label>
-                        <select className="form-control-user" name="Rol" value={usuario.Rol}  onChange={(e) => setUsuario({ ...usuario, Rol: e.target.value })} required>
-                            <option value="">Seleccionar rol</option>
-                            <option value="admin">Administrador</option>
+                        <select className="form-control-user" name="Rol" value={usuario.Rol} onChange={handleChange} required>
+                            <option value="">Seleccione rol</option>
+                            <option value="admin">Admin</option>
                             <option value="usuario">Usuario</option>
-                            <option value="secretaria">Secretaría</option>
+                            <option value="secretaria">Secretaria</option>
                             <option value="decanatura">Decanatura</option>
                             <option value="vicerrectorado">Vicerrectorado</option>
                         </select>
