@@ -51,31 +51,38 @@ const UsuarioForm = () => {
 
     const handleChange = (e) => {
         if (e.target.name === 'fotoPerfil') {
-        setUsuario({ ...usuario, fotoPerfil: e.target.files[0] });
-    } else {
-        setUsuario({ ...usuario, [e.target.name]: e.target.value });
-    }
+            setUsuario({ ...usuario, fotoPerfil: e.target.files[0] });
+        } else {
+            setUsuario({ ...usuario, [e.target.name]: e.target.value });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData();
-        formData.append('fotoPerfil', usuario.fotoPerfil);
+        Object.keys(usuario).forEach(key => {
+            formData.append(key, usuario[key]);
+        });
+        console.log([...formData]); 
         try {
             const response = await axios.post('http://localhost:5000/usuarios', formData, {
-            headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`, 'Content-Type': 'multipart/form-data',},
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data',
+                },
             });
             if (response.status === 201) {
                 setUsuario({
-                    id_usuario: '', 
+                    id_usuario: '',
                     Nombres: '',
                     Apellido_paterno: '',
                     Apellido_materno: '',
                     Rol: '',
                     Contraseña: '',
                     Celular: '',
-                    id_facultad: '', 
-                    id_programa: '' 
+                    id_facultad: '',
+                    id_programa: '',
+                    fotoPerfil: null
                 });
                 navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
             }
@@ -93,23 +100,26 @@ const UsuarioForm = () => {
                         <label className="label-user">ID de Usuario</label>
                         <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
                     </div>
-                    <input type="file" name="fotoPerfil" onChange={handleChange} />
+                    <div className="col-md-6">
+                        <label className="label-user">Foto de Perfil</label>
+                        <input type="file" className="form-control-user" name="fotoPerfil" onChange={handleChange} />
+                    </div>
+                </div>
+                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Nombres</label>
                         <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
                     </div>
-                </div>
-                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Apellido Paterno</label>
                         <input type="text" className="form-control-user" name="Apellido_paterno" value={usuario.Apellido_paterno} onChange={handleChange} required />
                     </div>
+                </div>
+                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Apellido Materno</label>
                         <input type="text" className="form-control-user" name="Apellido_materno" value={usuario.Apellido_materno} onChange={handleChange} required />
                     </div>
-                </div>
-                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Facultad</label>
                         <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleChange} required>
@@ -121,6 +131,8 @@ const UsuarioForm = () => {
                             ))}
                         </select>
                     </div>
+                </div>
+                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Programa</label>
                         <select className="form-control-user" name="id_programa" value={usuario.id_programa} onChange={handleChange} required>
@@ -132,27 +144,27 @@ const UsuarioForm = () => {
                             ))}
                         </select>
                     </div>
-                </div>
-                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Rol</label>
                         <select className="form-control-user" name="Rol" value={usuario.Rol} onChange={handleChange} required>
                             <option value="">Seleccione rol</option>
-                            <option value="admin">Admin</option>
-                            <option value="usuario">Usuario</option>
-                            <option value="secretaria">Secretaria</option>
-                            <option value="decanatura">Decanatura</option>
-                            <option value="vicerrectorado">Vicerrectorado</option>
+                            <option value="admin">admin</option>
+                            <option value="usuario">usuario</option>
+                            <option value="secretaria">secretaria</option>
+                            <option value="decanatura">decanatura</option>
+                            <option value="vicerrectorado">vicerrectorado</option>
                         </select>
                     </div>
+                </div>
+                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Celular</label>
                         <input type="text" className="form-control-user" name="Celular" value={usuario.Celular} onChange={handleChange} required />
                     </div>
-                </div>
-                <div className="mb-3-user">
-                    <label className="label-user">Contraseña</label>
-                    <input type="password" className="form-control-user" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
+                    <div className="col-md-6">
+                        <label className="label-user">Contraseña</label>
+                        <input type="password" className="form-control-user" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
+                    </div>
                 </div>
                 <button type="submit" className="btn-user btn-primary-user">Crear Usuario</button>
             </form>

@@ -2,7 +2,7 @@
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const multer = require('multer'); // Agregar multer para manejar archivos
+const multer = require('multer');
 const upload = multer();
 
 const getUsuarios = async (req, res) => {
@@ -24,7 +24,8 @@ const getUsuarios = async (req, res) => {
 
 const createUser = async (req, res) => {
     const { id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa } = req.body;
-    const image = req.file; 
+    const image = req.file;
+
     try {
         const validRoles = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
         if (!validRoles.includes(Rol)) {
@@ -36,28 +37,29 @@ const createUser = async (req, res) => {
             return res.status(400).json({ error: 'El id ya está en uso' });
         }
 
+        if (image && !['image/jpeg', 'image/png', 'image/jpg'].includes(image.mimetype)) {
+            return res.status(400).json({ error: 'Formato de imagen no válido. Solo se permiten JPEG y PNG' });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(Contraseña, salt);
 
+        const queryValues = [
+            id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, image ? image.buffer : null
+        ];
 
-        let queryValues = [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa];
+        const newUser = await pool.query(`
+            INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
+        `, queryValues);
 
-        if (image) {
-            queryValues.push(image.buffer); // Agregar los datos binarios de la imagen
-            } else {
-            queryValues.push(null); // Si no se subió imagen, agregar null
-        }
-        const newUser = await pool.query(
-            `INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-            queryValues
-        );
+        console.log('Usuario creado:', newUser.rows[0]);  
         res.status(201).json(newUser.rows[0]);
     } catch (error) {
         console.error('Error al crear el usuario:', error);
         res.status(500).json({ error: 'Error en el servidor al crear el usuario', details: error.message });
     }
-};
+}; 
 
 const updateUser = async (req, res) => {
     const { id_usuario } = req.params;
@@ -71,17 +73,15 @@ const updateUser = async (req, res) => {
             const salt = await bcrypt.genSalt(10);
             hashedPassword = await bcrypt.hash(Contraseña, salt);
 
-            updatedUser = await pool.query(
-                `UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña = $5, Celular = $6, id_facultad = $7, id_programa = $8 
-                WHERE id_usuario = $9 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa`,
-                [Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, id_usuario]
-            );
+            updatedUser = await pool.query(`
+                UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña = $5, Celular = $6, id_facultad = $7, id_programa = $8 
+                WHERE id_usuario = $9 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa
+            `, [Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, id_usuario]);
         } else {
-            updatedUser = await pool.query(
-                `UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5, id_facultad = $6, id_programa = $7
-                WHERE id_usuario = $8 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa`,
-                [Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa, id_usuario]
-            );
+            updatedUser = await pool.query(`
+                UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5, id_facultad = $6, id_programa = $7
+                WHERE id_usuario = $8 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa
+            `, [Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa, id_usuario]);
         }
 
         res.json(updatedUser.rows[0]);
@@ -97,7 +97,6 @@ const deleteUser = async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM usuarios WHERE id_usuario = $1 RETURNING *', [id_usuario]);
 
-        // Si no se eliminó ningún usuario, envía un error 404
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
@@ -107,7 +106,7 @@ const deleteUser = async (req, res) => {
         console.error(error.message);
         res.status(500).json({ error: 'Error en el servidor al eliminar el usuario' });
     }
-}; 
+};
 
 
 const getUsuarioById = async (req, res) => {
@@ -146,6 +145,5 @@ const getCurrentUser = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener el usuario actual', error });
     }
 };
-
 
 module.exports = { createUser, getUsuarios, deleteUser, updateUser, getUsuarioById, getCurrentUser };
