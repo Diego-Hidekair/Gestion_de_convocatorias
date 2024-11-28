@@ -3,6 +3,8 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+//const storage = multer.memoryStorage();
+const upload = multer({ storage: multer.memoryStorage() });
 
 const getUsuarios = async (req, res) => {
     try {
@@ -21,44 +23,83 @@ const getUsuarios = async (req, res) => {
     }
 };
 
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-const createUser = async (req, res) => {//crear usuario
+const createUser = async (req, res) => {
     console.log("Datos recibidos en req.body:", req.body);
-    const { id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_url } = req.body;
-    let foto_perfil = null;
     
-    try {
+    const passwordField =  req.body['Contraseña']|| req.body['ContraseÃ±a'];
+    if (!passwordField) {
+        return res.status(400).json({ error: 'La contraseña es obligatoria' });
+    }
+    
+    const { id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa } = req.body;
+    //let fotoUrl = req.body.foto_url || '';
+    
+    
+
+    try {//rol 
         const validRoles = ['admin', 'usuario', 'secretaria', 'decanatura', 'vicerrectorado'];
         if (!validRoles.includes(Rol)) {
             return res.status(400).json({ error: 'Rol inválido' });
         }
 
-        const existingUser = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
+        const existingUser = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);//existe usuareio
         if (existingUser.rows.length > 0) {
             return res.status(400).json({ error: 'El id ya está en uso' });
         }
 
-        const salt = await bcrypt.genSalt(10);
         if (!Contraseña) {
             return res.status(400).json({ error: 'La contraseña es obligatoria' });
         }
-        const hashedPassword = await bcrypt.hash(Contraseña, salt);
-
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(passwordField, salt);
+        
+        let fotoBuffer = null;
         if (req.file) {
-            foto_perfil = req.file.buffer; 
-        } else if (foto_url) {
-            const response = await axios.get(foto_url, { responseType: 'arraybuffer' });
-            foto_perfil = Buffer.from(response.data);
+            fotoBuffer = req.file.buffer;
         }
+
+
+    const query = `
+    INSERT INTO usuarios (
+        id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`;
+    const values = [
+        id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword,
+        Celular, id_facultad, id_programa, fotoBuffer
+    ];
+    
+    const newUser = await pool.query(query, values);
+
+        
+
+        /*if (req.file) {
+            const fotoBuffer = req.file.buffer;
+            //const fotoBase64 = req.file.buffer.toString('base64');
+            fotoUrl = `data:${req.file.mimetype};base64,${fotoBase64}`;
+            const fotoUrl = `data:${req.file.mimetype};base64,${fotoBase64}`;
+            usuario.foto_url = fotoUrl;
+            await pool.query(
+                `INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+                [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, fotoBuffer]
+            );
+        } else {
+            console.log("No se recibió archivo para foto_perfil");
+        }
+        console.log("Archivo recibido en req.file:", req.file);
 
         const newUser = await pool.query(
             `INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-            [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, foto_perfil]
+            [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, fotoUrl || null]
         );
+        
+        console.log("Archivo recibido:", req.file); 
+
+        const upload = multer({
+            storage: multer.memoryStorage(),
+            limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+        });*/
         
         res.status(201).json(newUser.rows[0]);
     } catch (error) {
@@ -156,4 +197,4 @@ const getCurrentUser = async (req, res) => {
 };
 
 
-module.exports = { createUser, upload, getUsuarios, deleteUser, updateUser, getUsuarioById, getCurrentUser };
+module.exports = { createUser, getUsuarios, deleteUser, updateUser, getUsuarioById, getCurrentUser, upload} ;

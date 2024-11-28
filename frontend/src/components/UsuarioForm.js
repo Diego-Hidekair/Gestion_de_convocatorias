@@ -66,10 +66,12 @@ const UsuarioForm = () => {
         e.preventDefault();
         const formData = new FormData();
         Object.keys(usuario).forEach((key) => {
-            formData.append(key, usuario[key]);
+            if (usuario[key]) {
+                formData.append(key, usuario[key]);
+            }
         });
         if (foto) {
-            formData.append('foto_perfil', foto); // Agregar imagen
+            formData.append('foto_perfil', foto); 
         }
 
         if (!usuario.Contraseña) {
@@ -78,8 +80,11 @@ const UsuarioForm = () => {
         }
         
         try {
-            const response = await axios.post('http://localhost:5000/usuarios', usuario, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            const response = await axios.post('http://localhost:5000/usuarios', formData, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data',
+                },
             });
             if (response.status === 201) {
                 navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
@@ -99,9 +104,9 @@ const UsuarioForm = () => {
                 navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
             }*/
             } catch (error) {
-            console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
-        }
-    };
+                console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
+            }
+        };
 
     
     return (
