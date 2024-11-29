@@ -3,12 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import axios from 'axios';
-import '../styles/pdf.css';
+import '../styles/pdf.css'; 
 
 const PDFGenerator = () => {
   const { id_convocatoria, id_honorario } = useParams();
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [pdfUrl] = useState(null);
+  const [loading] = useState(true);
   const [error, setError] = useState(null);
   const [files, setFiles] = useState({ resolucion: null, dictamen: null, carta: null });
   const navigate = useNavigate();
@@ -17,22 +17,20 @@ const PDFGenerator = () => {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
+    
     const generarPDF = async () => {
       try {
-        // Generar el PDF inicial
-        await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`, {
-          headers: { Authorization: `Bearer ${token}` }, // Incluye el token en el encabezado
-        });
-        setPdfUrl(`http://localhost:5000/pdf/combinado/${id_convocatoria}`);
-        setLoading(false);
-        console.log('PDF generado correctamente.');
+          const response = await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`);
+          if (response.status === 200) {
+              console.log('PDF generado correctamente');
+          } else {
+              console.error('Error generando PDF:', response.data);
+          }
       } catch (error) {
-        console.error('Error generando el PDF:', error);
-        setError('Error al generar el PDF.');
-        setLoading(false);
+          console.error('Error generando el PDF:', error.message);
       }
-    };
-    generarPDF();
+  };
+  generarPDF();
   }, [id_convocatoria, id_honorario, token]);
 
 
