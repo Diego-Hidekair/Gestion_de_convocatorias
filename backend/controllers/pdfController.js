@@ -2,6 +2,7 @@
 const fs = require('fs');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
+const path = require('path');
 
 const pool = new Pool({//DB
     user: process.env.DB_USER,
@@ -24,11 +25,12 @@ const generarPDFBuffer = (htmlContent, options) => {
     });
 };
 
+
 exports.generatePDF = async (req, res) => {//generar elpdf con html
     const { id_convocatoria, id_honorario } = req.params;
 
     try {
-        // Obtener datos necesarios de la base de datos
+        //datos de la base de datos
         const convocatoriaResult = await pool.query(
             `SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, ca.nombre_carrera, f.nombre_facultad
             FROM convocatorias c
@@ -86,18 +88,40 @@ exports.generatePDF = async (req, res) => {//generar elpdf con html
             {/*aqui existe codigo para crear el pdf, pero por ahora no lo lleno para evitar sobre pasar el limite de caracteres por pregunta en el sistema*/}
         </html>
         `;
-        
+        console.log('HTML Content:', htmlContent);
+
     const options = { format: 'Letter', border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } };
 
     const pdfBuffer = await generarPDFBuffer(htmlContent, options);//espacio de almacenamiento temporal (buffer)
     
-    await pool.query(
-        `INSERT INTO documentos (documento_path, id_convocatoria) VALUES ($1, $2)`,
-        [pdfBuffer, id_convocatoria]
-    );
+    const documentoExistente = await pool.query(
+            `SELECT id_documentos FROM documentos WHERE id_convocatoria = $1`,
+            [id_convocatoria]
+        );
+
+        if (documentoExistente.rowCount > 0) {
+            // Actualizar documento existente
+            await pool.query(
+                `UPDATE documentos SET documento_path = $1, fecha_generacion = CURRENT_TIMESTAMP WHERE id_convocatoria = $2`,
+                [pdfBuffer, id_convocatoria]
+            );
+        } else {
+            // Insertar nuevo documento
+            await pool.query(
+                `INSERT INTO documentos (documento_path, id_convocatoria) VALUES ($1, $2)`,
+                [pdfBuffer, id_convocatoria]
+            );
+        }
+
+        res.status(201).json({ message: "PDF generado y almacenado correctamente." });
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        res.status(500).json({ error: "Error al generar el PDF." });
+    }
+};
 
 
-    let { documento_path} = documento.rowCount > 0 ? documento.rows[0] : {};
+    /*let { documento_path} = documento.rowCount > 0 ? documento.rows[0] : {};
 
     documento_path = pdfBuffer;
     res.status(201).json({ message: "PDF generado y almacenado correctamente." });
@@ -105,8 +129,7 @@ exports.generatePDF = async (req, res) => {//generar elpdf con html
         console.error('Error al generar PDF:', error);
         res.status(500).json({ error: "Error al generar el PDF." });
     }
-};
-
+};*/
 
 exports.viewCombinedPDF = async (req, res) => {//ver el pdf
     const { id_convocatoria } = req.params;
@@ -150,34 +173,17 @@ exports.deletePDF = async (req, res) => {
 
     try {
         const result = await pool.query(
-            `DELETE FROM documentos WHERE id_convocatoria = $1`,
+            `DELETE FROM documentos WHERE id_convocatoria = $1 RETURNING *`,
             [id_convocatoria]
         );
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Documento no encontrado." });
+        if (result.rowCount > 0) {
+            res.status(200).json({ message: "PDF eliminado correctamente." });
+        } else {
+            res.status(404).json({ error: "PDF no encontrado." });
         }
-    const existingDocument = await pool.query(`
-        SELECT id_documentos FROM documentos WHERE id_convocatoria = $1
-    `, [id_convocatoria]);
-    
-    if (existingDocument.rows.length > 0) {
-        // Actualizar el documento existente
-        await pool.query(`
-            UPDATE documentos
-            SET documento_path = $1
-            WHERE id_convocatoria = $2
-        `, [pdfBuffer, id_convocatoria]);
-    } else {
-        // Insertar nuevo documento
-        await pool.query(`
-            INSERT INTO documentos (id_convocatoria, documento_path)
-            VALUES ($1, $2)
-        `, [id_convocatoria, pdfBuffer]);
-    }
-        res.status(200).json({ message: "Documento eliminado correctamente." });
     } catch (error) {
-        console.error('Error al eliminar PDF:', error);
+        console.error('Error al eliminar el PDF:', error);
         res.status(500).json({ error: "Error al eliminar el PDF." });
     }
 };

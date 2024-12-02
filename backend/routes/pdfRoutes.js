@@ -8,7 +8,8 @@ router.get('/generar/:id_convocatoria/:id_honorario', authenticateToken, verific
 //router.get('/combinado/:id_convocatoria', pdfController.viewCombinedPDF); 
 router.get( '/combinado/ver/:id_convocatoria', authenticateToken, pdfController.viewCombinedPDF );
 
-router.get('/download/:id_convocatoria', authenticateToken, pdfController.downloadCombinedPDF); 
+//router.get('/download/:id_convocatoria', authenticateToken, pdfController.downloadCombinedPDF); 
+router.get('/descargar/:id_convocatoria', pdfController.downloadCombinedPDF);
 //router.get('/combinado/descargar/:id_convocatoria', authenticateToken, pdfController.downloadCombinedPDF);
 
 router.delete( '/eliminar/:id_convocatoria', authenticateToken, verificarRolSecretaria, pdfController.deletePDF);
