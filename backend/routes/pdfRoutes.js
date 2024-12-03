@@ -14,4 +14,6 @@ router.get('/descargar/:id_convocatoria', pdfController.downloadCombinedPDF);
 
 router.delete( '/eliminar/:id_convocatoria', authenticateToken, verificarRolSecretaria, pdfController.deletePDF);
 
+
+
 module.exports = router;

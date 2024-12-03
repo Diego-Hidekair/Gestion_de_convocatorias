@@ -6,65 +6,80 @@ import axios from 'axios';
 import '../styles/pdf.css';
 
 const PDFGenerator = () => {
-  const { id_convocatoria, id_honorario } = useParams();
+  const { id_convocatoria } = useParams(); // Eliminamos id_honorario si no es necesario aquí
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Obtén el token de localStorage
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    const generarPDF = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`, {
+    const cargarPDF = async () => {
+        try {
+            console.log(`Cargando PDF para id_convocatoria: ${id_convocatoria}`);
+            const response = await axios.get(
+                `http://localhost:5000/pdf/combinado/ver/${id_convocatoria}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    responseType: 'blob',
+                }
+            );
+        if (response.status === 200) {
+                console.log('PDF cargado correctamente');
+                const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                setPdfUrl(pdfUrl);
+            } else {
+                console.error('Error al cargar PDF:', response.data);
+                setError(response.data.error || 'Error al cargar el PDF.');
+            }
+        } catch (error) {
+            console.error('Error al cargar el PDF:', error.message);
+            setError('Error al cargar el PDF.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    cargarPDF();
+}, [id_convocatoria, token]);
+
+  const handleDescargarPDF = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/pdf/descargar/${id_convocatoria}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          responseType: 'blob', // Aseguramos que el PDF sea recibido como archivo
-        });
-        if (response.status === 200) {
-          const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-          setPdfUrl(pdfUrl);
-          setLoading(false);
-        } else {
-          console.error('Error generando PDF:', response.data);
-          setError(response.data.error || 'Error al generar el PDF.');
-          setLoading(false);
+          responseType: 'blob',
         }
-      } catch (error) {
-        console.error('Error generando el PDF:', error.message);
-        setError('Error al generar el PDF.');
-        setLoading(false);
-      }
-    };
-        /*if (response.status === 200) {
-          console.log('PDF generado correctamente');
-        } else {
-          console.error('Error generando PDF:', response.data);
-          setError(response.data.error || 'Error al generar el PDF.');
-        }
-      } catch (error) {
-        console.error('Error generando el PDF:', error.message);
-        setError('Error al generar el PDF.');
-      }
-    };*/
-  generarPDF();
-}, [id_convocatoria, id_honorario, token]);
+      );
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      link.download = 'documento.pdf';
+      link.click();
+    } catch (error) {
+      console.error('Error descargando el PDF:', error.message);
+      setError('Error al descargar el PDF.');
+    }
+  };
 
-const handleTerminar = () => {
-  navigate('/convocatorias'); // Redirige a la página de convocatorias
-};
+  const handleTerminar = () => {
+    navigate('/convocatorias'); // Redirige a la página de convocatorias
+  };
 
-if (loading) {
-  return <Spinner color="primary" />;
-}
+  if (loading) {
+    return <Spinner color="primary" />;
+  }
 
-if (error) {
-  return <div className="error-message">{error}</div>;
-}
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
   return (
     <div className="pdf-generator-container">
       <h1 className="pdf-generator-title">Vista previa del PDF</h1>
@@ -75,9 +90,14 @@ if (error) {
       ) : (
         <p>No se pudo cargar el PDF.</p>
       )}
-      <button className="finish-button" onClick={handleTerminar}>
-        Terminar
-      </button>
+      <div className="button-group">
+        <button className="download-button" onClick={handleDescargarPDF}>
+          Descargar PDF
+        </button>
+        <button className="finish-button" onClick={handleTerminar}>
+          Terminar
+        </button>
+      </div>
     </div>
   );
 };
