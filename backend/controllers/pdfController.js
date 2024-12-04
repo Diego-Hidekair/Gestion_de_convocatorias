@@ -33,12 +33,12 @@ exports.generatePDF = async (req, res) => {
         console.log(`Generando PDF para id_convocatoria: ${id_convocatoria}, id_honorario: ${id_honorario}`);
         const convocatoriaResult = await pool.query(
             `SELECT c.nombre, c.fecha_inicio, c.fecha_fin, tc.nombre_convocatoria, 
-             ca.nombre_carrera, f.nombre_facultad
-             FROM convocatorias c
-             JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-             JOIN alm_programas ca ON c.id_programa = ca.id_programa
-             JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
-             WHERE c.id_convocatoria = $1`, 
+                    ca.nombre_carrera, f.nombre_facultad
+            FROM convocatorias c
+            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            JOIN alm_programas ca ON c.id_programa = ca.id_programa
+            JOIN alm_programas_facultades f ON ca.v_programas_facultades = f.id_facultad
+            WHERE c.id_convocatoria = $1`,
             [id_convocatoria]
         );
         console.log('Convocatoria:', convocatoriaResult.rows[0]);
@@ -47,15 +47,21 @@ exports.generatePDF = async (req, res) => {
         if (!convocatoria) return res.status(404).json({ error: "Convocatoria no encontrada" });
 
 
-        const honorariosResult = await pool.query(`
-            SELECT h.pago_mensual, h.dictamen, h.resolucion, tc.nombre_convocatoria
+        const honorariosResult = await pool.query(
+            `SELECT h.pago_mensual, h.dictamen, h.resolucion, tc.nombre_convocatoria
             FROM honorarios h
             JOIN tipos_convocatorias tc ON h.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            WHERE h.id_convocatoria = $1 AND h.id_honorario = $2`, [id_convocatoria, id_honorario]);
+            WHERE h.id_convocatoria = $1 AND h.id_honorario = $2`,
+            [id_convocatoria, id_honorario]
+        );
             console.log('Honorarios:', honorariosResult.rows[0]);
         
         const honorarios = honorariosResult.rows[0];
-        if (!honorarios) return res.status(404).json({ error: "Honorarios no encontrados" });
+        if (!honorarios) {
+            console.error('Error: Honorarios no encontrados para id_convocatoria:', id_convocatoria, 'id_honorario:', id_honorario);
+            return res.status(404).json({ error: "Honorarios no encontrados" });
+        }
+        
 
         if (convocatoria.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
             return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
@@ -74,10 +80,6 @@ exports.generatePDF = async (req, res) => {
         const totalHoras = materias.reduce((sum, m) => sum + m.total_horas, 0);
         const tiempoTrabajo = materias.length > 0 ? materias[0].tiempo_trabajo : 'No definido';
 
-        if (!honorarios) {
-            return res.status(404).json({ error: "No se encontraron datos de honorarios para esta convocatoria y honorario." });
-        }
-
         if (honorarios.nombre_convocatoria !== 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA') {
             console.log(`Error: Nombre de convocatoria no coincide. Esperado: 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA', Recibido: '${honorarios.nombre_convocatoria}'`);
             return res.status(400).json({ error: "Tipo de convocatoria no aplicable para la generación de este PDF" });
@@ -90,7 +92,7 @@ exports.generatePDF = async (req, res) => {
             {/*aqui existe codigo para crear el pdf, pero por ahora no lo lleno para evitar sobre pasar el limite de caracteres por pregunta en el sistema*/}
         </html>
         `;
-     
+        
     const options = { format: 'Letter', border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } };
 
     const pdfBuffer = await generarPDFBuffer(htmlContent, options);//espacio de almacenamiento temporal (buffer)

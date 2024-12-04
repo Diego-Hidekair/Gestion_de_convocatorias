@@ -163,7 +163,7 @@ return (
                                             onChange={handleTipoConvocatoriaChange}
                                             required
                                         >
-                                            <option value="">Seleccione un tipo</option>
+                                            <option value="">Seleccione un tipo</option> 
                                             {tiposConvocatoria.map((tipo) => (
                                                 <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
                                                     {tipo.nombre_convocatoria}

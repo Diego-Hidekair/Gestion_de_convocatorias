@@ -21,20 +21,17 @@ const PDFGenerator = () => {
             const response = await axios.get(
                 `http://localhost:5000/pdf/combinado/ver/${id_convocatoria}`,
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                     responseType: 'blob',
                 }
             );
-        if (response.status === 200) {
-                console.log('PDF cargado correctamente');
+
+            if (response.status === 200) {
                 const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
                 const pdfUrl = URL.createObjectURL(pdfBlob);
                 setPdfUrl(pdfUrl);
             } else {
-                console.error('Error al cargar PDF:', response.data);
-                setError(response.data.error || 'Error al cargar el PDF.');
+                setError('No se encontró el PDF combinado.');
             }
         } catch (error) {
             console.error('Error al cargar el PDF:', error.message);
@@ -46,6 +43,7 @@ const PDFGenerator = () => {
 
     cargarPDF();
 }, [id_convocatoria, token]);
+
 
   const handleDescargarPDF = async () => {
     try {

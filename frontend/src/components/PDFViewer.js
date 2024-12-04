@@ -56,6 +56,6 @@ const PDFViewer = () => {
       </div>
     </div>
   );
-};
+}; 
 
 export default PDFViewer;

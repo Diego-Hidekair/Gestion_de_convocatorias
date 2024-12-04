@@ -100,4 +100,4 @@ const deleteHonorario = async (req, res) => {
     }
 };
 
-module.exports = { getHonorarios, getHonorarioById, crearHonorario, updateHonorario, deleteHonorario };
+module.exports = { getHonorarios, getHonorarioById, crearHonorario, updateHonorario, deleteHonorario }; 
