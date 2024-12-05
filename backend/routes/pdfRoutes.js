@@ -16,4 +16,4 @@ router.delete( '/eliminar/:id_convocatoria', authenticateToken, verificarRolSecr
 
 
 
-module.exports = router;
+module.exports = router; 

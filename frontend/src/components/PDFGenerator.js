@@ -6,44 +6,77 @@ import axios from 'axios';
 import '../styles/pdf.css';
 
 const PDFGenerator = () => {
-  const { id_convocatoria } = useParams(); // Eliminamos id_honorario si no es necesario aquí
+  const { id_convocatoria, id_honorario } = useParams(); // Asegúrate de incluir id_honorario
   const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('Token no disponible. Redirigiendo al login.');
+    navigate('/login'); // Manejo básico de redirección
+  }
 
   useEffect(() => {
-    const cargarPDF = async () => {
-        try {
-            console.log(`Cargando PDF para id_convocatoria: ${id_convocatoria}`);
-            const response = await axios.get(
-                `http://localhost:5000/pdf/combinado/ver/${id_convocatoria}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    responseType: 'blob',
-                }
-            );
+    const generarPDF = async () => {
+      try {
+        console.log(`Generando PDF para id_convocatoria: ${id_convocatoria}, id_honorario: ${id_honorario}`);
+        const response = await axios.get(
+          `http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`, // URL corregida
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-            if (response.status === 200) {
-                const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-                const pdfUrl = URL.createObjectURL(pdfBlob);
-                setPdfUrl(pdfUrl);
-            } else {
-                setError('No se encontró el PDF combinado.');
-            }
-        } catch (error) {
-            console.error('Error al cargar el PDF:', error.message);
-            setError('Error al cargar el PDF.');
-        } finally {
-            setLoading(false);
+        if (response.status === 201) {
+          console.log('PDF generado correctamente.');
+        } else {
+          console.error('Error al generar el PDF:', response.data.error);
+          setError('Error al generar el PDF.');
         }
+      } catch (error) {
+        console.error('Error al generar el PDF:', error.message);
+        setError('Error al generar el PDF.');
+      }
     };
 
-    cargarPDF();
-}, [id_convocatoria, token]);
+    const cargarPDF = async () => {
+      try {
+        console.log(`Cargando PDF para id_convocatoria: ${id_convocatoria}`);
+        const response = await axios.get(
+          `http://localhost:5000/pdf/combinado/ver/${id_convocatoria}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            responseType: 'blob',
+          }
+        );
 
+        if (response.status === 200) {
+          const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          setPdfUrl(pdfUrl);
+        } else {
+          setError('No se encontró el PDF combinado.');
+        }
+      } catch (error) {
+        console.error('Error al cargar el PDF:', error.message);
+        setError('Error al cargar el PDF.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const iniciarProceso = async () => {
+      setLoading(true);
+      await generarPDF();
+      await cargarPDF();
+    };
+
+    iniciarProceso();
+  }, [id_convocatoria, id_honorario, token]);
 
   const handleDescargarPDF = async () => {
     try {
@@ -71,11 +104,11 @@ const PDFGenerator = () => {
   };
 
   if (loading) {
-    return <Spinner color="primary" />;
+    return <Spinner>Generando y cargando PDF...</Spinner>;
   }
 
   if (error) {
-    return <div className="error-message">{error}</div>;
+    return <div className="error">{error}</div>;
   }
 
   return (
