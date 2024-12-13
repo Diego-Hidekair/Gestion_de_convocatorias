@@ -152,11 +152,16 @@ const getConvocatoriasByEstado = async (req, res) => {
 
 // nueva convocatoria
 const createConvocatoria = async (req, res) => {
-    console.log("Datos recibidos:", req.body);
+    console.log("Datos recibidos:", req.body); // Verifica los datos recibidos en el cuerpo de la solicitud
+    console.log("Usuario autenticado:", req.user); // Verifica si req.user contiene el id_usuario
+
     try {
-        const id_usuario = req.user.id; 
+        const id_usuario = req.user?.id_usuario; 
+        if (!id_usuario) {
+            return res.status(400).json({ error: "El ID de usuario no está disponible en el token" });
+        }
+
         const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
-        
         const result = await pool.query(`
             INSERT INTO convocatorias 
             (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
@@ -199,6 +204,7 @@ const updateEstadoConvocatoria = async (req, res) => {
     const { id } = req.params;
     const { estado, comentario_observado } = req.body;
     const { rol, id_usuario } = req.user;
+    console.log (req.user);
 
     // Verificar que el rol sea "admin" o "vicerrectorado"
     if (rol !== 'admin' && rol !== 'vicerrectorado') {

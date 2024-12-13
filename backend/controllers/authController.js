@@ -1,14 +1,14 @@
 // backend/controllers/authController.js
-const pool = require('../db');
+const pool = require('../db'); 
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken'); 
 
 // generar token
 const generateToken = (user) => {
     return jwt.sign(
         { 
             id_usuario: user.id_usuario, 
-            rol: user.rol,  // Asegúrate de que 'rol' esté incluido aquí
+            rol: user.rol,  //rol de usuario
             id_facultad: user.id_facultad 
         }, 
         process.env.JWT_SECRET,
@@ -17,27 +17,30 @@ const generateToken = (user) => {
 };
 
 const loginUser = async (req, res) => {
-    const { id_usuario, Contraseña } = req.body;
-
     try {
-        const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
+        const { email, password } = req.body;
+        const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
         const user = result.rows[0];
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-        if (!user) {
-            return res.status(400).json({ error: 'Usuario no encontrado' });
+        if (!passwordMatch) {
+            return res.status(403).json({ error: 'Credenciales incorrectas' });
         }
 
-        const validPassword = await bcrypt.compare(Contraseña, user.contraseña);
-        if (!validPassword) {
-            return res.status(400).json({ error: 'Contraseña incorrecta' });
-        }
+        const payload = { id: user.id_usuario, rol: user.rol };
+        console.log("Payload del token:", payload); // Asegúrate de que id_usuario está en el payload
 
-        const token = generateToken(user);
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.json({ token, userId: user.id_usuario, rol: user.rol }); 
+        res.json({ token });
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
+        console.error('Error al iniciar sesión:', error);
+        res.status(500).send('Error al iniciar sesión');
     }
 };
 

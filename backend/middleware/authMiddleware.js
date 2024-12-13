@@ -1,15 +1,16 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
+
 // Middleware para autenticar el token JWT
 const authenticateToken = (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Token no proporcionado' });
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Token no válido' });
-
-        req.user = user; 
-        next(); 
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.sendStatus(401);
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        console.log("Token decodificado:", user);
+        req.user = user;
+        next();
     });
 };
 
@@ -31,16 +32,3 @@ const verificarRolSecretaria = (req, res, next) => {
 };
 
 module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria};
-
-/*// Middleware para verificar roles dinámicamente
-const authorizeRole = (rolesPermitidos) => (req, res, next) => {
-    const { rol } = req.user;
-    if (!rolesPermitidos.includes(rol)) {
-        return res.status(403).json({ error: `Acceso denegado: Solo los roles permitidos (${rolesPermitidos.join(', ')}) pueden acceder a esta ruta.` });
-    }
-    next();
-};
-
-module.exports = { authenticateToken, authorizeRole };
-*/
-

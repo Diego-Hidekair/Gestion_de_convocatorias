@@ -1,5 +1,4 @@
 // backend/controllers/convocatoriasDocumentos.js
-
 const { Pool } = require('pg');
 const multer = require('multer');
 
@@ -10,44 +9,66 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
 });
-
+ 
 // Configuración de multer para subir archivos en memoria
-const upload = multer({ storage: multer.memoryStorage() });
-
+const upload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype !== 'application/pdf') {
+            return cb(new Error('Solo se permiten archivos PDF.'));
+        }
+        cb(null, true);
+    },
+}).fields([
+    { name: 'resolucion', maxCount: 1 },
+    { name: 'dictamen', maxCount: 1 },
+    { name: 'carta', maxCount: 1 },
+    { name: 'convocatoria', maxCount: 1 }
+]);
 // Subir documentos
 exports.uploadDocument = async (req, res) => {
-    const { id_convocatoria, id_documentos } = req.body;
-    const { fieldname, buffer } = req.file; // El nombre del campo y el contenido del archivo
-
+    console.log('Body:', req.body);
+    console.log('Files:', req.files);
     try {
+        const { id_convocatoria, id_documentos } = req.body;
+        const validFields = [
+            'convocatoria', 'resolucion', 'dictamen', 'carta',
+            'nota', 'certificado_item', 'certificado_resumen_presupuestario'
+        ];
+
+        // Validar parámetros
         if (!id_convocatoria || !id_documentos) {
             return res.status(400).json({ error: "Se requiere id_convocatoria e id_documentos." });
         }
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ error: "No se encontraron archivos para subir." });
+        }
 
-        // Verificar si ya existe un registro para la convocatoria
+        // Obtener el nombre del campo y el archivo
+        const fieldname = Object.keys(req.files)[0];
+        const file = req.files[fieldname][0];
+
+        if (!validFields.includes(fieldname)) {
+            return res.status(400).json({ error: `Campo no válido: ${fieldname}.` });
+        }
+
+        const buffer = file.buffer;
+
+        // Verificar si ya existe el registro
         const existingRecord = await pool.query(
             `SELECT * FROM convocatorias_archivos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
 
         if (existingRecord.rowCount === 0) {
-            // Crear un nuevo registro si no existe
+            // Insertar registro inicial si no existe
             await pool.query(
                 `INSERT INTO convocatorias_archivos (id_convocatoria, id_documentos) VALUES ($1, $2)`,
                 [id_convocatoria, id_documentos]
             );
         }
 
-        // Actualizar el campo correspondiente con el archivo subido
-        const validFields = [
-            'convocatoria', 'resolucion', 'dictamen', 'carta',
-            'nota', 'certificado_item', 'certificado_resumen_presupuestario'
-        ];
-
-        if (!validFields.includes(fieldname)) {
-            return res.status(400).json({ error: "Campo no válido para subir el archivo." });
-        }
-
+        // Actualizar el archivo en la columna correspondiente
         const query = `
             UPDATE convocatorias_archivos
             SET ${fieldname} = $1
@@ -64,9 +85,9 @@ exports.uploadDocument = async (req, res) => {
 
 // Ver documentos de una convocatoria
 exports.getDocuments = async (req, res) => {
-    const { id_convocatoria } = req.params;
-
     try {
+        const { id_convocatoria } = req.params;
+
         const result = await pool.query(
             `SELECT * FROM convocatorias_archivos WHERE id_convocatoria = $1`,
             [id_convocatoria]
@@ -85,16 +106,15 @@ exports.getDocuments = async (req, res) => {
 
 // Descargar un documento específico
 exports.downloadDocument = async (req, res) => {
-    const { id_convocatoria, fieldname } = req.params;
-
     try {
+        const { id_convocatoria, fieldname } = req.params;
         const validFields = [
             'convocatoria', 'resolucion', 'dictamen', 'carta',
             'nota', 'certificado_item', 'certificado_resumen_presupuestario'
         ];
 
         if (!validFields.includes(fieldname)) {
-            return res.status(400).json({ error: "Campo no válido para descargar." });
+            return res.status(400).json({ error: `Campo no válido: ${fieldname}.` });
         }
 
         const result = await pool.query(
@@ -106,11 +126,13 @@ exports.downloadDocument = async (req, res) => {
             return res.status(404).json({ error: "Documento no encontrado." });
         }
 
-        const fileBuffer = result.rows[0][fieldname];
         res.setHeader('Content-Type', 'application/pdf');
-        res.send(fileBuffer);
+        res.send(result.rows[0][fieldname]);
     } catch (error) {
         console.error('Error al descargar el documento:', error);
         res.status(500).json({ error: "Error al descargar el documento." });
     }
 };
+
+module.exports.upload = upload;
+

@@ -68,39 +68,7 @@ const createUser = async (req, res) => {
         Celular, id_facultad, id_programa, fotoBuffer
     ];
     
-    const newUser = await pool.query(query, values);
-
-        
-
-        /*if (req.file) {
-            const fotoBuffer = req.file.buffer;
-            //const fotoBase64 = req.file.buffer.toString('base64');
-            fotoUrl = `data:${req.file.mimetype};base64,${fotoBase64}`;
-            const fotoUrl = `data:${req.file.mimetype};base64,${fotoBase64}`;
-            usuario.foto_url = fotoUrl;
-            await pool.query(
-                `INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-                [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, fotoBuffer]
-            );
-        } else {
-            console.log("No se recibió archivo para foto_perfil");
-        }
-        console.log("Archivo recibido en req.file:", req.file);
-
-        const newUser = await pool.query(
-            `INSERT INTO usuarios (id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa, foto_perfil)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-            [id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, fotoUrl || null]
-        );
-        
-        console.log("Archivo recibido:", req.file); 
-
-        const upload = multer({
-            storage: multer.memoryStorage(),
-            limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
-        });*/
-        
+    const newUser = await pool.query(query, values);        
         res.status(201).json(newUser.rows[0]);
     } catch (error) {
         console.error('Error al crear el usuario:', error);

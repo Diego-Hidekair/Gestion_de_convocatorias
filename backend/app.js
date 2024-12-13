@@ -11,7 +11,7 @@ const app = express();
 const { authenticateToken } = require('./middleware/authMiddleware');
 
 const pool = new Pool({
-    user: process.env.DB_USER,
+    user: process.env.DB_USER, 
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
@@ -45,7 +45,8 @@ const routes = [
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/honorarios', route: './routes/honorariosRoutes' },
-    { path: '/usuarios', route: './routes/usuarioRoutes' }
+    { path: '/usuarios', route: './routes/usuarioRoutes' },
+    { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' }
 ];
 
 // Rutas de la API
