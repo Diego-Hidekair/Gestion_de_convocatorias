@@ -32,4 +32,4 @@ const verificarRolSecretaria = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria};
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria };

@@ -152,18 +152,21 @@ const getConvocatoriasByEstado = async (req, res) => {
 
 // nueva convocatoria
 const createConvocatoria = async (req, res) => {
-    console.log("Datos recibidos:", req.body); // Verifica los datos recibidos en el cuerpo de la solicitud
-    console.log("Usuario autenticado:", req.user); // Verifica si req.user contiene el id_usuario
+    console.log("Datos recibidos:", req.body);
+    console.log("Usuario autenticado:", req.user); 
 
     try {
         const id_usuario = req.user?.id_usuario; 
-        if (!id_usuario) {
-            return res.status(400).json({ error: "El ID de usuario no está disponible en el token" });
-        }
+        const id_facultad = req.user?.id_facultad; 
 
-        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
-        const result = await pool.query(`
-            INSERT INTO convocatorias 
+        if (!id_usuario || !id_facultad) {
+            return res.status(400).json({ error: "El ID de usuario o facultad no está disponible en el token" });
+        }
+//        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
+        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
+
+        const result = await pool.query(
+            `INSERT INTO convocatorias 
             (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *`,
