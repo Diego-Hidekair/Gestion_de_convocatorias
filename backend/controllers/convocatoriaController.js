@@ -1,8 +1,7 @@
 // backend/controllers/convocatoriaController.js
 const pool = require('../db');
 
-// Obtener todas las convocatorias
-const getConvocatorias = async (req, res) => {
+const getConvocatorias = async (req, res) => {// lista de todas las convocatorias
     try {
         const result = await pool.query(`
             SELECT  
@@ -31,10 +30,9 @@ const getConvocatorias = async (req, res) => {
     }
 };
 
-// Obtener convocatorias por facultad y estado
-const getConvocatoriasByFacultadAndEstado = async (req, res) => {
-    const { estado } = req.params; // Estado de la convocatoria (p.ej., 'Publicado', 'Observado')
-    const { id_facultad } = req.user; // Facultad del usuario autenticado
+const getConvocatoriasByFacultadAndEstado = async (req, res) => {// categorizar convocatorias por facultad y estado
+    const { estado } = req.params;  
+    const { id_facultad } = req.user; 
 
     if (!id_facultad) {
         return res.status(400).json({ error: "El id de la facultad es requerido" });
@@ -68,8 +66,7 @@ const getConvocatoriasByFacultadAndEstado = async (req, res) => {
     }
 };
 
-// Mostrar convocatorias por facultad (solo para "secretaria")
-const getConvocatoriasByFacultad = async (req, res) => {
+const getConvocatoriasByFacultad = async (req, res) => {// Mostrar convocatorias por facultad (solo usuario con rol el "secretaria")
     const { id_facultad } = req.user;
     if (!id_facultad) {
         return res.status(400).json({ error: "El id de la facultad es requerido" });
@@ -103,8 +100,7 @@ const getConvocatoriasByFacultad = async (req, res) => {
     }
 };
 
-// Obtener convocatoria por su id
-const getConvocatoriaById = async (req, res) => {
+const getConvocatoriaById = async (req, res) => {// Obtener convocatoria por la id
     const { id } = req.params;
     try {
         const result = await pool.query(`
@@ -137,8 +133,7 @@ const getConvocatoriaById = async (req, res) => {
     }
 };
 
-// Obtener convocatorias por estado
-const getConvocatoriasByEstado = async (req, res) => {
+const getConvocatoriasByEstado = async (req, res) => {// categorizar las convocatorias por estado
     const { estado } = req.params;
     try {
         const result = await pool.query(
@@ -150,19 +145,46 @@ const getConvocatoriasByEstado = async (req, res) => {
     }
 };
 
-// nueva convocatoria
-const createConvocatoria = async (req, res) => {
-    console.log("Datos recibidos:", req.body);
-    console.log("Usuario autenticado:", req.user); 
 
-    try {
+const createConvocatoria = async (req, res) => {
+    const { nombre, fecha_inicio, fecha_fin, id_programa, estado, id_tipoconvocatoria } = req.body; //crear una convocatoria nueva
+    const id_usuario = req.user.id_usuario;
+    const id_facultad = req.user.id_facultad;
+    //console.log("Datos recibidos:", req.body);
+    console.log("Usuario autenticado:", req.user); 
+    if (!id_facultad) {
+        return res.status(400).json({ error: "El usuario no pertenece a una facultad asociada" });
+    }
+
+    const carreraValida = await pool.query(`
+        SELECT 1
+        FROM alm_programas
+        WHERE id_programa = $1 AND id_facultad = $2
+    `, [id_programa, id_facultad]);
+
+    if (carreraValida.rows.length === 0) {
+        return res.status(400).json({ error: "La carrera seleccionada no pertenece a la facultad del usuario" });
+    }
+        try {
+            const result = await pool.query(`
+                INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_usuario, id_facultad, id_programa, estado, id_tipoconvocatoria)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`, [
+                nombre, fecha_inicio, fecha_fin, id_usuario, id_facultad, id_programa, estado, id_tipoconvocatoria
+            ]);
+
+            res.status(201).json(result.rows[0]);
+        } catch (error) {
+            console.error('Error al crear la convocatoria:', error);
+            res.status(500).json({ error: 'Error en el servidor al crear la convocatoria' });
+        }
+    /*try {
         const id_usuario = req.user?.id_usuario; 
         const id_facultad = req.user?.id_facultad; 
 
         if (!id_usuario || !id_facultad) {
             return res.status(400).json({ error: "El ID de usuario o facultad no está disponible en el token" });
         }
-//        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
+    //        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
         const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
 
         const result = await pool.query(
@@ -177,9 +199,9 @@ const createConvocatoria = async (req, res) => {
     } catch (error) {
         console.error('Error al crear la convocatoria:', error);
         res.status(500).send('Error al crear la convocatoria');
-    }
-};
-
+    }*/
+    };
+    
 // actualizar
 const updateConvocatoria = async (req, res) => {
     const { id } = req.params;

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-
 const UsuarioForm = () => {
     const [usuario, setUsuario] = useState({
         id_usuario: '',  
@@ -20,6 +19,7 @@ const UsuarioForm = () => {
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [foto, setFoto] = useState(null);
+    const [selectedFacultad, setSelectedFacultad] = useState(null); 
 
     const navigate = useNavigate();
 
@@ -35,32 +35,41 @@ const UsuarioForm = () => {
             }
         };
 
-        const fetchCarreras = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/carreras', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                setCarreras(response.data);
-            } catch (error) {
-                console.error('Error al obtener carreras', error);
-            }
-        };
-
         fetchFacultades();
-        fetchCarreras();
     }, []);
-
+    const fetchCarrerasByFacultad = async (idFacultad) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/carreras/facultad/${idFacultad}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            setCarreras(response.data);
+        } catch (error) {
+            console.error('Error al cargar carreras:', error);
+        }
+    };
+    
+    const handleFacultadChange = async (e) => {
+        const idFacultad = e.target.value;
+        setSelectedFacultad(idFacultad);
+        setUsuario({ ...usuario, id_facultad: idFacultad, id_programa: '' }); // Resetea la carrera seleccionada
+        if (idFacultad) {
+            fetchCarrerasByFacultad(idFacultad);
+        } else {
+            setCarreras([]); // Si no hay facultad seleccionada, vacía el listado de carreras
+        }
+    };
+    
     const handleChange = (e) => {
         setUsuario({
             ...usuario,
             [e.target.name]: e.target.value,
         });
     };
+
     const handleImageChange = (e) => {
         const file = e.target.files ? e.target.files[0] : null;
         setFoto(file);
     };
-    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -89,26 +98,11 @@ const UsuarioForm = () => {
             if (response.status === 201) {
                 navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
             }
-            /*if (response.status === 201) {
-                setUsuario({
-                    id_usuario: '', 
-                    Nombres: '',
-                    Apellido_paterno: '',
-                    Apellido_materno: '',
-                    Rol: '',
-                    Contraseña: '',
-                    Celular: '',
-                    id_facultad: '', 
-                    id_programa: '' 
-                });
-                navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
-            }*/
-            } catch (error) {
-                console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
-            }
-        };
+        } catch (error) {
+            console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
+        }
+    };
 
-    
     return (
         <div className="container-user mt-5-user">
             <h2 className="title-user">Crear Usuario</h2>
@@ -118,41 +112,27 @@ const UsuarioForm = () => {
                         <label className="label-user">ID de Usuario</label>
                         <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
                     </div>
-                    
-                    
-                    <div className="row mb-3-user">
-                        <div className="col-md-6">
-                            <label className="label-user">Foto de Perfil</label>
-                            <input type="file" className="form-control-user" onChange={handleImageChange} accept="image/png" />
-                        </div>
+                    <div className="col-md-6">
+                        <label className="label-user">Foto de Perfil</label>
+                        <input type="file" className="form-control-user" onChange={handleImageChange} accept="image/png" />
                     </div>
-                    <div className="row mb-3-user">
-                        <div className="col-md-6">
-                            <label className="label-user">O URL de la Imagen</label>
-                            <input type="text" className="form-control-user" name="foto_url" value={usuario.foto_url || ''} onChange={handleChange} />
-                        </div>
-                    </div>
+                </div>
 
-
+                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Nombres</label>
                         <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
                     </div>
-                </div>
-                <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Apellido Paterno</label>
                         <input type="text" className="form-control-user" name="Apellido_paterno" value={usuario.Apellido_paterno} onChange={handleChange} required />
                     </div>
-                    <div className="col-md-6">
-                        <label className="label-user">Apellido Materno</label>
-                        <input type="text" className="form-control-user" name="Apellido_materno" value={usuario.Apellido_materno} onChange={handleChange} required />
-                    </div>
                 </div>
+
                 <div className="row mb-3-user">
                     <div className="col-md-6">
-                        <label className="label-user">Facultad</label>
-                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleChange} required>
+                        <label className="label-user">Facultad :</label>
+                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleFacultadChange} required>
                             <option value="">Seleccione facultad</option>
                             {facultades.map(facultad => (
                                 <option key={facultad.id_facultad} value={facultad.id_facultad}>
@@ -162,7 +142,7 @@ const UsuarioForm = () => {
                         </select>
                     </div>
                     <div className="col-md-6">
-                        <label className="label-user">Programa</label>
+                        <label className="label-user">Carrera</label>
                         <select className="form-control-user" name="id_programa" value={usuario.id_programa} onChange={handleChange} required>
                             <option value="">Seleccione programa</option>
                             {carreras.map(carrera => (
@@ -173,6 +153,7 @@ const UsuarioForm = () => {
                         </select>
                     </div>
                 </div>
+
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Rol</label>
@@ -190,10 +171,12 @@ const UsuarioForm = () => {
                         <input type="text" className="form-control-user" name="Celular" value={usuario.Celular} onChange={handleChange} required />
                     </div>
                 </div>
+
                 <div className="mb-3-user">
                     <label className="label-user">Contraseña</label>
                     <input type="password" className="form-control-user" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
                 </div>
+
                 <button type="submit" className="btn-user btn-primary-user">Crear Usuario</button>
             </form>
         </div>

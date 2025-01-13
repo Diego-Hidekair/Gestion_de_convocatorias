@@ -1,8 +1,7 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
-// Middleware para autenticar el token JWT
-const authenticateToken = (req, res, next) => {
+const authenticateToken = (req, res, next) => {// autenticar el ingreso 
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
@@ -32,4 +31,23 @@ const verificarRolSecretaria = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria };
+const authorizeRoles = (permittedRoles) => {//verificacion del rol de usuario
+    return (req, res, next) => {
+        if (!permittedRoles.includes(req.user.rol)) {
+            return res.status(403).json({ error: 'Acceso denegado: No tienes el rol necesario para acceder a esta ruta.' });
+        }
+        next();
+    };
+};
+
+function verificarRol(...rolesPermitidos) {
+    return (req, res, next) => {
+        const { rol } = req.user;
+        if (!rolesPermitidos.includes(rol)) {
+            return res.status(403).json({ message: 'No tienes permisos para realizar esta acción.' });
+        }
+        next();
+    };
+}
+
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol  };

@@ -5,5 +5,6 @@ const carreraController = require('../controllers/carreraController');
 
 router.get('/', carreraController.getCarreras);
 router.get('/:id', carreraController.getCarreraById);
+router.get('/facultad/:id_facultad', carreraController.getCarrerasByFacultad);
 
 module.exports = router;

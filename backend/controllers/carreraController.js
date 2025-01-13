@@ -25,4 +25,18 @@ const getCarreraById = async (req, res) => {
     }
 };
 
-module.exports = { getCarreras, getCarreraById };
+const getCarrerasByFacultad = async (req, res) => {
+    const { id_facultad } = req.params;
+    try {
+        const result = await pool.query(
+            'SELECT * FROM public.alm_programas WHERE v_programas_facultades = $1 ORDER BY nombre_carrera',
+            [id_facultad]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+module.exports = { getCarreras, getCarreraById, getCarrerasByFacultad };
