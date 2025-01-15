@@ -26,11 +26,16 @@ const getCarreraById = async (req, res) => {
 };
 
 const getCarrerasByFacultad = async (req, res) => {
-    const { id_facultad } = req.params;
+    const { nombre_facultad } = req.params;
     try {
         const result = await pool.query(
-            'SELECT * FROM public.alm_programas WHERE v_programas_facultades = $1 ORDER BY nombre_carrera',
-            [id_facultad]
+            `SELECT c.id_programa, c.nombre_carrera 
+             FROM public.alm_programas AS c
+             JOIN public.alm_programas_facultades AS f 
+             ON c.v_programas_facultades = f.id_facultad
+             WHERE f.nombre_facultad = $1 
+             ORDER BY c.nombre_carrera`,
+            [nombre_facultad]
         );
         res.json(result.rows);
     } catch (err) {

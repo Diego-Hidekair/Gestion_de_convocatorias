@@ -150,8 +150,7 @@ const createConvocatoria = async (req, res) => {
     const { nombre, fecha_inicio, fecha_fin, id_programa, estado, id_tipoconvocatoria } = req.body; //crear una convocatoria nueva
     const id_usuario = req.user.id_usuario;
     const id_facultad = req.user.id_facultad;
-    //console.log("Datos recibidos:", req.body);
-    console.log("Usuario autenticado:", req.user); 
+
     if (!id_facultad) {
         return res.status(400).json({ error: "El usuario no pertenece a una facultad asociada" });
     }
@@ -165,30 +164,21 @@ const createConvocatoria = async (req, res) => {
     if (carreraValida.rows.length === 0) {
         return res.status(400).json({ error: "La carrera seleccionada no pertenece a la facultad del usuario" });
     }
-        try {
-            const id_usuario = req.user?.id_usuario; 
-            const id_facultad = req.user?.id_facultad; 
+    try {
+        const result = await pool.query(`
+            INSERT INTO convocatorias 
+            (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, estado) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING *`,
+            [nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, estado]
+        );
 
-            if (!id_usuario || !id_facultad) {
-                return res.status(400).json({ error: "El ID de usuario o facultad no está disponible en el token" });
-            }
-        //        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
-            const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
-
-            const result = await pool.query(
-                `INSERT INTO convocatorias 
-                (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-                RETURNING *`,
-                [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion]
-            );
-
-            res.status(201).json(result.rows[0]);
-        } catch (error) {
-            console.error('Error al crear la convocatoria:', error);
-            res.status(500).send('Error al crear la convocatoria');
-        }
-    };
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al crear la convocatoria:', error);
+        res.status(500).send('Error al crear la convocatoria');
+    }
+};
     
 // actualizar
 const updateConvocatoria = async (req, res) => {
@@ -217,10 +207,8 @@ const updateEstadoConvocatoria = async (req, res) => {
     const { id } = req.params;
     const { estado, comentario_observado } = req.body;
     const { rol, id_usuario } = req.user;
-    console.log (req.user);
 
-    // Verificar que el rol sea "admin" o "vicerrectorado"
-    if (rol !== 'admin' && rol !== 'vicerrectorado') {
+    if (rol !== 'admin' && rol !== 'vicerrectorado') {//verificar rol deusuario 
         return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
     }
 
