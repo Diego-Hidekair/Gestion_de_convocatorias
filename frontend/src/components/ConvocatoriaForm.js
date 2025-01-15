@@ -22,7 +22,7 @@ const ConvocatoriaForm = () => {
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [programas, setProgramas] = useState([]);
-    const [facultades, setFacultades] = useState([]); 
+    const [nombreFacultad, setNombreFacultad] = useState(''); // Nuevo estado para mostrar el nombre de la facultad
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
     const [prioridad, setPrioridad] = useState('PRIMERA');
     const [horario, setHorario] = useState('TIEMPO COMPLETO');
@@ -56,19 +56,25 @@ const ConvocatoriaForm = () => {
 
         const fetchData = async () => {
             try {
-                const [tiposResponse, programasResponse, facultadesResponse] = await Promise.all([
-                    axios.get('http://localhost:5000/tipos-convocatorias'), 
-                    axios.get('http://localhost:5000/carreras'), 
-                    axios.get('http://localhost:5000/facultades'), 
+                const userResponse = await axios.get('http://localhost:5000/usuarios/me');
+                const userData = userResponse.data;
+
+                setConvocatoria((prevConvocatoria) => ({
+                    ...prevConvocatoria,
+                    id_facultad: userData.id_facultad || ''
+                }));
+                setNombreFacultad(userData.nombre_facultad || ''); // Se establece el nombre de la facultad
+
+                const [tiposResponse, programasResponse] = await Promise.all([
+                    axios.get('http://localhost:5000/tipos-convocatorias'),
+                    axios.get('http://localhost:5000/carreras'),
                 ]);
                 setTiposConvocatoria(tiposResponse.data);
-                setProgramas(programasResponse.data); 
-                setFacultades(facultadesResponse.data);
+                setProgramas(programasResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
-
         fetchData();
     }, [id]);
 
@@ -137,18 +143,17 @@ const ConvocatoriaForm = () => {
             alert('Hubo un error al crear la convocatoria. Por favor, revisa los datos.');
         }
     };
-
-return (
+    return (
         <div>
             <Container className="container-list-convocatoria">
                 <Row className="mb-4-convocatoria">
                     <Col>
                         <h1 className="text-center-convocatoria">{id ? 'Editar' : 'Registrar'} Convocatoria</h1>
                     </Col>
-                </Row>
+                    </Row>
                 <Row>
                     <Col >
-                        <Card className="card-custom-convocatoria"> 
+                        <Card className="card-custom-convocatoria">
                             <CardBody>
                                 <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
                                 <Form onSubmit={handleSubmit}>
@@ -163,45 +168,35 @@ return (
                                             onChange={handleTipoConvocatoriaChange}
                                             required
                                         >
-                                            <option value="">Seleccione un tipo</option> 
+                                            <option value="">Seleccione un tipo</option>
                                             {tiposConvocatoria.map((tipo) => (
                                                 <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
                                                     {tipo.nombre_convocatoria}
                                                 </option>
                                             ))}
                                         </Input>
-                                    </FormGroup >
+                                        </FormGroup>
                                     <FormGroup className="conv-dis">
                                         <Label for="nombre">Nombre de Convocatoria</Label>
-                                        <Input 
-                                            type="textarea" 
+                                        <Input
+                                            type="textarea"
                                             name="nombre"
                                             id="nombre"
                                             value={convocatoria.nombre}
                                             readOnly
                                             required
                                             className="form-control-convocatoria"
-                                            style={{ height: '200px' }} 
+                                            style={{ height: '200px' }}
                                         />
                                     </FormGroup>
                                     <FormGroup className="conv-dis">
-                                        <Label for="id_facultad">Facultad</Label>
+                                        <Label>Facultad</Label>
                                         <Input
-                                            type="select"
-                                            name="id_facultad"
-                                            id="id_facultad"
-                                            className="form-select-convocatoria"
-                                            value={convocatoria.id_facultad}
-                                            onChange={handleChange}
-                                            required
-                                        >
-                                            <option value="">Seleccione una facultad</option>
-                                            {facultades.map((facultad) => (
-                                                <option key={facultad.id_facultad} value={facultad.id_facultad}>
-                                                    {facultad.nombre_facultad}
-                                                </option>
-                                            ))}
-                                        </Input>
+                                            type="text"
+                                            value={nombreFacultad}
+                                            readOnly
+                                            className="form-control-convocatoria"
+                                        />
                                     </FormGroup>
                                     <FormGroup className="conv-dis">
                                         <Label>Prioridad</Label>
@@ -300,7 +295,7 @@ return (
                     </Col>
                 </Row>
             </Container>
-        </div>
+        </div> 
     );
 };
 

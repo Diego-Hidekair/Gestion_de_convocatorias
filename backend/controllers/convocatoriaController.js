@@ -166,40 +166,28 @@ const createConvocatoria = async (req, res) => {
         return res.status(400).json({ error: "La carrera seleccionada no pertenece a la facultad del usuario" });
     }
         try {
-            const result = await pool.query(`
-                INSERT INTO convocatorias (nombre, fecha_inicio, fecha_fin, id_usuario, id_facultad, id_programa, estado, id_tipoconvocatoria)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`, [
-                nombre, fecha_inicio, fecha_fin, id_usuario, id_facultad, id_programa, estado, id_tipoconvocatoria
-            ]);
+            const id_usuario = req.user?.id_usuario; 
+            const id_facultad = req.user?.id_facultad; 
+
+            if (!id_usuario || !id_facultad) {
+                return res.status(400).json({ error: "El ID de usuario o facultad no está disponible en el token" });
+            }
+        //        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
+            const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
+
+            const result = await pool.query(
+                `INSERT INTO convocatorias 
+                (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+                RETURNING *`,
+                [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion]
+            );
 
             res.status(201).json(result.rows[0]);
         } catch (error) {
             console.error('Error al crear la convocatoria:', error);
-            res.status(500).json({ error: 'Error en el servidor al crear la convocatoria' });
+            res.status(500).send('Error al crear la convocatoria');
         }
-    /*try {
-        const id_usuario = req.user?.id_usuario; 
-        const id_facultad = req.user?.id_facultad; 
-
-        if (!id_usuario || !id_facultad) {
-            return res.status(400).json({ error: "El ID de usuario o facultad no está disponible en el token" });
-        }
-    //        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
-        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
-
-        const result = await pool.query(
-            `INSERT INTO convocatorias 
-            (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-            RETURNING *`,
-            [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion]
-        );
-
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error('Error al crear la convocatoria:', error);
-        res.status(500).send('Error al crear la convocatoria');
-    }*/
     };
     
 // actualizar
