@@ -60,7 +60,6 @@ const ConvocatoriaForm = () => {
                 const userResponse = await axios.get('http://localhost:5000/usuarios/me');
                 const userData = userResponse.data;
         
-                // Establecer facultad y filtrar carreras inmediatamente
                 const nombreFacultad = userData.nombre_facultad || '';
                 setNombreFacultad(nombreFacultad);
                 setConvocatoria((prevConvocatoria) => ({
@@ -75,7 +74,6 @@ const ConvocatoriaForm = () => {
         
                 setTiposConvocatoria(tiposResponse.data);
                 setCarrerasFiltradas(carrerasResponse.data); // Usar directamente las carreras obtenidas
-        
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -132,14 +130,14 @@ const ConvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         handleNombreAutoFill();
-
+    
         const formattedConvocatoria = {
             ...convocatoria,
             prioridad,
+            horario, 
+            gestion,
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
-            horario,
-            gestion
         };
 
         try {
@@ -156,6 +154,7 @@ const ConvocatoriaForm = () => {
             alert('Hubo un error al crear la convocatoria. Por favor, revisa los datos.');
         }
     };
+        
     return (
         <div>
             <Container className="container-list-convocatoria">

@@ -1,7 +1,8 @@
 // backend/controllers/convocatoriaController.js
 const pool = require('../db');
 
-const getConvocatorias = async (req, res) => {// lista de todas las convocatorias
+// Obtener todas las convocatorias
+const getConvocatorias = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT  
@@ -30,9 +31,10 @@ const getConvocatorias = async (req, res) => {// lista de todas las convocatoria
     }
 };
 
-const getConvocatoriasByFacultadAndEstado = async (req, res) => {// categorizar convocatorias por facultad y estado
-    const { estado } = req.params;  
-    const { id_facultad } = req.user; 
+// Obtener convocatorias por facultad y estado
+const getConvocatoriasByFacultadAndEstado = async (req, res) => {
+    const { estado } = req.params;
+    const { id_facultad } = req.user;
 
     if (!id_facultad) {
         return res.status(400).json({ error: "El id de la facultad es requerido" });
@@ -145,33 +147,24 @@ const getConvocatoriasByEstado = async (req, res) => {// categorizar las convoca
     }
 };
 
-
 const createConvocatoria = async (req, res) => {
-    const { nombre, fecha_inicio, fecha_fin, id_programa, estado, id_tipoconvocatoria } = req.body; //crear una convocatoria nueva
-    const id_usuario = req.user.id_usuario;
-    const id_facultad = req.user.id_facultad;
-
-    if (!id_facultad) {
-        return res.status(400).json({ error: "El usuario no pertenece a una facultad asociada" });
-    }
-
-    const carreraValida = await pool.query(`
-        SELECT 1
-        FROM alm_programas
-        WHERE id_programa = $1 AND id_facultad = $2
-    `, [id_programa, id_facultad]);
-
-    if (carreraValida.rows.length === 0) {
-        return res.status(400).json({ error: "La carrera seleccionada no pertenece a la facultad del usuario" });
-    }
+    console.log("Datos recibidos:", req.body);
     try {
+        const id_usuario = req.user.id; 
+        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
+        
+        // Verificar que los campos necesarios no estén vacíos
+        if (!nombre || !fecha_inicio || !fecha_fin || !id_tipoconvocatoria || !id_programa || !id_facultad) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+        }
+
+        // Registrar la nueva convocatoria
         const result = await pool.query(`
             INSERT INTO convocatorias 
-            (nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, estado) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-            RETURNING *`,
-            [nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, estado]
-        );
+            (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            RETURNING id_convocatoria, nombre, fecha_inicio, fecha_fin, id_usuario, estado
+        `, [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion]);
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -189,9 +182,8 @@ const updateConvocatoria = async (req, res) => {
             UPDATE convocatorias 
             SET horario = $1, nombre = $2, fecha_inicio = $3, fecha_fin = $4, id_tipoconvocatoria = $5, id_programa = $6, id_facultad = $7, prioridad = $8, gestion = $9
             WHERE id_convocatoria = $10 
-            RETURNING *`,
-            [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion, id]
-        );
+            RETURNING id_convocatoria, nombre, fecha_inicio, fecha_fin, estado
+        `, [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
@@ -208,7 +200,8 @@ const updateEstadoConvocatoria = async (req, res) => {
     const { estado, comentario_observado } = req.body;
     const { rol, id_usuario } = req.user;
 
-    if (rol !== 'admin' && rol !== 'vicerrectorado') {//verificar rol deusuario 
+    // Verificar que el rol sea "admin" o "vicerrectorado"
+    if (rol !== 'admin' && rol !== 'vicerrectorado') {
         return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
     }
 
