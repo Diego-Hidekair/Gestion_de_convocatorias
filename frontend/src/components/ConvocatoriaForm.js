@@ -2,31 +2,37 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, box, Typography, Grid, TextField, MenuItem, Button, Card, CardContent, } from '@mui/material';
-//import { Container, Card, CardBody, CardTitle, Button, Form, FormGroup, Label, Input, Row, Col } from 'reactstrap';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-//import 'bootstrap/dist/css/bootstrap.min.css';
-///import '../styles/convocatoria.css';
+import {
+    Container,
+    TextField,
+    MenuItem,
+    Button,
+    Grid,
+    Typography,
+    Card,
+    CardContent,
+} from '@mui/material';
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const ConvocatoriaForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [convocatoria, setConvocatoria] = useState({
-      nombre: '',
-      fecha_inicio: null,
-      fecha_fin: null,
-      id_tipoconvocatoria: '',
-      id_programa: '',
-      id_facultad: '',
+        nombre: '',
+        fecha_inicio: null,
+        fecha_fin: null,
+        id_tipoconvocatoria: '',
+        id_programa: '',
+        id_facultad: '',
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
-    const [programas] = useState([]);
     const [carrerasFiltradas, setCarrerasFiltradas] = useState([]);
     const [nombreFacultad, setNombreFacultad] = useState('');
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
-    const [prioridad, setPrioridad] = useState('Primera');
+    const [prioridad, setPrioridad] = useState('PRIMERA');
     const [horario, setHorario] = useState('TIEMPO COMPLETO');
     const [gestion, setGestion] = useState('GESTION 1');
     const currentYear = new Date().getFullYear();
@@ -65,12 +71,12 @@ const ConvocatoriaForm = () => {
                 setNombreFacultad(nombreFacultad);
                 setConvocatoria((prevConvocatoria) => ({
                     ...prevConvocatoria,
-                    id_facultad: userData.id_facultad || ''
+                    id_facultad: userData.id_facultad || '',
                 }));
 
                 const [tiposResponse, carrerasResponse] = await Promise.all([
                     axios.get('http://localhost:5000/tipos-convocatorias'),
-                    axios.get(`http://localhost:5000/carreras/facultad/${userData.id_facultad}`),
+                    axios.get(`http://localhost:5000/carreras/facultad/${nombreFacultad}`),
                 ]);
 
                 setTiposConvocatoria(tiposResponse.data);
@@ -83,13 +89,6 @@ const ConvocatoriaForm = () => {
         fetchData();
     }, [id]);
 
-    useEffect(() => {
-        const carrerasFiltradas = programas.filter(
-            (programa) => programa.id_facultad === parseInt(convocatoria.id_facultad)
-        );
-        setCarrerasFiltradas(carrerasFiltradas);
-    }, [convocatoria.id_facultad, programas]);
-
     const handleTipoConvocatoriaChange = (e) => {
         const tipoId = e.target.value;
         setConvocatoria((prevConvocatoria) => ({
@@ -97,8 +96,9 @@ const ConvocatoriaForm = () => {
             id_tipoconvocatoria: tipoId,
         }));
 
-        const selectedTipo = tiposConvocatoria.find(tipo => tipo.id_tipoconvocatoria === parseInt(tipoId));
-        setTituloConvocatoria(selectedTipo ? selectedTipo.nombre_convocatoria : '');
+        const selectedTipo = tiposConvocatoria.find((tipo) => tipo.id_tipoconvocatoria === parseInt(tipoId));
+        setTituloConvocatoria(selectedTipo ? selectedTipo.titulo : '');
+        handleNombreAutoFill();
     };
 
     const handleChange = (e) => {
@@ -107,6 +107,7 @@ const ConvocatoriaForm = () => {
             ...prevConvocatoria,
             [name]: value,
         }));
+        handleNombreAutoFill();
     };
 
     const handleDateChange = (name, date) => {
@@ -117,10 +118,8 @@ const ConvocatoriaForm = () => {
     };
 
     const handleNombreAutoFill = () => {
-        const programaNombre = carrerasFiltradas.find(
-            (programa) => programa.id_programa === parseInt(convocatoria.id_programa)
-        )?.nombre_carrera || '';
-
+        const programaNombre =
+            carrerasFiltradas.find((p) => p.id_programa === parseInt(convocatoria.id_programa))?.nombre_carrera || '';
         const nombreCompleto = `${prioridad} ${tituloConvocatoria} ${horario} PARA EL PROGRAMA DE ${programaNombre} ${gestion}/${currentYear}`;
 
         setConvocatoria((prevConvocatoria) => ({
@@ -141,7 +140,6 @@ const ConvocatoriaForm = () => {
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
         };
-        console.log('Datos enviados al backend:', formattedConvocatoria);
 
         try {
             if (id) {
@@ -158,31 +156,24 @@ const ConvocatoriaForm = () => {
         }
     };
 
-    console.log('Estado de convocatoria después de asignar id_facultad:', convocatoria);
-    
-        
     return (
-        <Container maxWidth="md">
+        <Container>
             <Card>
                 <CardContent>
                     <Typography variant="h5" align="center" gutterBottom>
                         {id ? 'Editar' : 'Registrar'} Convocatoria
                     </Typography>
                     <form onSubmit={handleSubmit}>
-                        <Grid container spacing={3}>
+                        <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
-                                    fullWidth
                                     select
                                     label="Tipo de Convocatoria"
-                                    name="id_tipoconvocatoria"
+                                    fullWidth
                                     value={convocatoria.id_tipoconvocatoria}
-                                    onChange={handleChange}
+                                    onChange={handleTipoConvocatoriaChange}
                                     required
                                 >
-                                    <MenuItem value="">
-                                        <em>Seleccione un tipo</em>
-                                    </MenuItem>
                                     {tiposConvocatoria.map((tipo) => (
                                         <MenuItem key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
                                             {tipo.nombre_convocatoria}
@@ -190,92 +181,52 @@ const ConvocatoriaForm = () => {
                                     ))}
                                 </TextField>
                             </Grid>
-
                             <Grid item xs={12}>
                                 <TextField
-                                    fullWidth
                                     label="Nombre de Convocatoria"
-                                    name="nombre"
+                                    fullWidth
                                     value={convocatoria.nombre}
                                     InputProps={{ readOnly: true }}
                                     required
                                 />
                             </Grid>
-
+                            <Grid item xs={12}>
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                    <DesktopDatePicker
+                                        label="Fecha de Inicio"
+                                        value={convocatoria.fecha_inicio}
+                                        onChange={(date) => handleDateChange('fecha_inicio', date)}
+                                        inputFormat="yyyy-MM-dd"
+                                        renderInput={(params) => <TextField fullWidth {...params} />}
+                                        required
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                    <DesktopDatePicker
+                                        label="Fecha de Fin"
+                                        value={convocatoria.fecha_fin}
+                                        onChange={(date) => handleDateChange('fecha_fin', date)}
+                                        inputFormat="yyyy-MM-dd"
+                                        renderInput={(params) => <TextField fullWidth {...params} />}
+                                        required
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    fullWidth
-                                    label="Facultad"
-                                    value={nombreFacultad}
-                                    InputProps={{ readOnly: true }}
-                                />
-                            </Grid>
-
-                            <Grid item xs={6}>
-                                <TextField
-                                    fullWidth
-                                    select
-                                    label="Prioridad"
-                                    value={prioridad}
-                                    onChange={(e) => setPrioridad(e.target.value)}
-                                >
-                                    {['Primera', 'Segunda', 'Tercera', 'Cuarta', 'Quinta'].map((p) => (
-                                        <MenuItem key={p} value={p}>
-                                            {p}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Grid>
-
-                            <Grid item xs={6}>
-                                <TextField
-                                    fullWidth
-                                    select
-                                    label="Horario"
-                                    value={horario}
-                                    onChange={(e) => setHorario(e.target.value)}
-                                >
-                                    {['TIEMPO COMPLETO', 'TIEMPO HORARIO'].map((h) => (
-                                        <MenuItem key={h} value={h}>
-                                            {h}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Grid>
-
-                            <Grid item xs={6}>
-                                <DatePicker
-                                    selected={convocatoria.fecha_inicio}
-                                    onChange={(date) => handleDateChange('fecha_inicio', date)}
-                                    dateFormat="yyyy-MM-dd"
-                                    placeholderText="Fecha de Inicio"
-                                    className="form-control"
-                                />
-                            </Grid>
-
-                            <Grid item xs={6}>
-                                <DatePicker
-                                    selected={convocatoria.fecha_fin}
-                                    onChange={(date) => handleDateChange('fecha_fin', date)}
-                                    dateFormat="yyyy-MM-dd"
-                                    placeholderText="Fecha de Fin"
-                                    className="form-control"
-                                />
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
                                     select
                                     label="Carrera"
+                                    fullWidth
                                     name="id_programa"
                                     value={convocatoria.id_programa}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        handleChange(e);
+                                        handleNombreAutoFill();
+                                    }}
                                     required
                                 >
-                                    <MenuItem value="">
-                                        <em>Seleccione una carrera</em>
-                                    </MenuItem>
                                     {carrerasFiltradas.map((programa) => (
                                         <MenuItem key={programa.id_programa} value={programa.id_programa}>
                                             {programa.nombre_carrera}
@@ -283,9 +234,38 @@ const ConvocatoriaForm = () => {
                                     ))}
                                 </TextField>
                             </Grid>
-
-                            <Grid item xs={12}>
-                                <Button type="submit" variant="contained" color="primary" fullWidth>
+                            <Grid item xs={6}>
+                                <TextField
+                                    select
+                                    label="Prioridad"
+                                    fullWidth
+                                    value={prioridad}
+                                    onChange={(e) => {
+                                        setPrioridad(e.target.value);
+                                        handleNombreAutoFill();
+                                    }}
+                                >
+                                    <MenuItem value="Primera">Primera</MenuItem>
+                                    <MenuItem value="Segunda">Segunda</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    select
+                                    label="Gestión"
+                                    fullWidth
+                                    value={gestion}
+                                    onChange={(e) => {
+                                        setGestion(e.target.value);
+                                        handleNombreAutoFill();
+                                    }}
+                                >
+                                    <MenuItem value="GESTION 1">GESTION 1</MenuItem>
+                                    <MenuItem value="GESTION 2">GESTION 2</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={12} align="center">
+                                <Button variant="contained" color="primary" type="submit">
                                     {id ? 'Actualizar' : 'Siguiente'}
                                 </Button>
                             </Grid>
