@@ -5,9 +5,9 @@ const convocatoriaController = require('../controllers/convocatoriaController');
 const { authenticateToken, authorizeAdmin, verificarRolSecretaria } = require('../middleware/authMiddleware');
 
 // Rutas específicas antes de rutas dinámicas
-router.get('/facultad', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultad); 
+router.get('/facultad', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultad);
 router.get('/estado/:estado', authenticateToken, convocatoriaController.getConvocatoriasByEstado); 
-router.get('/facultad/estado/:estado', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultadAndEstado);
+router.get('/facultad/estado/:estado', authenticateToken, verificarRolSecretaria, convocatoriaController.getConvocatoriasByFacultadAndEstado); 
 
 // Rutas dinámicas
 router.get('/', authenticateToken, convocatoriaController.getConvocatorias); 
@@ -17,8 +17,6 @@ router.put('/:id', authenticateToken, verificarRolSecretaria, convocatoriaContro
 router.delete('/:id_convocatoria', authenticateToken, authorizeAdmin, convocatoriaController.deleteConvocatoria); 
 
 // Ruta para actualizar solo el estado de una convocatoria
-router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEstadoConvocatoria); 
-
-
+router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEstadoConvocatoria);
 
 module.exports = router;

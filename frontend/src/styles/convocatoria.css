@@ -1,7 +1,6 @@
-/* frontend/src/styles/convocatoria.css */
+/* frontend/src/styles/convocatoria.css 
 @import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400&family=Gotham:wght@400&display=swap');
 
-/* Estilos generales */
 body {
     font-family: 'Gotham', sans-serif;
 }
@@ -15,7 +14,7 @@ body {
 }
 
 
-/* Contenedor principal */
+/* Contenedor principal 
 .container-list-convocatoria,
 .container-list-conv-estado {
     background-color: #00639a;
@@ -25,7 +24,7 @@ body {
     box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.1);
 }
 
-/* Título */
+/* Título 
 .text-center-convocatoria,
 .text-center-conv-estado,
 .card-custom-conv-estado .text-center-conv-estado {
@@ -46,7 +45,7 @@ body {
 
 
 
-/* Contenedor de búsqueda */
+/* Contenedor de búsqueda 
 .search-container-convocatoria {
     display: flex;
     align-items: center;
@@ -56,7 +55,7 @@ body {
     box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
 }
 
-/* Campos de formulario */
+/* Campos de formulario 
 .form-control-convocatoria, 
 .form-control {
     border-radius: 2rem;
@@ -79,7 +78,7 @@ body {
     border-color: #00639a;
 }
 
-/* Tabla */
+/* Tabla 
 .table-convocatoria {
     background-color: white;
     border-radius: 1rem;
@@ -107,7 +106,7 @@ body {
     background-color: #f9f9f9;
 }
 
-/* Botones personalizados */
+/* Botones personalizados 
 button {
     border-radius: 0.5rem;
     font-weight: bold;
@@ -144,7 +143,7 @@ button:hover {
     background-color: #ff5722;
 }
 
-/* Modal */
+/* Modal 
 .modal-header-conv-estado {
     background-color: #f8f9fa;
     border-bottom: 2px solid #ddd;
@@ -160,7 +159,7 @@ button:hover {
     border-color: #dc3545;
 }
 
-/* Tarjeta */
+/* Tarjeta 
 .card-custom-conv-estado {
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -173,7 +172,7 @@ button:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Estados */
+/* Estados 
 .estado {
     font-weight: bold;
     padding: 0.5rem;
@@ -200,7 +199,7 @@ button:hover {
     color: white;
 }
 
-/* Diseño responsivo */
+/* Diseño responsivo 
 @media (max-width: 1200px) {
     .container-list-conv-estado {
         padding: 20px;

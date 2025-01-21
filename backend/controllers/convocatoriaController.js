@@ -37,7 +37,7 @@ const getConvocatoriasByFacultadAndEstado = async (req, res) => {
     const { id_facultad } = req.user;
 
     if (!id_facultad) {
-        return res.status(400).json({ error: "El id de la facultad es requerido" });
+        return res.status(400).json({ error: 'El usuario logeado no tiene un id_facultad asociado.' });
     }
 
     try {
@@ -71,7 +71,7 @@ const getConvocatoriasByFacultadAndEstado = async (req, res) => {
 const getConvocatoriasByFacultad = async (req, res) => {// Mostrar convocatorias por facultad (solo usuario con rol el "secretaria")
     const { id_facultad } = req.user;
     if (!id_facultad) {
-        return res.status(400).json({ error: "El id de la facultad es requerido" });
+        return res.status(400).json({ error: 'El usuario logeado no tiene un id_facultad asociado.' });
     }
 
     try {
@@ -150,15 +150,15 @@ const getConvocatoriasByEstado = async (req, res) => {// categorizar las convoca
 const createConvocatoria = async (req, res) => {
     console.log("Datos recibidos:", req.body);
     try {
-        const id_usuario = req.user.id; 
-        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
+        const id_usuario = req.user.id;
+        const id_facultad = req.user.id_facultad; 
+        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
         
-        // Verificar que los campos necesarios no estén vacíos
+        console.log("Datos del usuario logeado:", req.user);
         if (!nombre || !fecha_inicio || !fecha_fin || !id_tipoconvocatoria || !id_programa || !id_facultad) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
-        // Registrar la nueva convocatoria
         const result = await pool.query(`
             INSERT INTO convocatorias 
             (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
@@ -171,6 +171,7 @@ const createConvocatoria = async (req, res) => {
         console.error('Error al crear la convocatoria:', error);
         res.status(500).send('Error al crear la convocatoria');
     }
+    console.log('Datos recibidos en el backend:', req.body);
 };
     
 // actualizar
