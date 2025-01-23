@@ -242,24 +242,22 @@ const updateEstadoConvocatoria = async (req, res) => {
 const deleteConvocatoria = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
-        // Eliminar los documentos relacionados con la convocatoria
-        await pool.query('DELETE FROM documentos WHERE id_convocatoria = $1', [id_convocatoria]);
-
-        // Eliminar los registros en convocatorias_materias y honorarios
-        await pool.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id_convocatoria]);
-        await pool.query('DELETE FROM honorarios WHERE id_convocatoria = $1', [id_convocatoria]);
-
-        // Eliminar la convocatoria
-        const result = await pool.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
-
+        await client.query('BEGIN');
+        await client.query('DELETE FROM documentos WHERE id_convocatoria = $1', [id_convocatoria]);
+        await client.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id_convocatoria]);
+        await client.query('DELETE FROM honorarios WHERE id_convocatoria = $1', [id_convocatoria]);
+        const result = await client.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id_convocatoria]);
+        await client.query('COMMIT');
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
-
         res.json({ message: 'Convocatoria eliminada exitosamente' });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Error al eliminar la convocatoria:', error);
         res.status(500).json({ error: 'Error en el servidor' });
+    } finally {
+        client.release();
     }
 };
 

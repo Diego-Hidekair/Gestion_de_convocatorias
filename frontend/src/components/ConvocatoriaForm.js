@@ -2,16 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-    Container,
-    TextField,
-    MenuItem,
-    Button,
-    Grid,
-    Typography,
-    Card,
-    CardContent,
-} from '@mui/material';
+import { Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent } from '@mui/material';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -158,7 +149,7 @@ const ConvocatoriaForm = () => {
 
     return (
         <Container>
-            <Card>
+            <Card style={{ borderRadius: '15px' }}>
                 <CardContent>
                     <Typography variant="h5" align="center" gutterBottom>
                         {id ? 'Editar' : 'Registrar'} Convocatoria
@@ -190,31 +181,51 @@ const ConvocatoriaForm = () => {
                                     required
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={6}>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <DesktopDatePicker
                                         label="Fecha de Inicio"
                                         value={convocatoria.fecha_inicio}
                                         onChange={(date) => handleDateChange('fecha_inicio', date)}
                                         inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => <TextField fullWidth {...params} />}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                fullWidth
+                                                style={{ borderRadius: '10px' }}
+                                            />
+                                        )}
                                         required
                                     />
                                 </LocalizationProvider>
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={6}>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <DesktopDatePicker
                                         label="Fecha de Fin"
                                         value={convocatoria.fecha_fin}
                                         onChange={(date) => handleDateChange('fecha_fin', date)}
                                         inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => <TextField fullWidth {...params} />}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                fullWidth
+                                                style={{ borderRadius: '10px' }}
+                                            />
+                                        )}
                                         required
                                     />
                                 </LocalizationProvider>
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={6}>
+                                <TextField
+                                    label="Facultad"
+                                    fullWidth
+                                    value={nombreFacultad}
+                                    InputProps={{ readOnly: true }}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
                                 <TextField
                                     select
                                     label="Carrera"
