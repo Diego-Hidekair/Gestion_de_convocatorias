@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent } from '@mui/material';
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
+//import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
@@ -17,7 +18,7 @@ const ConvocatoriaForm = () => {
         id_tipoconvocatoria: '',
         id_programa: '',
         id_facultad: '',
-    });
+    }); 
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carrerasFiltradas, setCarrerasFiltradas] = useState([]);
@@ -181,39 +182,27 @@ const ConvocatoriaForm = () => {
                                     required
                                 />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid item xs={12} md={6}>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <DesktopDatePicker
+                                    <StaticDatePicker
+                                        displayStaticWrapperAs="desktop"
                                         label="Fecha de Inicio"
                                         value={convocatoria.fecha_inicio}
                                         onChange={(date) => handleDateChange('fecha_inicio', date)}
                                         inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                style={{ borderRadius: '10px' }}
-                                            />
-                                        )}
-                                        required
+                                        renderInput={(params) => <TextField {...params} fullWidthstyle={{ borderRadius: '10px' }}/>}
                                     />
                                 </LocalizationProvider>
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid item xs={12} md={6}>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <DesktopDatePicker
+                                    <StaticDatePicker
+                                        displayStaticWrapperAs="desktop"
                                         label="Fecha de Fin"
                                         value={convocatoria.fecha_fin}
                                         onChange={(date) => handleDateChange('fecha_fin', date)}
                                         inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                style={{ borderRadius: '10px' }}
-                                            />
-                                        )}
-                                        required
+                                        renderInput={(params) => <TextField {...params} fullWidthstyle={{ borderRadius: '10px' }} />}
                                     />
                                 </LocalizationProvider>
                             </Grid>

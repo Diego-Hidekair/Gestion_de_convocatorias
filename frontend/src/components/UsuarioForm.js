@@ -19,7 +19,7 @@ const UsuarioForm = () => {
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [foto, setFoto] = useState(null);
-    const [selectedFacultad, setSelectedFacultad] = useState(null); 
+    const [setSelectedFacultad] = useState(null); 
 
     const navigate = useNavigate();
 
