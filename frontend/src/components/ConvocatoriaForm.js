@@ -183,6 +183,9 @@ const ConvocatoriaForm = () => {
                                 />
                             </Grid>
                             <Grid item xs={12} md={6}>
+                                <Typography variant="subtitle1" gutterBottom>
+                                    Fecha de Publicación
+                                </Typography>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <StaticDatePicker
                                         displayStaticWrapperAs="desktop"
@@ -195,6 +198,9 @@ const ConvocatoriaForm = () => {
                                 </LocalizationProvider>
                             </Grid>
                             <Grid item xs={12} md={6}>
+                                <Typography variant="subtitle1" gutterBottom>
+                                    Fecha de Conclusión de la Convocatoria
+                                </Typography>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <StaticDatePicker
                                         displayStaticWrapperAs="desktop"
