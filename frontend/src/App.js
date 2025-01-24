@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'r
 import {jwtDecode} from 'jwt-decode';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { Box, Drawer, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
 import { AppBar, Toolbar, Box, Typography, Avatar, Stack } from '@mui/material';
 import CarreraList from './components/CarreraList';
 import FacultadList from './components/FacultadList';
@@ -15,18 +16,27 @@ import Login from './components/Login';
 import Register from './components/Register';
 import RedirectPage from './components/RedirectPage';
 
+
+
+
+
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+
+
+
 axios.defaults.baseURL = 'http://localhost:5000/';
 
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#D32F2F', // Rojo
+            main: '#D32F2F',
         },
         secondary: {
-            main: '#1976D2', // Azul
+            main: '#1976D2',
         },
         background: {
-            default: '#FFFFFF', // Blanco
+            default: '#FFFFFF',
         },
         text: {
             primary: '#000000',
@@ -119,33 +129,37 @@ const AuthWrapper = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', height: '100vh' }}>
+        <Box sx={{ display: 'flex'}}>
             <NavBar onLogout={handleLogout} />
-            <Box sx={{ flexGrow: 1 }}>
+            <Box sx={{
+            flexGrow: 1,
+            marginLeft: { xs: 0, sm: '250px' },
+            padding: 0,
+            backgroundColor: theme.palette.background.default,
+        }}
+    >
                 {isAuthenticated ? (
-                    <>
-                        <Header userName={userName} userLastName={userLastName} />
-                        <Box sx={{ padding: 2, backgroundColor: theme.palette.background.default }}>
-                            <Routes>
-                                <Route path="/" element={<Navigate to="/redirect" />} />
-                                <Route path="/redirect" element={<RedirectPage />} />
-                                <Route path="/carreras" element={<CarreraList />} />
-                                <Route path="/facultades" element={<FacultadList />} />
-                                <Route path="/convocatorias" element={<ConvocatoriaList />} />
-                                <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                                <Route path="/login" element={<Login />} />
-                                <Route path="/register" element={<Register />} />
-                            </Routes>
-                        </Box>
-                        <Footer />
-                    </>
-                ) : (
-                    <Routes>
-                        <Route path="/login" element={<Login setAuth={handleLogin} />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="*" element={<Navigate to="/login" />} />
-                    </Routes>
-                )}
+            <>
+                <Header userName={userName} userLastName={userLastName} />
+                <Routes>
+                    <Route path="/" element={<Navigate to="/redirect" />} />
+                    <Route path="/redirect" element={<RedirectPage />} />
+                    <Route path="/carreras" element={<CarreraList />} />
+                    <Route path="/facultades" element={<FacultadList />} />
+                    <Route path="/convocatorias" element={<ConvocatoriaList />} />
+                    <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                </Routes>
+            </>
+            ) : (
+                <Routes>
+                    <Route path="/login" element={<Login setAuth={handleLogin} />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="*" element={<Navigate to="/redirect" />} />
+                </Routes>
+            )}
+            <Footer />
             </Box>
         </Box>
     );
@@ -161,170 +175,3 @@ const App = () => (
 );
 
 export default App;
-
-
-/*// frontend/src/App.js
-import axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
-import CarreraList from './components/CarreraList';
-import FacultadList from './components/FacultadList';
-import ConvocatoriaList from './components/ConvocatoriaList';
-import ConvocatoriaForm from './components/ConvocatoriaForm';
-import ConvocatoriaEdit from './components/ConvocatoriaEdit';
-import ConvocatoriaListSecretaria from './components/ConvocatoriaList_secretaria';
-import ConvocatoriaParaRevision from './components/ConvocatoriaParaRevision';
-import ConvocatoriaEnRevision from './components/ConvocatoriaEnRevision';
-import ConvocatoriaObservado from './components/ConvocatoriaObservado';
-import ConvocatoriaRevisado from './components/ConvocatoriaRevisado';
-import TipoconvocatoriaList from './components/TipoconvocatoriaList';
-import TipoconvocatoriaForm from './components/TipoconvocatoriaForm';
-import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
-import MateriaList from './components/MateriaList';
-import ConvocatoriaMateriasEdit from './components/ConvocatoriaMateriasEdit';
-import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
-import Login from './components/Login';
-import Register from './components/Register';
-import FileUpload from './components/FileUpload';
-import UsuarioList from './components/UsuarioList';
-import UsuarioForm from './components/UsuarioForm';
-import UsuarioEdit from './components/UsuarioEdit';
-import UsuarioPerfil from './components/UsuarioPerfil';
-import RedirectPage from './components/RedirectPage';
-import HonorariosForm from './components/HonorariosForm';
-import NavBar from './components/NavBar';
-import PDFGenerator from './components/PDFGenerator';
-import PDFViewer from './components/PDFViewer';
-import './styles/App.css';
-
-axios.defaults.baseURL = 'http://localhost:5000/';
-
-const App = () => {
-    return (
-        <Router>
-            <AuthWrapper />
-        </Router>
-    );
-};
-
-const AuthWrapper = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
-    const [userRole, setUserRole] = useState('');
-    const [userName, setUserName] = useState('');
-    const [userLastName, setUserLastName] = useState('');
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decodedToken = jwtDecode(token);
-            const expiryTime = decodedToken.exp * 1000;
-            const currentTime = Date.now();
-
-            if (currentTime >= expiryTime) {
-                localStorage.removeItem('token');
-                setIsAuthenticated(false);
-                navigate('/login');
-            } else {
-                setUserRole(decodedToken.rol);
-                setUserName(decodedToken.nombre);
-                setUserLastName(decodedToken.apellido_paterno);
-                setIsAuthenticated(true);
-                setTimeout(() => {
-                    localStorage.removeItem('token');
-                    setIsAuthenticated(false);
-                    navigate('/login');
-                }, expiryTime - currentTime);
-            }
-        } else {
-            navigate('/login');
-        }
-    }, [navigate]);
-
-    useEffect(() => {
-        document.body.className = isAuthenticated ? "app-body" : "login-body";
-    }, [isAuthenticated]);
-
-    const handleLogin = () => {
-        setIsAuthenticated(true);
-        navigate('/redirect');
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
-        navigate('/login');
-    };
-
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
-    
-    return (
-        <div className={`app-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <div className="background-app"></div>
-            {isAuthenticated ? (
-                <>
-                    <header className="header-app">    
-                        <h1>Aplicación Web de Gestión de Convocatorias</h1>
-                        <div className="user-info">
-                            <i className="user-icon fas fa-user-circle"></i>
-                            <span>{userName} {userLastName}</span>
-                        </div>
-                        <div>
-                            <img src="/imagenes/LOG-fd8360d8.png" alt="Logo" className="logo" />
-                        </div>
-                    </header>
-                    <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} userRole={userRole} />
-                    <Routes>
-                    <Route path="/" element={<Navigate to="/redirect" />} /> 
-                        <Route path="/redirect" element={<RedirectPage />} />
-                        <Route path="/carreras" element={<CarreraList />} />
-                        <Route path="/facultades" element={<FacultadList />} />
-                        <Route path="/convocatorias" element={<ConvocatoriaList />} />
-                        {userRole === 'secretaria' && (
-                            <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                        )}
-                        {userRole === 'secretaria' && (
-                            <Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />
-                        )} 
-                        <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
-                        <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
-                        <Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />
-                        <Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />
-                        <Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />
-                        <Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />
-                        <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} /> 
-                        <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} /> 
-                        <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} /> 
-                        <Route path="/materias" element={<MateriaList />} />
-                        <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
-                        <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
-                        <Route path="/file-upload" element={<FileUpload />} />
-                        <Route path="/usuarios" element={<UsuarioList />} />
-                        <Route path="/usuarios/new" element={<UsuarioForm />} />
-                        <Route path="/usuarios/edit/:id_usuario" element={<UsuarioEdit />} />                        
-                        <Route path="/usuarios/me/:id_usuario" element={<UsuarioPerfil />} />
-                        <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
-                        <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
-                        <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} /> 
-                        
-                    </Routes>
-                    <footer className="footer-app">
-                        <p className="titulo-pie">Copyright © UATF - Diego Fajardo</p>
-                    </footer>
-                </>
-            ) : (
-                <Routes>
-                    <Route path="/login" element={<Login setAuth={handleLogin} />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="*" element={<Navigate to="/login" />} />
-                </Routes>
-            )}
-        </div>
-    );
-};
-
-export default App;*/
