@@ -1,12 +1,7 @@
-// frontend/src/App.js
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { Box, Drawer, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
-import { AppBar, Toolbar, Box, Typography, Avatar, Stack } from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import FacultadList from './components/FacultadList';
 import ConvocatoriaList from './components/ConvocatoriaList';
@@ -15,15 +10,9 @@ import NavBar from './components/NavBar';
 import Login from './components/Login';
 import Register from './components/Register';
 import RedirectPage from './components/RedirectPage';
-
-
-
-
-
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
-
-
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Box, Typography, Button } from '@mui/material';
 
 axios.defaults.baseURL = 'http://localhost:5000/';
 
@@ -35,51 +24,50 @@ const theme = createTheme({
         secondary: {
             main: '#1976D2',
         },
-        background: {
-            default: '#FFFFFF',
-        },
-        text: {
-            primary: '#000000',
-            secondary: '#1976D2',
-        },
     },
     typography: {
         fontFamily: 'Roboto, Arial, sans-serif',
-        h1: {
-            fontSize: '2rem',
-            fontWeight: 'bold',
-        },
     },
 });
 
-const Header = ({ userName, userLastName }) => (
-    <AppBar position="sticky" color="primary">
-        <Toolbar>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ flexGrow: 1 }}>
-                <Avatar alt="Logo" src="/imagenes/LOG-fd8360d8.png" />
-                <Typography variant="h6">Aplicación Web de Gestión de Convocatorias</Typography>
-            </Stack>
-            <Typography variant="subtitle1">
-                {userName} {userLastName}
-            </Typography>
-        </Toolbar>
-    </AppBar>
-);
-
-const Footer = () => (
+const HeaderSection = () => (
     <Box
-        component="footer"
         sx={{
-            textAlign: 'center',
-            padding: 2,
-            backgroundColor: theme.palette.primary.main,
+            height: '60vh',
+            background: `linear-gradient(to bottom, rgba(21, 101, 192, 0.7), rgba(21, 101, 192, 0.7)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg/800px-University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
             color: 'white',
-            position: 'relative',
-            bottom: 0,
-            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
         }}
     >
-        <Typography variant="body2">Copyright © UATF - Diego Fajardo</Typography>
+        <Box textAlign="center">
+            <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+                Gestión de Convocatorias
+            </Typography>
+            <Typography variant="h5" sx={{ mt: 2 }}>
+                Bienvenido al sistema de gestión de convocatorias
+            </Typography>
+        </Box>
+    </Box>
+);
+
+const FooterSection = () => (
+    <Box
+        sx={{
+            height: '15vh', // Reducido
+            backgroundColor: '#D32F2F',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+            padding: 2, // Reducido
+        }}
+    >
+        <Typography variant="body2">Copyright © 2025 | Universidad Autónoma Tomás Frías</Typography>
     </Box>
 );
 
@@ -88,6 +76,7 @@ const AuthWrapper = () => {
     const [userRole, setUserRole] = useState('');
     const [userName, setUserName] = useState('');
     const [userLastName, setUserLastName] = useState('');
+    const [sidebarOpen, setSidebarOpen] = useState(true); // Estado para manejar el sidebar
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -117,6 +106,8 @@ const AuthWrapper = () => {
         }
     }, [navigate]);
 
+    const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
     const handleLogin = () => {
         setIsAuthenticated(true);
         navigate('/redirect');
@@ -129,37 +120,35 @@ const AuthWrapper = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex'}}>
-            <NavBar onLogout={handleLogout} />
-            <Box sx={{
-            flexGrow: 1,
-            marginLeft: { xs: 0, sm: '250px' },
-            padding: 0,
-            backgroundColor: theme.palette.background.default,
-        }}
-    >
+        <Box sx={{ display: 'flex' }}>
+            <NavBar onLogout={handleLogout} toggleSidebar={toggleSidebar} />
+            <Box
+                sx={{
+                    flexGrow: 1,
+                    marginLeft: sidebarOpen ? '250px' : '0px', // Cambia dinámicamente
+                    padding: 3,
+                    transition: 'margin-left 0.3s ease', // Transición suave
+                    backgroundColor: theme.palette.background.default,
+                }}
+            >
                 {isAuthenticated ? (
-            <>
-                <Header userName={userName} userLastName={userLastName} />
-                <Routes>
-                    <Route path="/" element={<Navigate to="/redirect" />} />
-                    <Route path="/redirect" element={<RedirectPage />} />
-                    <Route path="/carreras" element={<CarreraList />} />
-                    <Route path="/facultades" element={<FacultadList />} />
-                    <Route path="/convocatorias" element={<ConvocatoriaList />} />
-                    <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                </Routes>
-            </>
-            ) : (
-                <Routes>
-                    <Route path="/login" element={<Login setAuth={handleLogin} />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="*" element={<Navigate to="/redirect" />} />
-                </Routes>
-            )}
-            <Footer />
+                    <>
+                        <Routes>
+                            <Route path="/" element={<Navigate to="/redirect" />} />
+                            <Route path="/redirect" element={<RedirectPage />} />
+                            <Route path="/carreras" element={<CarreraList />} />
+                            <Route path="/facultades" element={<FacultadList />} />
+                            <Route path="/convocatorias" element={<ConvocatoriaList />} />
+                            <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
+                        </Routes>
+                    </>
+                ) : (
+                    <Routes>
+                        <Route path="/login" element={<Login setAuth={handleLogin} />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="*" element={<Navigate to="/login" />} />
+                    </Routes>
+                )}
             </Box>
         </Box>
     );
@@ -169,7 +158,9 @@ const App = () => (
     <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
+            <HeaderSection />
             <AuthWrapper />
+            <FooterSection />
         </Router>
     </ThemeProvider>
 );
