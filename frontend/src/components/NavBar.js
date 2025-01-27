@@ -1,10 +1,13 @@
 // frontend/src/components/NavBar.js
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import axios from "axios";
 import {jwtDecode} from 'jwt-decode';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Collapse, IconButton, Paper, Typography, Box, Modal, useMediaQuery, } from "@mui/material";
+import { KeyboardArrowDown, KeyboardArrowUp, Delete, Preview, Download, } from "@mui/icons-material";
 import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, } from '@mui/icons-material';
-import useMediaQuery from '@mui/material/useMediaQuery';
+//import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from "@mui/material/styles";
 
 const NavBar = ({ onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -131,7 +134,7 @@ const NavBar = ({ onLogout }) => {
                                 onClose={toggleSidebar}
                                 sx={{
                                     '& .MuiDrawer-paper': {
-                                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
                                         color: '#fff',
                                         width: 250,
                                     },
@@ -158,3 +161,5 @@ const NavBar = ({ onLogout }) => {
 };
 
 export default NavBar;
+
+

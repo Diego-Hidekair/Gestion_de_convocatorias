@@ -6,7 +6,7 @@ const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'Gestion_de_convocatorias',
-    password: '12345',  
+    password: 'Vice_Admin_123',  
   });
 
 
