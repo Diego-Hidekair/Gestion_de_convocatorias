@@ -1,11 +1,11 @@
 // frontend/src/components/ConvocatoriaMateriasForm.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; 
+import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/convocatoriaMaterias.css';
+import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';  
 
-const ConvocatoriaMateriasForm = () => { 
+const ConvocatoriaMateriasForm = () => {
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [materias, setMaterias] = useState([]);
@@ -27,8 +27,8 @@ const ConvocatoriaMateriasForm = () => {
         };
         fetchMaterias();
     }, []);
-    
-    useEffect(() => {//total de horas de las materias seleccionadas
+
+    useEffect(() => {
         const total = materiasSeleccionadas.reduce((acc, materia) => acc + materia.total_horas, 0);
         setTotalHoras(total);
     }, [materiasSeleccionadas]);
@@ -39,17 +39,17 @@ const ConvocatoriaMateriasForm = () => {
             setError('Por favor, complete todos los campos');
             return;
         }
-    
+
         const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
 
         try {
             const response = await axios.post('http://localhost:5000/convocatoria-materias/multiple', {
                 id_convocatoria,
-                materiasSeleccionadas: materiasSeleccionadas.map(m => m.id_materia),
+                materiasSeleccionadas: materiasSeleccionadas.map((m) => m.id_materia),
                 perfil_profesional: perfilProfesional,
-                tiempo_trabajo: tiempoTrabajo 
+                tiempo_trabajo: tiempoTrabajo,
             });
-    
+
             alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
             const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
             if (firstIdMateria) {
@@ -63,9 +63,9 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
-    const handleAddMateria = () => {//se seleciona la amteria y se agrega a la lista
-        const materia = materias.find(m => m.id_materia === parseInt(materiaSeleccionada));
-        if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
+    const handleAddMateria = () => {
+        const materia = materias.find((m) => m.id_materia === parseInt(materiaSeleccionada));
+        if (materia && !materiasSeleccionadas.some((m) => m.id_materia === materia.id_materia)) {
             setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
             setMateriaSeleccionada('');
         } else {
@@ -73,67 +73,92 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
-    const handleRemoveMateria = (id_materia) => {//eliminar la materia de la lista seleccionada
+    const handleRemoveMateria = (id_materia) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar esta materia?')) {
-            setMateriasSeleccionadas(materiasSeleccionadas.filter(m => m.id_materia !== id_materia));
+            setMateriasSeleccionadas(materiasSeleccionadas.filter((m) => m.id_materia !== id_materia));
         }
     };
 
     return (
-        <div className="container-conv-mat mt-4-conv-mat">
-            <h2 className="titutlo-conv-mat">Agregar materias a la Convocatoria</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3-conv-mat">
-                    <label className="form-label-conv-mat">Seleccionar Materia:</label>
-                    <select
-                        className="form-control-conv-mat"
-                        value={materiaSeleccionada}
-                        onChange={(e) => setMateriaSeleccionada(e.target.value)}
-                    >
-                        <option value="">Seleccione una materia</option>
-                        {materias.map((materia) => (
-                            <option key={materia.id_materia} value={materia.id_materia}>
-                                {materia.nombre}
-                            </option>
-                        ))}
-                    </select>
-                    <button type="button" className="btn-conv-mat btn-secondary-conv-mat mt-2-conv-mat" onClick={handleAddMateria}>
-                        Agregar Materia
-                    </button>
-                </div>
-                <div className="mb-3-conv-mat">
-                    <h3>Materias Seleccionadas:</h3>
-                    <ul className="list-group-conv-mat">
-                        {materiasSeleccionadas.map((materia) => (
-                            <li key={materia.id_materia} className="list-group-item-conv-mat">
-                                {materia.nombre}
-                                <button type="button-conv-mat" className="btn-conv-mat btn-danger-conv-mat btn-sm-conv-mat float-end-conv-mat" onClick={() => handleRemoveMateria(materia.id_materia)}>
-                                    Eliminar
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="mb-3-conv-mat">
-                    <h4>Tiempo de Trabajo: {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}</h4>
-                </div>
-                <div className="mb-3-conv-mat">
-                    <label className="form-label-conv-mat">Perfil Profesional:</label>
-                    <input
-                        type="text"
-                        className="form-control-conv-mat"
-                        value={perfilProfesional}
-                        onChange={(e) => setPerfilProfesional(e.target.value)}
-                        placeholder="Ingrese el perfil profesional como ser Ingeniero Comercial"
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary-conv-mat">
-                    Siguiente
-                </button>
-            </form>
-        </div>
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+            <Paper elevation={3} sx={{ p: 3 }}>
+                <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+                    Agregar Materias a la Convocatoria
+                </Typography>
+                {error && <Alert severity="error">{error}</Alert>}
+                <form onSubmit={handleSubmit}>
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                        <InputLabel id="materia-label">Seleccionar Materia</InputLabel>
+                        <Select
+                            labelId="materia-label"
+                            value={materiaSeleccionada}
+                            onChange={(e) => setMateriaSeleccionada(e.target.value)}
+                        >
+                            <MenuItem value="">
+                                <em>Seleccione una materia</em>
+                            </MenuItem>
+                            {materias.map((materia) => (
+                                <MenuItem key={materia.id_materia} value={materia.id_materia}>
+                                    {materia.nombre}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            sx={{ mt: 2 }}
+                            onClick={handleAddMateria}
+                        >
+                            Agregar Materia
+                        </Button>
+                    </FormControl>
+
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="h6" sx={{ mb: 1 }}>
+                            Materias Seleccionadas:
+                        </Typography>
+                        <List>
+                            {materiasSeleccionadas.map((materia) => (
+                                <ListItem
+                                    key={materia.id_materia}
+                                    secondaryAction={
+                                        <IconButton
+                                            edge="end"
+                                            color="error"
+                                            onClick={() => handleRemoveMateria(materia.id_materia)}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    }
+                                >
+                                    <ListItemText primary={materia.nombre} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Box>
+
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                        <strong>Tiempo de Trabajo:</strong>{' '}
+                        {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}
+                    </Typography>
+
+                    <FormControl fullWidth sx={{ mb: 2 }}>
+                        <TextField
+                            label="Perfil Profesional"
+                            variant="outlined"
+                            value={perfilProfesional}
+                            onChange={(e) => setPerfilProfesional(e.target.value)}
+                            placeholder="Ingrese el perfil profesional (Ej: Ingeniero Comercial)"
+                            required
+                        />
+                    </FormControl>
+
+                    <Button variant="contained" color="primary" type="submit" fullWidth>
+                        Siguiente
+                    </Button>
+                </form>
+            </Paper>
+        </Container>
     );
 };
 

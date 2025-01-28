@@ -179,6 +179,7 @@ const ConvocatoriaForm = () => {
                                     fullWidth
                                     value={convocatoria.nombre}
                                     InputProps={{ readOnly: true }}
+      
                                     required
                                 />
                             </Grid>

@@ -14,7 +14,7 @@ const getConvocatoriaMaterias = async (req, res) => {//obetner los datos de conv
             JOIN convocatorias c ON cm.id_convocatoria = c.id_convocatoria
             WHERE cm.id_convocatoria = $1
         `, [id_convocatoria]);
-        
+            
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'No se encontraron materias para esta convocatoria' });
         }
@@ -123,5 +123,39 @@ const deleteConvocatoriaMateria = async (req, res) => {//eliminar
         res.status(500).json({ error: 'Error en el servidor' });
     }
 };
+
+
+const getMateriasByCarrera = async (req, res) => {
+    const { id_convocatoria } = req.params;
+    try {
+        const carreraResult = await pool.query(`
+            SELECT id_carrera 
+            FROM convocatorias 
+            WHERE id_convocatoria = $1
+        `, [id_convocatoria]);
+
+        if (carreraResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+        const id_carrera = carreraResult.rows[0].id_carrera;
+        const materiasResult = await pool.query(`
+            SELECT m.id_materia, m.nombre, m.total_horas
+            FROM planes.pln_materias m
+            WHERE m.id_carrera = $1
+        `, [id_carrera]);
+
+        if (materiasResult.rows.length === 0) {
+            return res.status(404).json({ error: 'No hay materias disponibles para esta carrera' });
+        }
+        res.json(materiasResult.rows);
+    } catch (error) {
+        console.error('Error al obtener materias por carrera:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
+};
+        
+
+        
+
 
 module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria }; 
