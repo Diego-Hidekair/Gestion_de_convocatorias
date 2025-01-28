@@ -1,27 +1,32 @@
 // frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Collapse, IconButton, Paper, Typography, Box, Button, Modal, useMediaQuery} from "@mui/material";
-import { KeyboardArrowDown, KeyboardArrowUp, Delete, Preview, Download, } from "@mui/icons-material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Collapse, IconButton, Paper, Typography, Box, Button, Modal, useMediaQuery, TextField, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
+import { KeyboardArrowDown, KeyboardArrowUp, Delete, Preview, Download, Search} from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 const ConvocatoriaList = () => {
-    const [convocatorias, setConvocatorias] = useState([]);
-    const [previewUrl, setPreviewUrl] = useState("");
-    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [convocatorias, setConvocatorias] = useState([]);
+  const [filteredConvocatorias, setFilteredConvocatorias] = useState([]);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState("nombre");
 
-    useEffect(() => {
-        const fetchConvocatorias = async () => {
-          try {
-            const response = await axios.get("http://localhost:5000/convocatorias");
-            setConvocatorias(response.data);
-          } catch (error) {
-            console.error("Error fetching convocatorias:", error);
-          }
-        };
-        fetchConvocatorias();
-      }, []);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    const fetchConvocatorias = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/convocatorias");
+        setConvocatorias(response.data);
+        setFilteredConvocatorias(response.data);
+      } catch (error) {
+        console.error("Error fetching convocatorias:", error);
+      }
+    };
+    fetchConvocatorias();
+  }, []);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -31,7 +36,11 @@ const ConvocatoriaList = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/convocatorias/${id}`);
-      setConvocatorias(convocatorias.filter((c) => c.id_convocatoria !== id));
+      const updatedConvocatorias = convocatorias.filter(
+        (c) => c.id_convocatoria !== id
+      );
+      setConvocatorias(updatedConvocatorias);
+      setFilteredConvocatorias(updatedConvocatorias);
     } catch (error) {
       console.error("Error deleting convocatoria:", error);
     }
@@ -60,6 +69,16 @@ const ConvocatoriaList = () => {
     }
   };
 
+  // Filtrar convocatorias en tiempo real según el criterio seleccionado
+  useEffect(() => {
+    const filtered = convocatorias.filter((convocatoria) =>
+      convocatoria[searchCategory]
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+    setFilteredConvocatorias(filtered);
+  }, [searchQuery, searchCategory, convocatorias]);
+
   const Row = ({ convocatoria }) => {
     const [open, setOpen] = useState(false);
 
@@ -80,19 +99,19 @@ const ConvocatoriaList = () => {
           <TableCell>{formatDate(convocatoria.fecha_fin)}</TableCell>
           <TableCell>
             <IconButton
-              color="primary"
+              style={{ color: "#007bff" }} // Azul
               onClick={() => handlePreview(convocatoria.id_convocatoria)}
             >
               <Preview />
             </IconButton>
             <IconButton
-              color="success"
+              style={{ color: "#28a745" }} // Verde
               onClick={() => handleDownload(convocatoria.id_convocatoria)}
             >
               <Download />
             </IconButton>
             <IconButton
-              color="error"
+              style={{ color: "#dc3545" }} // Rojo
               onClick={() => handleDelete(convocatoria.id_convocatoria)}
             >
               <Delete />
@@ -131,6 +150,34 @@ const ConvocatoriaList = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Lista de Convocatorias
       </Typography>
+
+      {/* Barra de búsqueda y filtrado */}
+      <Box display="flex" justifyContent="center" alignItems="center" mb={2} gap={2}>
+        <TextField
+          label="Buscar..."
+          variant="outlined"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: <Search color="disabled" />,
+          }}
+        />
+        <FormControl variant="outlined" size="small">
+          <InputLabel>Categoría</InputLabel>
+          <Select
+            value={searchCategory}
+            onChange={(e) => setSearchCategory(e.target.value)}
+            label="Categoría"
+          >
+            <MenuItem value="nombre">Nombre</MenuItem>
+            <MenuItem value="fecha_inicio">Fecha de Inicio</MenuItem>
+            <MenuItem value="nombre_programa">Carrera</MenuItem>
+            <MenuItem value="nombre_facultad">Facultad</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
       <TableContainer
         component={Paper}
         sx={{
@@ -148,23 +195,8 @@ const ConvocatoriaList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {convocatorias.map((convocatoria) => (
-              <TableRow key={convocatoria.id_convocatoria}>
-                <TableCell>{convocatoria.nombre}</TableCell>
-                <TableCell>{new Date(convocatoria.fecha_inicio).toLocaleDateString()}</TableCell>
-                <TableCell>{new Date(convocatoria.fecha_fin).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handlePreview(convocatoria.id_convocatoria)}>
-                    <Preview />
-                  </IconButton>
-                  <IconButton onClick={() => handleDownload(convocatoria.id_convocatoria)}>
-                    <Download />
-                  </IconButton>
-                  <IconButton onClick={() => handleDelete(convocatoria.id_convocatoria)}>
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
+            {filteredConvocatorias.map((convocatoria) => (
+              <Row key={convocatoria.id_convocatoria} convocatoria={convocatoria} />
             ))}
           </TableBody>
         </Table>

@@ -150,7 +150,7 @@ const ConvocatoriaForm = () => {
 
     return (
         <Container>
-            <Card style={{ borderRadius: '15px' }}>
+            <Card style={{ borderRadius: '15px', backgroundColor: '#E3F2FD' }}>
                 <CardContent>
                     <Typography variant="h5" align="center" gutterBottom>
                         {id ? 'Editar' : 'Registrar'} Convocatoria

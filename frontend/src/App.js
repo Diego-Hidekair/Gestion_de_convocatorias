@@ -33,7 +33,7 @@ const theme = createTheme({
 const HeaderSection = () => (
     <Box
         sx={{
-            height: '60vh',
+            height: '20vh',
             background: `linear-gradient(to bottom, rgba(21, 101, 192, 0.7), rgba(21, 101, 192, 0.7)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg/800px-University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -48,7 +48,7 @@ const HeaderSection = () => (
                 Gestión de Convocatorias
             </Typography>
             <Typography variant="h5" sx={{ mt: 2 }}>
-                Bienvenido al sistema de gestión de convocatorias
+                "Sistema de gestionamiento de convocatorias para docentes"
             </Typography>
         </Box>
     </Box>
@@ -57,14 +57,14 @@ const HeaderSection = () => (
 const FooterSection = () => (
     <Box
         sx={{
-            height: '15vh', // Reducido
+            height: '5vh', 
             backgroundColor: '#D32F2F',
             color: 'white',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             textAlign: 'center',
-            padding: 2, // Reducido
+            padding: 2, 
         }}
     >
         <Typography variant="body2">Copyright © 2025 | Universidad Autónoma Tomás Frías</Typography>
