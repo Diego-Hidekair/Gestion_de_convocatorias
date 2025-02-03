@@ -1,7 +1,7 @@
 // backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
-const getConvocatoriaMaterias = async (req, res) => {//obetner los datos de convocatoria materia
+const getConvocatoriaMaterias = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
         const result = await pool.query(`
@@ -26,7 +26,7 @@ const getConvocatoriaMaterias = async (req, res) => {//obetner los datos de conv
     }
 };
 
-const getConvocatoriaMateriaById = async (req, res) => {// obtener una relación convocatoria-materia específica por id_convocatoria y id_materia
+const getConvocatoriaMateriaById = async (req, res) => {
     const { id_convocatoria, id_materia } = req.params;
     try {
         const result = await pool.query(`
@@ -51,12 +51,11 @@ const getConvocatoriaMateriaById = async (req, res) => {// obtener una relación
     }
 };
 
-const createConvocatoriaMateriaMultiple = async (req, res) => {//crea una nueva convocatorias-materias
+const createConvocatoriaMateriaMultiple = async (req, res) => {
     const { id_convocatoria, materiasSeleccionadas, perfil_profesional } = req.body;
     try {
         let idsMaterias = [];
         
-        // Calcular el total de horas y realizar las inserciones
         for (const id_materia of materiasSeleccionadas) {
             const materiaResult = await pool.query(`
                 SELECT total_horas 
@@ -87,7 +86,7 @@ const createConvocatoriaMateriaMultiple = async (req, res) => {//crea una nueva 
     }
 };
 
-const updateConvocatoriaMateria = async (req, res) => {//actualizar
+const updateConvocatoriaMateria = async (req, res) => {
     const { id_convocatoria, id_materia } = req.params;
     const { perfil_profesional } = req.body;
     try {
@@ -108,7 +107,7 @@ const updateConvocatoriaMateria = async (req, res) => {//actualizar
     }
 };
 
-const deleteConvocatoriaMateria = async (req, res) => {//eliminar
+const deleteConvocatoriaMateria = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM convocatorias_materias WHERE id_materias = $1 RETURNING *', [id]);
@@ -128,7 +127,6 @@ const deleteConvocatoriaMateria = async (req, res) => {//eliminar
 const getMateriasByCarrera = async (req, res) => {
     const { id_convocatoria } = req.params;
     try {
-        // Obtén el id_carrera de la convocatoria
         const carreraResult = await pool.query(`
             SELECT id_carrera 
             FROM convocatorias 
@@ -140,7 +138,6 @@ const getMateriasByCarrera = async (req, res) => {
         }
         const id_carrera = carreraResult.rows[0].id_carrera;
 
-        // Filtra las materias por carrera
         const materiasResult = await pool.query(`
             SELECT m.id_materia, m.nombre, m.total_horas
             FROM planes.pln_materias m
@@ -158,4 +155,4 @@ const getMateriasByCarrera = async (req, res) => {
     }
 };
 
-module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria }; 
+module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria, getMateriasByCarrera  }

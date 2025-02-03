@@ -10,6 +10,6 @@ router.post('/multiple', authenticateToken, verificarRolSecretaria, convocatoria
 router.delete('/:id_materias', authenticateToken, authorizeAdmin, convocatoriaMateriaController.deleteConvocatoriaMateria); // solo para admin
 router.get('/convocatoria-materias/:id_convocatoria/:id_materias', authenticateToken, convocatoriaMateriaController.getConvocatoriaMateriaById); // acceso tanto para admin como secretaria
 router.put('/:id_convocatoria/:id_materia', authenticateToken, verificarRolSecretaria, convocatoriaMateriaController.updateConvocatoriaMateria); // solo para admin y secretaria
+router.get('/materias/carrera/:id_convocatoria', convocatoriaMateriaController.getMateriasByCarrera); // Usa la función directamente
 
 module.exports = router;
-

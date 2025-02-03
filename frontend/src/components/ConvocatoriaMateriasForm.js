@@ -62,6 +62,20 @@ const ConvocatoriaMateriasForm = () => {
             console.error(err);
         }
     };
+    useEffect(() => {
+        const fetchMateriasPorCarrera = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/materias/carrera/${id_convocatoria}`);
+                setMaterias(response.data);
+            } catch (err) {
+                setError('Error al obtener las materias de la carrera');
+                console.error(err);
+            }
+        };
+    
+        fetchMateriasPorCarrera();
+    }, [id_convocatoria]);
+    
 
     const handleAddMateria = () => {
         const materia = materias.find((m) => m.id_materia === parseInt(materiaSeleccionada));
@@ -119,7 +133,7 @@ const ConvocatoriaMateriasForm = () => {
                         </Typography>
                         <List>
                             {materiasSeleccionadas.map((materia) => (
-                                <ListItem
+                                <ListItem 
                                     key={materia.id_materia}
                                     secondaryAction={
                                         <IconButton
