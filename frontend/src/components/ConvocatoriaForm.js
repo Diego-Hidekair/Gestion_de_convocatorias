@@ -244,7 +244,7 @@ const ConvocatoriaForm = () => {
                             <Grid item xs={6}>
                                 <TextField
                                     select
-                                    label="Prioridad"
+                                    label="Seleccionar numero de lanzamiento de convocatoria"
                                     fullWidth
                                     value={prioridad}
                                     onChange={(e) => {
@@ -254,6 +254,7 @@ const ConvocatoriaForm = () => {
                                 >
                                     <MenuItem value="Primera">Primera</MenuItem>
                                     <MenuItem value="Segunda">Segunda</MenuItem>
+                                    <MenuItem value="Segunda">Tercera</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={6}>

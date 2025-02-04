@@ -155,4 +155,4 @@ const getMateriasByCarrera = async (req, res) => {
     }
 };
 
-module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria, getMateriasByCarrera  }
+module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria, getMateriasByCarrera }
