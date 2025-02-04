@@ -126,23 +126,30 @@ const deleteConvocatoriaMateria = async (req, res) => {
 
 const getMateriasByCarrera = async (req, res) => {
     const { id_convocatoria } = req.params;
+    console.log("ID Convocatoria recibido:", id_convocatoria); 
     try {
-        const carreraResult = await pool.query(`
-            SELECT id_carrera 
+        // Obtén el id_programa de la convocatoria
+        const convocatoriaResult = await pool.query(`
+            SELECT id_programa 
             FROM convocatorias 
             WHERE id_convocatoria = $1
         `, [id_convocatoria]);
 
-        if (carreraResult.rows.length === 0) {
+        console.log("Resultado de la convocatoria:", convocatoriaResult.rows); 
+
+        if (convocatoriaResult.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
-        const id_carrera = carreraResult.rows[0].id_carrera;
+        const id_programa = convocatoriaResult.rows[0].id_programa;
 
+        // Filtra las materias por programa (carrera)
         const materiasResult = await pool.query(`
             SELECT m.id_materia, m.nombre, m.total_horas
             FROM planes.pln_materias m
-            WHERE m.id_carrera = $1
-        `, [id_carrera]);
+            WHERE m.id_programa = $1
+        `, [id_programa]);
+
+        console.log("Resultado de las materias:", materiasResult.rows); 
 
         if (materiasResult.rows.length === 0) {
             return res.status(404).json({ error: 'No hay materias disponibles para esta carrera' });

@@ -11,24 +11,24 @@ const HonorariosForm = () => {
     const { id_convocatoria } = useParams();
     const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
-    const [idTipoConvocatoria, setIdTipoConvocatoria] = useState('');
     const [resolucion, setResolucion] = useState('');
     const [dictamen, setDictamen] = useState('');
-    const [tiposConvocatorias, setTiposConvocatorias] = useState([]);
+    const [nombreConvocatoria, setNombreConvocatoria] = useState('');
     const [error, setError] = useState(null);
 
-    // Obtener tipos de convocatorias
+    // Obtener el nombre del tipo de convocatoria
     useEffect(() => {
-        const fetchTiposConvocatorias = async () => {
+        const fetchNombreConvocatoria = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/tipos-convocatorias');
-                setTiposConvocatorias(response.data);
+                const response = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
+                setNombreConvocatoria(response.data.nombre_tipoconvocatoria);
             } catch (err) {
-                setError('Error al obtener los tipos de convocatorias. Por favor, inténtalo más tarde.');
+                setError('Error al obtener el tipo de convocatoria.');
             }
         };
-        fetchTiposConvocatorias();
-    }, []);
+
+        fetchNombreConvocatoria();
+    }, [id_convocatoria]);
 
     // Enviar los datos seleccionados 
     const handleSubmit = async (e) => {
@@ -42,19 +42,18 @@ const HonorariosForm = () => {
         try {
             const response = await axios.post('http://localhost:5000/honorarios', {
                 id_convocatoria,
-                id_tipoconvocatoria: idTipoConvocatoria,
                 pago_mensual: pagoMensual,
                 resolucion: resolucion,
                 dictamen: dictamen
             });
-    
+
             const { id_honorario } = response.data;
             navigate(`/pdf/generar/${id_convocatoria}/${id_honorario}`);
         } catch (error) {
             console.error('Error creando honorario:', error);
             setError('Error creando el honorario');
         }
-    };    
+    };
 
     const handleBack = () => {
         if (id_materia) {
@@ -70,23 +69,12 @@ const HonorariosForm = () => {
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <form onSubmit={handleSubmit}>
-                <div className="mb-3-honorarios">
-                    <label className="form-label-honorarios">Seleccionar Tipo de Convocatoria:</label>
-                    <select
-                        className="form-control-honorarios"
-                        value={idTipoConvocatoria}
-                        onChange={(e) => setIdTipoConvocatoria(e.target.value)}
-                        required
-                    >
-                        <option value="">Seleccione un tipo de convocatoria</option>
-                        {tiposConvocatorias.map((tipo) => (
-                            <option key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
-                                {tipo.nombre_convocatoria}
-                            </option>
-                        ))}
-                    </select>
+                {/* Mostrar el nombre del tipo de convocatoria */}
+                <div className="mb-3-honorarios" style={{ textAlign: 'center' }}>
+                    <label className="form-label-honorarios">Tipo de Convocatoria:</label>
+                    <h3 style={{ margin: '10px 0', color: '#333' }}>{nombreConvocatoria}</h3>
                 </div>
-                <br></br>
+
                 <div className="mb-3-honorarios">
                     <label className="form-label-honorarios">Pago Mensual:</label>
                     <input
@@ -123,7 +111,6 @@ const HonorariosForm = () => {
                 <br></br>
                 <button type="button" className="btn-honorarios btn-secondary-honorarios ml-2-honorarios" onClick={handleBack}>Volver</button>
                 <button type="submit" className="btn-honorarios btn-primary-honorarios">Siguiente</button>
-                
             </form>
         </div>
     );

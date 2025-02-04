@@ -46,20 +46,32 @@ const getHonorarioById = async (req, res) => {
 
 // Crear un nuevo honorario
 const crearHonorario = async (req, res) => {
-    const { id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen } = req.body;
+    const { id_convocatoria, pago_mensual, resolucion, dictamen } = req.body;
     try {
+        const convocatoriaResult = await pool.query(`
+            SELECT c.id_tipoconvocatoria, tc.nombre_convocatoria 
+            FROM convocatorias c
+            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            WHERE c.id_convocatoria = $1
+        `, [id_convocatoria]);
+
+        if (convocatoriaResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+        const { id_tipoconvocatoria, nombre_convocatoria } = convocatoriaResult.rows[0];
         const result = await pool.query(`
             INSERT INTO honorarios (id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen) 
             VALUES ($1, $2, $3, $4, $5) RETURNING *
         `, [id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen]);
-        
-        res.status(201).json(result.rows[0]);
+        res.status(201).json({
+            ...result.rows[0],
+            nombre_convocatoria: nombre_convocatoria
+        });
     } catch (error) {
         console.error('Error creando honorarios:', error);
         res.status(500).json({ error: 'Error en el servidor' });
     }
 };
-
 // Actualizar un honorario existente
 const updateHonorario = async (req, res) => {
     const { id } = req.params;

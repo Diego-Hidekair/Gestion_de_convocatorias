@@ -52,11 +52,6 @@ const routes = [
 // Rutas de la API
 routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));
 
-// Nueva ruta para actualizar el estado de la convocatoria
-// Ya existe en `convocatoriaRoutes.js` como un PATCH, no es necesario repetirla aquí
-// const { updateEstadoConvocatoria } = require('./controllers/convocatoriaController');
-// app.patch('/convocatorias/:id/estado', authenticateToken, updateEstadoConvocatoria); // Comentado, ya está en las rutas
-
 // Ruta de verificación
 app.get('/', (req, res) => {
     res.send('API funcionando correctamente');

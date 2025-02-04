@@ -39,9 +39,9 @@ const ConvocatoriaMateriasForm = () => {
             setError('Por favor, complete todos los campos');
             return;
         }
-
+    
         const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
-
+    
         try {
             const response = await axios.post('http://localhost:5000/convocatoria-materias/multiple', {
                 id_convocatoria,
@@ -49,7 +49,7 @@ const ConvocatoriaMateriasForm = () => {
                 perfil_profesional: perfilProfesional,
                 tiempo_trabajo: tiempoTrabajo,
             });
-
+    
             alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
             const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
             if (firstIdMateria) {
@@ -65,7 +65,7 @@ const ConvocatoriaMateriasForm = () => {
     useEffect(() => {
         const fetchMateriasPorCarrera = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/materias/carrera/${id_convocatoria}`);
+                const response = await axios.get(`http://localhost:5000/convocatoria-materias/materias/carrera/${id_convocatoria}`);
                 setMaterias(response.data);
             } catch (err) {
                 setError('Error al obtener las materias de la carrera');
@@ -75,7 +75,6 @@ const ConvocatoriaMateriasForm = () => {
     
         fetchMateriasPorCarrera();
     }, [id_convocatoria]);
-    
 
     const handleAddMateria = () => {
         const materia = materias.find((m) => m.id_materia === parseInt(materiaSeleccionada));
@@ -177,3 +176,5 @@ const ConvocatoriaMateriasForm = () => {
 };
 
 export default ConvocatoriaMateriasForm;
+
+
