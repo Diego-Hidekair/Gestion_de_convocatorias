@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent } from '@mui/material';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
-//import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
@@ -18,7 +17,7 @@ const ConvocatoriaForm = () => {
         id_tipoconvocatoria: '',
         id_programa: '',
         id_facultad: '',
-    }); 
+    });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carrerasFiltradas, setCarrerasFiltradas] = useState([]);
@@ -30,6 +29,9 @@ const ConvocatoriaForm = () => {
     const currentYear = new Date().getFullYear();
 
     useEffect(() => {
+        // Guardar la página actual en localStorage
+        localStorage.setItem('currentPage', '/convocatorias/new');
+
         const today = new Date();
         if (!id) {
             setConvocatoria((prevConvocatoria) => ({
@@ -140,12 +142,42 @@ const ConvocatoriaForm = () => {
             } else {
                 const response = await axios.post('http://localhost:5000/convocatorias', formattedConvocatoria);
                 const newConvocatoriaId = response.data.id_convocatoria;
+
+                localStorage.removeItem('convocatoriaState');
+                localStorage.setItem('currentPage', `/convocatorias_materias/new/${newConvocatoriaId}`);
                 navigate(`/convocatorias_materias/new/${newConvocatoriaId}`);
             }
         } catch (error) {
             console.error('Error submitting form:', error);
             alert('Hubo un error al crear la convocatoria. Por favor, revisa los datos.');
         }
+    };
+
+    useEffect(() => {
+        if (convocatoria.nombre && convocatoria.fecha_inicio && convocatoria.fecha_fin) {
+            localStorage.setItem('convocatoriaState', JSON.stringify(convocatoria));
+        }
+    }, [convocatoria]);
+
+    useEffect(() => {
+        const savedState = JSON.parse(localStorage.getItem('convocatoriaState'));
+        if (savedState) {
+            setConvocatoria(savedState);
+        }
+    }, []);
+
+    const handleCancel = () => {
+        localStorage.removeItem('convocatoriaState');
+        localStorage.removeItem('currentPage');
+        setConvocatoria({
+            nombre: '',
+            fecha_inicio: null,
+            fecha_fin: null,
+            id_tipoconvocatoria: '',
+            id_programa: '',
+            id_facultad: '',
+        });
+        navigate('/');
     };
 
     return (
@@ -179,7 +211,6 @@ const ConvocatoriaForm = () => {
                                     fullWidth
                                     value={convocatoria.nombre}
                                     InputProps={{ readOnly: true }}
-      
                                     required
                                 />
                             </Grid>
@@ -194,7 +225,7 @@ const ConvocatoriaForm = () => {
                                         value={convocatoria.fecha_inicio}
                                         onChange={(date) => handleDateChange('fecha_inicio', date)}
                                         inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => <TextField {...params} fullWidthstyle={{ borderRadius: '10px' }}/>}
+                                        renderInput={(params) => <TextField {...params} fullWidth style={{ borderRadius: '10px' }} />}
                                     />
                                 </LocalizationProvider>
                             </Grid>
@@ -209,7 +240,7 @@ const ConvocatoriaForm = () => {
                                         value={convocatoria.fecha_fin}
                                         onChange={(date) => handleDateChange('fecha_fin', date)}
                                         inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => <TextField {...params} fullWidthstyle={{ borderRadius: '10px' }} />}
+                                        renderInput={(params) => <TextField {...params} fullWidth style={{ borderRadius: '10px' }} />}
                                     />
                                 </LocalizationProvider>
                             </Grid>
@@ -254,7 +285,7 @@ const ConvocatoriaForm = () => {
                                 >
                                     <MenuItem value="Primera">Primera</MenuItem>
                                     <MenuItem value="Segunda">Segunda</MenuItem>
-                                    <MenuItem value="Segunda">Tercera</MenuItem>
+                                    <MenuItem value="Tercera">Tercera</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={6}>
@@ -275,6 +306,9 @@ const ConvocatoriaForm = () => {
                             <Grid item xs={12} align="center">
                                 <Button variant="contained" color="primary" type="submit">
                                     {id ? 'Actualizar' : 'Siguiente'}
+                                </Button>
+                                <Button variant="contained" color="secondary" onClick={handleCancel} style={{ marginLeft: '10px' }}>
+                                    Cancelar
                                 </Button>
                             </Grid>
                         </Grid>

@@ -1,0 +1,14 @@
+
+Esto es totalmente posible. Podemos implementar una lógica que guarde no solo los datos en localStorage, sino también la página actual en la que el usuario se encuentra. Luego, al cargar la aplicación, verificaremos en qué página estaba el usuario y lo redirigiremos automáticamente.
+
+Implementación
+Vamos a modificar el código para guardar la página actual en localStorage y redirigir al usuario a esa página al recargar.
+
+1. Guardar la página actual en localStorage
+En cada página, guardaremos la ruta actual en localStorage cuando el usuario avance o recargue la página.
+
+2. Redirigir al usuario al cargar la aplicación
+Al cargar la aplicación, verificaremos la ruta guardada en localStorage y redirigiremos al usuario a esa página.
+
+Código Actualizado
+ConvocatoriaForm.js

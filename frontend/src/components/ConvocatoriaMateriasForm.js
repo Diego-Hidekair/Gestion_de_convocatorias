@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';  
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const ConvocatoriaMateriasForm = () => {
     const { id_convocatoria } = useParams();
@@ -16,6 +16,8 @@ const ConvocatoriaMateriasForm = () => {
     const [totalHoras, setTotalHoras] = useState(0);
 
     useEffect(() => {
+        localStorage.setItem('currentPage', `/convocatorias_materias/new/${id_convocatoria}`);
+
         const fetchMaterias = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/materias');
@@ -26,7 +28,7 @@ const ConvocatoriaMateriasForm = () => {
             }
         };
         fetchMaterias();
-    }, []);
+    }, [id_convocatoria]);
 
     useEffect(() => {
         const total = materiasSeleccionadas.reduce((acc, materia) => acc + materia.total_horas, 0);
@@ -39,9 +41,9 @@ const ConvocatoriaMateriasForm = () => {
             setError('Por favor, complete todos los campos');
             return;
         }
-    
+
         const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
-    
+
         try {
             const response = await axios.post('http://localhost:5000/convocatoria-materias/multiple', {
                 id_convocatoria,
@@ -49,9 +51,12 @@ const ConvocatoriaMateriasForm = () => {
                 perfil_profesional: perfilProfesional,
                 tiempo_trabajo: tiempoTrabajo,
             });
-    
+
             alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
             const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
+
+            localStorage.removeItem('materiasState');
+            localStorage.setItem('currentPage', `/honorarios/new/${id_convocatoria}/${firstIdMateria}`);
             if (firstIdMateria) {
                 navigate(`/honorarios/new/${id_convocatoria}/${firstIdMateria}`);
             } else {
@@ -62,6 +67,7 @@ const ConvocatoriaMateriasForm = () => {
             console.error(err);
         }
     };
+
     useEffect(() => {
         const fetchMateriasPorCarrera = async () => {
             try {
@@ -72,7 +78,7 @@ const ConvocatoriaMateriasForm = () => {
                 console.error(err);
             }
         };
-    
+
         fetchMateriasPorCarrera();
     }, [id_convocatoria]);
 
@@ -90,6 +96,26 @@ const ConvocatoriaMateriasForm = () => {
         if (window.confirm('¿Estás seguro de que deseas eliminar esta materia?')) {
             setMateriasSeleccionadas(materiasSeleccionadas.filter((m) => m.id_materia !== id_materia));
         }
+    };
+
+    useEffect(() => {
+        if (materiasSeleccionadas.length > 0) {
+            localStorage.setItem('materiasState', JSON.stringify(materiasSeleccionadas));
+        }
+    }, [materiasSeleccionadas]);
+
+    useEffect(() => {
+        const savedState = JSON.parse(localStorage.getItem('materiasState'));
+        if (savedState) {
+            setMateriasSeleccionadas(savedState);
+        }
+    }, []);
+
+    const handleCancel = () => {
+        localStorage.removeItem('materiasState');
+        localStorage.removeItem('currentPage');
+        setMateriasSeleccionadas([]);
+        navigate('/');
     };
 
     return (
@@ -132,7 +158,7 @@ const ConvocatoriaMateriasForm = () => {
                         </Typography>
                         <List>
                             {materiasSeleccionadas.map((materia) => (
-                                <ListItem 
+                                <ListItem
                                     key={materia.id_materia}
                                     secondaryAction={
                                         <IconButton
@@ -169,6 +195,9 @@ const ConvocatoriaMateriasForm = () => {
                     <Button variant="contained" color="primary" type="submit" fullWidth>
                         Siguiente
                     </Button>
+                    <Button variant="contained" color="secondary" onClick={handleCancel} fullWidth sx={{ mt: 2 }}>
+                        Cancelar
+                    </Button>
                 </form>
             </Paper>
         </Container>
@@ -176,5 +205,3 @@ const ConvocatoriaMateriasForm = () => {
 };
 
 export default ConvocatoriaMateriasForm;
-
-

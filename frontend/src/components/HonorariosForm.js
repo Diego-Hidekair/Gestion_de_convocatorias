@@ -16,8 +16,10 @@ const HonorariosForm = () => {
     const [nombreConvocatoria, setNombreConvocatoria] = useState('');
     const [error, setError] = useState(null);
 
-    // Obtener el nombre del tipo de convocatoria
     useEffect(() => {
+        // Guardar la página actual en localStorage
+        localStorage.setItem('currentPage', `/honorarios/new/${id_convocatoria}/${id_materia}`);
+
         const fetchNombreConvocatoria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
@@ -28,9 +30,8 @@ const HonorariosForm = () => {
         };
 
         fetchNombreConvocatoria();
-    }, [id_convocatoria]);
+    }, [id_convocatoria, id_materia]);
 
-    // Enviar los datos seleccionados 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -48,6 +49,10 @@ const HonorariosForm = () => {
             });
 
             const { id_honorario } = response.data;
+
+            // Borrar el estado de localStorage antes de avanzar
+            localStorage.removeItem('honorariosState');
+            localStorage.removeItem('currentPage');
             navigate(`/pdf/generar/${id_convocatoria}/${id_honorario}`);
         } catch (error) {
             console.error('Error creando honorario:', error);
@@ -63,13 +68,37 @@ const HonorariosForm = () => {
         }
     };
 
+    useEffect(() => {
+        if (pagoMensual || resolucion || dictamen) {
+            const honorariosState = { pagoMensual, resolucion, dictamen };
+            localStorage.setItem('honorariosState', JSON.stringify(honorariosState));
+        }
+    }, [pagoMensual, resolucion, dictamen]);
+
+    useEffect(() => {
+        const savedState = JSON.parse(localStorage.getItem('honorariosState'));
+        if (savedState) {
+            setPagoMensual(savedState.pagoMensual);
+            setResolucion(savedState.resolucion);
+            setDictamen(savedState.dictamen);
+        }
+    }, []);
+
+    const handleCancel = () => {
+        localStorage.removeItem('honorariosState');
+        localStorage.removeItem('currentPage');
+        setPagoMensual('');
+        setResolucion('');
+        setDictamen('');
+        navigate('/');
+    };
+
     return (
         <div className="container-honorarios mt-4-honorarios">
             <h2 className="titulo-honorario">Crear Honorario</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <form onSubmit={handleSubmit}>
-                {/* Mostrar el nombre del tipo de convocatoria */}
                 <div className="mb-3-honorarios" style={{ textAlign: 'center' }}>
                     <label className="form-label-honorarios">Tipo de Convocatoria:</label>
                     <h3 style={{ margin: '10px 0', color: '#333' }}>{nombreConvocatoria}</h3>
@@ -86,7 +115,7 @@ const HonorariosForm = () => {
                         required
                     />
                 </div>
-                <br></br>
+                <br />
                 <div className="mb-3-honorarios">
                     <label className="form-label-honorarios">Resolución:</label>
                     <input
@@ -97,7 +126,7 @@ const HonorariosForm = () => {
                         placeholder="Ingrese el número de resolución"
                     />
                 </div>
-                <br></br>
+                <br />
                 <div className="mb-3-honorarios">
                     <label className="form-label-honorarios">Dictamen:</label>
                     <input
@@ -108,12 +137,14 @@ const HonorariosForm = () => {
                         placeholder="Ingrese el número de dictamen"
                     />
                 </div>
-                <br></br>
+                <br />
                 <button type="button" className="btn-honorarios btn-secondary-honorarios ml-2-honorarios" onClick={handleBack}>Volver</button>
                 <button type="submit" className="btn-honorarios btn-primary-honorarios">Siguiente</button>
+                <button type="button" className="btn-honorarios btn-danger-honorarios ml-2-honorarios" onClick={handleCancel}>Cancelar</button>
             </form>
         </div>
     );
 };
 
 export default HonorariosForm;
+
