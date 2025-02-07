@@ -14,8 +14,7 @@ const authenticateToken = (req, res, next) => {// autenticar el ingreso
     });
 };
 
-// Middleware para verificar que el usuario es administrador
-const authorizeAdmin = (req, res, next) => {
+const authorizeAdmin = (req, res, next) => {//verifica que el usuario es administrador
     console.log('Rol del usuario:', req.user.rol);
     if (req.user.rol !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden acceder a esta ruta.' });
@@ -23,8 +22,7 @@ const authorizeAdmin = (req, res, next) => {
     next();
 };
 
-// Middleware para verificar que el usuario tiene rol de "secretaria"
-const verificarRolSecretaria = (req, res, next) => {
+const verificarRolSecretaria = (req, res, next) => {// verifica que el usuario tiene rol de "secretaria"
     if (req.user.rol !== 'secretaria') {
         return res.status(403).json({ error: 'Acceso denegado: Rol no autorizado.' });
     }
@@ -50,4 +48,4 @@ function verificarRol(...rolesPermitidos) {
     };
 }
 
-module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol  };
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
