@@ -1,4 +1,4 @@
- // backend/controllers/pdfController.js
+// backend/controllers/pdfController.js
 const fs = require('fs');
 const { Pool } = require('pg');
 const pdf = require('html-pdf');
@@ -46,8 +46,6 @@ const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
         );
     }
 };
-
-
 
 exports.generatePDF = async (req, res) => {
     const { id_convocatoria, id_honorario } = req.params;
@@ -118,117 +116,114 @@ exports.generatePDF = async (req, res) => {
         const pdfBuffer = await generarPDFBuffer(htmlContent, options);
         console.log(`PDF generado, tamaño: ${pdfBuffer.length} bytes`);
 
-            await guardarDocumentoPDF(id_convocatoria, pdfBuffer);
+        await guardarDocumentoPDF(id_convocatoria, pdfBuffer);
 
-            res.status(201).json({ message: "PDF generado y almacenado correctamente." });
-        } catch (error) {
-            console.error('Error al generar PDF:', error);
-            res.status(500).json({ error: "Error al generar el PDF." });
-        }
-    };
+        res.status(201).json({ message: "PDF generado y almacenado correctamente." });
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        res.status(500).json({ error: "Error al generar el PDF." });
+    }
+};
 
-    function generateConsultoresLineaHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
-        return `
-        <html>
-                 <head>
-                 <style>
-                    body { 
-                            font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; 
-                        }
-
-                        h1 { 
-                            font-size: 24pt; 
-                            font-weight: bold; 
-                            text-align: center; 
-                            text-transform: uppercase; 
-                            margin-bottom: 20px; 
-                        }
-                        
-                        h2 { 
-                            font-size: 18pt; 
-                            font-weight: bold; 
-                            text-align: center; 
-                            text-transform: uppercase; 
-                            margin-bottom: 20px; 
-                        }
-                        h3 { 
-                            font-size: 14pt; 
-                            font-weight: bold; 
-                            text-align: left; 
-                            margin-bottom: 10px; 
-                        }
-                        p { 
-                            font-size: 12pt; 
-                            text-align: justify; 
-                            margin-bottom: 10px; 
-                        }
-                        .centrado { 
-                            text-align: center; 
-                        }
-                        .left-align { 
-                            text-align: left; 
-                        }
-                        table { 
-                            width: 100%; 
-                            border-collapse: collapse; 
-                            margin-top: 20px; 
-                            margin-bottom: 20px; 
-                        }
-                        th, td { 
-                            text-align: center; 
-                            border: 1px solid black; 
-                            padding: 8px; 
-                        }
-                        th { 
-                            background-color: #f2f2f2; 
-                        }
-                        .notas { 
-                            margin-top: 20px; 
-                        }
-                        strong { 
-                            font-weight: bold; 
-                        }
-                        u { 
-                            text-decoration: underline; 
-                        }
-                    </style>
+function generateConsultoresLineaHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
+    return `
+    <html>
+        <head>
+            <style>
+                body { 
+                    font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; 
+                }
+                h1 { 
+                    font-size: 24pt; 
+                    font-weight: bold; 
+                    text-align: center; 
+                    text-transform: uppercase; 
+                    margin-bottom: 20px; 
+                }
+                h2 { 
+                    font-size: 18pt; 
+                    font-weight: bold; 
+                    text-align: center; 
+                    text-transform: uppercase; 
+                    margin-bottom: 20px; 
+                }
+                h3 { 
+                    font-size: 14pt; 
+                    font-weight: bold; 
+                    text-align: left; 
+                    margin-bottom: 10px; 
+                }
+                p { 
+                    font-size: 12pt; 
+                    text-align: justify; 
+                    margin-bottom: 10px; 
+                }
+                .centrado { 
+                    text-align: center; 
+                }
+                .left-align { 
+                    text-align: left; 
+                }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-top: 20px; 
+                    margin-bottom: 20px; 
+                }
+                th, td { 
+                    text-align: center; 
+                    border: 1px solid black; 
+                    padding: 8px; 
+                }
+                th { 
+                    background-color: #f2f2f2; 
+                }
+                .notas { 
+                    margin-top: 20px; 
+                }
+                strong { 
+                    font-weight: bold; 
+                }
+                u { 
+                    text-decoration: underline; 
+                }
+            </style>
         </head>
- 
-                <body>
-                    <h1>${convocatoria.nombre}</h1>
-                    <h2>${convocatoria.nombre_convocatoria}</h2>
-                    <p>
-                        Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
-                        mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
-                        <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
-                        ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
-                        como Docente Consultor de Línea a <strong>${tiempoTrabajo}</strong> para la gestión académica 
-                        ${new Date().getMonth() < 5 ? 1 : 2}/2024.
-                    </p>
-                <h3>Tiempo de trabajo: ${tiempoTrabajo}</h3>
-                <h2>MATERIAS OBJETO DE LA CONVOCATORIA:</h2>
-                <p><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></p>
-                <table>
-                    <thead>
+        <body>
+            <h1>${convocatoria.nombre}</h1>
+            <h2>${convocatoria.nombre_convocatoria}</h2>
+            <p>
+                Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
+                mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
+                <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
+                ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
+                como Docente Consultor de Línea a <strong>${tiempoTrabajo}</strong> para la gestión académica 
+                ${new Date().getMonth() < 5 ? 1 : 2}/2024.
+            </p>
+            <h3>Tiempo de trabajo: ${tiempoTrabajo}</h3>
+            <h2>MATERIAS OBJETO DE LA CONVOCATORIA:</h2>
+            <p><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SIGLA</th>
+                        <th>MATERIA</th>
+                        <th>HORAS</th>
+                        <th>PERFIL REQUERIDO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${materias.map((m, index) => `
                         <tr>
-                            <th>SIGLA</th>
-                            <th>MATERIA</th>
-                            <th>HORAS</th>
-                            <th>PERFIL REQUERIDO</th>
+                            <td>${m.codigomateria}</td>
+                            <td>${m.materia}</td>
+                            <td>${m.total_horas}</td>
+                            ${index === 0 ? `<td rowspan="${materias.length}">${m.perfil_profesional}</td>` : ''}
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${materias.map((m, index) => `
-                            <tr>
-                                <td>${m.codigomateria}</td>
-                                <td>${m.materia}</td>
-                                <td>${m.total_horas}</td>
-                                ${index === 0 ? `<td rowspan="${materias.length}">${m.perfil_profesional}</td>` : ''}
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                 <h3>Total Horas: ${totalHoras}</h3>
+                    `).join('')}
+                </tbody>
+            </table>
+            <h3>Total Horas: ${totalHoras}</h3>
             <p class="notas">
                 Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por
                 la Universidad Boliviana que cumplan los requisitos mínimos habilitantes de acuerdo al
@@ -303,7 +298,7 @@ exports.generatePDF = async (req, res) => {
                 </tr>
                 <tr>
                     <td>Docente Consultor de Línea (${tiempoTrabajo})</td>
-                    <td>${pagoMensual}</td>
+                    <td>${honorarios.pago_mensual}</td>
                 </tr>
             </table>
             <p>Los honorarios del Consultor serán cancelados en forma mensual, previa presentación de 
@@ -357,111 +352,77 @@ exports.generatePDF = async (req, res) => {
         </body>    
     </html>
     `;
-    }
+}
 
+function generateOrdinarioHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
+    return `
+    <html>
+        <head>
+            <style>
+                body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
+                h1, h2 { text-align: center; text-transform: uppercase; }
+                p { text-align: justify; }
+                .centrado { text-align: center; }
+                .left-align { text-align: left; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { text-align: center; border: 1px solid black; padding: 8px; }
+                th { background-color: #f2f2f2; }
+                .notas { margin-top: 20px; }
+                strong { font-weight: bold; }
+                u { text-decoration: underline; }
+            </style>
+        </head>
+        <body>
+            <h1>${convocatoria.nombre}</h1>
+            <h2>${convocatoria.nombre_convocatoria}</h2>
+            <p>
+                Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
+                mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
+                <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
+                ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
+                como Docente Ordinario a <strong>${tiempoTrabajo}</strong> para la gestión académica 
+                ${new Date().getMonth() < 5 ? 1 : 2}/2024.
+            </p>
+            <!-- Resto del contenido para DOCENTE EN CALIDAD ORDINARIO -->
+        </body>
+    </html>
+    `;
+}
 
-    function generateOrdinarioHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
-        return `
-        <html>
-            <head>
-                <style>
-                    body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
-                    h1, h2 { text-align: center; text-transform: uppercase; }
-                    p { text-align: justify; }
-                    .centrado { text-align: center; }
-                    .left-align { text-align: left; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { text-align: center; border: 1px solid black; padding: 8px; }
-                    th { background-color: #f2f2f2; }
-                    .notas { margin-top: 20px; }
-                    strong { font-weight: bold; }
-                    u { text-decoration: underline; }
-                </style>
-            </head>
-            <body>
-                <h1>${convocatoria.nombre}</h1>
-                <h2>${convocatoria.nombre_convocatoria}</h2>
-                <p>
-                    Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
-                    mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
-                    <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
-                    ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
-                    como Docente Ordinario a <strong>${tiempoTrabajo}</strong> para la gestión académica 
-                    ${new Date().getMonth() < 5 ? 1 : 2}/2024.
-                </p>
-                <!-- Resto del contenido para DOCENTE EN CALIDAD ORDINARIO -->
-            </body>
-        </html>
-        `;
-    }
-
-    function generateExtraordinarioHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
-        return `
-        <html>
-            <head>
-                <style>
-                    body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
-                    h1, h2 { text-align: center; text-transform: uppercase; }
-                    p { text-align: justify; }
-                    .centrado { text-align: center; }
-                    .left-align { text-align: left; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { text-align: center; border: 1px solid black; padding: 8px; }
-                    th { background-color: #f2f2f2; }
-                    .notas { margin-top: 20px; }
-                    strong { font-weight: bold; }
-                    u { text-decoration: underline; }
-                </style>
-            </head>
-            <body>
-                <h1>${convocatoria.nombre}</h1>
-                <h2>${convocatoria.nombre_convocatoria}</h2>
-                <p>
-                    Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
-                    mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
-                    <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
-                    ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
-                    como Docente Extraordinario a <strong>${tiempoTrabajo}</strong> para la gestión académica 
-                    ${new Date().getMonth() < 5 ? 1 : 2}/2024.
-                </p>
-                <!-- Resto del contenido para DOCENTE EN CALIDAD EXTRAORDINARIO -->
-            </body>
-        </html>
-        `;
-    }
-
-        
-    /*const options = { format: 'Letter', border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } };
-
-    const pdfBuffer = await generarPDFBuffer(htmlContent, options);
-
-    console.log(`PDF generado, tamaño: ${pdfBuffer.length} bytes`);
-
-    const documentoExistente = await pool.query(
-        `SELECT id_documentos FROM documentos WHERE id_convocatoria = $1`,
-        [id_convocatoria]
-    );*/
-
-        if (documentoExistente.rowCount > 0) {
-            console.log(`Actualizando documento existente para id_convocatoria: ${id_convocatoria}`);
-            await pool.query(
-                `UPDATE documentos SET documento_path = $1, fecha_generacion = CURRENT_TIMESTAMP WHERE id_convocatoria = $2`,
-                [pdfBuffer, id_convocatoria]
-            );
-        } else {
-            console.log(`Insertando nuevo documento para id_convocatoria: ${id_convocatoria}`);
-            await pool.query(
-                `INSERT INTO documentos (documento_path, id_convocatoria) VALUES ($1, $2)`,
-                [pdfBuffer, id_convocatoria]
-            );
-        }
-
-        res.status(201).json({ message: "PDF generado y almacenado correctamente." });
-    } catch (error) {
-        console.error('Error al generar PDF:', error);
-        res.status(500).json({ error: "Error al generar el PDF." });
-    }
-};
+function generateExtraordinarioHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
+    return `
+    <html>
+        <head>
+            <style>
+                body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
+                h1, h2 { text-align: center; text-transform: uppercase; }
+                p { text-align: justify; }
+                .centrado { text-align: center; }
+                .left-align { text-align: left; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { text-align: center; border: 1px solid black; padding: 8px; }
+                th { background-color: #f2f2f2; }
+                .notas { margin-top: 20px; }
+                strong { font-weight: bold; }
+                u { text-decoration: underline; }
+            </style>
+        </head>
+        <body>
+            <h1>${convocatoria.nombre}</h1>
+            <h2>${convocatoria.nombre_convocatoria}</h2>
+            <p>
+                Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
+                mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
+                <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
+                ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
+                como Docente Extraordinario a <strong>${tiempoTrabajo}</strong> para la gestión académica 
+                ${new Date().getMonth() < 5 ? 1 : 2}/2024.
+            </p>
+            <!-- Resto del contenido para DOCENTE EN CALIDAD EXTRAORDINARIO -->
+        </body>
+    </html>
+    `;
+}
 
 exports.viewCombinedPDF = async (req, res) => {
     const { id_convocatoria } = req.params;
@@ -489,7 +450,6 @@ exports.viewCombinedPDF = async (req, res) => {
         res.status(500).send('Error al recuperar el PDF combinado.');
     }
 };
-
 
 exports.downloadCombinedPDF = async (req, res) => {
     const { id_convocatoria } = req.params;
