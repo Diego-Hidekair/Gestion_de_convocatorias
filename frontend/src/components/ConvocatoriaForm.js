@@ -134,7 +134,7 @@ const ConvocatoriaForm = () => {
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
         };
-
+        console.log('Datos enviados:', formattedConvocatoria);
         try {
             if (id) {
                 await axios.put(`http://localhost:5000/convocatorias/${id}`, formattedConvocatoria);
