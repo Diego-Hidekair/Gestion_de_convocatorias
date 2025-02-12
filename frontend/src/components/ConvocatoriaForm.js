@@ -17,15 +17,15 @@ const ConvocatoriaForm = () => {
         id_tipoconvocatoria: '',
         id_programa: '',
         id_facultad: '',
+        horario: 'TIEMPO COMPLETO', // Nuevo campo
+        prioridad: 'PRIMERA', // Nuevo campo
+        gestion: 'GESTION 1', // Nuevo campo
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carrerasFiltradas, setCarrerasFiltradas] = useState([]);
     const [nombreFacultad, setNombreFacultad] = useState('');
     const [tituloConvocatoria, setTituloConvocatoria] = useState('');
-    const [prioridad, setPrioridad] = useState('PRIMERA');
-    const [horario, setHorario] = useState('TIEMPO COMPLETO');
-    const [gestion, setGestion] = useState('GESTION 1');
     const currentYear = new Date().getFullYear();
 
     useEffect(() => {
@@ -114,7 +114,7 @@ const ConvocatoriaForm = () => {
     const handleNombreAutoFill = () => {
         const programaNombre =
             carrerasFiltradas.find((p) => p.id_programa === parseInt(convocatoria.id_programa))?.nombre_carrera || '';
-        const nombreCompleto = `${prioridad} ${tituloConvocatoria} ${horario} PARA EL PROGRAMA DE ${programaNombre} ${gestion}/${currentYear}`;
+        const nombreCompleto = `${convocatoria.prioridad} ${tituloConvocatoria} ${convocatoria.horario} PARA EL PROGRAMA DE ${programaNombre} ${convocatoria.gestion}/${currentYear}`;
 
         setConvocatoria((prevConvocatoria) => ({
             ...prevConvocatoria,
@@ -128,12 +128,11 @@ const ConvocatoriaForm = () => {
 
         const formattedConvocatoria = {
             ...convocatoria,
-            prioridad,
-            horario,
-            gestion,
             fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
             fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
         };
+
+        console.log('Datos enviados:', formattedConvocatoria); // Verificar datos
 
         try {
             if (id) {
@@ -149,7 +148,7 @@ const ConvocatoriaForm = () => {
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            alert('Hubo un error al crear la convocatoria. Por favor, revisa los datos.');
+            alert(`Hubo un error al crear la convocatoria: ${error.response?.data?.error || error.message}`);
         }
     };
 
@@ -176,6 +175,9 @@ const ConvocatoriaForm = () => {
             id_tipoconvocatoria: '',
             id_programa: '',
             id_facultad: '',
+            horario: 'TIEMPO COMPLETO',
+            prioridad: 'PRIMERA',
+            gestion: 'GESTION 1',
         });
         navigate('/');
     };
@@ -275,17 +277,30 @@ const ConvocatoriaForm = () => {
                             <Grid item xs={6}>
                                 <TextField
                                     select
-                                    label="Seleccionar numero de lanzamiento de convocatoria"
+                                    label="Horario"
                                     fullWidth
-                                    value={prioridad}
-                                    onChange={(e) => {
-                                        setPrioridad(e.target.value);
-                                        handleNombreAutoFill();
-                                    }}
+                                    name="horario"
+                                    value={convocatoria.horario}
+                                    onChange={handleChange}
+                                    required
                                 >
-                                    <MenuItem value="Primera">Primera</MenuItem>
-                                    <MenuItem value="Segunda">Segunda</MenuItem>
-                                    <MenuItem value="Tercera">Tercera</MenuItem>
+                                    <MenuItem value="TIEMPO COMPLETO">Tiempo Completo</MenuItem>
+                                    <MenuItem value="MEDIO TIEMPO">Medio Tiempo</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    select
+                                    label="Prioridad"
+                                    fullWidth
+                                    name="prioridad"
+                                    value={convocatoria.prioridad}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <MenuItem value="PRIMERA">Primera</MenuItem>
+                                    <MenuItem value="SEGUNDA">Segunda</MenuItem>
+                                    <MenuItem value="TERCERA">Tercera</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={6}>
@@ -293,14 +308,13 @@ const ConvocatoriaForm = () => {
                                     select
                                     label="Gestión"
                                     fullWidth
-                                    value={gestion}
-                                    onChange={(e) => {
-                                        setGestion(e.target.value);
-                                        handleNombreAutoFill();
-                                    }}
+                                    name="gestion"
+                                    value={convocatoria.gestion}
+                                    onChange={handleChange}
+                                    required
                                 >
-                                    <MenuItem value="GESTION 1">GESTION 1</MenuItem>
-                                    <MenuItem value="GESTION 2">GESTION 2</MenuItem>
+                                    <MenuItem value="GESTION 1">Gestión 1</MenuItem>
+                                    <MenuItem value="GESTION 2">Gestión 2</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={12} align="center">

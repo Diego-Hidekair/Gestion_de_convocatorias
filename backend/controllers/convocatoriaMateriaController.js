@@ -6,7 +6,7 @@ const getConvocatoriaMaterias = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT cm.id_materias, cm.total_horas, cm.perfil_profesional, 
-                cm.tiempo_trabajo, 
+                cm.tiempo_trabajo,a
                 m.nombre AS nombre_materia,
                 c.nombre AS nombre_convocatoria
             FROM convocatorias_materias cm

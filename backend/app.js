@@ -6,7 +6,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
-
+const fileUpload = require('express-fileupload');
+ 
 // middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
 
@@ -32,6 +33,8 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
+app.use(fileUpload());
+
 
 // Rutas
 const routes = [
@@ -46,7 +49,8 @@ const routes = [
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
-    { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' }
+    { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
+    { path: '/convocatorias-archivos', route: './routes/convocatoriasArchivosRoutes' } 
 ];
 
 // Rutas de la API

@@ -28,6 +28,7 @@
     "dotenv": "^16.4.5",
     "esm": "^3.2.25",
     "express": "^4.20.0",
+    "express-fileupload": "^1.5.1",
     "file-upload": "^0.0.0",
     "html-pdf": "^3.0.1",
     "hummus": "^1.0.117",

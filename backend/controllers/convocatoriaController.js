@@ -12,7 +12,6 @@ const getConvocatorias = async (req, res) => {
                 c.fecha_fin, 
                 c.id_usuario, 
                 c.estado,
-                c.numero_lanzamiento_conv,
                 tc.nombre_convocatoria AS nombre_tipoconvocatoria, 
                 p.nombre_carrera AS nombre_programa,  
                 f.nombre_facultad AS nombre_facultad,  
@@ -148,41 +147,43 @@ const getConvocatoriasByEstado = async (req, res) => {// categorizar las convoca
     }
 };
 
-// Crear convocatoria
 const createConvocatoria = async (req, res) => {
+    console.log("Datos recibidos:", req.body);
     try {
         const id_usuario = req.user.id;
         const id_facultad = req.user.id_facultad; 
-        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, numero_lanzamiento_conv, gestion } = req.body;
+        const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, prioridad, gestion } = req.body;
         
-        if (!nombre || !fecha_inicio || !fecha_fin || !id_tipoconvocatoria || !id_programa || !id_facultad) {
+        console.log("Datos del usuario logeado:", req.user);
+        if (!nombre || !fecha_inicio || !fecha_fin || !id_tipoconvocatoria || !id_programa || !id_facultad || !prioridad || !gestion) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
         const result = await pool.query(`
             INSERT INTO convocatorias 
-            (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, numero_lanzamiento_conv, gestion) 
+            (horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING id_convocatoria, nombre, fecha_inicio, fecha_fin, id_usuario, estado
-        `, [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, numero_lanzamiento_conv, gestion]);
+        `, [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, id_usuario, prioridad, gestion]);
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error al crear la convocatoria:', error);
         res.status(500).send('Error al crear la convocatoria');
     }
 };
     
-// Actualizar convocatoria
+// actualizar
 const updateConvocatoria = async (req, res) => {
     const { id } = req.params;
-    const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, numero_lanzamiento_conv, gestion } = req.body;
+    const { horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion } = req.body;
     try {
         const result = await pool.query(`
             UPDATE convocatorias 
-            SET horario = $1, nombre = $2, fecha_inicio = $3, fecha_fin = $4, id_tipoconvocatoria = $5, id_programa = $6, id_facultad = $7, numero_lanzamiento_conv = $8, gestion = $9
+            SET horario = $1, nombre = $2, fecha_inicio = $3, fecha_fin = $4, id_tipoconvocatoria = $5, id_programa = $6, id_facultad = $7, prioridad = $8, gestion = $9
             WHERE id_convocatoria = $10 
             RETURNING id_convocatoria, nombre, fecha_inicio, fecha_fin, estado
-        `, [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, numero_lanzamiento_conv, gestion, id]);
+        `, [horario, nombre, fecha_inicio, fecha_fin, id_tipoconvocatoria, id_programa, id_facultad, prioridad, gestion, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
@@ -193,6 +194,7 @@ const updateConvocatoria = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 const updateEstadoConvocatoria = async (req, res) => {
     const { id } = req.params;
