@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
 const fileUpload = require('express-fileupload');
- 
+
 // middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
 

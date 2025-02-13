@@ -1,16 +1,34 @@
 // frontend/src/components/PDFGenerator.js
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Spinner } from 'reactstrap';
 import axios from 'axios';
-import '../styles/pdf.css';
+import {
+    Container,
+    Typography,
+    Button,
+    CircularProgress,
+    Box,
+    Paper,
+    Input,
+    FormControl,
+    FormLabel,
+    Alert,
+} from '@mui/material';
 
 const PDFGenerator = () => {
     const { id_convocatoria, id_honorario } = useParams();
     const [pdfUrl, setPdfUrl] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [archivosAdicionales, setArchivosAdicionales] = useState([]);
+    const [successMessage, setSuccessMessage] = useState(null); // Estado para el mensaje de éxito
+    const [archivos, setArchivos] = useState({
+        resolucion: null,
+        dictamen: null,
+        carta: null,
+        nota: null,
+        certificado_item: null,
+        certificado_resumen_presupuestario: null,
+    });
     const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
@@ -67,35 +85,39 @@ const PDFGenerator = () => {
     };
 
     const handleSubirArchivos = async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      archivosAdicionales.forEach((archivo) => {
-          formData.append('archivos', archivo); // Asegúrate de que el nombre del campo sea 'archivos'
-      });
-  
-      try {
-          const response = await axios.post(
-              `http://localhost:5000/pdf/combinar-y-guardar/${id_convocatoria}`,
-              formData,
-              {
-                  headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'multipart/form-data',
-                  },
-              }
-          );
-  
-          if (response.status === 201) {
-              console.log('Documentos adicionales subidos y combinados correctamente.');
-              await cargarPDF(); // Recargar el PDF combinado
-          } else {
-              setError('Error al subir documentos adicionales.');
-          }
-      } catch (error) {
-          console.error('Error al subir documentos adicionales:', error.message);
-          setError('Error al subir documentos adicionales. Verifica tu conexión o intenta más tarde.');
-      }
-  };
+        e.preventDefault();
+        const formData = new FormData();
+
+        // Agregar archivos al FormData si están presentes
+        for (const key in archivos) {
+            if (archivos[key]) {
+                formData.append(key, archivos[key]);
+            }
+        }
+
+        try {
+            const response = await axios.post(
+                `http://localhost:5000/pdf/combinar-y-guardar/${id_convocatoria}`,
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            if (response.status === 201) {
+                setSuccessMessage('Documentos subidos y combinados correctamente.'); // Mostrar mensaje de éxito
+                await cargarPDF(); // Recargar el PDF combinado
+            } else {
+                setError('Error al subir documentos adicionales.');
+            }
+        } catch (error) {
+            console.error('Error al subir documentos adicionales:', error.message);
+            setError('Error al subir documentos adicionales. Verifica tu conexión o intenta más tarde.');
+        }
+    };
 
     useEffect(() => {
         const iniciarProceso = async () => {
@@ -105,7 +127,7 @@ const PDFGenerator = () => {
         };
 
         iniciarProceso();
-    }, [id_convocatoria, id_honorario, token]);
+    }, [id_convocatoria, id_honorario, token, cargarPDF, generarPDF]);
 
     const handleDescargarPDF = async () => {
         try {
@@ -134,51 +156,72 @@ const PDFGenerator = () => {
 
     if (loading) {
         return (
-            <div className="loading-container">
-                <Spinner color="primary" />
-                <p>Generando y cargando PDF...</p>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="error-container">
-                <p className="error-message">{error}</p>
-                <button className="retry-button" onClick={() => window.location.reload()}>
-                    Reintentar
-                </button>
-            </div>
+            <Container>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+                    <CircularProgress />
+                    <Typography variant="body1" style={{ marginLeft: '10px' }}>
+                        Generando y cargando PDF...
+                    </Typography>
+                </Box>
+            </Container>
         );
     }
 
     return (
-        <div className="pdf-generator-container">
-            <h1 className="pdf-generator-title">Vista previa del PDF</h1>
-            {pdfUrl ? (
-                <div className="pdf-preview-container">
-                    <iframe title="Vista previa del PDF" src={pdfUrl} className="pdf-preview"></iframe>
-                </div>
-            ) : (
-                <p>No se pudo cargar el PDF.</p>
+        <Container>
+            <Typography variant="h4" align="center" gutterBottom>
+                Vista previa del PDF
+            </Typography>
+
+            {successMessage && (
+                <Alert severity="success" style={{ marginBottom: '20px' }}>
+                    {successMessage}
+                </Alert>
             )}
-            <form onSubmit={handleSubirArchivos}>
-                <input
-                    type="file"
-                    multiple
-                    onChange={(e) => setArchivosAdicionales([...e.target.files])}
-                />
-                <button type="submit">Subir Documentos Adicionales</button>
-            </form>
-            <div className="button-group">
-                <button className="download-button" onClick={handleDescargarPDF}>
+
+            {pdfUrl ? (
+                <Paper elevation={3} style={{ padding: '20px', marginBottom: '20px' }}>
+                    <iframe
+                        title="Vista previa del PDF"
+                        src={pdfUrl}
+                        width="100%"
+                        height="600px"
+                        style={{ border: 'none' }}
+                    />
+                </Paper>
+            ) : (
+                <Typography variant="body1" align="center">
+                    No se pudo cargar el PDF.
+                </Typography>
+            )}
+
+            <Paper elevation={3} style={{ padding: '20px', marginBottom: '20px' }}>
+                <form onSubmit={handleSubirArchivos}>
+                    {Object.keys(archivos).map((key) => (
+                        <FormControl fullWidth key={key} style={{ marginBottom: '20px' }}>
+                            <FormLabel>{key.replace(/_/g, ' ').toUpperCase()}</FormLabel>
+                            <Input
+                                type="file"
+                                onChange={(e) => setArchivos({ ...archivos, [key]: e.target.files[0] })}
+                                inputProps={{ accept: '.pdf' }}
+                            />
+                        </FormControl>
+                    ))}
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
+                        Subir Archivos
+                    </Button>
+                </form>
+            </Paper>
+
+            <Box display="flex" justifyContent="space-between" marginBottom="20px">
+                <Button variant="contained" color="secondary" onClick={handleDescargarPDF}>
                     Descargar PDF
-                </button>
-                <button className="finish-button" onClick={handleTerminar}>
+                </Button>
+                <Button variant="contained" color="primary" onClick={handleTerminar}>
                     Terminar
-                </button>
-            </div>
-        </div>
+                </Button>
+            </Box>
+        </Container>
     );
 };
 

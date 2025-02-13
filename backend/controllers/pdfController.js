@@ -160,7 +160,7 @@
 
     function generateConsultoresLineaHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
         return `
-        html>
+        <html>
             <head>
                 <style>
                     body { 
@@ -415,26 +415,53 @@
 
     exports.combinarYGuardarPDFs = async (req, res) => {//combinado y guardado con los documentos que se suben 
         const { id_convocatoria } = req.params;
-        const { archivos } = req.body; 
 
-        try {
-            const documentoInicial = await pool.query(
-                `SELECT documento_path FROM documentos WHERE id_convocatoria = $1`,
-                [id_convocatoria]
-            );
-            if (documentoInicial.rows.length === 0) {
-                return res.status(404).json({ error: "Documento inicial no encontrado." });
-            }
-            const pdfInicial = documentoInicial.rows[0].documento_path;  //pdf generado
-            const archivosParaCombinar = [pdfInicial, ...archivos];         // Combinar PDFs
-            const pdfCombinado = await combinarPDFs(archivosParaCombinar); //pdf combinado
-            await guardarDocumentoPDF(id_convocatoria, pdfCombinado);
-            res.status(201).json({ message: "PDFs combinados y almacenados correctamente." });
-        } catch (error) {
-            console.error('Error al combinar y guardar PDFs:', error);
-            res.status(500).json({ error: "Error al combinar y guardar los PDFs." });
+    try {
+        // Verificar si hay archivos en la solicitud
+        if (!req.files) {
+            return res.status(400).json({ error: "No se subieron archivos." });
         }
-    };
+
+        const { resolucion, dictamen, carta, nota, certificado_item, certificado_resumen_presupuestario } = req.files;
+
+        // Crear un nuevo PDF combinado
+        const pdfDoc = await PDFDocument.create();
+
+        // Función para agregar páginas de un archivo PDF al PDF combinado
+        const agregarPaginas = async (archivo) => {
+            if (archivo) {
+                const pdfBytes = archivo.data;
+                const pdf = await PDFDocument.load(pdfBytes);
+                const pages = await pdfDoc.copyPages(pdf, pdf.getPageIndices());
+                pages.forEach((page) => pdfDoc.addPage(page));
+            }
+        };
+
+        // Agregar páginas de cada archivo al PDF combinado
+        await agregarPaginas(resolucion);
+        await agregarPaginas(dictamen);
+        await agregarPaginas(carta);
+        await agregarPaginas(nota);
+        await agregarPaginas(certificado_item);
+        await agregarPaginas(certificado_resumen_presupuestario);
+
+        // Guardar el PDF combinado en un buffer
+        const pdfBytes = await pdfDoc.save();
+
+        // Actualizar la tabla `documentos` con el PDF combinado
+        await pool.query(
+            `UPDATE documentos 
+             SET documento_path = $1 
+             WHERE id_convocatoria = $2`,
+            [pdfBytes, id_convocatoria]
+        );
+
+        res.status(201).json({ message: "Documentos subidos y combinados correctamente." });
+    } catch (error) {
+        console.error('Error al combinar y guardar PDFs:', error);
+        res.status(500).json({ error: "Error al combinar y guardar los PDFs." });
+    }
+};
 
     exports.viewCombinedPDF = async (req, res) => {
         const { id_convocatoria } = req.params;

@@ -8,33 +8,27 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-// Subir documentos adicionales
-exports.subirDocumentosAdicionales = async (req, res) => {
+exports.subirDocumentosAdicionales = async (req, res) => {//subir documentos extra
     const { id_convocatoria } = req.params;
 
     try {
-        // Verificar si se subieron archivos
         if (!req.files) {
             return res.status(400).json({ error: "No se subieron archivos." });
         }
-
-        // Extraer los archivos
         const { resolucion, dictamen, carta, nota, certificado_item, certificado_resumen_presupuestario } = req.files;
 
-        // Verificar si ya existe un registro en convocatorias_archivos para esta convocatoria
         const convocatoriaArchivoExistente = await pool.query(
             `SELECT id_conv_combinado FROM convocatorias_archivos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
 
         if (convocatoriaArchivoExistente.rowCount > 0) {
-            // Actualizar el registro existente
             await pool.query(
                 `UPDATE convocatorias_archivos 
                  SET resolucion = $1, dictamen = $2, carta = $3, nota = $4, certificado_item = $5, certificado_resumen_presupuestario = $6
                  WHERE id_convocatoria = $7`,
                 [
-                    resolucion?.data, // Usar .data para obtener el buffer del archivo
+                    resolucion?.data, 
                     dictamen?.data,
                     carta?.data,
                     nota?.data,
@@ -43,8 +37,7 @@ exports.subirDocumentosAdicionales = async (req, res) => {
                     id_convocatoria
                 ]
             );
-        } else {
-            // Insertar un nuevo registro
+        } else {//nuevo registro 
             await pool.query(
                 `INSERT INTO convocatorias_archivos 
                  (resolucion, dictamen, carta, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria) 
