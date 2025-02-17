@@ -65,7 +65,6 @@ const PDFGenerator = () => {
     const handleSubirArchivos = async (e) => {
         e.preventDefault();
     
-        // Verifica que haya archivos para subir
         if (archivosAdicionales.length === 0) {
             setError('No se han seleccionado archivos para subir.');
             return;
@@ -73,7 +72,7 @@ const PDFGenerator = () => {
     
         const formData = new FormData();
         archivosAdicionales.forEach((archivo) => {
-            formData.append('archivos', archivo); // Asegúrate de que el nombre 'archivos' coincida con el esperado en el backend
+            formData.append('archivos', archivo); 
         });
     
         try {
@@ -83,7 +82,7 @@ const PDFGenerator = () => {
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data', // Importante para enviar archivos
+                        'Content-Type': 'multipart/form-data', 
                     },
                 }
             );
