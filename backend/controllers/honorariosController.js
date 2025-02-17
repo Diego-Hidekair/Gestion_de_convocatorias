@@ -23,7 +23,7 @@ const getHonorarios = async (req, res) => {
 // Obtener un honorario por ID
 const getHonorarioById = async (req, res) => {
     const { id } = req.params;
-    try {
+    try { 
         const result = await pool.query(`
             SELECT h.id_honorario, h.id_convocatoria, h.id_tipoconvocatoria, h.pago_mensual,
                 c.nombre AS nombre_convocatoria, 

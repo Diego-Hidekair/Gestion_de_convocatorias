@@ -2,7 +2,7 @@
     const { Pool } = require('pg');
     const pdf = require('html-pdf');
     const { PDFDocument } = require('pdf-lib');
-    const path = require('path');
+    const path = require('path'); 
     const fs = require('fs');
 
     const pool = new Pool({
@@ -25,9 +25,10 @@
         });
     };
 
-    const combinarPDFs = async (pdfBuffers) => { //para poder combinar pdfs
+    const combinarPDFs = async (pdfBuffers) => { // combinar los pdfs
         const mergedPdf = await PDFDocument.create();
         for (const pdfBuffer of pdfBuffers) {
+            if (!pdfBuffer) continue; 
             const pdf = await PDFDocument.load(pdfBuffer);
             const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
             copiedPages.forEach((page) => mergedPdf.addPage(page));
@@ -160,7 +161,7 @@
 
     function generateConsultoresLineaHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
         return `
-        html>
+        <html>
             <head>
                 <style>
                     body { 
@@ -220,7 +221,7 @@
                     u { 
                         text-decoration: underline; 
                     }
-                </style>
+                </style> 
             </head>
             <body>
                 <h1>${convocatoria.nombre}</h1>
@@ -413,28 +414,55 @@
      
 
 
-    exports.combinarYGuardarPDFs = async (req, res) => {//combinado y guardado con los documentos que se suben 
+    exports.combinarYGuardarPDFs = async (req, res) => {
         const { id_convocatoria } = req.params;
-        const { archivos } = req.body; 
-
+        let { archivos } = req.body; // Se espera que `archivos` sea un array de buffers o base64
+    
         try {
+            if (!Array.isArray(archivos)) {
+                console.warn("Advertencia: `archivos` no es un array válido.");
+                archivos = [];
+            }
+    
+            // Obtener el PDF inicial desde la base de datos
             const documentoInicial = await pool.query(
                 `SELECT documento_path FROM documentos WHERE id_convocatoria = $1`,
                 [id_convocatoria]
             );
+    
             if (documentoInicial.rows.length === 0) {
                 return res.status(404).json({ error: "Documento inicial no encontrado." });
             }
-            const pdfInicial = documentoInicial.rows[0].documento_path;  //pdf generado
-            const archivosParaCombinar = [pdfInicial, ...archivos];         // Combinar PDFs
-            const pdfCombinado = await combinarPDFs(archivosParaCombinar); //pdf combinado
+    
+            // Convertir el PDF inicial de formato BYTEA a Buffer
+            const pdfInicial = documentoInicial.rows[0].documento_path;
+            if (!Buffer.isBuffer(pdfInicial)) {
+                console.error("El PDF inicial no está en formato Buffer.");
+                return res.status(500).json({ error: "El PDF inicial no está en el formato correcto." });
+            }
+    
+            // Convertir archivos adicionales (si están en base64 o string)
+            const archivosConvertidos = archivos.map((archivo) => {
+                if (typeof archivo === 'string') {
+                    return Buffer.from(archivo, 'base64'); // Convertir desde base64 si es necesario
+                }
+                return archivo; // Si ya es Buffer, se usa directamente
+            });
+    
+            // Combinar PDFs
+            const archivosParaCombinar = [pdfInicial, ...archivosConvertidos];
+            const pdfCombinado = await combinarPDFs(archivosParaCombinar);
+    
+            // Guardar el PDF combinado en la base de datos
             await guardarDocumentoPDF(id_convocatoria, pdfCombinado);
+    
             res.status(201).json({ message: "PDFs combinados y almacenados correctamente." });
         } catch (error) {
             console.error('Error al combinar y guardar PDFs:', error);
             res.status(500).json({ error: "Error al combinar y guardar los PDFs." });
         }
     };
+    
 
     exports.viewCombinedPDF = async (req, res) => {
         const { id_convocatoria } = req.params;
