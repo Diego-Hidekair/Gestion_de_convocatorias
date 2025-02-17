@@ -17,9 +17,9 @@ const ConvocatoriaForm = () => {
         id_tipoconvocatoria: '',
         id_programa: '',
         id_facultad: '',
-        horario: 'TIEMPO COMPLETO', // Nuevo campo
-        prioridad: 'PRIMERA', // Nuevo campo
-        gestion: 'GESTION 1', // Nuevo campo
+        horario: 'TIEMPO COMPLETO',
+        prioridad: 'PRIMERA', 
+        gestion: 'GESTION 1', 
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);

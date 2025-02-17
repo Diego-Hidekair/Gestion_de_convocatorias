@@ -1,61 +1,68 @@
-/* pdf.css */
+/* Estilos para el contenedor principal */
 .pdf-generator-container {
-    padding: 20px;
-    text-align: center;
-  }
-  
-  .pdf-generator-title {
-    margin-bottom: 20px;
-  }
-  
-  .pdf-preview-container {
-    margin: 20px auto;
-    width: 80%;
-    height: 600px;
-    border: 1px solid #ccc;
-  }
-  
-  .pdf-preview {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-  
-  .button-group {
-    margin-top: 20px;
-  }
-  
-  .download-button,
-  .finish-button {
-    margin: 0 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
-  
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
-  
-  .error-message {
-    color: red;
-    margin-bottom: 20px;
-  }
-  
-  .retry-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Estilos para el título */
+.pdf-generator-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Estilos para el diseño de dos columnas */
+.pdf-layout {
+  display: flex;
+  gap: 20px;
+}
+
+/* Estilos para la vista previa del PDF */
+.pdf-preview-container {
+  flex: 1;
+}
+
+.pdf-preview {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #ccc;
+}
+
+/* Estilos para la sección de subida de archivos */
+.upload-section {
+  flex: 1;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.upload-section h2 {
+  margin-bottom: 20px;
+}
+
+.upload-section input[type="file"] {
+  margin-bottom: 20px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.button-group button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.download-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.finish-button {
+  background-color: #dc3545;
+  color: white;
+}

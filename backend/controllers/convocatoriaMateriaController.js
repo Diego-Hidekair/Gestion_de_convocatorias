@@ -159,7 +159,7 @@ const getMateriasByCarrera = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener materias por carrera:', error);
         res.status(500).json({ error: 'Error en el servidor' });
-    }
+    } 
 };
 
 module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria, getMateriasByCarrera }

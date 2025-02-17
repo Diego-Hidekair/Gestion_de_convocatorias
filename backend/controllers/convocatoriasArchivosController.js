@@ -61,8 +61,7 @@ exports.subirDocumentosAdicionales = async (req, res) => {//subir documentos ext
     }
 };
 
-// Obtener documentos adicionales
-exports.obtenerDocumentosAdicionales = async (req, res) => {
+exports.obtenerDocumentosAdicionales = async (req, res) => {// obtener los documentos adiciconales
     const { id_convocatoria } = req.params;
 
     try {
@@ -82,8 +81,7 @@ exports.obtenerDocumentosAdicionales = async (req, res) => {
     }
 };
 
-// Eliminar documentos adicionales
-exports.eliminarDocumentosAdicionales = async (req, res) => {
+exports.eliminarDocumentosAdicionales = async (req, res) => {//eliminar 
     const { id_convocatoria } = req.params;
 
     try {

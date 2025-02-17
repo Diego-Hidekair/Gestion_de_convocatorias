@@ -2,7 +2,7 @@
     const { Pool } = require('pg');
     const pdf = require('html-pdf');
     const { PDFDocument } = require('pdf-lib');
-    const path = require('path');
+    const path = require('path'); 
     const fs = require('fs');
 
     const pool = new Pool({
@@ -25,9 +25,10 @@
         });
     };
 
-    const combinarPDFs = async (pdfBuffers) => { //para poder combinar pdfs
+    const combinarPDFs = async (pdfBuffers) => {
         const mergedPdf = await PDFDocument.create();
         for (const pdfBuffer of pdfBuffers) {
+            if (!pdfBuffer) continue; 
             const pdf = await PDFDocument.load(pdfBuffer);
             const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
             copiedPages.forEach((page) => mergedPdf.addPage(page));
@@ -35,12 +36,12 @@
         return await mergedPdf.save();
     };
 
-    const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {//para guardar o actualizar el documento en la DB
+    const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
         const documentoExistente = await pool.query(
             `SELECT id_documentos FROM documentos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
-
+    
         if (documentoExistente.rowCount > 0) {
             console.log(`Actualizando documento existente para id_convocatoria: ${id_convocatoria}`);
             await pool.query(
@@ -220,7 +221,7 @@
                     u { 
                         text-decoration: underline; 
                     }
-                </style>
+                </style> 
             </head>
             <body>
                 <h1>${convocatoria.nombre}</h1>
@@ -410,58 +411,41 @@
         </html>
         `;
     }
-     
-
-
-    exports.combinarYGuardarPDFs = async (req, res) => {//combinado y guardado con los documentos que se suben 
+    exports.combinarYGuardarPDFs = async (req, res) => {
         const { id_convocatoria } = req.params;
-
-    try {
-        // Verificar si hay archivos en la solicitud
-        if (!req.files) {
-            return res.status(400).json({ error: "No se subieron archivos." });
-        }
-
-        const { resolucion, dictamen, carta, nota, certificado_item, certificado_resumen_presupuestario } = req.files;
-
-        // Crear un nuevo PDF combinado
-        const pdfDoc = await PDFDocument.create();
-
-        // Función para agregar páginas de un archivo PDF al PDF combinado
-        const agregarPaginas = async (archivo) => {
-            if (archivo) {
-                const pdfBytes = archivo.data;
-                const pdf = await PDFDocument.load(pdfBytes);
-                const pages = await pdfDoc.copyPages(pdf, pdf.getPageIndices());
-                pages.forEach((page) => pdfDoc.addPage(page));
+        try {
+            if (!req.files || !req.files.archivos) {
+                console.warn("Advertencia: No se recibieron archivos.");
+                return res.status(400).json({ error: "No se recibieron archivos." });
             }
-        };
-
-        // Agregar páginas de cada archivo al PDF combinado
-        await agregarPaginas(resolucion);
-        await agregarPaginas(dictamen);
-        await agregarPaginas(carta);
-        await agregarPaginas(nota);
-        await agregarPaginas(certificado_item);
-        await agregarPaginas(certificado_resumen_presupuestario);
-
-        // Guardar el PDF combinado en un buffer
-        const pdfBytes = await pdfDoc.save();
-
-        // Actualizar la tabla `documentos` con el PDF combinado
-        await pool.query(
-            `UPDATE documentos 
-             SET documento_path = $1 
-             WHERE id_convocatoria = $2`,
-            [pdfBytes, id_convocatoria]
-        );
-
-        res.status(201).json({ message: "Documentos subidos y combinados correctamente." });
-    } catch (error) {
-        console.error('Error al combinar y guardar PDFs:', error);
-        res.status(500).json({ error: "Error al combinar y guardar los PDFs." });
-    }
-};
+            const archivos = Array.isArray(req.files.archivos) ? req.files.archivos : [req.files.archivos];
+            const documentoInicial = await pool.query(
+                `SELECT documento_path FROM documentos WHERE id_convocatoria = $1`,
+                [id_convocatoria]
+            );
+    
+            if (documentoInicial.rows.length === 0) {
+                return res.status(404).json({ error: "Documento inicial no encontrado." });
+            }
+            const pdfInicial = documentoInicial.rows[0].documento_path;
+            if (!Buffer.isBuffer(pdfInicial)) {
+                console.error("El PDF inicial no está en formato Buffer.");
+                return res.status(500).json({ error: "El PDF inicial no está en el formato correcto." });
+            }
+            const archivosConvertidos = archivos.map((archivo) => {
+                return archivo.data;
+            });
+            const archivosParaCombinar = [pdfInicial, ...archivosConvertidos];
+            const pdfCombinado = await combinarPDFs(archivosParaCombinar);
+            await guardarDocumentoPDF(id_convocatoria, pdfCombinado);
+    
+            res.status(201).json({ message: "PDFs combinados y almacenados correctamente." });
+        } catch (error) {
+            console.error('Error al combinar y guardar PDFs:', error);
+            res.status(500).json({ error: "Error al combinar y guardar los PDFs." });
+        }
+    };
+    
 
     exports.viewCombinedPDF = async (req, res) => {
         const { id_convocatoria } = req.params;
