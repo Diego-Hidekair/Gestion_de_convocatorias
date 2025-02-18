@@ -25,7 +25,7 @@
         });
     };
 
-    const combinarPDFs = async (pdfBuffers) => {
+    const combinarPDFs = async (pdfBuffers) => { // combinar los pdfs
         const mergedPdf = await PDFDocument.create();
         for (const pdfBuffer of pdfBuffers) {
             if (!pdfBuffer) continue; 
@@ -36,12 +36,12 @@
         return await mergedPdf.save();
     };
 
-    const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
+    const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {//para guardar o actualizar el documento en la DB
         const documentoExistente = await pool.query(
             `SELECT id_documentos FROM documentos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
-    
+
         if (documentoExistente.rowCount > 0) {
             console.log(`Actualizando documento existente para id_convocatoria: ${id_convocatoria}`);
             await pool.query(
@@ -229,7 +229,7 @@
                 <p>
                     Por determinación del Consejo de Carrera de <strong>${convocatoria.nombre_carrera}</strong>, 
                     mediante Dictamen N° <strong>${honorarios.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
-                    <strong>    </strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
+                    <strong>${honorarios.resolucion}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, se convoca a los profesionales en 
                     ${convocatoria.nombre_carrera} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
                     como Docente Consultor de Línea a <strong>${tiempoTrabajo}</strong> para la gestión académica 
                     ${new Date().getMonth() < 5 ? 1 : 2}/2024.
@@ -391,12 +391,119 @@
     function generateOrdinarioHTML(convocatoria, honorarios, materias, totalHoras, tiempoTrabajo) {
         return `
         <html>
-            <head>
-                nose que poner </head>
-                    <body>
-                    aqui deberia ir el cuerpo
-            </body>    
-        </html>
+    <head>
+        <style>
+            body { 
+                font-family: 'Times New Roman', Times, serif; 
+                line-height: 1.5; 
+                margin: 4cm 2cm 2cm 2cm; 
+            }
+            h1 { 
+                font-size: 12pt; 
+                font-weight: bold; 
+                text-align: center; 
+                text-transform: uppercase; 
+                margin-bottom: 20px; 
+            }
+            h2 { 
+                font-size: 12pt; 
+                font-weight: bold; 
+                text-align: center; 
+                margin-bottom: 20px; 
+            }
+            h3 { 
+                font-size: 14pt; 
+                font-weight: bold; 
+                text-align: left; 
+                margin-bottom: 10px; 
+            }
+            p { 
+                font-size: 12pt; 
+                text-align: justify; 
+                margin-bottom: 10px; 
+            }
+            .centrado { 
+                text-align: center; 
+            }
+            .left-align { 
+                text-align: left; 
+            }
+            table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-top: 20px; 
+                margin-bottom: 20px; 
+            }
+            th, td { 
+                text-align: center; 
+                border: 1px solid black; 
+                padding: 8px; 
+            }
+            th { 
+                background-color: #f2f2f2; 
+                font-weight: bold; 
+            }
+            .notas { 
+                margin-top: 20px; 
+            }
+            strong { 
+                font-weight: bold; 
+            }
+            u { 
+                text-decoration: underline; 
+            }
+        </style>
+    </head>
+    <body>
+        <h1>${convocatoria.nombre}</h1>
+        <h2>${convocatoria.nombre_convocatoria} / ${new Date().getFullYear()}</h2>
+        <p>
+            En aplicación de la Nota de Instrucción N° 001/2023 y N° 043/2023 emitidas por el Señor Rector de la Universidad, y por Dictamen de la Comisión Académica N° <strong>${honorarios.dictamen}</strong>/${new Date().getFullYear()} homologado por la Resolución del Honorable Consejo Universitario N° <strong>${honorarios.resolucion}</strong>/${new Date().getFullYear()} y cumpliendo con la normativa universitaria se convoca a los profesionales en <strong>${convocatoria.nombre_carrera}</strong>, al <strong>${convocatoria.prioridad}</strong> al <strong>CONCURSO DE MÉRITOS Y EXÁMENES DE COMPETENCIA</strong> para optar por la docencia universitaria en la categoría de Docente Ordinario en aplicación del Art. 70 del Reglamento del Régimen Académico Docente de la Universidad Boliviana, ingresando el ganador como docente Contratado, conforme lo dispone el Art. 72 del mismo cuerpo normativo, para luego ser sometido a evaluación continua y pasar a la categoría de titular, tal como lo establece el Art. 73 del Reglamento referido, como <strong>Docente Ordinario</strong> en la siguiente asignatura:
+        </p>
+
+        <h3><strong>1. MATERIA OBJETO DE LA ${convocatoria.prioridad} CONVOCATORIA:</strong></h3>
+        <p><strong>DOCENTES ORDINARIOS</strong></p>
+        <p><strong>Ítem N° ${tiempoTrabajo === 'Tiempo Horario' ? 'A' : 'B'} ${tiempoTrabajo}</strong></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th><strong>SIGLA</strong></th>
+                    <th><strong>ASIGNATURA</strong></th>
+                    <th><strong>HORAS SEMANA</strong></th>
+                    <th><strong>PERFIL PROFESIONAL</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${materias.map((m, index) => `
+                    <tr>
+                        <td>${m.codigomateria}</td>
+                        <td>${m.materia}</td>
+                        <td>${m.total_horas}</td>
+                        ${index === 0 ? `<td rowspan="${materias.length}">${m.perfil_profesional}</td>` : ''}
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <p>Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los siguientes requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
+
+        <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES</strong></h3>
+        <p><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de Derecho especificando la asignatura y sigla a la que postula.</p>
+        <p><strong>b)</strong> Curriculum vitae debidamente documentado, adjuntando fotocopias simples. El convocante se reservará el derecho de solicitar la presentación de los documentos originales. (Incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).</p>
+        <p><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana. (Art. 77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong> conforme a la Resolución Rectoral N° 410/2019.</p>
+        <p><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las Universidades del Sistema de la Universidad Boliviana. (Art.77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong> conforme a la Resolución Rectoral N° 410/2019.</p>
+        <p><strong>e)</strong> Fotocopia de la Cédula de Identidad, con verificación de datos por Secretaría General de la Universidad Autónoma "Tomás Frías" <strong>ACTUALIZADA</strong> conforme a la Resolución Rectoral N° 410/2019.</p>
+        <p><strong>f)</strong> Fotocopia del Título de Maestría, Doctorado y/o Diplomado en Educación Superior como mínimo, dictado o reconocido por el Sistema de la Universidad Boliviana, (Art. 71 inc. E y art. 77 inc. C.4 del Reglamento del Régimen Académico Docente de la Universidad Boliviana), legalizado por la Universidad que confirió dicho documento, debidamente actualizada.</p>
+        <p><strong>g)</strong> Acreditar experiencia profesional no menor a dos años, a partir de la obtención del Título en Provisión Nacional. (Art. 71 inc. c y art. 77 inc. c.3 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).</p>
+        <p><strong>h)</strong> Certificación actualizada de no tener procesos Universitarios otorgado por la Secretaria General de la Universidad Autónoma "Tomás Frías".</p>
+        <p><strong>i)</strong> Certificación actualizada de no tener antecedentes anti autonomistas, en nuestra Universidad, otorgado por la Secretaria General de la Universidad Autónoma "Tomás Frías".</p>
+        <p><strong>j)</strong> Plan de trabajo correspondiente a las materias que postula con un enfoque basado en competencias en la modalidad presencial y semi presencial, de acuerdo a las características de las asignaturas de la Carrera, este plan debe ser factible para los recursos con que cuenta la Universidad Autónoma "Tomás Frías" (art. 77 inc. c.8 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).</p>
+        <p><strong>k)</strong> Certificación actualizada de no tener cuentas pendientes con la Carrera o Universidad Autónoma "Tomás Frías" (cursos de Posgrado y otras obligaciones pendientes de pago o rendición de cuentas). Expedido por la Dirección Administrativa Financiera.</p>
+        <p><strong>l)</strong> Declaración Jurada, actualizada, ante Notario de Fe Pública de no estar comprendido dentro de las limitaciones establecidas en el artículo 12 (remuneración máxima en el sector público) y artículo 24 (doble percepción) del D.S. 3755 del 2 de enero de 2019.</p>
+        <p><strong>m)</strong> Certificado de curso (con carga horaria mínima de 40 horas) de manejo de entornos virtuales para la enseñanza virtual acorde al área de conocimiento que postula, dictado por una de las Universidades del Sistema de la Universidad Boliviana.</p>
+    </body>
+</html>
         `;
     }
 
@@ -411,14 +518,20 @@
         </html>
         `;
     }
+     
+
+
     exports.combinarYGuardarPDFs = async (req, res) => {
         const { id_convocatoria } = req.params;
+        let { archivos } = req.body; // Se espera que `archivos` sea un array de buffers o base64
+    
         try {
-            if (!req.files || !req.files.archivos) {
-                console.warn("Advertencia: No se recibieron archivos.");
-                return res.status(400).json({ error: "No se recibieron archivos." });
+            if (!Array.isArray(archivos)) {
+                console.warn("Advertencia: `archivos` no es un array válido.");
+                archivos = [];
             }
-            const archivos = Array.isArray(req.files.archivos) ? req.files.archivos : [req.files.archivos];
+    
+            // Obtener el PDF inicial desde la base de datos
             const documentoInicial = await pool.query(
                 `SELECT documento_path FROM documentos WHERE id_convocatoria = $1`,
                 [id_convocatoria]
@@ -427,16 +540,27 @@
             if (documentoInicial.rows.length === 0) {
                 return res.status(404).json({ error: "Documento inicial no encontrado." });
             }
+    
+            // Convertir el PDF inicial de formato BYTEA a Buffer
             const pdfInicial = documentoInicial.rows[0].documento_path;
             if (!Buffer.isBuffer(pdfInicial)) {
                 console.error("El PDF inicial no está en formato Buffer.");
                 return res.status(500).json({ error: "El PDF inicial no está en el formato correcto." });
             }
+    
+            // Convertir archivos adicionales (si están en base64 o string)
             const archivosConvertidos = archivos.map((archivo) => {
-                return archivo.data;
+                if (typeof archivo === 'string') {
+                    return Buffer.from(archivo, 'base64'); // Convertir desde base64 si es necesario
+                }
+                return archivo; // Si ya es Buffer, se usa directamente
             });
+    
+            // Combinar PDFs
             const archivosParaCombinar = [pdfInicial, ...archivosConvertidos];
             const pdfCombinado = await combinarPDFs(archivosParaCombinar);
+    
+            // Guardar el PDF combinado en la base de datos
             await guardarDocumentoPDF(id_convocatoria, pdfCombinado);
     
             res.status(201).json({ message: "PDFs combinados y almacenados correctamente." });
