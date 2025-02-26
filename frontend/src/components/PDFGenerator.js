@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
 import axios from 'axios';
 import '../styles/pdf.css'; 
-
 const PDFGenerator = () => {
     const { id_convocatoria, id_honorario } = useParams();
     const [pdfUrl, setPdfUrl] = useState(null);
@@ -18,16 +17,19 @@ const PDFGenerator = () => {
         console.error('Token no disponible. Redirigiendo al login.');
         navigate('/login');
     }
-
+      
     const generarPDF = async () => {
         try {
             const response = await axios.get(
                 `http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
+    
             if (response.status === 201) {
                 console.log('PDF generado correctamente.');
+                // Aquí puedes manejar la respuesta del backend, por ejemplo, descargar el PDF
+                const pdfUrl = response.data.pdf; // Asumiendo que el backend devuelve la URL del PDF
+                window.open(pdfUrl, '_blank'); // Abrir el PDF en una nueva pestaña
             } else {
                 setError('Error al generar el PDF. Inténtalo de nuevo.');
             }
@@ -46,7 +48,6 @@ const PDFGenerator = () => {
                     responseType: 'blob',
                 }
             );
-
             if (response.status === 200) {
                 const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
                 const pdfUrl = URL.createObjectURL(pdfBlob);
@@ -69,7 +70,10 @@ const PDFGenerator = () => {
             setError('No se han seleccionado archivos para subir.');
             return;
         }
-    
+        
+
+        
+
         const formData = new FormData();
         archivosAdicionales.forEach((archivo) => {
             formData.append('archivos', archivo); 

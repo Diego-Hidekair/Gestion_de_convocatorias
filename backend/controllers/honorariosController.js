@@ -72,7 +72,8 @@ const crearHonorario = async (req, res) => {
         res.status(500).json({ error: 'Error en el servidor' });
     }
 };
-// Actualizar un honorario existente
+
+// Actualizar un honorario existentex
 const updateHonorario = async (req, res) => {
     const { id } = req.params;
     const { id_convocatoria, id_tipoconvocatoria, pago_mensual, resolucion, dictamen } = req.body;
@@ -112,4 +113,4 @@ const deleteHonorario = async (req, res) => {
     }
 };
 
-module.exports = { getHonorarios, getHonorarioById, crearHonorario, updateHonorario, deleteHonorario }; 
+module.exports = { getHonorarios, getHonorarioById, crearHonorario, updateHonorario, deleteHonorario };

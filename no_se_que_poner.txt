@@ -1,167 +1,117 @@
-El error 404 (Not Found) indica que la ruta POST /pdf/combinar-y-guardar/99 no existe en tu backend. Esto ocurre porque no has definido la ruta correspondiente en tu archivo de rutas (pdfRoutes.js). Vamos a solucionar este problema paso a paso.
+No, el código que compartiste no necesariamente tiene que ser modificado por completo. De hecho, tu código actual ya tiene una buena estructura y puede ser adaptado para integrarse con el nuevo enfoque que te propuse. Vamos a analizar ambos códigos y ver cómo pueden coexistir o mejorarse sin afectar negativamente el funcionamiento actual.
 
-1. Verificar la Ruta en el Backend
-Primero, asegúrate de que la ruta POST /pdf/combinar-y-guardar/:id_convocatoria esté definida en tu archivo de rutas (pdfRoutes.js).
+Análisis de tu Código Actual
+Tu código actual hace una solicitud HTTP (axios.get) a una ruta específica (/pdf/generar/${id_convocatoria}/${id_honorario}) para generar el PDF. Esto significa que ya tienes un endpoint en tu backend que maneja la generación del PDF. Este enfoque es válido y puede mantenerse.
 
-pdfRoutes.js
+El código que te propuse es más detallado y muestra cómo podrías estructurar la lógica de generación del PDF directamente en el backend, incluyendo la obtención de datos de la base de datos y la generación del PDF.
+
+Integración de Ambos Enfoques
+Puedes mantener tu código actual y mejorarlo para que sea más robusto. Aquí te explico cómo:
+
+1. Mantener tu Lógica Actual
+Tu código actual es una llamada al backend para generar el PDF. Esto es útil si ya tienes un endpoint que maneja la generación del PDF. No es necesario cambiarlo, pero puedes mejorarlo para manejar errores y respuestas de manera más efectiva.
+
 javascript
 Copy
-
-
-
-
-2. Verificar el Controlador pdfController.js
-Asegúrate de que la función combinarYGuardarPDFs esté correctamente implementada en tu controlador.
-
-pdfController.js
-javascript
-Copy
-const { Pool } = require('pg');
-const { PDFDocument } = require('pdf-lib');
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-});
-
-// Función para combinar PDFs
-const combinarPDFs = async (pdfBuffers) => {
-    const mergedPdf = await PDFDocument.create();
-    for (const pdfBuffer of pdfBuffers) {
-        const pdf = await PDFDocument.load(pdfBuffer);
-        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        copiedPages.forEach((page) => mergedPdf.addPage(page));
-    }
-    return await mergedPdf.save();
-};
-
-// Combinar y guardar documentos adicionales
-exports.combinarYGuardarPDFs = async (req, res) => {
-    const { id_convocatoria } = req.params;
-    const archivos = req.files.archivos; // Archivos subidos
-
+const generarPDF = async () => {
     try {
-        // Obtener el documento inicial de la tabla documentos
-        const documentoInicial = await pool.query(
-            `SELECT documento_path FROM documentos WHERE id_convocatoria = $1`,
-            [id_convocatoria]
-        );
-
-        if (documentoInicial.rows.length === 0) {
-            return res.status(404).json({ error: "Documento inicial no encontrado." });
-        }
-
-        const pdfInicial = documentoInicial.rows[0].documento_path;
-
-        // Convertir los archivos subidos a buffers
-        const buffersAdicionales = await Promise.all(
-            archivos.map(async (archivo) => {
-                return archivo.buffer;
-            })
-        );
-
-        // Combinar PDFs
-        const archivosParaCombinar = [pdfInicial, ...buffersAdicionales];
-        const pdfCombinado = await combinarPDFs(archivosParaCombinar);
-
-        // Guardar el PDF combinado en la tabla documentos
-        await pool.query(
-            `UPDATE documentos SET documento_path = $1, fecha_generacion = CURRENT_TIMESTAMP WHERE id_convocatoria = $2`,
-            [pdfCombinado, id_convocatoria]
-        );
-
-        res.status(201).json({ message: "PDFs combinados y almacenados correctamente." });
-    } catch (error) {
-        console.error('Error al combinar y guardar PDFs:', error);
-        res.status(500).json({ error: "Error al combinar y guardar los PDFs." });
-    }
-};
-3. Configurar el Middleware de Subida de Archivos
-Asegúrate de que el middleware multer esté configurado correctamente para manejar la subida de archivos.
-
-middlewares/upload.js
-javascript
-Copy
-const multer = require('multer');
-const storage = multer.memoryStorage(); // Almacena los archivos en memoria como buffers
-const upload = multer({ storage: storage });
-
-module.exports = upload;
-Modificar pdfRoutes.js para Usar el Middleware
-javascript
-Copy
-const express = require('express');
-const router = express.Router();
-const pdfController = require('../controllers/pdfController');
-const { authenticateToken, verificarRolSecretaria } = require('../middleware/authMiddleware');
-const upload = require('../middlewares/upload');
-
-// Ruta para generar el PDF inicial
-router.get('/generar/:id_convocatoria/:id_honorario', authenticateToken, verificarRolSecretaria, pdfController.generatePDF);
-
-// Ruta para combinar y guardar documentos adicionales
-router.post('/combinar-y-guardar/:id_convocatoria', authenticateToken, verificarRolSecretaria, upload.array('archivos'), pdfController.combinarYGuardarPDFs);
-
-// Ruta para ver el PDF combinado
-router.get('/combinado/ver/:id_convocatoria', authenticateToken, pdfController.viewCombinedPDF);
-
-// Ruta para descargar el PDF combinado
-router.get('/descargar/:id_convocatoria', pdfController.downloadCombinedPDF);
-
-// Ruta para eliminar el PDF
-router.delete('/eliminar/:id_convocatoria', authenticateToken, verificarRolSecretaria, pdfController.deletePDF);
-
-module.exports = router;
-4. Verificar el Frontend
-Asegúrate de que el frontend esté enviando los archivos correctamente.
-
-PDFGenerator.js
-javascript
-Copy
-const handleSubirArchivos = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    archivosAdicionales.forEach((archivo) => {
-        formData.append('archivos', archivo); // Asegúrate de que el nombre del campo sea 'archivos'
-    });
-
-    try {
-        const response = await axios.post(
-            `http://localhost:5000/pdf/combinar-y-guardar/${id_convocatoria}`,
-            formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
-                },
-            }
+        const response = await axios.get(
+            `http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`,
+            { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (response.status === 201) {
-            console.log('Documentos adicionales subidos y combinados correctamente.');
-            await cargarPDF(); // Recargar el PDF combinado
+            console.log('PDF generado correctamente.');
         } else {
-            setError('Error al subir documentos adicionales.');
+            setError('Error al generar el PDF. Inténtalo de nuevo.');
         }
     } catch (error) {
-        console.error('Error al subir documentos adicionales:', error.message);
-        setError('Error al subir documentos adicionales. Verifica tu conexión o intenta más tarde.');
+        console.error('Error al generar el PDF:', error.message);
+        setError('Error al generar el PDF. Verifica tu conexión o intenta más tarde.');
     }
 };
-5. Resumen
-Backend:
+2. Mejorar el Endpoint en el Backend
+El endpoint que recibe la solicitud (/pdf/generar/${id_convocatoria}/${id_honorario}) puede ser mejorado para incluir la lógica que te propuse. Esto no afectará tu código actual, ya que seguirás haciendo la misma solicitud HTTP.
 
-Define la ruta POST /pdf/combinar-y-guardar/:id_convocatoria en pdfRoutes.js.
+Aquí te dejo un ejemplo de cómo podrías mejorar el endpoint en el backend:
 
-Implementa la función combinarYGuardarPDFs en pdfController.js.
+javascript
+Copy
+const generarPDF = async (req, res) => {
+    const { id_convocatoria, id_honorario } = req.params;
 
-Configura el middleware multer para manejar la subida de archivos.
+    try {
+        // Obtener datos de la convocatoria, honorarios y materias
+        const convocatoria = await pool.query(`
+            SELECT c.*, h.*, cm.* 
+            FROM convocatorias c
+            LEFT JOIN honorarios h ON c.id_convocatoria = h.id_convocatoria
+            LEFT JOIN convocatorias_materias cm ON c.id_convocatoria = cm.id_convocatoria
+            WHERE c.id_convocatoria = $1 AND h.id_honorario = $2
+        `, [id_convocatoria, id_honorario]);
 
-Frontend:
+        if (convocatoria.rows.length === 0) {
+            return res.status(404).json({ message: 'Convocatoria o honorario no encontrado' });
+        }
 
-Asegúrate de que el formulario envíe los archivos con el nombre de campo archivos.
+        // Generar el HTML para el PDF
+        const html = generateConsultoresLineaHTML(
+            convocatoria.rows[0], // Datos de la convocatoria
+            convocatoria.rows[0], // Datos de los honorarios
+            convocatoria.rows,    // Datos de las materias
+            totalHoras,          // Total de horas (debes calcularlo o pasarlo como parámetro)
+            tiempoTrabajo        // Tiempo de trabajo (debes calcularlo o pasarlo como parámetro)
+        );
 
-Con estos cambios, el error 404 (Not Found) debería resolverse. Si el problema persiste, verifica que el servidor esté corriendo y que las rutas estén correctamente definidas. ¡No dudes en preguntar si necesitas más ayuda! 😊
+        // Generar el PDF (usando html-pdf, puppeteer, etc.)
+        const pdf = await generarPDFFromHTML(html);
 
+        // Guardar el PDF en la base de datos o en el sistema de archivos
+        await guardarPDFEnDB(id_convocatoria, pdf);
+
+        // Enviar el PDF como respuesta
+        res.status(201).json({ message: 'PDF generado correctamente', pdf });
+    } catch (error) {
+        console.error('Error al generar el PDF:', error);
+        res.status(500).json({ message: 'Error al generar el PDF', error });
+    }
+};
+3. Adaptar tu Código Actual
+Tu código actual no necesita cambios significativos, pero puedes mejorarlo para manejar la respuesta del backend de manera más efectiva. Por ejemplo:
+
+javascript
+Copy
+const generarPDF = async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:5000/pdf/generar/${id_convocatoria}/${id_honorario}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (response.status === 201) {
+            console.log('PDF generado correctamente.');
+            // Aquí puedes manejar la respuesta del backend, por ejemplo, descargar el PDF
+            const pdfUrl = response.data.pdf; // Asumiendo que el backend devuelve la URL del PDF
+            window.open(pdfUrl, '_blank'); // Abrir el PDF en una nueva pestaña
+        } else {
+            setError('Error al generar el PDF. Inténtalo de nuevo.');
+        }
+    } catch (error) {
+        console.error('Error al generar el PDF:', error.message);
+        setError('Error al generar el PDF. Verifica tu conexión o intenta más tarde.');
+    }
+};
+¿Qué Cambia y Qué No Cambia?
+No cambia: Tu llamada HTTP desde el frontend (axios.get) sigue siendo la misma.
+
+Cambia: El endpoint en el backend (/pdf/generar) se mejora para incluir la lógica de obtención de datos y generación del PDF.
+
+Beneficios de este Enfoque
+Mantenibilidad: La lógica de generación del PDF está centralizada en el backend, lo que facilita su mantenimiento.
+
+Reutilización: Puedes reutilizar la función generarPDF en otros lugares de tu aplicación.
+
+Escalabilidad: Si en el futuro necesitas agregar más datos al PDF, solo necesitas modificar el backend.
+
+Conclusión
+No es necesario modificar por completo tu código actual. Puedes mantener tu llamada HTTP desde el frontend y mejorar el endpoint en el backend para que sea más robusto y escalable. Esto no afectará negativamente tu aplicación, sino que la hará más mantenible y flexible. ¡No dudes en preguntar si necesitas más ayuda! 😊

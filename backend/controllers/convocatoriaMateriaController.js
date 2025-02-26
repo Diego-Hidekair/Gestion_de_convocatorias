@@ -18,7 +18,7 @@ const getConvocatoriaMaterias = async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'No se encontraron materias para esta convocatoria' });
         }
-        
+         
         res.json(result.rows);
     } catch (error) {
         console.error('Error buscando convocatorias_materias:', error);

@@ -1,23 +1,39 @@
-// frontend/src/components/HonorariosForm.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/honorarios.css';
 
 const HonorariosForm = () => {
     const location = useLocation();
     const id_materia = location.state?.id_materia || null;
-    const { id_convocatoria } = useParams();
+    const { id_convocatoria, id_honorario } = useParams();
     const navigate = useNavigate();
     const [pagoMensual, setPagoMensual] = useState('');
     const [resolucion, setResolucion] = useState('');
     const [dictamen, setDictamen] = useState('');
     const [nombreConvocatoria, setNombreConvocatoria] = useState('');
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false); // Agregado
+    const token = localStorage.getItem('token'); // Agregado
 
     useEffect(() => {
-        // Guardar la página actual en localStorage
+        if (id_honorario) {
+            const fetchHonorario = async () => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/honorarios/${id_honorario}`);
+                    const honorario = response.data;
+                    setPagoMensual(honorario.pago_mensual);
+                    setResolucion(honorario.resolucion);
+                    setDictamen(honorario.dictamen);
+                } catch (err) {
+                    setError('Error al obtener el honorario.');
+                }
+            };
+            fetchHonorario();
+        }
+    }, [id_honorario]);
+
+    useEffect(() => {
         localStorage.setItem('currentPage', `/honorarios/new/${id_convocatoria}/${id_materia}`);
 
         const fetchNombreConvocatoria = async () => {
@@ -41,22 +57,28 @@ const HonorariosForm = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:5000/honorarios', {
-                id_convocatoria,
-                pago_mensual: pagoMensual,
-                resolucion: resolucion,
-                dictamen: dictamen
-            });
-
-            const { id_honorario } = response.data;
-
-            // Borrar el estado de localStorage antes de avanzar
-            localStorage.removeItem('honorariosState');
-            localStorage.removeItem('currentPage');
-            navigate(`/pdf/generar/${id_convocatoria}/${id_honorario}`);
+            if (id_honorario) {
+                // Modo edición
+                await axios.put(`http://localhost:5000/honorarios/${id_honorario}`, {
+                    pago_mensual: pagoMensual,
+                    resolucion,
+                    dictamen
+                });
+                alert('Honorario actualizado correctamente.');
+            } else {
+                // Modo creación
+                const response = await axios.post('http://localhost:5000/honorarios', {
+                    id_convocatoria,
+                    pago_mensual: pagoMensual,
+                    resolucion,
+                    dictamen
+                });
+                const { id_honorario: newIdHonorario } = response.data;
+                navigate(`/pdf/generar/${id_convocatoria}/${newIdHonorario}`);
+            }
         } catch (error) {
-            console.error('Error creando honorario:', error);
-            setError('Error creando el honorario');
+            console.error('Error creando/actualizando honorario:', error);
+            setError('Error creando/actualizando el honorario');
         }
     };
 
@@ -67,22 +89,6 @@ const HonorariosForm = () => {
             navigate(`/convocatorias_materias/edit/${id_convocatoria}`);
         }
     };
-
-    useEffect(() => {
-        if (pagoMensual || resolucion || dictamen) {
-            const honorariosState = { pagoMensual, resolucion, dictamen };
-            localStorage.setItem('honorariosState', JSON.stringify(honorariosState));
-        }
-    }, [pagoMensual, resolucion, dictamen]);
-
-    useEffect(() => {
-        const savedState = JSON.parse(localStorage.getItem('honorariosState'));
-        if (savedState) {
-            setPagoMensual(savedState.pagoMensual);
-            setResolucion(savedState.resolucion);
-            setDictamen(savedState.dictamen);
-        }
-    }, []);
 
     const handleCancel = () => {
         localStorage.removeItem('honorariosState');
@@ -95,7 +101,7 @@ const HonorariosForm = () => {
 
     return (
         <div className="container-honorarios mt-4-honorarios">
-            <h2 className="titulo-honorario">Crear Honorario</h2>
+            <h2 className="titulo-honorario">{id_honorario ? 'Editar' : 'Crear'} Honorario</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <form onSubmit={handleSubmit}>
@@ -139,7 +145,7 @@ const HonorariosForm = () => {
                 </div>
                 <br />
                 <button type="button" className="btn-honorarios btn-secondary-honorarios ml-2-honorarios" onClick={handleBack}>Volver</button>
-                <button type="submit" className="btn-honorarios btn-primary-honorarios">Siguiente</button>
+                <button type="submit" className="btn-honorarios btn-primary-honorarios">{id_honorario ? 'Actualizar' : 'Siguiente'}</button>
                 <button type="button" className="btn-honorarios btn-danger-honorarios ml-2-honorarios" onClick={handleCancel}>Cancelar</button>
             </form>
         </div>
@@ -147,4 +153,3 @@ const HonorariosForm = () => {
 };
 
 export default HonorariosForm;
-

@@ -1,4 +1,3 @@
-// frontend/src/components/ConvocatoriaEdit.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -15,29 +14,41 @@ const ConvocatoriaEdit = () => {
         fecha_fin: '',
         id_tipoconvocatoria: '',
         id_carrera: '',
-        id_facultad: '' 
+        id_facultad: '',
+        horario: 'TIEMPO COMPLETO',
+        prioridad: 'PRIMERA',
+        gestion: 'GESTION 1',
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [facultades, setFacultades] = useState([]);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
     useEffect(() => {
         const fetchConvocatoria = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/convocatorias/edit/${id}`);
-                setConvocatoria(response.data);
+                const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+                const data = response.data;
+                setConvocatoria({
+                    ...data,
+                    fecha_inicio: data.fecha_inicio.split('T')[0], // Formatear fecha
+                    fecha_fin: data.fecha_fin ? data.fecha_fin.split('T')[0] : '', // Formatear fecha
+                });
             } catch (error) {
                 console.error('Error fetching convocatoria:', error);
+                setError('Error al cargar los datos de la convocatoria.');
             }
         };
 
         const fetchTiposConvocatoria = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/tipo-convocatorias');
+                const response = await axios.get('http://localhost:5000/tipos-convocatorias');
                 setTiposConvocatoria(response.data);
             } catch (error) {
                 console.error('Error fetching tipos de convocatoria:', error);
+                setError('Error al cargar los tipos de convocatoria.');
             }
         };
 
@@ -47,6 +58,7 @@ const ConvocatoriaEdit = () => {
                 setCarreras(response.data);
             } catch (error) {
                 console.error('Error fetching carreras:', error);
+                setError('Error al cargar las carreras.');
             }
         };
 
@@ -56,6 +68,7 @@ const ConvocatoriaEdit = () => {
                 setFacultades(response.data);
             } catch (error) {
                 console.error('Error fetching facultades:', error);
+                setError('Error al cargar las facultades.');
             }
         };
 
@@ -75,11 +88,29 @@ const ConvocatoriaEdit = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+        setSuccess(null);
+
         try {
+            // Actualizar la convocatoria
             await axios.put(`http://localhost:5000/convocatorias/${id}`, convocatoria);
-            navigate('/convocatorias');
+            setSuccess('Convocatoria actualizada correctamente.');
+
+            // Regenerar el PDF después de la actualización
+            const pdfResponse = await axios.get(`http://localhost:5000/pdf/generar/${id}/1`);
+            if (pdfResponse.status === 201) {
+                setSuccess((prev) => `${prev} PDF regenerado correctamente.`);
+            } else {
+                setError('Hubo un error al regenerar el PDF.');
+            }
+
+            // Redirigir a la lista de convocatorias después de 2 segundos
+            setTimeout(() => {
+                navigate('/convocatorias');
+            }, 2000);
         } catch (error) {
             console.error('Error updating convocatoria:', error);
+            setError('Error al actualizar la convocatoria.');
         }
     };
 
@@ -95,7 +126,11 @@ const ConvocatoriaEdit = () => {
                     <Col sm="12" md="8" lg="6" className="mx-auto-convocatoria">
                         <Card className="card-custom-convocatoria">
                             <CardBody>
-                                <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">Formulario de Convocatoria</CardTitle>
+                                <CardTitle tag="h5" className="text-center-convocatoria mb-4-convocatoria">
+                                    Formulario de Convocatoria
+                                </CardTitle>
+                                {error && <div className="alert alert-danger">{error}</div>}
+                                {success && <div className="alert alert-success">{success}</div>}
                                 <Form onSubmit={handleSubmit}>
                                     <FormGroup>
                                         <Label for="cod_convocatoria">Código</Label>
@@ -127,7 +162,7 @@ const ConvocatoriaEdit = () => {
                                                     type="date"
                                                     name="fecha_inicio"
                                                     id="fecha_inicio"
-                                                    value={convocatoria.fecha_inicio.split('T')[0]}
+                                                    value={convocatoria.fecha_inicio}
                                                     onChange={handleChange}
                                                     required
                                                 />
@@ -140,7 +175,7 @@ const ConvocatoriaEdit = () => {
                                                     type="date"
                                                     name="fecha_fin"
                                                     id="fecha_fin"
-                                                    value={convocatoria.fecha_fin.split('T')[0]}
+                                                    value={convocatoria.fecha_fin}
                                                     onChange={handleChange}
                                                 />
                                             </FormGroup>
@@ -206,7 +241,9 @@ const ConvocatoriaEdit = () => {
                                             </FormGroup>
                                         </Col>
                                     </Row>
-                                    <Button color="primary" type="submit" className="mt-3-convocatoria">Actualizar</Button>
+                                    <Button color="primary" type="submit" className="mt-3-convocatoria">
+                                        Actualizar
+                                    </Button>
                                 </Form>
                             </CardBody>
                         </Card>
@@ -217,4 +254,4 @@ const ConvocatoriaEdit = () => {
     );
 };
 
-export default ConvocatoriaEdit;
+export default ConvocatoriaEdit;    
