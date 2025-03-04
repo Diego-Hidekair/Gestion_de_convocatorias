@@ -90,6 +90,12 @@ const NavBar = ({ onLogout }) => {
           </ListItemIcon>
           {(isExpanded || isMobile) && <ListItemText primary="Carreras" />}
         </ListItem>,
+        <ListItem button component={Link} to="/convocatorias" key="convocatorias" style={getItemStyle("/convocatorias")}>
+        <ListItemIcon style={{ color: "#fff" }}>
+          <ClipboardIcon />
+        </ListItemIcon>
+        {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
+      </ListItem>,
       ],
       secretaria: [
         <ListItem button component={Link} to="/convocatorias" key="convocatorias" style={getItemStyle("/convocatorias")}>
