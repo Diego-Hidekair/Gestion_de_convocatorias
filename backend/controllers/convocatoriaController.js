@@ -267,3 +267,4 @@
     };
 
     module.exports = {  getConvocatoriasByFacultad, updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, deleteConvocatoria, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado };
+    
