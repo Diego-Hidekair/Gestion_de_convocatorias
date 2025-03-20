@@ -1,7 +1,7 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {// autenticar el ingreso 
+const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
@@ -9,12 +9,12 @@ const authenticateToken = (req, res, next) => {// autenticar el ingreso
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
         console.log('Token decodificado:', user);
-        req.user = user;
+        req.user = user; // Asegúrate de que el rol esté incluido en el payload del token
         next();
     });
 };
 
-const authorizeAdmin = (req, res, next) => {//verifica que el usuario es administrador
+const authorizeAdmin = (req, res, next) => {
     console.log('Rol del usuario:', req.user.rol);
     if (req.user.rol !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden acceder a esta ruta.' });
@@ -22,14 +22,14 @@ const authorizeAdmin = (req, res, next) => {//verifica que el usuario es adminis
     next();
 };
 
-const verificarRolSecretaria = (req, res, next) => {// verifica que el usuario tiene rol de "secretaria"
+const verificarRolSecretaria = (req, res, next) => {
     if (req.user.rol !== 'secretaria') {
         return res.status(403).json({ error: 'Acceso denegado: Rol no autorizado.' });
     }
     next();
 };
 
-const authorizeRoles = (permittedRoles) => {//verificacion del rol de usuario
+const authorizeRoles = (permittedRoles) => {
     return (req, res, next) => {
         if (!permittedRoles.includes(req.user.rol)) {
             return res.status(403).json({ error: 'Acceso denegado: No tienes el rol necesario para acceder a esta ruta.' });

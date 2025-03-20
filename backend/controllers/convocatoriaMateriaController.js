@@ -9,7 +9,7 @@ const getConvocatoriaMaterias = async (req, res) => {
                 cm.tiempo_trabajo,a
                 m.nombre AS nombre_materia,
                 c.nombre AS nombre_convocatoria
-            FROM convocatorias_materias cm
+            FROM convocatorias_materias cm 
             JOIN planes.pln_materias m ON cm.id_materia = m.id_materia
             JOIN convocatorias c ON cm.id_convocatoria = c.id_convocatoria
             WHERE cm.id_convocatoria = $1

@@ -1,7 +1,7 @@
 // frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert } from "@mui/material";
 import { Edit, Delete, Preview, Download, Search } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +14,11 @@ const ConvocatoriaList = () => {
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [convocatoriaToDelete, setConvocatoriaToDelete] = useState(null);
+    const [userRole, setUserRole] = useState(""); 
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState(""); 
+    const [selectedEstado, setSelectedEstado] = useState(null); 
+    const [openEstadoMenu, setOpenEstadoMenu] = useState(false); 
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,8 +31,49 @@ const ConvocatoriaList = () => {
                 console.error("Error fetching convocatorias:", error);
             }
         };
+
+        const fetchUserRole = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get("http://localhost:5000/auth/me", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setUserRole(response.data.rol); 
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+            }
+        };
+
         fetchConvocatorias();
+        fetchUserRole();
     }, []);
+
+    const handleEstadoChange = async (id, newEstado) => {
+        if (userRole !== "vicerrectorado" && userRole !== "admin") {
+            setSnackbarMessage("No tiene el rol autorizado para modificar este estado.");
+            setSnackbarOpen(true);
+            return;
+        }
+        try {
+            const token = localStorage.getItem("token");
+            await axios.patch(
+                `http://localhost:5000/convocatorias/${id}/estado`,
+                { estado: newEstado },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            setConvocatorias(convocatorias.map(convocatoria =>
+                convocatoria.id_convocatoria === id ? { ...convocatoria, estado: newEstado } : convocatoria
+            ));
+            setSnackbarMessage("Estado actualizado correctamente.");
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error("Error updating estado:", error);
+            setSnackbarMessage("No se pudo actualizar el estado.");
+            setSnackbarOpen(true);
+        }
+    };
 
     const handleEdit = (id) => {
         navigate(`/convocatorias/edit/${id}`);
@@ -47,10 +93,12 @@ const ConvocatoriaList = () => {
             setConvocatorias(updatedConvocatorias);
             setFilteredConvocatorias(updatedConvocatorias);
             setDeleteModalOpen(false);
-            alert("Convocatoria eliminada correctamente.");
+            setSnackbarMessage("Convocatoria eliminada correctamente.");
+            setSnackbarOpen(true);
         } catch (error) {
             console.error("Error deleting convocatoria:", error);
-            alert("Hubo un error al eliminar la convocatoria.");
+            setSnackbarMessage("Hubo un error al eliminar la convocatoria.");
+            setSnackbarOpen(true);
         }
     };
 
@@ -60,22 +108,23 @@ const ConvocatoriaList = () => {
     };
 
     const handlePreview = async (id) => {
-        const token = localStorage.getItem("token"); // Obtener el token
+        const token = localStorage.getItem("token");
         try {
             const response = await axios.get(`http://localhost:5000/pdf/combinado/ver/${id}`, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Enviar el token en la cabecera
+                    Authorization: `Bearer ${token}`,
                 },
-                responseType: "blob", // Para manejar archivos binarios (PDF)
+                responseType: "blob",
             });
 
             const pdfBlob = new Blob([response.data], { type: "application/pdf" });
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            setPreviewUrl(pdfUrl); // Guardar la URL del PDF para mostrarlo
-            setIsPreviewModalOpen(true); // Abrir el modal de vista previa
+            setPreviewUrl(pdfUrl);
+            setIsPreviewModalOpen(true);
         } catch (error) {
             console.error("Error al obtener el PDF:", error);
-            alert("No se pudo cargar el PDF. Verifica tu conexión o intenta más tarde.");
+            setSnackbarMessage("No se pudo cargar el PDF. Verifica tu conexión o intenta más tarde.");
+            setSnackbarOpen(true);
         }
     };
 
@@ -94,6 +143,8 @@ const ConvocatoriaList = () => {
             link.parentNode.removeChild(link);
         } catch (error) {
             console.error("Error descargando el documento:", error);
+            setSnackbarMessage("Error al descargar el documento.");
+            setSnackbarOpen(true);
         }
     };
 
@@ -106,13 +157,26 @@ const ConvocatoriaList = () => {
         setFilteredConvocatorias(filtered);
     }, [searchQuery, searchCategory, convocatorias]);
 
+    const getEstadoColor = (estado) => {
+        switch (estado) {
+            case "Para Revisión":
+                return "#ffc107";
+            case "En Revisión":
+                return "#007bff";
+            case "Observado":
+                return "#dc3545";
+            case "Revisado":
+                return "#28a745";
+            default:
+                return "#6c757d";
+        }
+    };
+
     return (
         <>
             <Typography variant="h4" component="h1" gutterBottom>
                 Lista de Convocatorias
             </Typography>
-
-            {/* Barra de búsqueda y filtrado */}
             <Box display="flex" justifyContent="center" alignItems="center" mb={2} gap={2}>
                 <TextField
                     label="Buscar..."
@@ -138,7 +202,6 @@ const ConvocatoriaList = () => {
                     </Select>
                 </FormControl>
             </Box>
-
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
@@ -146,6 +209,7 @@ const ConvocatoriaList = () => {
                             <TableCell>Nombre</TableCell>
                             <TableCell>Fecha Inicio</TableCell>
                             <TableCell>Fecha Fin</TableCell>
+                            <TableCell>Estado</TableCell>
                             <TableCell>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
@@ -156,26 +220,40 @@ const ConvocatoriaList = () => {
                                 <TableCell>{convocatoria.fecha_inicio}</TableCell>
                                 <TableCell>{convocatoria.fecha_fin}</TableCell>
                                 <TableCell>
+                                    <FormControl variant="outlined" size="small">
+                                        <Select
+                                            value={convocatoria.estado}
+                                            onChange={(e) => handleEstadoChange(convocatoria.id_convocatoria, e.target.value)}
+                                            style={{ backgroundColor: getEstadoColor(convocatoria.estado), color: "#fff" }}
+                                        >
+                                            <MenuItem value="Para Revisión">Para Revisión</MenuItem>
+                                            <MenuItem value="En Revisión">En Revisión</MenuItem>
+                                            <MenuItem value="Observado">Observado</MenuItem>
+                                            <MenuItem value="Revisado">Revisado</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </TableCell>
+                                <TableCell>
                                     <IconButton
-                                        style={{ color: "#007bff" }} // Azul
+                                        style={{ color: "#007bff" }}
                                         onClick={() => handlePreview(convocatoria.id_convocatoria)}
                                     >
                                         <Preview />
                                     </IconButton>
                                     <IconButton
-                                        style={{ color: "#28a745" }} // Verde
+                                        style={{ color: "#28a745" }}
                                         onClick={() => handleDownload(convocatoria.id_convocatoria)}
                                     >
                                         <Download />
                                     </IconButton>
                                     <IconButton
-                                        style={{ color: "#ffc107" }} // Amarillo
+                                        style={{ color: "#ffc107" }}
                                         onClick={() => handleEdit(convocatoria.id_convocatoria)}
                                     >
                                         <Edit />
                                     </IconButton>
                                     <IconButton
-                                        style={{ color: "#dc3545" }} // Rojo
+                                        style={{ color: "#dc3545" }}
                                         onClick={() => handleDeleteClick(convocatoria.id_convocatoria)}
                                     >
                                         <Delete />
@@ -186,15 +264,11 @@ const ConvocatoriaList = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
-
-            {/* Modal de vista previa del PDF */}
             <Modal open={isPreviewModalOpen} onClose={() => setIsPreviewModalOpen(false)}>
                 <Box sx={{ width: "80%", margin: "auto", marginTop: "5%", bgcolor: "background.paper", p: 4 }}>
                     <iframe src={previewUrl} width="100%" height="600px" title="Vista previa del PDF" />
                 </Box>
             </Modal>
-
-            {/* Modal de confirmación para eliminar */}
             <Dialog open={deleteModalOpen} onClose={handleDeleteCancel}>
                 <DialogTitle>Confirmar Eliminación</DialogTitle>
                 <DialogContent>
@@ -211,6 +285,15 @@ const ConvocatoriaList = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="info" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
 };

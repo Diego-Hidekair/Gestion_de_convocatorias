@@ -18,7 +18,7 @@ const getHonorarios = async (req, res) => {
         console.error('Error al obtener los honorarios:', error);
         res.status(500).json({ message: 'Error al obtener los honorarios' });
     }
-};
+}; 
 
 // Obtener un honorario por ID
 const getHonorarioById = async (req, res) => {
