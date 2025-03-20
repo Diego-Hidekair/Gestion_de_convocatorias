@@ -37,7 +37,7 @@ const Login = ({ setAuth }) => {
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
             const { token, userId, rol } = response.data;
-            localStorage.setItem('token', token);
+            localStorage.setItem("token", token.data.token);
             localStorage.setItem('userId', userId);
             localStorage.setItem('rol', rol);
             setAuth(true);
