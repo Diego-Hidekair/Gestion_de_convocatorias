@@ -3,15 +3,13 @@ const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; 
-    if (!token) {
-        return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
-    }
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
+
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
-        }
-        req.user = user; 
+        if (err) return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
+        console.log('Token decodificado:', user);
+        req.user = user; // Asegúrate de que el rol esté incluido en el payload del token
         next();
     });
 };

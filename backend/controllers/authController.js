@@ -12,7 +12,7 @@ const generateToken = (user) => {
             id_facultad: user.id_facultad 
         }, 
         process.env.JWT_SECRET,
-        { expiresIn: '6h' } 
+        { expiresIn: '4h' } 
     );
 };
 
@@ -39,22 +39,5 @@ const loginUser = async (req, res) => {
         res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
     }
 };
-const getMe = async (req, res) => {
-    try {
-        const userId = req.user.id_usuario;
-        const result = await pool.query(
-            'SELECT id_usuario, rol, id_facultad FROM usuarios WHERE id_usuario = $1',
-            [userId]
-        );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Error al obtener la información del usuario:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-};
-
-module.exports = { loginUser, getMe };
+module.exports = { loginUser }; 

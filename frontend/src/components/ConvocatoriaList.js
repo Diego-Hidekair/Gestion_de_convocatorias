@@ -36,13 +36,11 @@ const ConvocatoriaList = () => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get("http://localhost:5000/auth/me", {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${token}` }
                 });
-                setUserRole(response.data.rol); // Guardar el rol del usuario
+                setUserRole(response.data.rol); 
             } catch (error) {
                 console.error("Error fetching user role:", error);
-                setSnackbarMessage("Error al obtener el rol del usuario.");
-                setSnackbarOpen(true);
             }
         };
 
