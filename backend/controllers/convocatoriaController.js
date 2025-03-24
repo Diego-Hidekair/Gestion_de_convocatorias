@@ -202,8 +202,8 @@ const updateEstadoConvocatoria = async (req, res) => {
 
     console.log("Rol del usuario:", rol); // Verificar el rol del usuario
 
-    // Verificar que el rol sea "admin" o "vicerrectorado"
-    if (rol !== 'admin' && rol !== 'vicerrectorado') {
+    // Verificar que el rol sea "vicerrectorado" o "admin"
+    if (rol !== 'vicerrectorado' && rol !== 'admin') {
         return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
     }
 

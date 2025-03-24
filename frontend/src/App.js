@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import FacultadList from './components/FacultadList';
 import ConvocatoriaList from './components/ConvocatoriaList';
@@ -147,33 +147,36 @@ const AuthWrapper = () => {
                         <Route path="/redirect" element={<RedirectPage />} />
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/facultades" element={<FacultadList />} />
-                        <Route path="/convocatorias" element={<ConvocatoriaList />} />
+                        {/* Acceso a ConvocatoriaList para roles "admin", "secretaria" y "vicerrectorado" */}
+                        {(userRole === 'admin' || userRole === 'secretaria' || userRole === 'vicerrectorado') && (
+                            <Route path="/convocatorias" element={<ConvocatoriaList />} />
+                        )}
                         {userRole === 'secretaria' && (
                             <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         )}
                         {userRole === 'secretaria' && (
                             <Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />
-                        )} 
+                        )}
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                         <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />
                         <Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />
                         <Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />
                         <Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />
-                        <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} /> 
-                        <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} /> 
-                        <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} /> 
+                        <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
+                        <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} />
+                        <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
                         <Route path="/materias" element={<MateriaList />} />
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         <Route path="/usuarios" element={<UsuarioList />} />
                         <Route path="/usuarios/new" element={<UsuarioForm />} />
-                        <Route path="/usuarios/edit/:id_usuario" element={<UsuarioEdit />} />                        
+                        <Route path="/usuarios/edit/:id_usuario" element={<UsuarioEdit />} />
                         <Route path="/usuarios/me/:id_usuario" element={<UsuarioPerfil />} />
                         <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
-                        <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} /> 
+                        <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} />
                     </Routes>
                 </>
             ) : (
