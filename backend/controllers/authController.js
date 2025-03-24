@@ -3,7 +3,7 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// generar token
+// Generar token
 const generateToken = (user) => {
     return jwt.sign(
         { 
@@ -31,8 +31,8 @@ const loginUser = async (req, res) => {
         if (!validPassword) {
             return res.status(400).json({ error: 'Contraseña incorrecta' });
         }
-        const token = generateToken(user);
 
+        const token = generateToken(user);
         res.json({ token, userId: user.id_usuario, rol: user.rol });
     } catch (error) {
         console.error('Error al iniciar sesión:', error.message);
@@ -40,4 +40,4 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { loginUser }; 
+module.exports = { loginUser };

@@ -48,4 +48,4 @@ function verificarRol(...rolesPermitidos) {
     };
 }
 
-module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
+module.exports = { authenticateToken , authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };

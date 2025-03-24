@@ -8,7 +8,7 @@ const { Pool } = require('pg');
 const app = express();
 const fileUpload = require('express-fileupload');
 
-// middleware de autenticación
+// Middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
 
 const pool = new Pool({
@@ -35,7 +35,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 app.use(fileUpload());
 
-
 // Rutas
 const routes = [
     { path: '/facultades', route: './routes/facultadRoutes' },
@@ -46,14 +45,14 @@ const routes = [
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
-    { path: '/api/auth', route: './routes/authRoutes' },
+    { path: '/api/auth', route: './routes/authRoutes' }, // Montar las rutas de autenticación
     { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
     { path: '/convocatorias-archivos', route: './routes/convocatoriasArchivosRoutes' } 
 ];
 
-// Rutas de la API
+// Montar las rutas
 routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));
 
 // Ruta de verificación

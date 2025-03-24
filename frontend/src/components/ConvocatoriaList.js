@@ -34,13 +34,19 @@ const ConvocatoriaList = () => {
 
         const fetchUserRole = async () => {
             try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get("http://localhost:5000/auth/me", {
-                    headers: { Authorization: `Bearer ${token}` }
+                const token = localStorage.getItem('token');
+                console.log('Token:', token); // Log para depuración
+                if (!token) {
+                    throw new Error('No se encontró el token en localStorage.');
+                }
+        
+                const response = await axios.get('http://localhost:5000/api/auth/me', {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
-                setUserRole(response.data.rol); 
+                console.log('Respuesta del servidor:', response.data); // Log para depuración
+                setUserRole(response.data.rol);
             } catch (error) {
-                console.error("Error fetching user role:", error);
+                console.error('Error fetching user role:', error);
             }
         };
 
