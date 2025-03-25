@@ -1,8 +1,13 @@
 // frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert } from "@mui/material";
-import { Edit, Delete, Preview, Download, Search } from "@mui/icons-material";
+import { 
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+    IconButton, Paper, Typography, Box, TextField, MenuItem, Select, 
+    InputLabel, FormControl, Dialog, DialogTitle, DialogContent, 
+    DialogActions, Button, Modal, Snackbar, Alert 
+} from "@mui/material";
+import { Edit, Delete, Preview, Download, Search, Comment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 const ConvocatoriaList = () => {
@@ -14,11 +19,13 @@ const ConvocatoriaList = () => {
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [convocatoriaToDelete, setConvocatoriaToDelete] = useState(null);
-    const [userRole, setUserRole] = useState(""); 
+    const [userRole, setUserRole] = useState("");
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState(""); 
-    const [selectedEstado, setSelectedEstado] = useState(null); 
-    const [openEstadoMenu, setOpenEstadoMenu] = useState(false); 
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [selectedEstado, setSelectedEstado] = useState(null);
+    const [comentarioModalOpen, setComentarioModalOpen] = useState(false);
+    const [comentario, setComentario] = useState("");
+    const [convocatoriaId, setConvocatoriaId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,15 +42,9 @@ const ConvocatoriaList = () => {
         const fetchUserRole = async () => {
             try {
                 const token = localStorage.getItem('token');
-                console.log('Token:', token); // Log para depuración
-                if (!token) {
-                    throw new Error('No se encontró el token en localStorage.');
-                }
-        
                 const response = await axios.get('http://localhost:5000/api/auth/me', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                console.log('Respuesta del servidor:', response.data); // Log para depuración
                 setUserRole(response.data.rol);
             } catch (error) {
                 console.error('Error fetching user role:', error);
@@ -54,24 +55,33 @@ const ConvocatoriaList = () => {
         fetchUserRole();
     }, []);
 
-    const handleEstadoChange = async (id, newEstado) => {
-        if (userRole !== "vicerrectorado" && userRole !== "admin") {
-            setSnackbarMessage("No tiene el rol autorizado para modificar este estado.");
-            setSnackbarOpen(true);
-            return;
-        }
+    const updateConvocatoriaEstado = async (id, estado, comentario = null) => {
         try {
             const token = localStorage.getItem("token");
+            const payload = { estado };
+            
+            if (comentario) {
+                payload.comentario_observado = comentario;
+            }
+
             await axios.patch(
                 `http://localhost:5000/convocatorias/${id}/estado`,
-                { estado: newEstado },
+                payload,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
+
             setConvocatorias(convocatorias.map(convocatoria =>
-                convocatoria.id_convocatoria === id ? { ...convocatoria, estado: newEstado } : convocatoria
+                convocatoria.id_convocatoria === id 
+                    ? { 
+                        ...convocatoria, 
+                        estado: estado,
+                        ...(comentario ? { comentario_observado: comentario } : {}) 
+                    } 
+                    : convocatoria
             ));
+
             setSnackbarMessage("Estado actualizado correctamente.");
             setSnackbarOpen(true);
         } catch (error) {
@@ -79,6 +89,41 @@ const ConvocatoriaList = () => {
             setSnackbarMessage("No se pudo actualizar el estado.");
             setSnackbarOpen(true);
         }
+    };
+
+    const handleEstadoChange = async (id, newEstado) => {
+        if (userRole !== "vicerrectorado" && userRole !== "admin") {
+            setSnackbarMessage("No tiene el rol autorizado para modificar este estado.");
+            setSnackbarOpen(true);
+            return;
+        }
+
+        if (newEstado === "Observado") {
+            setConvocatoriaId(id);
+            setSelectedEstado(newEstado);
+            setComentarioModalOpen(true);
+        } else {
+            await updateConvocatoriaEstado(id, newEstado);
+        }
+    };
+
+    const handleComentarioSubmit = async () => {
+        if (!comentario) {
+            setSnackbarMessage("Debe ingresar un comentario para el estado Observado.");
+            setSnackbarOpen(true);
+            return;
+        }
+
+        await updateConvocatoriaEstado(convocatoriaId, selectedEstado, comentario);
+        setComentarioModalOpen(false);
+        setComentario("");
+        setSelectedEstado(null);
+    };
+
+    const handleComentarioClose = () => {
+        setComentarioModalOpen(false);
+        setComentario("");
+        setSelectedEstado(null);
     };
 
     const handleEdit = (id) => {
@@ -157,7 +202,8 @@ const ConvocatoriaList = () => {
     useEffect(() => {
         const filtered = convocatorias.filter((convocatoria) =>
             convocatoria[searchCategory]
-                ?.toLowerCase()
+                ?.toString()
+                .toLowerCase()
                 .includes(searchQuery.toLowerCase())
         );
         setFilteredConvocatorias(filtered);
@@ -216,6 +262,7 @@ const ConvocatoriaList = () => {
                             <TableCell>Fecha Inicio</TableCell>
                             <TableCell>Fecha Fin</TableCell>
                             <TableCell>Estado</TableCell>
+                            <TableCell>Comentario</TableCell>
                             <TableCell>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
@@ -230,7 +277,11 @@ const ConvocatoriaList = () => {
                                         <Select
                                             value={convocatoria.estado}
                                             onChange={(e) => handleEstadoChange(convocatoria.id_convocatoria, e.target.value)}
-                                            style={{ backgroundColor: getEstadoColor(convocatoria.estado), color: "#fff" }}
+                                            style={{ 
+                                                backgroundColor: getEstadoColor(convocatoria.estado), 
+                                                color: "#fff",
+                                                minWidth: "150px"
+                                            }}
                                         >
                                             <MenuItem value="Para Revisión">Para Revisión</MenuItem>
                                             <MenuItem value="En Revisión">En Revisión</MenuItem>
@@ -240,27 +291,45 @@ const ConvocatoriaList = () => {
                                     </FormControl>
                                 </TableCell>
                                 <TableCell>
+                                    {convocatoria.comentario_observado && (
+                                        <IconButton
+                                            style={{ color: "#007bff" }}
+                                            onClick={() => {
+                                                setComentario(convocatoria.comentario_observado);
+                                                setComentarioModalOpen(true);
+                                            }}
+                                            title="Ver comentario"
+                                        >
+                                            <Comment />
+                                        </IconButton>
+                                    )}
+                                </TableCell>
+                                <TableCell>
                                     <IconButton
                                         style={{ color: "#007bff" }}
                                         onClick={() => handlePreview(convocatoria.id_convocatoria)}
+                                        title="Vista previa"
                                     >
                                         <Preview />
                                     </IconButton>
                                     <IconButton
                                         style={{ color: "#28a745" }}
                                         onClick={() => handleDownload(convocatoria.id_convocatoria)}
+                                        title="Descargar"
                                     >
                                         <Download />
                                     </IconButton>
                                     <IconButton
                                         style={{ color: "#ffc107" }}
                                         onClick={() => handleEdit(convocatoria.id_convocatoria)}
+                                        title="Editar"
                                     >
                                         <Edit />
                                     </IconButton>
                                     <IconButton
                                         style={{ color: "#dc3545" }}
                                         onClick={() => handleDeleteClick(convocatoria.id_convocatoria)}
+                                        title="Eliminar"
                                     >
                                         <Delete />
                                     </IconButton>
@@ -270,11 +339,29 @@ const ConvocatoriaList = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {/* Modal de vista previa del PDF */}
             <Modal open={isPreviewModalOpen} onClose={() => setIsPreviewModalOpen(false)}>
-                <Box sx={{ width: "80%", margin: "auto", marginTop: "5%", bgcolor: "background.paper", p: 4 }}>
-                    <iframe src={previewUrl} width="100%" height="600px" title="Vista previa del PDF" />
+                <Box sx={{ 
+                    width: "80%", 
+                    margin: "auto", 
+                    marginTop: "5%", 
+                    bgcolor: "background.paper", 
+                    p: 4,
+                    borderRadius: 2,
+                    boxShadow: 24
+                }}>
+                    <iframe 
+                        src={previewUrl} 
+                        width="100%" 
+                        height="600px" 
+                        title="Vista previa del PDF"
+                        style={{ border: "none" }}
+                    />
                 </Box>
             </Modal>
+
+            {/* Modal de confirmación de eliminación */}
             <Dialog open={deleteModalOpen} onClose={handleDeleteCancel}>
                 <DialogTitle>Confirmar Eliminación</DialogTitle>
                 <DialogContent>
@@ -286,17 +373,60 @@ const ConvocatoriaList = () => {
                     <Button onClick={handleDeleteCancel} color="primary">
                         Cancelar
                     </Button>
-                    <Button onClick={handleDeleteConfirm} color="secondary">
+                    <Button onClick={handleDeleteConfirm} color="error">
                         Eliminar
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Modal de comentario para estado Observado */}
+            <Dialog open={comentarioModalOpen} onClose={handleComentarioClose} fullWidth maxWidth="sm">
+                <DialogTitle>Comentario para estado "Observado"</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" gutterBottom>
+                        Por favor ingrese los motivos por los cuales la convocatoria está siendo observada:
+                    </Typography>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Comentario"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={4}
+                        value={comentario}
+                        onChange={(e) => setComentario(e.target.value)}
+                        required
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleComentarioClose} color="primary">
+                        Cancelar
+                    </Button>
+                    <Button 
+                        onClick={handleComentarioSubmit} 
+                        color="primary"
+                        variant="contained"
+                        disabled={!comentario}
+                    >
+                        Guardar y Cambiar Estado
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Snackbar para mensajes */}
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
                 onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="info" sx={{ width: '100%' }}>
+                <Alert 
+                    onClose={() => setSnackbarOpen(false)} 
+                    severity="info" 
+                    sx={{ width: '100%' }}
+                >
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
