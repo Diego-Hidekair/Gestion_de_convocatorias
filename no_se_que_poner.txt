@@ -1,3 +1,4 @@
+editando para que se pueda hjacer un commit :
 salia otro error, lo devolvi a  como estaba el codigo ya que con ese codigo funciona bien el cambio de estado de la convocatoria, pero solo quisiera agregar la opcion de agregar un comentario si el estado se cambia a 'observado'.
 podemos hacer eso ? , que solucion  puede haber y me compartes le codigo corregido por favor ? :
 aqui esta el backend:
