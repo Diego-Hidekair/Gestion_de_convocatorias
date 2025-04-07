@@ -18,4 +18,7 @@ router.put('/:id', authenticateToken, verificarRolSecretaria, convocatoriaContro
 // Ruta para actualizar solo el estado de una convocatoria
 router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEstadoConvocatoria);
 
+// Nueva ruta para actualizar comentarios (agregar esta línea)
+router.patch('/:id/comentario', authenticateToken, convocatoriaController.updateComentarioObservado);
+
 module.exports = router;

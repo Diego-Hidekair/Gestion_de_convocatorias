@@ -49,27 +49,42 @@ const NavBar = ({ onLogout }) => {
         if (onLogout) onLogout();
     };
 
-    // Estilos dinámicos de los elementos del menú
+    // Estilos dinámicos de los elementos del menú usando sx
     const getItemStyle = (path) => ({
         backgroundColor: location.pathname === path ? "#fff" : "transparent",
         color: location.pathname === path ? "#000" : "#fff",
         borderRadius: "4px",
         margin: "4px 0",
         transition: "all 0.3s ease",
+        "&:hover": {
+            backgroundColor: location.pathname === path ? "#fff" : "rgba(255, 255, 255, 0.1)",
+        },
     });
 
     const renderMenuItems = () => {
         const commonItems = [
             role === "admin" && (
-                <ListItem button component={Link} to="/usuarios" key="usuarios" style={getItemStyle("/usuarios")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/usuarios" 
+                    key="usuarios" 
+                    sx={getItemStyle("/usuarios")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <PeopleIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Usuarios" />}
                 </ListItem>
             ),
-            <ListItem button component={Link} to="/perfil" key="perfil" style={getItemStyle("/perfil")}>
-                <ListItemIcon style={{ color: "#fff" }}>
+            <ListItem 
+                button={true}
+                component={Link} 
+                to="/perfil" 
+                key="perfil" 
+                sx={getItemStyle("/perfil")}
+            >
+                <ListItemIcon sx={{ color: "#fff" }}>
                     <PersonIcon />
                 </ListItemIcon>
                 {(isExpanded || isMobile) && <ListItemText primary="Perfil de Usuario" />}
@@ -78,42 +93,78 @@ const NavBar = ({ onLogout }) => {
 
         const roleSpecificItems = {
             admin: [
-                <ListItem button component={Link} to="/facultades" key="facultades" style={getItemStyle("/facultades")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/facultades" 
+                    key="facultades" 
+                    sx={getItemStyle("/facultades")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <HomeIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Facultades" />}
                 </ListItem>,
-                <ListItem button component={Link} to="/carreras" key="carreras" style={getItemStyle("/carreras")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/carreras" 
+                    key="carreras" 
+                    sx={getItemStyle("/carreras")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <BookIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Carreras" />}
                 </ListItem>,
-                <ListItem button component={Link} to="/convocatorias" key="convocatorias" style={getItemStyle("/convocatorias")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/convocatorias" 
+                    key="convocatorias" 
+                    sx={getItemStyle("/convocatorias")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
             ],
-            secretaria: [
-                <ListItem button component={Link} to="/convocatorias" key="convocatorias" style={getItemStyle("/convocatorias")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+            secretaria_de_decanatura: [
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/convocatorias" 
+                    key="convocatorias" 
+                    sx={getItemStyle("/convocatorias")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
-                <ListItem button component={Link} to="/convocatorias/crear" key="crear-convocatoria" style={getItemStyle("/convocatorias/crear")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/convocatorias/crear" 
+                    key="crear-convocatoria" 
+                    sx={getItemStyle("/convocatorias/crear")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <CheckBoxIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Crear Convocatoria" />}
                 </ListItem>,
             ],
-            vicerrectorado: [
-                <ListItem button component={Link} to="/convocatorias" key="convocatorias" style={getItemStyle("/convocatorias")}>
-                    <ListItemIcon style={{ color: "#fff" }}>
+            tecnico_vicerrectorado: [
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/convocatorias" 
+                    key="convocatorias" 
+                    sx={getItemStyle("/convocatorias")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
@@ -125,8 +176,13 @@ const NavBar = ({ onLogout }) => {
             ...(roleSpecificItems[role] || []),
             ...commonItems,
             <Divider key="divider" />,
-            <ListItem button onClick={handleLogout} key="logout" style={getItemStyle("/logout")}>
-                <ListItemIcon style={{ color: "#fff" }}>
+            <ListItem 
+                button={true}
+                onClick={handleLogout} 
+                key="logout" 
+                sx={getItemStyle("/logout")}
+            >
+                <ListItemIcon sx={{ color: "#fff" }}>
                     <ExitToAppIcon />
                 </ListItemIcon>
                 {(isExpanded || isMobile) && <ListItemText primary="Cerrar Sesión" />}
@@ -140,7 +196,7 @@ const NavBar = ({ onLogout }) => {
                 {isMobile && (
                     <IconButton
                         onClick={toggleDrawer}
-                        style={{
+                        sx={{
                             position: "absolute",
                             top: 10,
                             left: 10,
@@ -153,7 +209,7 @@ const NavBar = ({ onLogout }) => {
                 )}
 
                 <Drawer
-                    open={isMobile ? isOpen : true} // El drawer se abre solo en móvil
+                    open={isMobile ? isOpen : true}
                     onClose={toggleDrawer}
                     variant={isMobile ? "temporary" : "permanent"}
                     sx={{

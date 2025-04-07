@@ -8,7 +8,7 @@ const CreateUser = () => {
         Nombres: '',
         Apellido_paterno: '',
         Apellido_materno: '',
-        Rol: 'usuario',  // Valor por defecto
+        Rol: 'secretaria_de_decanatura', 
         Contraseña: '',
         Celular: '',
     });
@@ -43,9 +43,9 @@ const CreateUser = () => {
                 <input type="text" name="Apellido_materno" placeholder="Apellido Materno" value={userData.Apellido_materno} onChange={handleChange} required />
                 <select name="Rol" value={userData.Rol} onChange={handleChange} required>
                     <option value="admin">Admin</option>
-                    <option value="usuario">Usuario</option>
-                    <option value="secretaria">Secretaria</option>
-                    <option value="decanatura">Decanatura</option>
+                    <option value="personal_administrativo">Personal Administrativo</option>
+                    <option value="secretaria_de_decanatura">Secretaría de Decanatura</option>
+                    <option value="tecnico_vicerrectorado">Técnico de Vicerrectorado</option>
                     <option value="vicerrectorado">Vicerrectorado</option>
                 </select>
                 <input type="password" name="Contraseña" placeholder="Contraseña" value={userData.Contraseña} onChange={handleChange} required />

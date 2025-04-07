@@ -126,9 +126,9 @@ const UsuarioEdit = () => {
                     >
                         <option value="">Seleccione un rol</option>
                         <option value="admin">admin</option>
-                        <option value="usuario">usuario</option>
-                        <option value="secretaria">secretaria</option>
-                        <option value="decanatura">decanatura</option>
+                        <option value="peronsal_administrativo">peronsal administrativo</option>
+                        <option value="secretaria_de_decanatura">secretaria de decanatura</option>
+                        <option value="tecnico_vicerrectorado">tecnico vicerrectorado</option>
                         <option value="vicerrectorado">vicerrectorado</option>
                     </select>
                 </div>

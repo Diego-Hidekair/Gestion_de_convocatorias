@@ -6,12 +6,12 @@ import axios from 'axios';
 const UsuarioForm = () => {
     const [usuario, setUsuario] = useState({
         id_usuario: '',  
-        Nombres: '',
-        Apellido_paterno: '',
-        Apellido_materno: '',
-        Rol: '',
-        Contraseña: '',
-        Celular: '',
+        nombres: '',
+        apellido_paterno: '',
+        apellido_materno: '',
+        rol: '',
+        contraseña: '',
+        celular: '',
         id_facultad: '', 
         id_programa: ''  
     });
@@ -19,123 +19,234 @@ const UsuarioForm = () => {
     const [facultades, setFacultades] = useState([]);
     const [carreras, setCarreras] = useState([]);
     const [foto, setFoto] = useState(null);
-    const [setSelectedFacultad] = useState(null); 
-
+    const [loadingCarreras, setLoadingCarreras] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    // Cargar facultades al montar el componente
     useEffect(() => {
         const fetchFacultades = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/facultades', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 setFacultades(response.data);
             } catch (error) {
-                console.error('Error al obtener facultades', error);
+                console.error('Error al obtener facultades:', error);
+                setError('Error al cargar facultades. Por favor, recarga la página.');
             }
         };
-
         fetchFacultades();
     }, []);
+
+    // Función para cargar carreras según la facultad seleccionada
     const fetchCarrerasByFacultad = async (idFacultad) => {
+        if (!idFacultad) {
+            setCarreras([]);
+            return;
+        }
+
+        setLoadingCarreras(true);
+        setError('');
+        
         try {
-            const response = await axios.get(`http://localhost:5000/carreras/facultad/${idFacultad}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
+            console.log(`Solicitando carreras para facultad ID: ${idFacultad}`);
+            const response = await axios.get(
+                `http://localhost:5000/carreras/facultad/${idFacultad}`, 
+                {
+                    headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            console.log('Respuesta de carreras:', response.data);
+            
+            if (!Array.isArray(response.data)) {
+                throw new Error('Formato de datos incorrecto');
+            }
+            
             setCarreras(response.data);
         } catch (error) {
             console.error('Error al cargar carreras:', error);
+            setError('No se pudieron cargar las carreras. Intente nuevamente.');
+            setCarreras([]);
+        } finally {
+            setLoadingCarreras(false);
         }
     };
     
+    // Manejar cambio de facultad
     const handleFacultadChange = async (e) => {
         const idFacultad = e.target.value;
-        setSelectedFacultad(idFacultad);
-        setUsuario({ ...usuario, id_facultad: idFacultad, id_programa: '' }); // Resetea la carrera seleccionada
-        if (idFacultad) {
-            fetchCarrerasByFacultad(idFacultad);
-        } else {
-            setCarreras([]); // Si no hay facultad seleccionada, vacía el listado de carreras
-        }
+        setUsuario(prev => ({ 
+            ...prev, 
+            id_facultad: idFacultad, 
+            id_programa: '' 
+        }));
+        await fetchCarrerasByFacultad(idFacultad);
     };
     
+    // Manejar cambios en los inputs
     const handleChange = (e) => {
-        setUsuario({
-            ...usuario,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+        setUsuario(prev => ({ ...prev, [name]: value }));
     };
 
+    // Manejar cambio de imagen
     const handleImageChange = (e) => {
-        const file = e.target.files ? e.target.files[0] : null;
-        setFoto(file);
+        setFoto(e.target.files?.[0] || null);
     };
 
+    // Enviar formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData();
-        Object.keys(usuario).forEach((key) => {
-            if (usuario[key]) {
-                formData.append(key, usuario[key]);
-            }
-        });
-        if (foto) {
-            formData.append('foto_perfil', foto); 
-        }
-
-        if (!usuario.Contraseña) {
-            console.error("La contraseña es obligatoria");
+        setError('');
+        
+        // Validaciones básicas
+        if (!usuario.contraseña) {
+            setError("La contraseña es obligatoria");
             return;
         }
+    
+        // Crear FormData correctamente
+        const formData = new FormData();
         
+        // Agregar campos de texto
+        formData.append('id_usuario', usuario.id_usuario);
+        formData.append('Nombres', usuario.nombres);
+        formData.append('Apellido_paterno', usuario.apellido_paterno);
+        formData.append('Apellido_materno', usuario.apellido_materno || '');
+        formData.append('Rol', usuario.rol);
+        formData.append('Contraseña', usuario.contraseña);
+        formData.append('Celular', usuario.celular || '');
+        formData.append('id_facultad', usuario.id_facultad || '');
+        formData.append('id_programa', usuario.id_programa || '');
+    
+        // Agregar archivo si existe
+        if (foto) {
+            formData.append('foto_perfil', foto);
+        }
+    
         try {
             const response = await axios.post('http://localhost:5000/usuarios', formData, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 10000 // 10 segundos de timeout
             });
+            
             if (response.status === 201) {
-                navigate('/usuarios', { state: { successMessage: 'Usuario creado exitosamente!' } });
+                navigate('/usuarios', { 
+                    state: { 
+                        success: 'Usuario creado exitosamente!' 
+                    } 
+                });
             }
         } catch (error) {
-            console.error('Error al crear el usuario', error.response ? error.response.data : error.message);
+            console.error('Error al crear usuario:', error);
+            let errorMessage = 'Error al crear el usuario';
+            
+            if (error.response) {
+                // El servidor respondió con un código de estado fuera del rango 2xx
+                errorMessage = error.response.data.error || 
+                             error.response.data.message || 
+                             `Error ${error.response.status}`;
+            } else if (error.request) {
+                // La solicitud fue hecha pero no se recibió respuesta
+                errorMessage = 'No se recibió respuesta del servidor';
+            } else {
+                // Algo pasó al configurar la solicitud
+                errorMessage = error.message;
+            }
+            
+            setError(errorMessage);
         }
     };
 
     return (
         <div className="container-user mt-5-user">
             <h2 className="title-user">Crear Usuario</h2>
+            
+            {error && (
+                <div className="alert alert-danger" style={{ marginBottom: '20px' }}>
+                    {error}
+                </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="form-user">
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">ID de Usuario</label>
-                        <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
+                        <input 
+                            type="text" 
+                            className="form-control-user" 
+                            name="id_usuario" 
+                            value={usuario.id_usuario} 
+                            onChange={handleChange} 
+                            required 
+                            maxLength="20"
+                        />
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Foto de Perfil</label>
-                        <input type="file" className="form-control-user" onChange={handleImageChange} accept="image/png" />
+                        <input 
+                            type="file" 
+                            className="form-control-user" 
+                            onChange={handleImageChange} 
+                            accept="image/*" 
+                        />
                     </div>
                 </div>
 
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Nombres</label>
-                        <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
+                        <input 
+                            type="text" 
+                            className="form-control-user" 
+                            name="nombres" 
+                            value={usuario.nombres} 
+                            onChange={handleChange} 
+                            required 
+                            maxLength="50"
+                        />
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Apellido Paterno</label>
-                        <input type="text" className="form-control-user" name="Apellido_paterno" value={usuario.Apellido_paterno} onChange={handleChange} required />
+                        <input 
+                            type="text" 
+                            className="form-control-user" 
+                            name="apellido_paterno" 
+                            value={usuario.apellido_paterno} 
+                            onChange={handleChange} 
+                            required 
+                            maxLength="50"
+                        />
                     </div>
                 </div>
 
                 <div className="row mb-3-user">
                     <div className="col-md-6">
-                        <label className="label-user">Facultad :</label>
-                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleFacultadChange} required>
+                        <label className="label-user">Facultad</label>
+                        <select 
+                            className="form-control-user" 
+                            name="id_facultad" 
+                            value={usuario.id_facultad} 
+                            onChange={handleFacultadChange} 
+                            required
+                        >
                             <option value="">Seleccione facultad</option>
                             {facultades.map(facultad => (
-                                <option key={facultad.id_facultad} value={facultad.id_facultad}>
+                                <option 
+                                    key={facultad.id_facultad} 
+                                    value={facultad.id_facultad}
+                                >
                                     {facultad.nombre_facultad}
                                 </option>
                             ))}
@@ -143,13 +254,27 @@ const UsuarioForm = () => {
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Carrera</label>
-                        <select className="form-control-user" name="id_programa" value={usuario.id_programa} onChange={handleChange} required>
+                        <select 
+                            className="form-control-user" 
+                            name="id_programa" 
+                            value={usuario.id_programa} 
+                            onChange={handleChange} 
+                            required
+                            disabled={!usuario.id_facultad || loadingCarreras}
+                        >
                             <option value="">Seleccione programa</option>
-                            {carreras.map(carrera => (
-                                <option key={carrera.id_programa} value={carrera.id_programa}>
-                                    {carrera.nombre_carrera}
-                                </option>
-                            ))}
+                            {loadingCarreras ? (
+                                <option disabled>Cargando carreras...</option>
+                            ) : (
+                                carreras.map(carrera => (
+                                    <option 
+                                        key={carrera.id_programa} 
+                                        value={carrera.id_programa}
+                                    >
+                                        {carrera.nombre_carrera}
+                                    </option>
+                                ))
+                            )}
                         </select>
                     </div>
                 </div>
@@ -157,27 +282,55 @@ const UsuarioForm = () => {
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Rol</label>
-                        <select className="form-control-user" name="Rol" value={usuario.Rol} onChange={handleChange} required>
+                        <select 
+                            className="form-control-user" 
+                            name="rol" 
+                            value={usuario.rol} 
+                            onChange={handleChange} 
+                            required
+                        >
                             <option value="">Seleccione rol</option>
                             <option value="admin">Admin</option>
-                            <option value="usuario">Usuario</option>
-                            <option value="secretaria">Secretaria</option>
-                            <option value="decanatura">Decanatura</option>
+                            <option value="peronsal_administrativo">Personal administrativo</option>
+                            <option value="secretaria_de_decanatura">Secretaria de decanatura</option>
+                            <option value="tecnico_vicerrectorado">Técnico vicerrectorado</option>
                             <option value="vicerrectorado">Vicerrectorado</option>
                         </select>
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Celular</label>
-                        <input type="text" className="form-control-user" name="Celular" value={usuario.Celular} onChange={handleChange} required />
+                        <input 
+                            type="tel" 
+                            className="form-control-user" 
+                            name="celular" 
+                            value={usuario.celular} 
+                            onChange={handleChange} 
+                            required 
+                            maxLength="15"
+                        />
                     </div>
                 </div>
 
                 <div className="mb-3-user">
                     <label className="label-user">Contraseña</label>
-                    <input type="password" className="form-control-user" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
+                    <input 
+                        type="password" 
+                        className="form-control-user" 
+                        name="contraseña" 
+                        value={usuario.contraseña} 
+                        onChange={handleChange} 
+                        required 
+                        minLength="6"
+                    />
                 </div>
 
-                <button type="submit" className="btn-user btn-primary-user">Crear Usuario</button>
+                <button 
+                    type="submit" 
+                    className="btn-user btn-primary-user"
+                    disabled={loadingCarreras}
+                >
+                    {loadingCarreras ? 'Procesando...' : 'Crear Usuario'}
+                </button>
             </form>
         </div>
     );

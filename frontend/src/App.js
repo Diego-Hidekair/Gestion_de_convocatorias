@@ -144,17 +144,16 @@ const AuthWrapper = () => {
                     <NavBar onLogout={handleLogout} userRole={userRole} />
                     <Routes>
                         <Route path="/" element={<Navigate to="/redirect" />} />
-                        <Route path="/redirect" element={<RedirectPage />} />
+                        <Route path="/redirect" element={<RedirectPage />} /> 
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/facultades" element={<FacultadList />} />
-                        {/* Acceso a ConvocatoriaList para roles "admin", "secretaria" y "vicerrectorado" */}
-                        {(userRole === 'admin' || userRole === 'secretaria' || userRole === 'vicerrectorado') && (
+                        {(userRole === 'admin' || userRole === 'secretaria_de_decanatura' || userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
                             <Route path="/convocatorias" element={<ConvocatoriaList />} />
                         )}
-                        {userRole === 'secretaria' && (
+                        {userRole === 'secretaria_de_decanatura' && (
                             <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                         )}
-                        {userRole === 'secretaria' && (
+                        {userRole === 'secretaria_de_decanatura' && (
                             <Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />
                         )}
                         <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />

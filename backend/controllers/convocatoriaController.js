@@ -196,17 +196,17 @@ const updateConvocatoria = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
-    }
+    } 
 };
 
 const updateEstadoConvocatoria = async (req, res) => {
+    const { rol } = req.user;
     const { id } = req.params;
     const { estado, comentario_observado } = req.body;
-    const { rol } = req.user;
 
     console.log("Rol del usuario:", rol);
 
-    if (rol !== 'vicerrectorado' && rol !== 'admin') {
+    if (rol !== 'tecnico_vicerrectorado' && rol !== 'admin') {
         return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
     }
 
@@ -250,4 +250,45 @@ const updateEstadoConvocatoria = async (req, res) => {
     }
 };
 
-module.exports = { getConvocatoriasByFacultad, updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado };
+// Agregar esta nueva función al controlador
+const updateComentarioObservado = async (req, res) => {
+    const { id } = req.params;
+    const { comentario_observado } = req.body;
+    const { rol } = req.user;
+
+    // Verificar permisos
+    if (rol !== 'tecnico_vicerrectorado' && rol !== 'admin') {
+        return res.status(403).json({ error: 'No tienes permisos para editar comentarios' });
+    }
+
+    try {
+        // Primero verificar que la convocatoria existe y está observada
+        const convocatoria = await pool.query(
+            'SELECT estado FROM convocatorias WHERE id_convocatoria = $1', 
+            [id]
+        );
+
+        if (convocatoria.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+
+        if (convocatoria.rows[0].estado !== 'Observado') {
+            return res.status(400).json({ error: 'Solo se puede editar comentario en convocatorias observadas' });
+        }
+
+        // Actualizar el comentario
+        const result = await pool.query(`
+            UPDATE convocatorias 
+            SET comentario_observado = $1
+            WHERE id_convocatoria = $2 
+            RETURNING id_convocatoria, estado, comentario_observado
+        `, [comentario_observado, id]);
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+    
+module.exports = { getConvocatoriasByFacultad, updateEstadoConvocatoria, getConvocatorias, getConvocatoriaById, createConvocatoria, updateConvocatoria, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, updateComentarioObservado  };

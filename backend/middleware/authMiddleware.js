@@ -11,7 +11,7 @@ const authenticateToken = (req, res, next) => {
         console.log('Token decodificado:', user);
         req.user = user; // Asegúrate de que el rol esté incluido en el payload del token
         next();
-    });
+    }); 
 };
 
 const authorizeAdmin = (req, res, next) => {
@@ -23,7 +23,7 @@ const authorizeAdmin = (req, res, next) => {
 };
 
 const verificarRolSecretaria = (req, res, next) => {
-    if (req.user.rol !== 'secretaria') {
+    if (req.user.rol !== 'secretaria_de_decanatura') {
         return res.status(403).json({ error: 'Acceso denegado: Rol no autorizado.' });
     }
     next();

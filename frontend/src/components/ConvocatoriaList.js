@@ -1,12 +1,7 @@
 // frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-    IconButton, Paper, Typography, Box, TextField, MenuItem, Select, 
-    InputLabel, FormControl, Dialog, DialogTitle, DialogContent, 
-    DialogActions, Button, Modal, Snackbar, Alert 
-} from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert } from "@mui/material";
 import { Edit, Delete, Preview, Download, Search, Comment } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +21,7 @@ const ConvocatoriaList = () => {
     const [comentarioModalOpen, setComentarioModalOpen] = useState(false);
     const [comentario, setComentario] = useState("");
     const [convocatoriaId, setConvocatoriaId] = useState(null);
+    const [isEditingComentario, setIsEditingComentario] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -91,8 +87,34 @@ const ConvocatoriaList = () => {
         }
     };
 
+    const updateComentario = async (id, comentario) => {
+        try {
+            const token = localStorage.getItem("token");
+            await axios.patch(
+                `http://localhost:5000/convocatorias/${id}/comentario`,
+                { comentario_observado: comentario },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            setConvocatorias(convocatorias.map(convocatoria =>
+                convocatoria.id_convocatoria === id 
+                    ? { ...convocatoria, comentario_observado: comentario } 
+                    : convocatoria
+            ));
+
+            setSnackbarMessage("Comentario actualizado correctamente.");
+            setSnackbarOpen(true);
+        } catch (error) {
+            console.error("Error updating comentario:", error);
+            setSnackbarMessage("No se pudo actualizar el comentario.");
+            setSnackbarOpen(true);
+        }
+    };
+
     const handleEstadoChange = async (id, newEstado) => {
-        if (userRole !== "vicerrectorado" && userRole !== "admin") {
+        if (userRole !== "tecnico_vicerrectorado" && userRole !== "admin") {
             setSnackbarMessage("No tiene el rol autorizado para modificar este estado.");
             setSnackbarOpen(true);
             return;
@@ -101,6 +123,7 @@ const ConvocatoriaList = () => {
         if (newEstado === "Observado") {
             setConvocatoriaId(id);
             setSelectedEstado(newEstado);
+            setIsEditingComentario(false);
             setComentarioModalOpen(true);
         } else {
             await updateConvocatoriaEstado(id, newEstado);
@@ -109,21 +132,38 @@ const ConvocatoriaList = () => {
 
     const handleComentarioSubmit = async () => {
         if (!comentario) {
-            setSnackbarMessage("Debe ingresar un comentario para el estado Observado.");
+            setSnackbarMessage("El comentario no puede estar vacío.");
             setSnackbarOpen(true);
             return;
         }
 
-        await updateConvocatoriaEstado(convocatoriaId, selectedEstado, comentario);
-        setComentarioModalOpen(false);
-        setComentario("");
-        setSelectedEstado(null);
+        try {
+            if (isEditingComentario) {
+                await updateComentario(convocatoriaId, comentario);
+            } else {
+                await updateConvocatoriaEstado(convocatoriaId, selectedEstado, comentario);
+            }
+            
+            handleComentarioClose();
+        } catch (error) {
+            console.error("Error al guardar comentario:", error);
+            setSnackbarMessage("Error al guardar el comentario.");
+            setSnackbarOpen(true);
+        }
     };
 
     const handleComentarioClose = () => {
         setComentarioModalOpen(false);
         setComentario("");
         setSelectedEstado(null);
+        setIsEditingComentario(false);
+    };
+
+    const handleEditComentario = (convocatoria) => {
+        setConvocatoriaId(convocatoria.id_convocatoria);
+        setComentario(convocatoria.comentario_observado);
+        setIsEditingComentario(true);
+        setComentarioModalOpen(true);
     };
 
     const handleEdit = (id) => {
@@ -294,11 +334,8 @@ const ConvocatoriaList = () => {
                                     {convocatoria.comentario_observado && (
                                         <IconButton
                                             style={{ color: "#007bff" }}
-                                            onClick={() => {
-                                                setComentario(convocatoria.comentario_observado);
-                                                setComentarioModalOpen(true);
-                                            }}
-                                            title="Ver comentario"
+                                            onClick={() => handleEditComentario(convocatoria)}
+                                            title="Editar comentario"
                                         >
                                             <Comment />
                                         </IconButton>
@@ -340,7 +377,6 @@ const ConvocatoriaList = () => {
                 </Table>
             </TableContainer>
 
-            {/* Modal de vista previa del PDF */}
             <Modal open={isPreviewModalOpen} onClose={() => setIsPreviewModalOpen(false)}>
                 <Box sx={{ 
                     width: "80%", 
@@ -361,7 +397,6 @@ const ConvocatoriaList = () => {
                 </Box>
             </Modal>
 
-            {/* Modal de confirmación de eliminación */}
             <Dialog open={deleteModalOpen} onClose={handleDeleteCancel}>
                 <DialogTitle>Confirmar Eliminación</DialogTitle>
                 <DialogContent>
@@ -379,13 +414,16 @@ const ConvocatoriaList = () => {
                 </DialogActions>
             </Dialog>
 
-            {/* Modal de comentario para estado Observado */}
             <Dialog open={comentarioModalOpen} onClose={handleComentarioClose} fullWidth maxWidth="sm">
-                <DialogTitle>Comentario para estado "Observado"</DialogTitle>
+                <DialogTitle>
+                    {isEditingComentario ? "Editar Comentario" : "Agregar Comentario para estado 'Observado'"}
+                </DialogTitle>
                 <DialogContent>
-                    <Typography variant="body1" gutterBottom>
-                        Por favor ingrese los motivos por los cuales la convocatoria está siendo observada:
-                    </Typography>
+                    {!isEditingComentario && (
+                        <Typography variant="body1" gutterBottom>
+                            Por favor ingrese los motivos por los cuales la convocatoria está siendo observada:
+                        </Typography>
+                    )}
                     <TextField
                         autoFocus
                         margin="dense"
@@ -410,12 +448,11 @@ const ConvocatoriaList = () => {
                         variant="contained"
                         disabled={!comentario}
                     >
-                        Guardar y Cambiar Estado
+                        {isEditingComentario ? "Actualizar Comentario" : "Guardar y Cambiar Estado"}
                     </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Snackbar para mensajes */}
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
