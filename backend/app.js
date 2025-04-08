@@ -45,7 +45,7 @@ const routes = [
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
-    { path: '/api/auth', route: './routes/authRoutes' },
+    { path: '/api/auth', route: './routes/authRoutes' }, // Montar las rutas de autenticación
     { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },

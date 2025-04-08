@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box } from "@mui/material";
-import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "@mui/icons-material";
+import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Verified as VerifiedIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 
@@ -13,8 +13,8 @@ const drawerWidthCollapsed = 70;
 const NavBar = ({ onLogout }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState("");
-    const [isOpen, setIsOpen] = useState(false); // Para el drawer móvil
-    const [isExpanded, setIsExpanded] = useState(true); // Para el drawer estático
+    const [isOpen, setIsOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
 
     const location = useLocation();
     const theme = useTheme();
@@ -31,7 +31,7 @@ const NavBar = ({ onLogout }) => {
 
     useEffect(() => {
         if (isMobile) {
-            setIsOpen(false); // Cierra el drawer en móviles al cambiar de ruta
+            setIsOpen(false);
         }
     }, [location, isMobile]);
 
@@ -49,7 +49,6 @@ const NavBar = ({ onLogout }) => {
         if (onLogout) onLogout();
     };
 
-    // Estilos dinámicos de los elementos del menú usando sx
     const getItemStyle = (path) => ({
         backgroundColor: location.pathname === path ? "#fff" : "transparent",
         color: location.pathname === path ? "#000" : "#fff",
@@ -87,7 +86,7 @@ const NavBar = ({ onLogout }) => {
                 <ListItemIcon sx={{ color: "#fff" }}>
                     <PersonIcon />
                 </ListItemIcon>
-                {(isExpanded || isMobile) && <ListItemText primary="Perfil de Usuario" />}
+                {(isExpanded || isMobile) && <ListItemText primary="Perfil" />}
             </ListItem>,
         ];
 
@@ -170,6 +169,20 @@ const NavBar = ({ onLogout }) => {
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
             ],
+            vicerrectorado: [
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/convocatorias-aprobadas" 
+                    key="convocatorias-aprobadas" 
+                    sx={getItemStyle("/convocatorias-aprobadas")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
+                        <VerifiedIcon />
+                    </ListItemIcon>
+                    {(isExpanded || isMobile) && <ListItemText primary="Convocatorias Aprobadas" />}
+                </ListItem>,
+            ]
         };
 
         return [

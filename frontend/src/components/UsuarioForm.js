@@ -23,7 +23,15 @@ const UsuarioForm = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    // Cargar facultades al montar el componente
+    // Roles válidos con nombres descriptivos
+    const rolesValidos = [
+        { value: 'admin', label: 'Administrador' },
+        { value: 'personal_administrativo', label: 'Personal Administrativo' },
+        { value: 'secretaria_de_decanatura', label: 'Secretaría de Decanatura' },
+        { value: 'tecnico_vicerrectorado', label: 'Técnico de Vicerrectorado' },
+        { value: 'vicerrectorado', label: 'Vicerrectorado' }
+    ];
+
     useEffect(() => {
         const fetchFacultades = async () => {
             try {
@@ -41,8 +49,7 @@ const UsuarioForm = () => {
         };
         fetchFacultades();
     }, []);
-
-    // Función para cargar carreras según la facultad seleccionada
+    
     const fetchCarrerasByFacultad = async (idFacultad) => {
         if (!idFacultad) {
             setCarreras([]);
@@ -53,7 +60,6 @@ const UsuarioForm = () => {
         setError('');
         
         try {
-            console.log(`Solicitando carreras para facultad ID: ${idFacultad}`);
             const response = await axios.get(
                 `http://localhost:5000/carreras/facultad/${idFacultad}`, 
                 {
@@ -63,8 +69,6 @@ const UsuarioForm = () => {
                     }
                 }
             );
-            
-            console.log('Respuesta de carreras:', response.data);
             
             if (!Array.isArray(response.data)) {
                 throw new Error('Formato de datos incorrecto');
@@ -80,7 +84,6 @@ const UsuarioForm = () => {
         }
     };
     
-    // Manejar cambio de facultad
     const handleFacultadChange = async (e) => {
         const idFacultad = e.target.value;
         setUsuario(prev => ({ 
@@ -91,18 +94,15 @@ const UsuarioForm = () => {
         await fetchCarrerasByFacultad(idFacultad);
     };
     
-    // Manejar cambios en los inputs
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUsuario(prev => ({ ...prev, [name]: value }));
     };
 
-    // Manejar cambio de imagen
     const handleImageChange = (e) => {
         setFoto(e.target.files?.[0] || null);
     };
 
-    // Enviar formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -112,7 +112,7 @@ const UsuarioForm = () => {
             setError("La contraseña es obligatoria");
             return;
         }
-    
+        
         // Crear FormData correctamente
         const formData = new FormData();
         
@@ -153,15 +153,12 @@ const UsuarioForm = () => {
             let errorMessage = 'Error al crear el usuario';
             
             if (error.response) {
-                // El servidor respondió con un código de estado fuera del rango 2xx
                 errorMessage = error.response.data.error || 
                              error.response.data.message || 
                              `Error ${error.response.status}`;
             } else if (error.request) {
-                // La solicitud fue hecha pero no se recibió respuesta
                 errorMessage = 'No se recibió respuesta del servidor';
             } else {
-                // Algo pasó al configurar la solicitud
                 errorMessage = error.message;
             }
             
@@ -172,81 +169,41 @@ const UsuarioForm = () => {
     return (
         <div className="container-user mt-5-user">
             <h2 className="title-user">Crear Usuario</h2>
-            
             {error && (
                 <div className="alert alert-danger" style={{ marginBottom: '20px' }}>
                     {error}
                 </div>
             )}
-            
             <form onSubmit={handleSubmit} className="form-user">
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">ID de Usuario</label>
-                        <input 
-                            type="text" 
-                            className="form-control-user" 
-                            name="id_usuario" 
-                            value={usuario.id_usuario} 
-                            onChange={handleChange} 
-                            required 
-                            maxLength="20"
-                        />
+                        <input type="text" className="form-control-user" name="id_usuario" value={usuario.id_usuario} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Foto de Perfil</label>
-                        <input 
-                            type="file" 
-                            className="form-control-user" 
-                            onChange={handleImageChange} 
-                            accept="image/*" 
-                        />
+                        <input type="file" className="form-control-user" onChange={handleImageChange} accept="image/png" />
                     </div>
                 </div>
 
                 <div className="row mb-3-user">
                     <div className="col-md-6">
                         <label className="label-user">Nombres</label>
-                        <input 
-                            type="text" 
-                            className="form-control-user" 
-                            name="nombres" 
-                            value={usuario.nombres} 
-                            onChange={handleChange} 
-                            required 
-                            maxLength="50"
-                        />
+                        <input type="text" className="form-control-user" name="Nombres" value={usuario.Nombres} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Apellido Paterno</label>
-                        <input 
-                            type="text" 
-                            className="form-control-user" 
-                            name="apellido_paterno" 
-                            value={usuario.apellido_paterno} 
-                            onChange={handleChange} 
-                            required 
-                            maxLength="50"
-                        />
+                        <input type="text" className="form-control-user" name="Apellido_paterno" value={usuario.Apellido_paterno} onChange={handleChange} required />
                     </div>
                 </div>
 
                 <div className="row mb-3-user">
                     <div className="col-md-6">
-                        <label className="label-user">Facultad</label>
-                        <select 
-                            className="form-control-user" 
-                            name="id_facultad" 
-                            value={usuario.id_facultad} 
-                            onChange={handleFacultadChange} 
-                            required
-                        >
+                        <label className="label-user">Facultad :</label>
+                        <select className="form-control-user" name="id_facultad" value={usuario.id_facultad} onChange={handleFacultadChange} required>
                             <option value="">Seleccione facultad</option>
                             {facultades.map(facultad => (
-                                <option 
-                                    key={facultad.id_facultad} 
-                                    value={facultad.id_facultad}
-                                >
+                                <option key={facultad.id_facultad} value={facultad.id_facultad}>
                                     {facultad.nombre_facultad}
                                 </option>
                             ))}
@@ -254,27 +211,13 @@ const UsuarioForm = () => {
                     </div>
                     <div className="col-md-6">
                         <label className="label-user">Carrera</label>
-                        <select 
-                            className="form-control-user" 
-                            name="id_programa" 
-                            value={usuario.id_programa} 
-                            onChange={handleChange} 
-                            required
-                            disabled={!usuario.id_facultad || loadingCarreras}
-                        >
+                        <select className="form-control-user" name="id_programa" value={usuario.id_programa} onChange={handleChange} required>
                             <option value="">Seleccione programa</option>
-                            {loadingCarreras ? (
-                                <option disabled>Cargando carreras...</option>
-                            ) : (
-                                carreras.map(carrera => (
-                                    <option 
-                                        key={carrera.id_programa} 
-                                        value={carrera.id_programa}
-                                    >
-                                        {carrera.nombre_carrera}
-                                    </option>
-                                ))
-                            )}
+                            {carreras.map(carrera => (
+                                <option key={carrera.id_programa} value={carrera.id_programa}>
+                                    {carrera.nombre_carrera}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -290,11 +233,11 @@ const UsuarioForm = () => {
                             required
                         >
                             <option value="">Seleccione rol</option>
-                            <option value="admin">Admin</option>
-                            <option value="peronsal_administrativo">Personal administrativo</option>
-                            <option value="secretaria_de_decanatura">Secretaria de decanatura</option>
-                            <option value="tecnico_vicerrectorado">Técnico vicerrectorado</option>
-                            <option value="vicerrectorado">Vicerrectorado</option>
+                            {rolesValidos.map((rol) => (
+                                <option key={rol.value} value={rol.value}>
+                                    {rol.label}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     <div className="col-md-6">
@@ -313,24 +256,10 @@ const UsuarioForm = () => {
 
                 <div className="mb-3-user">
                     <label className="label-user">Contraseña</label>
-                    <input 
-                        type="password" 
-                        className="form-control-user" 
-                        name="contraseña" 
-                        value={usuario.contraseña} 
-                        onChange={handleChange} 
-                        required 
-                        minLength="6"
-                    />
+                    <input type="password" className="form-control-user" name="Contraseña" value={usuario.Contraseña} onChange={handleChange} required />
                 </div>
 
-                <button 
-                    type="submit" 
-                    className="btn-user btn-primary-user"
-                    disabled={loadingCarreras}
-                >
-                    {loadingCarreras ? 'Procesando...' : 'Crear Usuario'}
-                </button>
+                <button type="submit" className="btn-user btn-primary-user">Crear Usuario</button>
             </form>
         </div>
     );

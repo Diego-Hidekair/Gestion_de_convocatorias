@@ -8,23 +8,22 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
-        console.log('Token decodificado:', user);
-        req.user = user; // Asegúrate de que el rol esté incluido en el payload del token
+        req.user = user;
         next();
-    }); 
+    });
 };
 
 const authorizeAdmin = (req, res, next) => {
-    console.log('Rol del usuario:', req.user.rol);
-    if (req.user.rol !== 'admin') {
-        return res.status(403).json({ error: 'Acceso denegado: Solo los administradores pueden acceder a esta ruta.' });
+    const adminRoles = ['admin', 'vicerrectorado', 'tecnico_vicerrectorado'];
+    if (!adminRoles.includes(req.user.rol)) {
+        return res.status(403).json({ error: 'Acceso denegado: No tienes permisos de administración.' });
     }
     next();
 };
 
 const verificarRolSecretaria = (req, res, next) => {
     if (req.user.rol !== 'secretaria_de_decanatura') {
-        return res.status(403).json({ error: 'Acceso denegado: Rol no autorizado.' });
+        return res.status(403).json({ error: 'Acceso denegado: Solo secretaría de decanatura puede acceder.' });
     }
     next();
 };
@@ -40,12 +39,11 @@ const authorizeRoles = (permittedRoles) => {
 
 function verificarRol(...rolesPermitidos) {
     return (req, res, next) => {
-        const { rol } = req.user;
-        if (!rolesPermitidos.includes(rol)) {
+        if (!rolesPermitidos.includes(req.user.rol)) {
             return res.status(403).json({ message: 'No tienes permisos para realizar esta acción.' });
         }
         next();
     };
 }
 
-module.exports = { authenticateToken , authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };

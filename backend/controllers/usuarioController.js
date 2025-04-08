@@ -3,12 +3,7 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  }
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 const getUsuarios = async (req, res) => {
     try {
@@ -28,15 +23,9 @@ const getUsuarios = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-    // Verificar que el formulario multipart se procesó correctamente
-    if (!req.is('multipart/form-data')) {
-        return res.status(400).json({ error: 'Formato de solicitud incorrecto. Se esperaba multipart/form-data' });
-    }
-
     console.log("Datos recibidos en req.body:", req.body);
-    console.log("Archivo recibido:", req.file); // Verifica si el archivo llega
-
-    const passwordField = req.body.Contraseña || req.body.password;
+    
+    const passwordField = req.body['Contraseña'] || req.body['ContraseÃ±a'];
     if (!passwordField) {
         return res.status(400).json({ error: 'La contraseña es obligatoria' });
     }
@@ -49,7 +38,7 @@ const createUser = async (req, res) => {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
 
-        const validRoles = ['admin', 'peronsal_administrativo', 'secretaria_de_decanatura', 'tecnico_vicerrectorado', 'vicerrectorado'];
+        const validRoles = ['admin', 'personal_administrativo', 'secretaria_de_decanatura', 'tecnico_vicerrectorado', 'vicerrectorado'];
         if (!validRoles.includes(Rol)) {
             return res.status(400).json({ error: 'Rol inválido' });
         }
@@ -67,9 +56,6 @@ const createUser = async (req, res) => {
         // Procesar la imagen si existe
         let fotoBuffer = null;
         if (req.file) {
-            if (req.file.size > 5 * 1024 * 1024) { // 5MB
-                return res.status(400).json({ error: 'La imagen es demasiado grande (máximo 5MB)' });
-            }
             fotoBuffer = req.file.buffer;
         }
 
@@ -119,20 +105,16 @@ const updateUser = async (req, res) => {
             hashedPassword = await bcrypt.hash(Contraseña, salt);
 
             updatedUser = await pool.query(
-                `UPDATE usuarios SET nombres = $1, apellido_paterno = $2, apellido_materno = $3, rol = $4, contraseña = $5, celular = $6, id_facultad = $7, id_programa = $8 
-                WHERE id_usuario = $9 RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_facultad, id_programa`,
+                `UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña = $5, Celular = $6, id_facultad = $7, id_programa = $8 
+                WHERE id_usuario = $9 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa`,
                 [Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, id_usuario]
             );
         } else {
             updatedUser = await pool.query(
-                `UPDATE usuarios SET nombres = $1, apellido_paterno = $2, apellido_materno = $3, rol = $4, celular = $5, id_facultad = $6, id_programa = $7
-                WHERE id_usuario = $8 RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_facultad, id_programa`,
+                `UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5, id_facultad = $6, id_programa = $7
+                WHERE id_usuario = $8 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa`,
                 [Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa, id_usuario]
             );
-        }
-
-        if (updatedUser.rows.length === 0) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
         res.json(updatedUser.rows[0]);
@@ -148,26 +130,23 @@ const deleteUser = async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM usuarios WHERE id_usuario = $1 RETURNING *', [id_usuario]);
 
+        // Si no se eliminó ningún usuario, envía un error 404
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        res.json({ message: 'Usuario eliminado correctamente' });
+        res.json({ message: 'Usuario eliminado' });
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: 'Error en el servidor al eliminar el usuario' });
     }
 }; 
 
+
 const getUsuarioById = async (req, res) => {
     const { id_usuario } = req.params;
     try {
-        const result = await pool.query(`
-            SELECT id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_facultad, id_programa 
-            FROM usuarios WHERE id_usuario = $1`, 
-            [id_usuario]
-        );
-        
+        const result = await pool.query('SELECT id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular FROM usuarios WHERE id_usuario = $1', [id_usuario]);
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -183,10 +162,10 @@ const getCurrentUser = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno, u.rol, u.celular,
-                f.nombre_facultad, p.nombre_carrera
+                f.nombre_facultad, c.nombre_carrera
             FROM usuarios u
             LEFT JOIN alm_programas_facultades f ON u.id_facultad = f.id_facultad
-            LEFT JOIN alm_programas p ON u.id_programa = p.id_programa
+            LEFT JOIN alm_programas c ON u.id_programa = c.id_programa
             WHERE u.id_usuario = $1
         `, [userId]);
 
@@ -200,5 +179,6 @@ const getCurrentUser = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener el usuario actual', error });
     }
 };
+
 
 module.exports = { createUser, getUsuarios, deleteUser, updateUser, getUsuarioById, getCurrentUser, upload} ;

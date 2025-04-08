@@ -22,6 +22,7 @@ const Login = ({ setAuth }) => {
         id_usuario: '',
         Contraseña: ''
     });
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -34,16 +35,40 @@ const Login = ({ setAuth }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
             const { token, userId, rol } = response.data;
+            
+            // Guardar datos en localStorage
             localStorage.setItem('token', token);
             localStorage.setItem('userId', userId);
             localStorage.setItem('rol', rol);
             setAuth(true);
-            navigate('/redirect');
+            
+            // Redirección basada en roles
+            switch(rol) {
+                case 'admin':
+                    navigate('/usuarios');
+                    break;
+                case 'personal_administrativo':
+                    navigate('/solicitudes');
+                    break;
+                case 'secretaria_de_decanatura':
+                    navigate('/convocatorias');
+                    break;
+                case 'tecnico_vicerrectorado':
+                    navigate('/convocatorias');
+                    break;
+                case 'vicerrectorado':
+                    navigate('/reportes');
+                    break;
+                default:
+                    navigate('/perfil');
+            }
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
+            setError('Credenciales incorrectas o error en el servidor');
         }
     };
 
@@ -61,6 +86,11 @@ const Login = ({ setAuth }) => {
                         <div className="login-title-container">
                             <h2 className="login-title">LOGIN</h2>
                         </div>
+                        {error && (
+                            <div className="alert alert-danger mb-3">
+                                {error}
+                            </div>
+                        )}
                         <form onSubmit={handleSubmit}>
                             <div className="form-group-login">
                                 <input 
