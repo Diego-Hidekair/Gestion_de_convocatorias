@@ -114,13 +114,13 @@ const ConvocatoriaList = () => {
     };
 
     const handleEstadoChange = async (id, newEstado) => {
-        if (userRole !== "tecnico_vicerrectorado" && userRole !== "admin") {
+        if (userRole !== "tecnico_vicerrectorado" && userRole !== "vicerrectorado" && userRole !== "admin") {
             setSnackbarMessage("No tiene el rol autorizado para modificar este estado.");
             setSnackbarOpen(true);
             return;
         }
 
-        if (newEstado === "Observado") {
+        if (newEstado === "Observado" || newEstado === "Devuelto") {
             setConvocatoriaId(id);
             setSelectedEstado(newEstado);
             setIsEditingComentario(false);
@@ -252,16 +252,27 @@ const ConvocatoriaList = () => {
     const getEstadoColor = (estado) => {
         switch (estado) {
             case "Para Revisión":
-                return "#ffc107";
+                return "#ffc107"; // Amarillo
             case "En Revisión":
-                return "#007bff";
+                return "#17a2b8"; // Cyan
             case "Observado":
-                return "#dc3545";
+                return "#fd7e14"; // Naranja
             case "Revisado":
-                return "#28a745";
+                return "#28a745"; // Verde
+            case "Aprobado":
+                return "#20c997"; // Verde claro
+            case "Devuelto":
+                return "#dc3545"; // Rojo
+            case "Para Publicar":
+                return "#007bff"; // Azul
             default:
-                return "#6c757d";
+                return "#6c757d"; // Gris
         }
+    };
+
+    const getEstadoTextColor = (estado) => {
+        // Para asegurar buen contraste con el fondo
+        return ["Para Revisión", "Observado"].includes(estado) ? "#ffffff" : "#ffffff";
     };
 
     return (
@@ -319,23 +330,31 @@ const ConvocatoriaList = () => {
                                             onChange={(e) => handleEstadoChange(convocatoria.id_convocatoria, e.target.value)}
                                             style={{ 
                                                 backgroundColor: getEstadoColor(convocatoria.estado), 
-                                                color: "#fff",
-                                                minWidth: "150px"
+                                                color: getEstadoTextColor(convocatoria.estado),
+                                                minWidth: "150px",
+                                                fontWeight: "bold"
                                             }}
                                         >
                                             <MenuItem value="Para Revisión">Para Revisión</MenuItem>
                                             <MenuItem value="En Revisión">En Revisión</MenuItem>
                                             <MenuItem value="Observado">Observado</MenuItem>
                                             <MenuItem value="Revisado">Revisado</MenuItem>
+                                            {userRole === "vicerrectorado" || userRole === "admin" ? (
+                                                <>
+                                                    <MenuItem value="Aprobado">Aprobado</MenuItem>
+                                                    <MenuItem value="Devuelto">Devuelto</MenuItem>
+                                                    <MenuItem value="Para Publicar">Para Publicar</MenuItem>
+                                                </>
+                                            ) : null}
                                         </Select>
                                     </FormControl>
                                 </TableCell>
                                 <TableCell>
-                                    {convocatoria.comentario_observado && (
+                                    {(convocatoria.comentario_observado || ["Observado", "Devuelto"].includes(convocatoria.estado)) && (
                                         <IconButton
                                             style={{ color: "#007bff" }}
                                             onClick={() => handleEditComentario(convocatoria)}
-                                            title="Editar comentario"
+                                            title={convocatoria.comentario_observado ? "Editar comentario" : "Agregar comentario"}
                                         >
                                             <Comment />
                                         </IconButton>
@@ -416,12 +435,12 @@ const ConvocatoriaList = () => {
 
             <Dialog open={comentarioModalOpen} onClose={handleComentarioClose} fullWidth maxWidth="sm">
                 <DialogTitle>
-                    {isEditingComentario ? "Editar Comentario" : "Agregar Comentario para estado 'Observado'"}
+                    {isEditingComentario ? "Editar Comentario" : `Agregar Comentario para estado '${selectedEstado}'`}
                 </DialogTitle>
                 <DialogContent>
                     {!isEditingComentario && (
                         <Typography variant="body1" gutterBottom>
-                            Por favor ingrese los motivos por los cuales la convocatoria está siendo observada:
+                            Por favor ingrese los motivos por los cuales la convocatoria está siendo {selectedEstado === "Devuelto" ? "devuelta" : "observada"}:
                         </Typography>
                     )}
                     <TextField

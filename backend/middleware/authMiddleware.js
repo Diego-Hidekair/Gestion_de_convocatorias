@@ -45,5 +45,12 @@ function verificarRol(...rolesPermitidos) {
         next();
     };
 }
+const verificarRolVicerrectorado = (req, res, next) => {
+    if (req.user.rol !== 'vicerrectorado' && req.user.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado: Solo el Vicerrectorado puede acceder.' });
+    }
+    next();
+};
 
 module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
+module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, verificarRolVicerrectorado, authorizeRoles, verificarRol };

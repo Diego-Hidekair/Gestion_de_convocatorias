@@ -204,25 +204,53 @@ const updateEstadoConvocatoria = async (req, res) => {
     const { id } = req.params;
     const { estado, comentario_observado } = req.body;
 
-    console.log("Rol del usuario:", rol);
-
-    if (rol !== 'tecnico_vicerrectorado' && rol !== 'admin') {
-        return res.status(403).json({ error: 'No tienes permisos para actualizar el estado de la convocatoria' });
-    }
-
-    const estadosPermitidos = ['Para Revisión', 'En Revisión', 'Observado', 'Revisado'];
-    if (!estadosPermitidos.includes(estado)) {
-        return res.status(400).json({ error: 'Estado no válido' });
-    }
-
     try {
+        // Verificar que la convocatoria existe
+        const convocatoriaExistente = await pool.query(
+            'SELECT estado FROM convocatorias WHERE id_convocatoria = $1', 
+            [id]
+        );
+
+        if (convocatoriaExistente.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+
+        const estadoActual = convocatoriaExistente.rows[0].estado;
+
+        // Validaciones según el rol del usuario
+        if (rol === 'tecnico_vicerrectorado') {
+            // Técnico de Vicerrectorado solo puede cambiar a estados específicos
+            const estadosPermitidosTecnico = ['Para Revisión', 'En Revisión', 'Observado', 'Revisado'];
+            if (!estadosPermitidosTecnico.includes(estado)) {
+                return res.status(400).json({ error: 'Estado no válido para este rol' });
+            }
+        } else if (rol === 'vicerrectorado') {
+            // Vicerrectorado solo puede aprobar o rechazar convocatorias revisadas
+            if (!['Aprobado', 'Devuelto', 'Para Publicar'].includes(estado)) {
+                return res.status(400).json({ error: 'Estado no válido para este rol' });
+            }
+            
+            if (estadoActual !== 'Revisado') {
+                return res.status(400).json({ 
+                    error: 'Solo se pueden aprobar/rechazar convocatorias en estado "Revisado"' 
+                });
+            }
+        } else if (rol !== 'admin') {
+            return res.status(403).json({ error: 'No tienes permisos para esta acción' });
+        }
+
+        // Validaciones específicas para estados que requieren comentario
+        if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
+            return res.status(400).json({ 
+                error: 'Se requiere un comentario cuando el estado es "Observado" o "Devuelto"' 
+            });
+        }
+
+        // Construir la consulta según el estado
         let query;
         let values;
 
-        if (estado === "Observado") {
-            if (!comentario_observado) {
-                return res.status(400).json({ error: 'Se requiere un comentario cuando el estado es "Observado".' });
-            }
+        if (estado === "Observado" || estado === "Devuelto") {
             query = `
                 UPDATE convocatorias 
                 SET estado = $1, comentario_observado = $2 
@@ -239,30 +267,24 @@ const updateEstadoConvocatoria = async (req, res) => {
         }
 
         const result = await pool.query(query, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Convocatoria no encontrada' });
-        }
-
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-// Agregar esta nueva función al controlador
 const updateComentarioObservado = async (req, res) => {
     const { id } = req.params;
     const { comentario_observado } = req.body;
     const { rol } = req.user;
 
     // Verificar permisos
-    if (rol !== 'tecnico_vicerrectorado' && rol !== 'admin') {
+    if (rol !== 'tecnico_vicerrectorado' && rol !== 'vicerrectorado' && rol !== 'admin') {
         return res.status(403).json({ error: 'No tienes permisos para editar comentarios' });
     }
 
     try {
-        // Primero verificar que la convocatoria existe y está observada
+        // Primero verificar que la convocatoria existe y está en estado que permite comentarios
         const convocatoria = await pool.query(
             'SELECT estado FROM convocatorias WHERE id_convocatoria = $1', 
             [id]
@@ -272,8 +294,10 @@ const updateComentarioObservado = async (req, res) => {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
 
-        if (convocatoria.rows[0].estado !== 'Observado') {
-            return res.status(400).json({ error: 'Solo se puede editar comentario en convocatorias observadas' });
+        if (!['Observado', 'Devuelto'].includes(convocatoria.rows[0].estado)) {
+            return res.status(400).json({ 
+                error: 'Solo se puede editar comentario en convocatorias con estado "Observado" o "Devuelto"' 
+            });
         }
 
         // Actualizar el comentario

@@ -16,9 +16,37 @@ router.post('/', authenticateToken, verificarRolSecretaria, convocatoriaControll
 router.put('/:id', authenticateToken, verificarRolSecretaria, convocatoriaController.updateConvocatoria);
 
 // Ruta para actualizar solo el estado de una convocatoria
-router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEstadoConvocatoria);
+//router.patch('/:id/estado', authenticateToken, convocatoriaController.updateEstadoConvocatoria);
+router.patch(
+    '/:id/estado', 
+    authenticateToken, 
+    (req, res, next) => {
+        // Middleware condicional basado en el rol
+        if (req.user.rol === 'tecnico_vicerrectorado' || req.user.rol === 'vicerrectorado' || req.user.rol === 'admin') {
+            next();
+        } else {
+            res.status(403).json({ error: 'Acceso denegado' });
+        }
+    },
+    convocatoriaController.updateEstadoConvocatoria
+);
 
 // Nueva ruta para actualizar comentarios (agregar esta línea)
-router.patch('/:id/comentario', authenticateToken, convocatoriaController.updateComentarioObservado);
+//router.patch('/:id/comentario', authenticateToken, convocatoriaController.updateComentarioObservado);
+router.patch(
+    '/:id/comentario', 
+    authenticateToken, 
+    (req, res, next) => {
+        // Middleware condicional basado en el rol
+        if (req.user.rol === 'tecnico_vicerrectorado' || req.user.rol === 'vicerrectorado' || req.user.rol === 'admin') {
+            next();
+        } else {
+            res.status(403).json({ error: 'Acceso denegado' });
+        }
+    },
+    convocatoriaController.updateComentarioObservado
+);
 
 module.exports = router;
+
+

@@ -1,3 +1,4 @@
+// frontend/src/components/ConvocatoriaEdit.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -18,6 +19,8 @@ const ConvocatoriaEdit = () => {
         horario: 'TIEMPO COMPLETO',
         prioridad: 'PRIMERA',
         gestion: 'GESTION 1',
+        estado: '',
+        comentario_observado: ''
     });
 
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
@@ -25,16 +28,23 @@ const ConvocatoriaEdit = () => {
     const [facultades, setFacultades] = useState([]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [userRole, setUserRole] = useState(''); 
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = JSON.parse(atob(token.split('.')[1]));
+            setUserRole(decoded.rol);
+        }
+
         const fetchConvocatoria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
                 const data = response.data;
                 setConvocatoria({
                     ...data,
-                    fecha_inicio: data.fecha_inicio.split('T')[0], // Formatear fecha
-                    fecha_fin: data.fecha_fin ? data.fecha_fin.split('T')[0] : '', // Formatear fecha
+                    fecha_inicio: data.fecha_inicio.split('T')[0],
+                    fecha_fin: data.fecha_fin ? data.fecha_fin.split('T')[0] : '',
                 });
             } catch (error) {
                 console.error('Error fetching convocatoria:', error);
@@ -85,18 +95,15 @@ const ConvocatoriaEdit = () => {
             [name]: value,
         }));
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
 
         try {
-            // Actualizar la convocatoria
             await axios.put(`http://localhost:5000/convocatorias/${id}`, convocatoria);
             setSuccess('Convocatoria actualizada correctamente.');
 
-            // Regenerar el PDF después de la actualización
             const pdfResponse = await axios.get(`http://localhost:5000/pdf/generar/${id}/1`);
             if (pdfResponse.status === 201) {
                 setSuccess((prev) => `${prev} PDF regenerado correctamente.`);
@@ -104,13 +111,33 @@ const ConvocatoriaEdit = () => {
                 setError('Hubo un error al regenerar el PDF.');
             }
 
-            // Redirigir a la lista de convocatorias después de 2 segundos
             setTimeout(() => {
                 navigate('/convocatorias');
             }, 2000);
         } catch (error) {
             console.error('Error updating convocatoria:', error);
             setError('Error al actualizar la convocatoria.');
+        }
+    };
+
+    const handleEstadoChange = async (nuevoEstado, comentario = null) => {
+        try {
+            const payload = { estado: nuevoEstado };
+            if (comentario) {
+                payload.comentario_observado = comentario;
+            }
+            await axios.patch(`http://localhost:5000/convocatorias/${id}/estado`, payload);
+            setSuccess(`Estado cambiado a ${nuevoEstado} correctamente.`);
+            const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+            const data = response.data;
+            setConvocatoria({
+                ...data,
+                fecha_inicio: data.fecha_inicio.split('T')[0],
+                fecha_fin: data.fecha_fin ? data.fecha_fin.split('T')[0] : '',
+            });
+        } catch (error) {
+            console.error('Error cambiando estado:', error);
+            setError('Error al cambiar el estado de la convocatoria.');
         }
     };
 
@@ -245,6 +272,100 @@ const ConvocatoriaEdit = () => {
                                         Actualizar
                                     </Button>
                                 </Form>
+                                {['tecnico_vicerrectorado', 'vicerrectorado', 'admin'].includes(userRole) && (
+                                    <div className="mt-4">
+                                        <h4>Cambiar Estado</h4>
+                                        <div className="d-flex flex-wrap gap-2">
+                                            {convocatoria.estado === 'Para Revisión' && (
+                                                <Button 
+                                                    color="info" 
+                                                    onClick={() => handleEstadoChange('En Revisión')}
+                                                >
+                                                    Marcar como En Revisión
+                                                </Button>
+                                            )}
+                                            {convocatoria.estado === 'En Revisión' && (
+                                                <>
+                                                    <Button 
+                                                        color="success" 
+                                                        onClick={() => handleEstadoChange('Revisado')}
+                                                    >
+                                                        Marcar como Revisado
+                                                    </Button>
+                                                    <Button 
+                                                        color="warning" 
+                                                        onClick={() => {
+                                                            const comentario = prompt('Ingrese el motivo de la observación:');
+                                                            if (comentario) {
+                                                                handleEstadoChange('Observado', comentario);
+                                                            }
+                                                        }}
+                                                    >
+                                                        Marcar como Observado
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {convocatoria.estado === 'Revisado' && userRole === 'vicerrectorado' && (
+                                                <>
+                                                    <Button 
+                                                        color="primary" 
+                                                        onClick={() => handleEstadoChange('Aprobado')}
+                                                    >
+                                                        Aprobar
+                                                    </Button>
+                                                    <Button 
+                                                        color="danger" 
+                                                        onClick={() => {
+                                                            const comentario = prompt('Ingrese el motivo del rechazo:');
+                                                            if (comentario) {
+                                                                handleEstadoChange('Devuelto', comentario);
+                                                            }
+                                                        }}
+                                                    >
+                                                        Rechazar (Devolver)
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {convocatoria.estado === 'Aprobado' && userRole === 'vicerrectorado' && (
+                                                <Button 
+                                                    color="success" 
+                                                    onClick={() => handleEstadoChange('Para Publicar')}
+                                                >
+                                                    Marcar para Publicación
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {['Observado', 'Devuelto'].includes(convocatoria.estado) && (
+                                    <div className="mt-4">
+                                        <h4>Comentario</h4>
+                                        <p>{convocatoria.comentario_observado}</p>
+                                        <Button 
+                                            color="secondary" 
+                                            onClick={() => {
+                                                const nuevoComentario = prompt('Editar comentario:', convocatoria.comentario_observado);
+                                                if (nuevoComentario !== null) {
+                                                    axios.patch(`http://localhost:5000/convocatorias/${id}/comentario`, {
+                                                        comentario_observado: nuevoComentario
+                                                    }).then(() => {
+                                                        setSuccess('Comentario actualizado correctamente.');
+                                                        setConvocatoria(prev => ({
+                                                            ...prev,
+                                                            comentario_observado: nuevoComentario
+                                                        }));
+                                                    }).catch(error => {
+                                                        console.error('Error actualizando comentario:', error);
+                                                        setError('Error al actualizar el comentario.');
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            Editar Comentario
+                                        </Button>
+                                    </div>
+                                )}
                             </CardBody>
                         </Card>
                     </Col>
@@ -254,4 +375,4 @@ const ConvocatoriaEdit = () => {
     );
 };
 
-export default ConvocatoriaEdit;    
+export default ConvocatoriaEdit;
