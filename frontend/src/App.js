@@ -22,10 +22,7 @@ import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
-import UsuarioList from './components/UsuarioList';
-import UsuarioForm from './components/UsuarioForm';
-import UsuarioEdit from './components/UsuarioEdit';
-import UsuarioPerfil from './components/UsuarioPerfil';
+import UsuarioManager from './components/UsuarioManager';
 import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import NavBar from './components/NavBar';
@@ -95,8 +92,6 @@ const FooterSection = () => (
 const AuthWrapper = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState('');
-    const [userName, setUserName] = useState('');
-    const [userLastName, setUserLastName] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -112,8 +107,6 @@ const AuthWrapper = () => {
                 navigate('/login');
             } else {
                 setUserRole(decodedToken.rol);
-                setUserName(decodedToken.nombre);
-                setUserLastName(decodedToken.apellido_paterno);
                 setIsAuthenticated(true);
                 setTimeout(() => {
                     localStorage.removeItem('token');
@@ -169,10 +162,12 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
                         <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/file-upload" element={<FileUpload />} />
-                        <Route path="/usuarios" element={<UsuarioList />} />
-                        <Route path="/usuarios/new" element={<UsuarioForm />} />
-                        <Route path="/usuarios/edit/:id_usuario" element={<UsuarioEdit />} />
-                        <Route path="/usuarios/me/:id_usuario" element={<UsuarioPerfil />} />
+                        {/* Rutas actualizadas para UsuarioManager */}
+                        <Route path="/usuarios" element={<UsuarioManager />} />
+                        <Route path="/usuarios/new" element={<UsuarioManager />} />
+                        <Route path="/usuarios/edit/:id" element={<UsuarioManager />} />
+                        <Route path="/usuarios/view/:id" element={<UsuarioManager />} />
+                        <Route path="/perfil" element={<UsuarioManager />} />
                         <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
                         <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} />

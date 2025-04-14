@@ -1,4 +1,4 @@
-// frontend/src/components/UsuarioForm.js
+// frontend/src/components/usuarios/UsuarioForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';

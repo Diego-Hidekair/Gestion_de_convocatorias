@@ -1,4 +1,4 @@
-// frontend/src/components/UsuarioPerfil.js
+// frontend/src/components/usuarios/UsuarioPerfil.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/Usuario.css';

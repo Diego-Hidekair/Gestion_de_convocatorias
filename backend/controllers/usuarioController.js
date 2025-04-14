@@ -12,13 +12,14 @@ const getUsuarios = async (req, res) => {
                 u.rol, u.celular, p.nombre_carrera
             FROM usuarios u
             LEFT JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa;
-        `); 
+        `); // Eliminar referencia a facultades
         res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener usuarios:', error);
         res.status(500).json({ error: 'Error al obtener usuarios' });
     }
 };
+
 const createUser = async (req, res) => {
     console.log("Datos recibidos en req.body:", req.body);
     
@@ -28,8 +29,16 @@ const createUser = async (req, res) => {
     }
     
     try {
-        const { id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa } = req.body;    
-        // Validar datos requeridos
+        const { id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa } = req.body;
+        if (id_programa) {
+            const programaExists = await pool.query(
+                'SELECT 1 FROM datos_universidad.alm_programas WHERE id_programa = $1', 
+                [id_programa]
+            );
+            if (programaExists.rows.length === 0) {
+                return res.status(400).json({ error: 'El programa especificado no existe' });
+            }
+        }
         if (!id_usuario || !nombres || !rol) {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
@@ -63,6 +72,7 @@ const createUser = async (req, res) => {
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular`;
         
+        
         const values = [
             id_usuario, 
             nombres, 
@@ -90,7 +100,6 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
     const { id_usuario } = req.params;
     const { nombres, apellido_paterno, apellido_materno, rol, contraseña, celular, id_programa } = req.body;
-    
     try {
         let hashedPassword;
         let updatedUser;

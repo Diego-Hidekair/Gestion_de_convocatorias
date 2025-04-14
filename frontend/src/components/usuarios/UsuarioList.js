@@ -1,4 +1,4 @@
-// frontend/src/components/UsuarioList.js
+// frontend/src/components/usuarios/UsuarioList.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation } from 'react-router-dom';

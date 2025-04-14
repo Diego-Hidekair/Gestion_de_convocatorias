@@ -9,7 +9,6 @@ const generateToken = (user) => {
         { 
             id_usuario: user.id_usuario, 
             rol: user.rol
-            // Eliminar id_facultad del token
         }, 
         process.env.JWT_SECRET,
         { expiresIn: '4h' } 

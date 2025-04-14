@@ -75,19 +75,20 @@ const NavBar = ({ onLogout }) => {
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Usuarios" />}
                 </ListItem>
+                                
             ),
-            <ListItem 
-                button={true}
-                component={Link} 
-                to="/perfil" 
-                key="perfil" 
-                sx={getItemStyle("/perfil")}
-            >
-                <ListItemIcon sx={{ color: "#fff" }}>
-                    <PersonIcon />
-                </ListItemIcon>
-                {(isExpanded || isMobile) && <ListItemText primary="Perfil" />}
-            </ListItem>,
+                <ListItem 
+                    button={true}
+                    component={Link} 
+                    to="/perfil" 
+                    key="perfil" 
+                    sx={getItemStyle("/perfil")}
+                >
+                    <ListItemIcon sx={{ color: "#fff" }}>
+                        <PersonIcon />
+                    </ListItemIcon>
+                    {(isExpanded || isMobile) && <ListItemText primary="Perfil" />}
+                </ListItem>
         ];
 
         const roleSpecificItems = {
