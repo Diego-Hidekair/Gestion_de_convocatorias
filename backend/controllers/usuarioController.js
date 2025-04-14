@@ -8,33 +8,29 @@ const upload = multer({ storage: multer.memoryStorage() });
 const getUsuarios = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT usuarios.id_usuario, usuarios.nombres, usuarios.apellido_paterno, usuarios.apellido_materno,
-                usuarios.rol, usuarios.celular, alm_programas_facultades.nombre_facultad,
-                alm_programas.nombre_carrera
-            FROM usuarios
-            LEFT JOIN alm_programas_facultades ON usuarios.id_facultad = alm_programas_facultades.id_facultad
-            LEFT JOIN alm_programas ON usuarios.id_programa = alm_programas.id_programa;
-        `);
+            SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno,
+                u.rol, u.celular, p.nombre_carrera
+            FROM usuarios u
+            LEFT JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa;
+        `); 
         res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener usuarios:', error);
         res.status(500).json({ error: 'Error al obtener usuarios' });
     }
 };
-
 const createUser = async (req, res) => {
     console.log("Datos recibidos en req.body:", req.body);
     
-    const passwordField = req.body['Contraseña'] || req.body['ContraseÃ±a'];
+    const passwordField = req.body.contraseña;
     if (!passwordField) {
         return res.status(400).json({ error: 'La contraseña es obligatoria' });
     }
     
     try {
-        const { id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa } = req.body;
-        
+        const { id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa } = req.body;    
         // Validar datos requeridos
-        if (!id_usuario || !Nombres || !Rol) {
+        if (!id_usuario || !nombres || !rol) {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
 
@@ -63,19 +59,18 @@ const createUser = async (req, res) => {
         const query = `
             INSERT INTO usuarios (
                 id_usuario, nombres, apellido_paterno, apellido_materno, 
-                rol, contraseña, celular, id_facultad, id_programa, foto_perfil
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+                rol, contraseña, celular, id_programa, foto_perfil
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular`;
         
         const values = [
             id_usuario, 
-            Nombres, 
-            Apellido_paterno, 
-            Apellido_materno, 
-            Rol, 
+            nombres, 
+            apellido_paterno, 
+            apellido_materno, 
+            rol, 
             hashedPassword,
-            Celular, 
-            id_facultad || null, 
+            celular, 
             id_programa || null, 
             fotoBuffer
         ];
@@ -94,26 +89,26 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id_usuario } = req.params;
-    const { Nombres, Apellido_paterno, Apellido_materno, Rol, Contraseña, Celular, id_facultad, id_programa } = req.body;
-
+    const { nombres, apellido_paterno, apellido_materno, rol, contraseña, celular, id_programa } = req.body;
+    
     try {
         let hashedPassword;
         let updatedUser;
 
-        if (Contraseña) {
+        if (contraseña) {
             const salt = await bcrypt.genSalt(10);
-            hashedPassword = await bcrypt.hash(Contraseña, salt);
+            hashedPassword = await bcrypt.hash(contraseña, salt);
 
             updatedUser = await pool.query(
-                `UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Contraseña = $5, Celular = $6, id_facultad = $7, id_programa = $8 
-                WHERE id_usuario = $9 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa`,
-                [Nombres, Apellido_paterno, Apellido_materno, Rol, hashedPassword, Celular, id_facultad, id_programa, id_usuario]
+                `UPDATE usuarios SET nombres = $1, apellido_paterno = $2, apellido_materno = $3, rol = $4, contraseña = $5, celular = $6, id_programa = $7 
+                WHERE id_usuario = $8 RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`,
+                [nombres, apellido_paterno, apellido_materno, rol, hashedPassword, celular, id_programa, id_usuario]
             );
         } else {
             updatedUser = await pool.query(
-                `UPDATE usuarios SET Nombres = $1, Apellido_paterno = $2, Apellido_materno = $3, Rol = $4, Celular = $5, id_facultad = $6, id_programa = $7
-                WHERE id_usuario = $8 RETURNING id_usuario, Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa`,
-                [Nombres, Apellido_paterno, Apellido_materno, Rol, Celular, id_facultad, id_programa, id_usuario]
+                `UPDATE usuarios SET nombres = $1, apellido_paterno = $2, apellido_materno = $3, rol = $4, celular = $5, id_programa = $6
+                WHERE id_usuario = $7 RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`,
+                [nombres, apellido_paterno, apellido_materno, rol, celular, id_programa, id_usuario]
             );
         }
 
@@ -162,10 +157,9 @@ const getCurrentUser = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno, u.rol, u.celular,
-                f.nombre_facultad, c.nombre_carrera
+                p.nombre_carrera
             FROM usuarios u
-            LEFT JOIN alm_programas_facultades f ON u.id_facultad = f.id_facultad
-            LEFT JOIN alm_programas c ON u.id_programa = c.id_programa
+            LEFT JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa
             WHERE u.id_usuario = $1
         `, [userId]);
 

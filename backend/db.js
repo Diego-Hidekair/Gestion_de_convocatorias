@@ -5,7 +5,7 @@ require('dotenv').config();
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'Gestion_de_convocatorias',
+    database: 'gestion_de_convocatorias',
     password: '12345',  
   });
 

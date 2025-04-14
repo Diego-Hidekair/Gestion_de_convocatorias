@@ -8,8 +8,8 @@ const generateToken = (user) => {
     return jwt.sign(
         { 
             id_usuario: user.id_usuario, 
-            rol: user.rol, 
-            id_facultad: user.id_facultad 
+            rol: user.rol
+            // Eliminar id_facultad del token
         }, 
         process.env.JWT_SECRET,
         { expiresIn: '4h' } 
@@ -17,8 +17,7 @@ const generateToken = (user) => {
 };
 
 const loginUser = async (req, res) => {
-    const { id_usuario, Contraseña } = req.body;
-
+    const { id_usuario, contraseña } = req.body; 
     try {
         const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
         const user = result.rows[0];
@@ -27,7 +26,7 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ error: 'Usuario no encontrado' });
         }
 
-        const validPassword = await bcrypt.compare(Contraseña, user.contraseña);
+        const validPassword = await bcrypt.compare(contraseña, user.contraseña);
         if (!validPassword) {
             return res.status(400).json({ error: 'Contraseña incorrecta' });
         }
