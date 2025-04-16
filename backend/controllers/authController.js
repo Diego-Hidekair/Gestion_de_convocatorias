@@ -16,24 +16,34 @@ const generateToken = (user) => {
 };
 
 const loginUser = async (req, res) => {
-    const { id_usuario, contraseña } = req.body; 
+    const { id_usuario, contraseña } = req.body;
+    if (!id_usuario || !contraseña) {
+        return res.status(400).json({ error: 'ID de usuario y contraseña son requeridos' });
+    }
     try {
         const result = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
         const user = result.rows[0];
-
         if (!user) {
-            return res.status(400).json({ error: 'Usuario no encontrado' });
+            return res.status(400).json({ error: 'Credenciales inválidas' }); 
         }
 
+        if (!user.contraseña) {
+            return res.status(500).json({ error: 'Error en la configuración del usuario' });
+        }
         const validPassword = await bcrypt.compare(contraseña, user.contraseña);
         if (!validPassword) {
-            return res.status(400).json({ error: 'Contraseña incorrecta' });
+            return res.status(400).json({ error: 'Credenciales inválidas' }); 
         }
-
         const token = generateToken(user);
-        res.json({ token, userId: user.id_usuario, rol: user.rol });
+        res.json({ 
+            token, 
+            userId: user.id_usuario, 
+            rol: user.rol,
+            nombres: user.nombres,
+            apellido_paterno: user.apellido_paterno
+        });
     } catch (error) {
-        console.error('Error al iniciar sesión:', error.message);
+        console.error('Error al iniciar sesión:', error);
         res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });
     }
 };

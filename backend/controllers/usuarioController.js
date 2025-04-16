@@ -3,75 +3,83 @@ const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+        files: 1
+    },fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten imágenes'), false);
+        }
+    }
+}).single('foto_perfil');
 
 const getUsuarios = async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno,
-                u.rol, u.celular, p.nombre_carrera
-            FROM usuarios u
-            LEFT JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa;
-        `); // Eliminar referencia a facultades
+            SELECT id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular
+            FROM usuarios
+            ORDER BY nombres
+        `);
         res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener usuarios:', error);
-        res.status(500).json({ error: 'Error al obtener usuarios' });
+        res.status(500).json({ 
+            error: 'Error al obtener usuarios',
+            details: error.message  // Agrega esto para más detalles
+        });
     }
 };
-
 const createUser = async (req, res) => {
-    console.log("Datos recibidos en req.body:", req.body);
-    
-    const passwordField = req.body.contraseña;
-    if (!passwordField) {
-        return res.status(400).json({ error: 'La contraseña es obligatoria' });
-    }
-    
     try {
-        const { id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa } = req.body;
-        if (id_programa) {
-            const programaExists = await pool.query(
-                'SELECT 1 FROM datos_universidad.alm_programas WHERE id_programa = $1', 
-                [id_programa]
-            );
-            if (programaExists.rows.length === 0) {
-                return res.status(400).json({ error: 'El programa especificado no existe' });
-            }
-        }
+        console.log("Datos recibidos:", req.body);
+        console.log("Archivo recibido:", req.file ? "Sí" : "No");
+
+        const { id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa, foto_url } = req.body;
+        
+        // Validaciones básicas
         if (!id_usuario || !nombres || !rol) {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
 
+        if (!req.body.contraseña) {
+            return res.status(400).json({ error: 'La contraseña es obligatoria' });
+        }
+
         const validRoles = ['admin', 'personal_administrativo', 'secretaria_de_decanatura', 'tecnico_vicerrectorado', 'vicerrectorado'];
-        if (!validRoles.includes(Rol)) {
+        if (!validRoles.includes(rol)) {
             return res.status(400).json({ error: 'Rol inválido' });
         }
 
-        // Verificar si el usuario ya existe
+        // Verificar usuario existente
         const existingUser = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
         if (existingUser.rows.length > 0) {
             return res.status(400).json({ error: 'El ID de usuario ya está en uso' });
         }
 
-        // Hashear la contraseña
+        // Hashear contraseña
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(passwordField, salt);
+        const hashedPassword = await bcrypt.hash(req.body.contraseña, salt);
         
-        // Procesar la imagen si existe
-        let fotoBuffer = null;
+        // Manejar imagen (archivo subido o URL)
+        let foto_perfil = null;
         if (req.file) {
-            fotoBuffer = req.file.buffer;
+            foto_perfil = req.file.buffer; // Archivo subido
+        } else if (foto_url) {
+            foto_perfil = foto_url; // URL de imagen
         }
 
-        // Insertar en la base de datos
+        // Insertar usuario
         const query = `
             INSERT INTO usuarios (
                 id_usuario, nombres, apellido_paterno, apellido_materno, 
                 rol, contraseña, celular, id_programa, foto_perfil
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular`;
-        
         
         const values = [
             id_usuario, 
@@ -82,7 +90,7 @@ const createUser = async (req, res) => {
             hashedPassword,
             celular, 
             id_programa || null, 
-            fotoBuffer
+            foto_perfil
         ];
         
         const newUser = await pool.query(query, values);

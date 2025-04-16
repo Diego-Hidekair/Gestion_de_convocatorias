@@ -4,18 +4,24 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 
-axios.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+axios.interceptors.request.use(config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-);
+    return config;
+  });
+  
+  axios.interceptors.response.use(
+    response => response,
+    error => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+  );
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
@@ -37,38 +43,41 @@ const Login = ({ setAuth }) => {
         e.preventDefault();
         setError('');
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+            const response = await axios.post('http://localhost:5000/api/auth/login', {
+                id_usuario: formData.id_usuario,
+                contraseña: formData.Contraseña 
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
             const { token, userId, rol } = response.data;
             
-            // Guardar datos en localStorage
             localStorage.setItem('token', token);
             localStorage.setItem('userId', userId);
             localStorage.setItem('rol', rol);
+            
             setAuth(true);
             
             // Redirección basada en roles
-            switch(rol) {
-                case 'admin':
-                    navigate('/usuarios');
-                    break;
-                case 'personal_administrativo':
-                    navigate('/solicitudes');
-                    break;
-                case 'secretaria_de_decanatura':
-                    navigate('/convocatorias');
-                    break;
-                case 'tecnico_vicerrectorado':
-                    navigate('/convocatorias');
-                    break;
-                case 'vicerrectorado':
-                    navigate('/reportes');
-                    break;
-                default:
-                    navigate('/perfil');
-            }
+            const redirectPaths = {
+                'admin': '/usuarios',
+                'personal_administrativo': '/solicitudes',
+                'secretaria_de_decanatura': '/convocatorias',
+                'tecnico_vicerrectorado': '/convocatorias',
+                'vicerrectorado': '/reportes'
+            };
+            
+            navigate(redirectPaths[rol] || '/perfil');
+            
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
-            setError('Credenciales incorrectas o error en el servidor');
+            const errorMessage = error.response?.data?.error || 
+                                (error.response?.status === 500 ? 
+                                 'Error en el servidor' : 
+                                 'Credenciales incorrectas');
+            setError(errorMessage);
         }
     };
 
@@ -108,7 +117,7 @@ const Login = ({ setAuth }) => {
                                     type="password" 
                                     name="Contraseña" 
                                     placeholder="Contraseña" 
-                                    value={formData.Contraseña} 
+                                    value={formData.contraseña} 
                                     onChange={handleChange} 
                                     required 
                                     className="form-control" 

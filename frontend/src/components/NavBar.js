@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box } from "@mui/material";
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box, Button } from "@mui/material";
 import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Verified as VerifiedIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
@@ -64,66 +64,66 @@ const NavBar = ({ onLogout }) => {
         const commonItems = [
             role === "admin" && (
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/usuarios" 
                     key="usuarios" 
                     sx={getItemStyle("/usuarios")}
-                    >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                >
+                    <ListItemIcon sx={{ color: location.pathname === "/usuarios" ? "#000" : "#fff" }}>
                         <PeopleIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Usuarios" />}
-                    </ListItem>
+                </ListItem>
             ),
-                    <ListItem 
-                    button={true}
-                    component={Link} 
-                    to="/usuarios/me" 
-                    key="perfil" 
-                    sx={getItemStyle("/usuarios/me")}
-                    >
-                    <ListItemIcon sx={{ color: "#fff" }}>
-                        <PersonIcon />
-                    </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Perfil" />}
-                    </ListItem>
+            <ListItem 
+                button
+                component={Link} 
+                to="/usuarios/me" 
+                key="perfil" 
+                sx={getItemStyle("/usuarios/me")}
+            >
+                <ListItemIcon sx={{ color: location.pathname === "/usuarios/me" ? "#000" : "#fff" }}>
+                    <PersonIcon />
+                </ListItemIcon>
+                {(isExpanded || isMobile) && <ListItemText primary="Perfil" />}
+            </ListItem>
         ];
 
         const roleSpecificItems = {
             admin: [
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/facultades" 
                     key="facultades" 
                     sx={getItemStyle("/facultades")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/facultades" ? "#000" : "#fff" }}>
                         <HomeIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Facultades" />}
                 </ListItem>,
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/carreras" 
                     key="carreras" 
                     sx={getItemStyle("/carreras")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/carreras" ? "#000" : "#fff" }}>
                         <BookIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Carreras" />}
                 </ListItem>,
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/convocatorias" 
                     key="convocatorias" 
                     sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias" ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
@@ -131,25 +131,25 @@ const NavBar = ({ onLogout }) => {
             ],
             secretaria_de_decanatura: [
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/convocatorias" 
                     key="convocatorias" 
                     sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias" ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/convocatorias/crear" 
                     key="crear-convocatoria" 
                     sx={getItemStyle("/convocatorias/crear")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias/crear" ? "#000" : "#fff" }}>
                         <CheckBoxIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Crear Convocatoria" />}
@@ -157,13 +157,13 @@ const NavBar = ({ onLogout }) => {
             ],
             tecnico_vicerrectorado: [
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/convocatorias" 
                     key="convocatorias" 
                     sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias" ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
@@ -171,13 +171,13 @@ const NavBar = ({ onLogout }) => {
             ],
             vicerrectorado: [
                 <ListItem 
-                    button={true}
+                    button
                     component={Link} 
                     to="/convocatorias-aprobadas" 
                     key="convocatorias-aprobadas" 
                     sx={getItemStyle("/convocatorias-aprobadas")}
                 >
-                    <ListItemIcon sx={{ color: "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias-aprobadas" ? "#000" : "#fff" }}>
                         <VerifiedIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias Aprobadas" />}
@@ -187,10 +187,10 @@ const NavBar = ({ onLogout }) => {
 
         return [
             ...(roleSpecificItems[role] || []),
-            ...commonItems,
+            ...commonItems.filter(Boolean),
             <Divider key="divider" />,
             <ListItem 
-                button={true}
+                button
                 onClick={handleLogout} 
                 key="logout" 
                 sx={getItemStyle("/logout")}

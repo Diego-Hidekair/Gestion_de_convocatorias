@@ -52,5 +52,5 @@ const verificarRolVicerrectorado = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
+//module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
 module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, verificarRolVicerrectorado, authorizeRoles, verificarRol };
