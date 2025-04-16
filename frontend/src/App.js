@@ -22,7 +22,7 @@ import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
 import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
-import UsuarioManager from './components/UsuarioManager';
+import UsuarioManager from './components/usuarios/UsuarioManager';
 import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import NavBar from './components/NavBar';
@@ -140,7 +140,7 @@ const AuthWrapper = () => {
                         <Route path="/redirect" element={<RedirectPage />} /> 
                         <Route path="/carreras" element={<CarreraList />} />
                         <Route path="/facultades" element={<FacultadList />} />
-                        {(userRole === 'admin' || userRole === 'secretaria_de_decanatura' || userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
+                        {(userRole === 'admin' || userRole === 'secretaria_de_decanatura' || userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado' || userRole=== 'personal_administrativo' ) && (
                             <Route path="/convocatorias" element={<ConvocatoriaList />} />
                         )}
                         {userRole === 'secretaria_de_decanatura' && (
@@ -163,11 +163,7 @@ const AuthWrapper = () => {
                         <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
                         <Route path="/file-upload" element={<FileUpload />} />
                         {/* Rutas actualizadas para UsuarioManager */}
-                        <Route path="/usuarios" element={<UsuarioManager />} />
-                        <Route path="/usuarios/new" element={<UsuarioManager />} />
-                        <Route path="/usuarios/edit/:id" element={<UsuarioManager />} />
-                        <Route path="/usuarios/view/:id" element={<UsuarioManager />} />
-                        <Route path="/perfil" element={<UsuarioManager />} />
+                        <Route path="/usuarios/*" element={<UsuarioManager />} />
                         <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
                         <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
                         <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} />
