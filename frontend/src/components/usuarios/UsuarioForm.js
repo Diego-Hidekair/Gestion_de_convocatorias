@@ -1,14 +1,11 @@
 // frontend/src/components/usuarios/UsuarioForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useUsuarios } from './hooks/useUsuarios';
-import { 
-  Box, TextField, Button, Select, MenuItem, InputLabel, 
-  FormControl, Typography, CircularProgress, Alert, Grid,
-  Avatar, Checkbox, FormControlLabel
-} from '@mui/material';
+import { Box, TextField, Button, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Grid, Avatar, Checkbox, FormControlLabel} from '@mui/material';
 import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import axios from 'axios';
+import useUsuarios from './hooks/useUsuarios';
+
 
 const UsuarioForm = ({ isEdit = false }) => {
   const { id } = useParams();
@@ -111,40 +108,62 @@ const UsuarioForm = ({ isEdit = false }) => {
     setError('');
     setSuccess('');
 
+    // Validación de campos obligatorios
     if (!isEdit && !usuario.contraseña) {
-      setError('La contraseña es obligatoria para nuevos usuarios');
-      return;
+        setError('La contraseña es obligatoria para nuevos usuarios');
+        return;
+    }
+    if (!usuario.id_usuario || !usuario.nombres || !usuario.apellido_paterno || !usuario.rol) {
+        setError('Por favor complete todos los campos obligatorios');
+        return;
     }
 
     try {
-      const formData = new FormData();
-      
-      // Agregar todos los campos al formData
-      Object.keys(usuario).forEach(key => {
-        if (usuario[key] !== null && usuario[key] !== undefined && usuario[key] !== '') {
-          if (key === 'foto_file') {
-            formData.append('foto_perfil', usuario[key]);
-          } else {
-            formData.append(key, usuario[key]);
-          }
+        const formData = new FormData();
+        
+        // Campos obligatorios
+        formData.append('id_usuario', usuario.id_usuario);
+        formData.append('nombres', usuario.nombres);
+        formData.append('apellido_paterno', usuario.apellido_paterno);
+        formData.append('rol', usuario.rol);
+        
+        // Campos opcionales
+        if (usuario.apellido_materno) formData.append('apellido_materno', usuario.apellido_materno);
+        if (usuario.celular) formData.append('celular', usuario.celular);
+        if (usuario.id_programa) formData.append('id_programa', usuario.id_programa);
+        
+        // Contraseña (obligatoria solo para creación)
+        if (!isEdit || usuario.contraseña) {
+            formData.append('contraseña', usuario.contraseña);
         }
-      });
 
-      const result = isEdit 
-        ? await updateUsuario(id, formData)
-        : await createUsuario(formData);
+        // Manejo de imagen
+        if (usuario.foto_file) {
+            formData.append('foto_perfil', usuario.foto_file);
+        } else if (usuario.foto_url) {
+            formData.append('foto_url', usuario.foto_url);
+        }
 
-      if (result.success) {
-        setSuccess(isEdit ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
-        setTimeout(() => navigate('/usuarios'), 1500);
-      } else {
-        setError(result.error || 'Error al procesar la solicitud');
-      }
+        console.log('Datos del formulario:', Object.fromEntries(formData)); // ← Para depuración
+
+        const result = isEdit 
+            ? await updateUsuario(id, formData)
+            : await createUsuario(formData);
+
+        if (result.success) {
+            setSuccess(isEdit ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
+            setTimeout(() => navigate('/usuarios'), 1500);
+        } else {
+            setError(result.error || 'Error al procesar la solicitud');
+            if (result.details) {
+                console.error('Detalles del error:', result.details);
+            }
+        }
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al procesar la solicitud');
-      console.error(err);
+        setError(err.message || 'Error al procesar la solicitud');
+        console.error('Error completo:', err);
     }
-  };
+};
 
   return (
     <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>

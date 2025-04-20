@@ -1,9 +1,10 @@
 // frontend/src/components/usuarios/UsuarioList.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUsuarios } from './hooks/useUsuarios';
 import { Box, Button, Card, CardContent, Typography, Grid, CircularProgress, Alert } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import useUsuarios from './hooks/useUsuarios';
+
 
 const UsuarioList = () => {
   const navigate = useNavigate();

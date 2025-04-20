@@ -4,19 +4,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
-        files: 1
-    },fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Solo se permiten imágenes'), false);
-        }
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten imágenes'), false);
     }
-}).single('foto_perfil');
+  }
+});
 
 const getUsuarios = async (req, res) => {
     try {
@@ -34,77 +32,69 @@ const getUsuarios = async (req, res) => {
         });
     }
 };
+// backend/controllers/usuarioController.js
 const createUser = async (req, res) => {
     try {
-        console.log("Datos recibidos:", req.body);
-        console.log("Archivo recibido:", req.file ? "Sí" : "No");
-
-        const { id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa, foto_url } = req.body;
-        
-        // Validaciones básicas
-        if (!id_usuario || !nombres || !rol) {
-            return res.status(400).json({ error: 'Datos incompletos' });
-        }
-
-        if (!req.body.contraseña) {
-            return res.status(400).json({ error: 'La contraseña es obligatoria' });
-        }
-
-        const validRoles = ['admin', 'personal_administrativo', 'secretaria_de_decanatura', 'tecnico_vicerrectorado', 'vicerrectorado'];
-        if (!validRoles.includes(rol)) {
-            return res.status(400).json({ error: 'Rol inválido' });
-        }
-
-        // Verificar usuario existente
-        const existingUser = await pool.query('SELECT * FROM usuarios WHERE id_usuario = $1', [id_usuario]);
-        if (existingUser.rows.length > 0) {
-            return res.status(400).json({ error: 'El ID de usuario ya está en uso' });
-        }
-
-        // Hashear contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(req.body.contraseña, salt);
-        
-        // Manejar imagen (archivo subido o URL)
-        let foto_perfil = null;
-        if (req.file) {
-            foto_perfil = req.file.buffer; // Archivo subido
-        } else if (foto_url) {
-            foto_perfil = foto_url; // URL de imagen
-        }
-
-        // Insertar usuario
-        const query = `
-            INSERT INTO usuarios (
-                id_usuario, nombres, apellido_paterno, apellido_materno, 
-                rol, contraseña, celular, id_programa, foto_perfil
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-            RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular`;
-        
-        const values = [
-            id_usuario, 
-            nombres, 
-            apellido_paterno, 
-            apellido_materno, 
-            rol, 
-            hashedPassword,
-            celular, 
-            id_programa || null, 
-            foto_perfil
-        ];
-        
-        const newUser = await pool.query(query, values);
-        res.status(201).json(newUser.rows[0]);
-        
-    } catch (error) {
-        console.error('Error al crear el usuario:', error);
-        res.status(500).json({ 
-            error: 'Error en el servidor al crear el usuario', 
-            details: error.message 
+      console.log("Datos recibidos:", req.body);
+      console.log("Archivo recibido:", req.file);
+  
+      // Validar campos obligatorios
+      const requiredFields = ['id_usuario', 'nombres', 'apellido_paterno', 'rol', 'contraseña'];
+      const missingFields = requiredFields.filter(field => !req.body[field]);
+      
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          error: 'Campos obligatorios faltantes',
+          missing: missingFields
         });
+      }
+  
+      // Verificar si usuario ya existe
+      const userExists = await pool.query(
+        'SELECT 1 FROM usuarios WHERE id_usuario = $1', 
+        [req.body.id_usuario]
+      );
+      
+      if (userExists.rows.length > 0) {
+        return res.status(400).json({ error: 'El ID de usuario ya existe' });
+      }
+  
+      // Hashear contraseña
+      const hashedPassword = await bcrypt.hash(req.body.contraseña, 10);
+  
+      // Preparar datos para inserción
+      const userData = {
+        id_usuario: req.body.id_usuario,
+        nombres: req.body.nombres,
+        apellido_paterno: req.body.apellido_paterno,
+        apellido_materno: req.body.apellido_materno || null,
+        rol: req.body.rol,
+        contraseña: hashedPassword,
+        celular: req.body.celular || null,
+        id_programa: req.body.id_programa || null,
+        foto_perfil: req.file ? req.file.buffer : (req.body.foto_url || null)
+      };
+  
+      // Insertar en BD
+      const result = await pool.query(
+        `INSERT INTO usuarios (
+          id_usuario, nombres, apellido_paterno, apellido_materno, 
+          rol, contraseña, celular, id_programa, foto_perfil
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular`,
+        Object.values(userData)
+      );
+  
+      res.status(201).json(result.rows[0]);
+      
+    } catch (error) {
+      console.error('Error completo:', error);
+      res.status(500).json({ 
+        error: 'Error en el servidor',
+        details: process.env.NODE_ENV === 'development' ? error.message : null
+      });
     }
-};
-
+  };
 const updateUser = async (req, res) => {
     const { id_usuario } = req.params;
     const { nombres, apellido_paterno, apellido_materno, rol, contraseña, celular, id_programa } = req.body;
@@ -174,9 +164,10 @@ const getCurrentUser = async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno, u.rol, u.celular,
-                p.nombre_carrera
+                p.programa as nombre_carrera, f.facultad as nombre_facultad
             FROM usuarios u
             LEFT JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa
+            LEFT JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
             WHERE u.id_usuario = $1
         `, [userId]);
 
