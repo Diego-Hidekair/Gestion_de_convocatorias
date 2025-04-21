@@ -1,9 +1,9 @@
+// src/components/usuarios/UsuarioManager.js
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import UsuarioList from './UsuarioList';
 import UsuarioForm from './UsuarioForm';
 import UsuarioView from './UsuarioView';
-
 
 const UsuarioManager = () => {
   return (

@@ -1,22 +1,37 @@
-// frontend/src/components/usuarios/UsuarioList.js
-import React from 'react';
+// src/components/usuarios/UsuarioList.js
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Typography, Grid, CircularProgress, Alert } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, Typography,Grid, CircularProgress, Alert, Pagination } from '@mui/material';
+import {  Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import useUsuarios from './hooks/useUsuarios';
-
 
 const UsuarioList = () => {
   const navigate = useNavigate();
-  const { usuarios, loading, error, deleteUsuario } = useUsuarios();
+  const { 
+    usuarios, 
+    loading, 
+    error, 
+    pagination,
+    fetchUsuarios, 
+    deleteUsuario 
+  } = useUsuarios();
+
+  useEffect(() => {
+    fetchUsuarios();
+  }, []);
+
+  const handlePageChange = (event, newPage) => {
+    fetchUsuarios(newPage, pagination.limit);
+  };
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
       await deleteUsuario(id);
+      fetchUsuarios(pagination.page, pagination.limit);
     }
   };
 
-  if (loading) return <CircularProgress />;
+  if (loading && usuarios.length === 0) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
@@ -42,7 +57,9 @@ const UsuarioList = () => {
                 </Typography>
                 <Typography color="text.secondary">ID: {usuario.id_usuario}</Typography>
                 <Typography>Rol: {usuario.rol}</Typography>
-                <Typography>Celular: {usuario.celular}</Typography>
+                {usuario.nombre_programa && (
+                  <Typography>Programa: {usuario.nombre_programa}</Typography>
+                )}
                 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                   <Button 
@@ -75,6 +92,17 @@ const UsuarioList = () => {
           </Grid>
         ))}
       </Grid>
+
+      {usuarios.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Pagination
+            count={Math.ceil(pagination.total / pagination.limit)}
+            page={pagination.page}
+            onChange={handlePageChange}
+            color="primary"
+          />
+        </Box>
+      )}
     </Box>
   );
 };

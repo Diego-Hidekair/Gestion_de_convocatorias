@@ -1,32 +1,38 @@
 // src/components/usuarios/hooks/useUsuarios.js
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../../../config/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
 const useUsuarios = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0
+  });
   const navigate = useNavigate();
 
-  const fetchUsuarios = async () => {
+  const fetchUsuarios = async (page = 1, limit = 10) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const response = await api.get('/usuarios', {
+        params: { page, limit }
+      });
       
-      if (!token) {
-        throw new Error('No hay token de autenticación');
-      }
+      setUsuarios(response.data.data);
+      setPagination({
+        page: response.data.pagination.currentPage,
+        limit: response.data.pagination.perPage,
+        total: response.data.pagination.total
+      });
       
-      const response = await axios.get('/usuarios', {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }); 
-      
-      setUsuarios(response.data);
-      return { success: true, data: response.data };
+      return { 
+        success: true, 
+        data: response.data.data,
+        pagination: response.data.pagination 
+      };
     } catch (err) {
       const errorMessage = err.response?.data?.error || 
                          (err.response?.status === 401 ? 
@@ -51,38 +57,16 @@ const useUsuarios = () => {
       setLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No hay token de autenticación');
-      }
-  
-      // Convertir FormData a objeto para logging
-      const formDataObj = {};
-      for (let [key, value] of formData.entries()) {
-        formDataObj[key] = value;
-      }
-      console.log('Datos enviados:', formDataObj);
-  
-      const response = await axios.post('/usuarios', formData, {
+      const response = await api.post('/usuarios', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        },
-        transformRequest: (data, headers) => {
-          // Eliminar Content-Type automático para que Axios lo establezca correctamente
-          delete headers['Content-Type'];
-          return data;
+          'Content-Type': 'multipart/form-data'
         }
       });
-  
+      
       return { success: true, data: response.data };
     } catch (error) {
       const errorData = error.response?.data || {};
-      console.error('Error completo:', {
-        status: error.response?.status,
-        data: errorData,
-        headers: error.response?.headers
-      });
+      console.error('Error al crear usuario:', error);
       
       const errorMsg = errorData.error || 
                       errorData.message || 
@@ -98,32 +82,25 @@ const useUsuarios = () => {
     }
   };
 
-  const updateUsuario = async (id, usuarioData) => {
+  const updateUsuario = async (id, formData) => {
     try {
       setLoading(true);
-      setError(null);    
-      const formData = new FormData();
+      setError(null);
       
-      Object.keys(usuarioData).forEach(key => {
-        if (usuarioData[key] !== undefined && usuarioData[key] !== null) {
-          if (key === 'foto_file') {
-            formData.append('foto_perfil', usuarioData[key]);
-          } else {
-            formData.append(key, usuarioData[key]);
-          }
-        }
-      });
-      
-      const response = await axios.put(`/usuarios/${id}`, formData, {
+      const response = await api.put(`/usuarios/${id}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'multipart/form-data'
         }
       });
+      
+      // Actualizar el estado local
+      setUsuarios(prev => prev.map(u => 
+        u.id_usuario === id ? response.data : u
+      ));
       
       return { success: true, data: response.data };
     } catch (error) {
-      console.error('Error updating usuario:', error);
+      console.error('Error al actualizar usuario:', error);
       const errorMsg = error.response?.data?.error || 'Error al actualizar usuario';
       setError(errorMsg);
       return { success: false, error: errorMsg };
@@ -137,15 +114,14 @@ const useUsuarios = () => {
       setLoading(true);
       setError(null);
       
-      await axios.delete(`/usuarios/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      await api.delete(`/usuarios/${id}`);
+      
+      // Actualizar el estado local
+      setUsuarios(prev => prev.filter(u => u.id_usuario !== id));
       
       return { success: true };
     } catch (error) {
-      console.error('Error deleting usuario:', error);
+      console.error('Error al eliminar usuario:', error);
       const errorMsg = error.response?.data?.error || 'Error al eliminar usuario';
       setError(errorMsg);
       return { success: false, error: errorMsg };
@@ -154,7 +130,7 @@ const useUsuarios = () => {
     }
   };
 
-  return { usuarios, loading, error, fetchUsuarios, createUsuario, updateUsuario, deleteUsuario };
+  return { usuarios, loading, error, pagination, fetchUsuarios, createUsuario, updateUsuario, deleteUsuario };
 };
 
 export default useUsuarios;

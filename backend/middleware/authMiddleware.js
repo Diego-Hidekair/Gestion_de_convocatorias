@@ -1,15 +1,31 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
+const pool = require('../db');
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
-        req.user = user;
-        next();
+        
+        try {
+            const user = await pool.query('SELECT rol, id_programa FROM usuarios WHERE id_usuario = $1', [decoded.id_usuario]);
+            
+            if (user.rows.length === 0) {
+                return res.status(403).json({ error: 'Usuario no encontrado' });
+            }
+
+            req.user = {
+                ...decoded,
+                ...user.rows[0]
+            };
+            next();
+        } catch (error) {
+            console.error('Error al verificar usuario:', error);
+            return res.status(500).json({ error: 'Error interno del servidor' });
+        }
     });
 };
 
@@ -52,5 +68,4 @@ const verificarRolVicerrectorado = (req, res, next) => {
     next();
 };
 
-//module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, authorizeRoles, verificarRol };
 module.exports = { authenticateToken, authorizeAdmin, verificarRolSecretaria, verificarRolVicerrectorado, authorizeRoles, verificarRol };

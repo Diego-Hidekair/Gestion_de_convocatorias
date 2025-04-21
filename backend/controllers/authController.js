@@ -37,11 +37,14 @@ const loginUser = async (req, res) => {
         const token = generateToken(user);
         res.json({ 
             token, 
-            userId: user.id_usuario, 
-            rol: user.rol,
-            nombres: user.nombres,
-            apellido_paterno: user.apellido_paterno
-        });
+            user: {
+              id: user.id_usuario,
+              rol: user.rol,
+              nombres: user.nombres,
+              apellidos: `${user.apellido_paterno} ${user.apellido_materno || ''}`.trim(),
+              programa: user.id_programa
+            }
+          });
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
         res.status(500).json({ error: 'Error en el servidor al iniciar sesión' });

@@ -1,9 +1,9 @@
-// frontend/src/components/usuarios/UsuarioPerfil.js
+// src/components/usuarios/UsuarioView.js
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Box, Typography, Card, CardContent, Avatar, Button, CircularProgress, Alert, Divider, Chip } from '@mui/material';
 import { Edit as EditIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import api from '../../config/axiosConfig';
 
 const UsuarioView = ({ isCurrentUser = false }) => {
   const { id } = useParams();
@@ -17,16 +17,10 @@ const UsuarioView = ({ isCurrentUser = false }) => {
       try {
         setLoading(true);
         const endpoint = isCurrentUser ? 'me' : id;
-        const response = await axios.get(`/usuarios/${endpoint}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await api.get(`/usuarios/${endpoint}`);
         
         const rolesDescriptivos = {
           'admin': 'Administrador',
-          'personal_administrativo': 'Personal Administrativo',
           'secretaria_de_decanatura': 'Secretaría de Decanatura',
           'tecnico_vicerrectorado': 'Técnico de Vicerrectorado',
           'vicerrectorado': 'Vicerrectorado'
@@ -126,10 +120,8 @@ const UsuarioView = ({ isCurrentUser = false }) => {
                   )}
                 </Box>
                 <Box>
-                  {usuario.nombre_carrera && (
-                    <>
-                      <Typography><strong>Carrera:</strong> {usuario.nombre_carrera}</Typography>
-                    </>
+                  {usuario.nombre_programa && (
+                    <Typography><strong>Programa:</strong> {usuario.nombre_programa}</Typography>
                   )}
                 </Box>
               </Box>
