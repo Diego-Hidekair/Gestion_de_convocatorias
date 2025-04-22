@@ -14,11 +14,18 @@ const useUsuarios = () => {
   });
   const navigate = useNavigate();
 
-  const fetchUsuarios = async (page = 1, limit = 10) => {
+  const fetchUsuarios = async (page = 1, limit = 10, search = '') => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await api.get('/usuarios', {
-        params: { page, limit }
+        params: { 
+          page, 
+          limit, 
+          search,
+          timestamp: new Date().getTime() // Evitar caché
+        }
       });
       
       setUsuarios(response.data.data);
@@ -34,17 +41,21 @@ const useUsuarios = () => {
         pagination: response.data.pagination 
       };
     } catch (err) {
-      const errorMessage = err.response?.data?.error || 
-                         (err.response?.status === 401 ? 
-                          'No autorizado - Por favor inicie sesión' : 
-                          'Error al cargar usuarios');
+      let errorMessage = 'Error al cargar usuarios';
+      
+      if (err.response) {
+        if (err.response.status === 401) {
+          errorMessage = 'No autorizado - Por favor inicie sesión';
+          navigate('/login');
+        } else if (err.response.data?.error) {
+          errorMessage = err.response.data.error;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
       
       setError(errorMessage);
       console.error('Error fetching usuarios:', err);
-      
-      if (err.response?.status === 401) {
-        navigate('/login');
-      }
       
       return { success: false, error: errorMessage };
     } finally {
@@ -54,42 +65,64 @@ const useUsuarios = () => {
 
   const createUsuario = async (formData) => {
     try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await api.post('/usuarios', formData);
-        
-        return { success: true, data: response.data };
-    } catch (error) {
-        console.error("Error completo:", error);
-        
-        let errorMessage = 'Error al crear usuario';
-        if (error.response) {
-            errorMessage = error.response.data.error || errorMessage;
+      setLoading(true);
+      setError(null);
+      
+      if (formData.get('celular') && isNaN(formData.get('celular'))) {
+        throw new Error('El celular debe ser un número válido');
+      }
+      
+      const response = await api.post('/usuarios', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        transformRequest: (data, headers) => {
+          return data;
         }
-        
-        return { 
-            success: false, 
-            error: errorMessage,
-            details: error.response?.data
-        };
+      });
+      await fetchUsuarios(pagination.page, pagination.limit);
+      
+      return { 
+        success: true, 
+        data: response.data,
+        message: 'Usuario creado exitosamente'
+      };
+    } catch (error) {
+      console.error("Error al crear usuario:", error);
+      
+      let errorMessage = 'Error al crear usuario';
+      let details = null;
+      
+      if (error.response) {
+        if (error.response.status === 400) {
+          errorMessage = error.response.data.error || errorMessage;
+          if (error.response.data.details) {
+            details = error.response.data.details;
+          }
+        } else if (error.response.status === 409) {
+          errorMessage = 'El usuario ya existe';
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      return { 
+        success: false, 
+        error: errorMessage,
+        details: error.response?.data || details
+      };
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   const updateUsuario = async (id, formData) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await api.put(`/usuarios/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await api.put(`/usuarios/${id}`, formData);
       
-      // Actualizar el estado local
       setUsuarios(prev => prev.map(u => 
         u.id_usuario === id ? response.data : u
       ));
@@ -112,7 +145,6 @@ const useUsuarios = () => {
       
       await api.delete(`/usuarios/${id}`);
       
-      // Actualizar el estado local
       setUsuarios(prev => prev.filter(u => u.id_usuario !== id));
       
       return { success: true };
@@ -126,7 +158,6 @@ const useUsuarios = () => {
     }
   };
 
-  return { usuarios, loading, error, pagination, fetchUsuarios, createUsuario, updateUsuario, deleteUsuario };
+  return { usuarios, loading, error, pagination, fetchUsuarios,createUsuario, updateUsuario, deleteUsuario };
 };
-
 export default useUsuarios;

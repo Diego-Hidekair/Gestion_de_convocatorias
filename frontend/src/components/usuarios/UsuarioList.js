@@ -1,8 +1,8 @@
 // src/components/usuarios/UsuarioList.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Card, CardContent, Typography,Grid, CircularProgress, Alert, Pagination } from '@mui/material';
-import {  Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, Typography, Grid, CircularProgress, Alert, Pagination, Select, MenuItem, FormControl, InputLabel, Stack, TextField } from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import useUsuarios from './hooks/useUsuarios';
 
 const UsuarioList = () => {
@@ -15,19 +15,27 @@ const UsuarioList = () => {
     fetchUsuarios, 
     deleteUsuario 
   } = useUsuarios();
+  
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchUsuarios();
-  }, []);
+    fetchUsuarios(1, pagination.limit, searchTerm);
+  }, [searchTerm]);
 
   const handlePageChange = (event, newPage) => {
-    fetchUsuarios(newPage, pagination.limit);
+    fetchUsuarios(newPage, pagination.limit, searchTerm);
+  };
+
+  const handleLimitChange = (e) => {
+    fetchUsuarios(1, e.target.value, searchTerm);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
-      await deleteUsuario(id);
-      fetchUsuarios(pagination.page, pagination.limit);
+      const result = await deleteUsuario(id);
+      if (result.success) {
+        fetchUsuarios(pagination.page, pagination.limit, searchTerm);
+      }
     }
   };
 
@@ -36,7 +44,7 @@ const UsuarioList = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
         <Typography variant="h4">Lista de Usuarios</Typography>
         <Button 
           variant="contained" 
@@ -47,25 +55,61 @@ const UsuarioList = () => {
         </Button>
       </Box>
 
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <TextField
+          label="Buscar usuarios"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ width: 300 }}
+        />
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Items por página</InputLabel>
+          <Select
+            value={pagination.limit}
+            onChange={handleLimitChange}
+            label="Items por página"
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+
       <Grid container spacing={3}>
         {usuarios.map((usuario) => (
           <Grid item xs={12} sm={6} md={4} key={usuario.id_usuario}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6">
-                  {usuario.nombres} {usuario.apellido_paterno}
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  {usuario.nombres} {usuario.apellido_paterno} {usuario.apellido_materno}
                 </Typography>
-                <Typography color="text.secondary">ID: {usuario.id_usuario}</Typography>
-                <Typography>Rol: {usuario.rol}</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  ID: {usuario.id_usuario}
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Rol:</strong> {usuario.rol.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Typography>
                 {usuario.nombre_programa && (
-                  <Typography>Programa: {usuario.nombre_programa}</Typography>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Programa:</strong> {usuario.nombre_programa}
+                  </Typography>
                 )}
-                
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                {usuario.nombre_facultad && (
+                  <Typography variant="body2">
+                    <strong>Facultad:</strong> {usuario.nombre_facultad}
+                  </Typography>
+                )}
+              </CardContent>
+              <CardContent>
+                <Stack direction="row" spacing={1} justifyContent="flex-end">
                   <Button 
                     size="small" 
                     startIcon={<VisibilityIcon />}
-                    onClick={() => navigate(`/usuarios/view/${usuario.id_usuario}`)}
+                    onClick={() => navigate(`/usuarios/${usuario.id_usuario}`)}
                   >
                     Ver
                   </Button>
@@ -73,7 +117,7 @@ const UsuarioList = () => {
                     size="small" 
                     startIcon={<EditIcon />}
                     onClick={() => navigate(`/usuarios/edit/${usuario.id_usuario}`)}
-                    sx={{ ml: 1 }}
+                    color="primary"
                   >
                     Editar
                   </Button>
@@ -81,12 +125,11 @@ const UsuarioList = () => {
                     size="small" 
                     startIcon={<DeleteIcon />}
                     onClick={() => handleDelete(usuario.id_usuario)}
-                    sx={{ ml: 1 }}
                     color="error"
                   >
                     Eliminar
                   </Button>
-                </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
@@ -100,6 +143,8 @@ const UsuarioList = () => {
             page={pagination.page}
             onChange={handlePageChange}
             color="primary"
+            showFirstButton
+            showLastButton
           />
         </Box>
       )}

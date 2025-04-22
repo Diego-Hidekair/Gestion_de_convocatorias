@@ -2,10 +2,9 @@
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { upload } = require('../config/multerConfig'); // Mover multer a archivo separado
+const { upload } = require('../config/multerConfig');
 
 const UserController = {
-    // Obtener todos los usuarios con paginación
     async getUsuarios(req, res) {
         try {
             const { page = 1, limit = 10, search } = req.query;
@@ -27,7 +26,6 @@ const UserController = {
             const countParams = [];
             let paramIndex = 1;
     
-            // Añadir búsqueda si existe
             if (search) {
                 const searchTerm = `%${search}%`;
                 const searchCondition = `
@@ -69,94 +67,88 @@ const UserController = {
             console.error('Error al obtener usuarios:', error);
             res.status(500).json({ 
                 error: 'Error al obtener usuarios',
-                details: process.env.NODE_ENV === 'development' ? error.message : null
+                details: process.env.NODE_ENV === 'development' ? error.message : null 
             });
         }
     },
 
-    // Crear un nuevo usuario
     async createUser(req, res) {
         try {
-            console.log("Datos recibidos:", req.body); // Esto puede estar vacío para multipart
+            console.log("Datos recibidos:", req.body);
             console.log("Archivo recibido:", req.file);
             
-            // Los campos del formulario están en req.body para multer
             const { 
                 id_usuario, 
                 nombres, 
                 apellido_paterno, 
                 apellido_materno, 
                 rol, 
-                contraseña, 
+                contrasena,
                 celular, 
                 id_programa 
             } = req.body;
-// Validación de campos obligatorios
-        if (!id_usuario || !nombres || !apellido_paterno || !rol || !contraseña) {
-            return res.status(400).json({ 
-                error: 'Campos obligatorios faltantes',
-                details: {
-                    id_usuario: !id_usuario,
-                    nombres: !nombres,
-                    apellido_paterno: !apellido_paterno,
-                    rol: !rol,
-                    contraseña: !contraseña
-                }
+    
+            if (!id_usuario || !nombres?.trim() || !apellido_paterno || !rol || !contrasena) {
+                return res.status(400).json({ 
+                    error: 'Campos obligatorios faltantes',
+                    details: {
+                        id_usuario: !id_usuario,
+                        nombres: !nombres?.trim(),
+                        apellido_paterno: !apellido_paterno,
+                        rol: !rol,
+                        contrasena: !contrasena
+                    }
+                });
+            }
+    
+            const userExists = await pool.query(
+                'SELECT 1 FROM usuarios WHERE id_usuario = $1', 
+                [id_usuario]
+            );
+            
+            if (userExists.rows.length > 0) {
+                return res.status(400).json({ error: 'El ID de usuario ya existe' });
+            }
+    
+            const hashedPassword = await bcrypt.hash(contrasena, 10);
+    
+            const result = await pool.query(
+                `INSERT INTO usuarios (
+                    id_usuario, nombres, apellido_paterno, apellido_materno, 
+                    rol, contrasena, celular, id_programa, foto_perfil
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+                RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`,
+                [
+                    id_usuario,
+                    nombres.trim(),
+                    apellido_paterno,
+                    apellido_materno || null,
+                    rol,
+                    hashedPassword, 
+                    celular || null,
+                    id_programa || null,
+                    req.file ? req.file.buffer : null
+                ]
+            );
+    
+            res.status(201).json(result.rows[0]);
+        } catch (error) {
+            console.error('Error al crear usuario:', error);
+            
+            let errorMessage = 'Error en el servidor';
+            if (error.code === '23505') {
+                errorMessage = 'El ID de usuario ya existe';
+            } else if (error.code === '23503') {
+                errorMessage = 'El programa especificado no existe';
+            }
+    
+            res.status(500).json({ 
+                error: errorMessage,
+                details: process.env.NODE_ENV === 'development' ? error.message : null
             });
         }
+    },
 
-        // Verificar si usuario ya existe
-        const userExists = await pool.query(
-            'SELECT 1 FROM usuarios WHERE id_usuario = $1', 
-            [id_usuario]
-        );
-        
-        if (userExists.rows.length > 0) {
-            return res.status(400).json({ error: 'El ID de usuario ya existe' });
-        }
-
-        // Hashear contraseña
-        const hashedPassword = await bcrypt.hash(contraseña, 10);
-
-        // Insertar en BD
-        const result = await pool.query(
-            `INSERT INTO usuarios (
-                id_usuario, nombres, apellido_paterno, apellido_materno, 
-                rol, contraseña, celular, id_programa, foto_perfil
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-            RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`,
-            [
-                id_usuario,
-                nombres,
-                apellido_paterno,
-                apellido_materno || null,
-                rol,
-                hashedPassword,
-                celular || null,
-                id_programa || null,
-                req.file ? req.file.buffer : null
-            ]
-        );
-
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error('Error al crear usuario:', error);
-        
-        let errorMessage = 'Error en el servidor';
-        if (error.code === '23505') {
-            errorMessage = 'El ID de usuario ya existe';
-        } else if (error.code === '23503') {
-            errorMessage = 'El programa especificado no existe';
-        }
-
-        res.status(500).json({ 
-            error: errorMessage,
-            details: process.env.NODE_ENV === 'development' ? error.message : null
-        });
-    }
-},
-
-    // Obtener usuario por ID
     async getUsuarioById(req, res) {
         try {
             const { id_usuario } = req.params;
@@ -187,36 +179,31 @@ const UserController = {
         }
     },
 
-    // Actualizar usuario
     async updateUser(req, res) {
         try {
-            const { id_usuario } = req.params;
+            const { id } = req.params;
             const updates = req.body;
             const file = req.file;
 
-            // Verificar si el usuario existe
             const userCheck = await pool.query(
                 'SELECT 1 FROM usuarios WHERE id_usuario = $1', 
-                [id_usuario]
+                [id]
             );
             
             if (userCheck.rows.length === 0) {
                 return res.status(404).json({ error: 'Usuario no encontrado' });
             }
 
-            // Construir la consulta dinámicamente
             let query = 'UPDATE usuarios SET ';
             const values = [];
             let paramIndex = 1;
             const setClauses = [];
 
-            // Campos permitidos para actualización
             const allowedFields = [
                 'nombres', 'apellido_paterno', 'apellido_materno', 
                 'rol', 'celular', 'id_programa'
             ];
 
-            // Procesar campos regulares
             allowedFields.forEach(field => {
                 if (updates[field] !== undefined) {
                     setClauses.push(`${field} = $${paramIndex}`);
@@ -225,30 +212,26 @@ const UserController = {
                 }
             });
 
-            // Procesar contraseña si se proporciona
-            if (updates.contraseña) {
-                const hashedPassword = await bcrypt.hash(updates.contraseña, 10);
-                setClauses.push(`contraseña = $${paramIndex}`);
+            if (updates.contrasena) {
+                const hashedPassword = await bcrypt.hash(updates.contrasena, 10);
+                setClauses.push(`contrasena = $${paramIndex}`);
                 values.push(hashedPassword);
                 paramIndex++;
             }
 
-            // Procesar foto de perfil si se subió
             if (file) {
                 setClauses.push(`foto_perfil = $${paramIndex}`);
                 values.push(file.buffer);
                 paramIndex++;
             }
 
-            // Verificar que hay algo para actualizar
             if (setClauses.length === 0) {
                 return res.status(400).json({ error: 'No se proporcionaron datos para actualizar' });
             }
 
-            // Añadir WHERE y RETURNING
             query += setClauses.join(', ') + ` WHERE id_usuario = $${paramIndex} 
                 RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`;
-            values.push(id_usuario);
+            values.push(id);
 
             const result = await pool.query(query, values);
             res.json(result.rows[0]);
@@ -267,7 +250,6 @@ const UserController = {
         }
     },
 
-    // Eliminar usuario
     async deleteUser(req, res) {
         try {
             const { id_usuario } = req.params;
@@ -299,7 +281,6 @@ const UserController = {
         }
     },
 
-    // Obtener usuario actual (autenticado)
     async getCurrentUser(req, res) {
         try {
             const userId = req.user.id_usuario;
