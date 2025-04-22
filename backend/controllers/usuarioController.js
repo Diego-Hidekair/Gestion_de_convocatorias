@@ -77,67 +77,84 @@ const UserController = {
     // Crear un nuevo usuario
     async createUser(req, res) {
         try {
-            // Validar campos obligatorios
-            const requiredFields = ['id_usuario', 'nombres', 'apellido_paterno', 'rol', 'contraseña'];
-            const missingFields = requiredFields.filter(field => !req.body[field]);
+            console.log("Datos recibidos:", req.body); // Esto puede estar vacío para multipart
+            console.log("Archivo recibido:", req.file);
             
-            if (missingFields.length > 0) {
-                return res.status(400).json({
-                    error: 'Campos obligatorios faltantes',
-                    missing: missingFields
-                });
-            }
-
-            // Verificar si usuario ya existe
-            const userExists = await pool.query(
-                'SELECT 1 FROM usuarios WHERE id_usuario = $1', 
-                [req.body.id_usuario]
-            );
-            
-            if (userExists.rows.length > 0) {
-                return res.status(400).json({ error: 'El ID de usuario ya existe' });
-            }
-
-            // Hashear contraseña
-            const hashedPassword = await bcrypt.hash(req.body.contraseña, 10);
-
-            // Insertar en BD
-            const result = await pool.query(
-                `INSERT INTO usuarios (
-                    id_usuario, nombres, apellido_paterno, apellido_materno, 
-                    rol, contraseña, celular, id_programa, foto_perfil
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-                RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`,
-                [
-                    req.body.id_usuario,
-                    req.body.nombres,
-                    req.body.apellido_paterno,
-                    req.body.apellido_materno || null,
-                    req.body.rol,
-                    hashedPassword,
-                    req.body.celular || null,
-                    req.body.id_programa || null,
-                    req.file ? req.file.buffer : null
-                ]
-            );
-
-            res.status(201).json(result.rows[0]);
-        } catch (error) {
-            console.error('Error al crear usuario:', error);
-            
-            let errorMessage = 'Error en el servidor';
-            if (error.code === '23505') {
-                errorMessage = 'El ID de usuario ya existe';
-            } else if (error.code === '23503') {
-                errorMessage = 'El programa especificado no existe';
-            }
-
-            res.status(500).json({ 
-                error: errorMessage,
-                details: process.env.NODE_ENV === 'development' ? error.message : null
+            // Los campos del formulario están en req.body para multer
+            const { 
+                id_usuario, 
+                nombres, 
+                apellido_paterno, 
+                apellido_materno, 
+                rol, 
+                contraseña, 
+                celular, 
+                id_programa 
+            } = req.body;
+// Validación de campos obligatorios
+        if (!id_usuario || !nombres || !apellido_paterno || !rol || !contraseña) {
+            return res.status(400).json({ 
+                error: 'Campos obligatorios faltantes',
+                details: {
+                    id_usuario: !id_usuario,
+                    nombres: !nombres,
+                    apellido_paterno: !apellido_paterno,
+                    rol: !rol,
+                    contraseña: !contraseña
+                }
             });
         }
-    },
+
+        // Verificar si usuario ya existe
+        const userExists = await pool.query(
+            'SELECT 1 FROM usuarios WHERE id_usuario = $1', 
+            [id_usuario]
+        );
+        
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ error: 'El ID de usuario ya existe' });
+        }
+
+        // Hashear contraseña
+        const hashedPassword = await bcrypt.hash(contraseña, 10);
+
+        // Insertar en BD
+        const result = await pool.query(
+            `INSERT INTO usuarios (
+                id_usuario, nombres, apellido_paterno, apellido_materno, 
+                rol, contraseña, celular, id_programa, foto_perfil
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            RETURNING id_usuario, nombres, apellido_paterno, apellido_materno, rol, celular, id_programa`,
+            [
+                id_usuario,
+                nombres,
+                apellido_paterno,
+                apellido_materno || null,
+                rol,
+                hashedPassword,
+                celular || null,
+                id_programa || null,
+                req.file ? req.file.buffer : null
+            ]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al crear usuario:', error);
+        
+        let errorMessage = 'Error en el servidor';
+        if (error.code === '23505') {
+            errorMessage = 'El ID de usuario ya existe';
+        } else if (error.code === '23503') {
+            errorMessage = 'El programa especificado no existe';
+        }
+
+        res.status(500).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : null
+        });
+    }
+},
 
     // Obtener usuario por ID
     async getUsuarioById(req, res) {

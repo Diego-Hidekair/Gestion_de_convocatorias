@@ -33,7 +33,8 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
-app.use(fileUpload());
+//app.use(fileUpload());
+
 
 // Rutas
 const routes = [

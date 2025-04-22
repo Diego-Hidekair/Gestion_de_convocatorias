@@ -1,7 +1,11 @@
 // src/components/usuarios/UsuarioForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, TextField, Button, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Grid, Avatar, Checkbox, FormControlLabel, Pagination} from '@mui/material';
+import { 
+  Box, TextField, Button, Select, MenuItem, InputLabel, 
+  FormControl, Typography, CircularProgress, Alert, 
+  Grid, Avatar, Checkbox, FormControlLabel
+} from '@mui/material';
 import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import useUsuarios from './hooks/useUsuarios';
 import api from '../../config/axiosConfig';
@@ -41,11 +45,10 @@ const UsuarioForm = ({ isEdit = false }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUsuario(prev => ({ ...prev, foto_file: file, foto_url: '' }));
-      setFotoPreview(URL.createObjectURL(file));
-      setUseFotoUrl(false);
+        setUsuario(prev => ({ ...prev, foto_file: file }));
+        setFotoPreview(URL.createObjectURL(file));
     }
-  };
+};
 
   const handleFotoUrlChange = (e) => {
     const url = e.target.value;
@@ -103,47 +106,47 @@ const UsuarioForm = ({ isEdit = false }) => {
 
     // Validación de campos obligatorios
     if (!isEdit && !usuario.contraseña) {
-      setError('La contraseña es obligatoria para nuevos usuarios');
-      return;
+        setError('La contraseña es obligatoria para nuevos usuarios');
+        return;
     }
     if (!usuario.id_usuario || !usuario.nombres || !usuario.apellido_paterno || !usuario.rol) {
-      setError('Por favor complete todos los campos obligatorios');
-      return;
+        setError('Por favor complete todos los campos obligatorios');
+        return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append('id_usuario', usuario.id_usuario);
-      formData.append('nombres', usuario.nombres);
-      formData.append('apellido_paterno', usuario.apellido_paterno);
-      formData.append('apellido_materno', usuario.apellido_materno || '');
-      formData.append('rol', usuario.rol);
-      formData.append('contraseña', usuario.contraseña || '');
-      formData.append('celular', usuario.celular || '');
-      formData.append('id_programa', usuario.id_programa || '');
+        const formData = new FormData();
+        
+        // Agregar todos los campos al FormData
+        formData.append('id_usuario', usuario.id_usuario);
+        formData.append('nombres', usuario.nombres);
+        formData.append('apellido_paterno', usuario.apellido_paterno);
+        formData.append('apellido_materno', usuario.apellido_materno || '');
+        formData.append('rol', usuario.rol);
+        formData.append('contraseña', usuario.contraseña || '');
+        formData.append('celular', usuario.celular || '');
+        formData.append('id_programa', usuario.id_programa || '');
 
-      // Manejo de imagen
-      if (usuario.foto_file) {
-        formData.append('foto_perfil', usuario.foto_file);
-      } else if (usuario.foto_url) {
-        formData.append('foto_url', usuario.foto_url);
-      }
+        // Solo agregar la imagen si se seleccionó un archivo
+        if (usuario.foto_file) {
+            formData.append('foto_perfil', usuario.foto_file);
+        }
 
-      const result = isEdit 
-        ? await updateUsuario(id, formData)
-        : await createUsuario(formData);
+        const result = isEdit 
+            ? await updateUsuario(id, formData)
+            : await createUsuario(formData);
 
-      if (result.success) {
-        setSuccess(isEdit ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
-        setTimeout(() => navigate('/usuarios'), 1500);
-      } else {
-        setError(result.error || 'Error al procesar la solicitud');
-      }
+        if (result.success) {
+            setSuccess(isEdit ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
+            setTimeout(() => navigate('/usuarios'), 1500);
+        } else {
+            setError(result.error || 'Error al procesar la solicitud');
+        }
     } catch (err) {
-      setError(err.message || 'Error al procesar la solicitud');
-      console.error('Error completo:', err);
+        setError(err.message || 'Error al procesar la solicitud');
+        console.error('Error completo:', err);
     }
-  };
+};
 
   return (
     <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
@@ -165,8 +168,215 @@ const UsuarioForm = ({ isEdit = false }) => {
 
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
         <Grid container spacing={2}>
-          {/* Campos del formulario (igual que antes) */}
-          {/* ... */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="ID de Usuario"
+              name="id_usuario"
+              value={usuario.id_usuario}
+              onChange={handleChange}
+              required
+              disabled={isEdit}
+              margin="normal"
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Nombres"
+              name="nombres"
+              value={usuario.nombres}
+              onChange={handleChange}
+              required
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Apellido Paterno"
+              name="apellido_paterno"
+              value={usuario.apellido_paterno}
+              onChange={handleChange}
+              required
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Apellido Materno"
+              name="apellido_materno"
+              value={usuario.apellido_materno}
+              onChange={handleChange}
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Rol</InputLabel>
+              <Select
+                name="rol"
+                value={usuario.rol}
+                onChange={handleChange}
+                label="Rol"
+              >
+                {rolesValidos.map((rol) => (
+                  <MenuItem key={rol.value} value={rol.value}>
+                    {rol.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {!isEdit && (
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="password"
+                label="Contraseña"
+                name="contraseña"
+                value={usuario.contraseña}
+                onChange={handleChange}
+                required
+                margin="normal"
+              />
+            </Grid>
+          )}
+
+          {isEdit && (
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="password"
+                label="Nueva Contraseña (dejar vacío para no cambiar)"
+                name="contraseña"
+                value={usuario.contraseña}
+                onChange={handleChange}
+                margin="normal"
+              />
+            </Grid>
+          )}
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Celular"
+              name="celular"
+              value={usuario.celular}
+              onChange={handleChange}
+              margin="normal"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Programa Académico</InputLabel>
+              <Select
+                name="id_programa"
+                value={usuario.id_programa || ''}
+                onChange={handleChange}
+                label="Programa Académico"
+                disabled={loadingCarreras}
+              >
+                <MenuItem value="">
+                  <em>Seleccione un programa</em>
+                </MenuItem>
+                {carreras.map((carrera) => (
+                  <MenuItem 
+                    key={carrera.id_programa} 
+                    value={carrera.id_programa}
+                  >
+                    {carrera.programa} ({carrera.nombre_facultad})
+                  </MenuItem>
+                ))}
+              </Select>
+              {loadingCarreras && (
+                <CircularProgress size={24} sx={{ position: 'absolute', right: 10, top: '50%' }} />
+              )}
+            </FormControl>
+          </Grid>
+
+          {/* Sección de Foto de Perfil */}
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>
+                Foto de Perfil
+            </Typography>
+            
+            {fotoPreview && (
+                <Avatar 
+                    src={fotoPreview} 
+                    sx={{ width: 100, height: 100, mb: 2 }}
+                />
+            )}
+            <Button
+              variant="outlined"
+              component="label"
+              sx={{ width: 'fit-content' }}
+          >
+              Seleccionar Imagen
+              <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+              />
+          </Button>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox 
+                    checked={!useFotoUrl}
+                    onChange={() => setUseFotoUrl(false)}
+                  />
+                }
+                label="Subir imagen desde dispositivo"
+              />
+              
+              {!useFotoUrl && (
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{ width: 'fit-content' }}
+                >
+                  Seleccionar Imagen
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+              )}
+              
+              <FormControlLabel
+                control={
+                  <Checkbox 
+                    checked={useFotoUrl}
+                    onChange={() => setUseFotoUrl(true)}
+                  />
+                }
+                label="Usar URL de imagen"
+              />
+              
+              {useFotoUrl && (
+                <TextField
+                  fullWidth
+                  label="URL de la imagen"
+                  name="foto_url"
+                  value={usuario.foto_url || ''}
+                  onChange={handleFotoUrlChange}
+                  margin="normal"
+                />
+              )}
+            </Box>
+          </Grid>
         </Grid>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>

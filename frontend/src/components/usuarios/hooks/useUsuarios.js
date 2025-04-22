@@ -54,33 +54,29 @@ const useUsuarios = () => {
 
   const createUsuario = async (formData) => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await api.post('/usuarios', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      return { success: true, data: response.data };
+        setLoading(true);
+        setError(null);
+        
+        const response = await api.post('/usuarios', formData);
+        
+        return { success: true, data: response.data };
     } catch (error) {
-      const errorData = error.response?.data || {};
-      console.error('Error al crear usuario:', error);
-      
-      const errorMsg = errorData.error || 
-                      errorData.message || 
-                      'Error al crear usuario';
-      
-      return { 
-        success: false, 
-        error: errorMsg,
-        details: errorData.details
-      };
+        console.error("Error completo:", error);
+        
+        let errorMessage = 'Error al crear usuario';
+        if (error.response) {
+            errorMessage = error.response.data.error || errorMessage;
+        }
+        
+        return { 
+            success: false, 
+            error: errorMessage,
+            details: error.response?.data
+        };
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const updateUsuario = async (id, formData) => {
     try {

@@ -10,8 +10,13 @@ const adminOrSecretary = authorizeRoles(['admin', 'secretaria_de_decanatura']);
 router.get('/me', authenticateToken, UserController.getCurrentUser);
 router.get('/', authenticateToken, adminOnly, UserController.getUsuarios);
 router.get('/:id_usuario', authenticateToken, UserController.getUsuarioById);
-router.post('/',  authenticateToken, adminOrSecretary, upload.single('foto_perfil'), UserController.createUser );
-//router.put('/:id_usuario', authenticateToken, adminOnly, upload.single('foto_perfil'), UserController.updateUser );
+//router.post('/new',  authenticateToken, adminOrSecretary, upload.single('foto_perfil'), UserController.createUser );
+router.post('/', 
+    authenticateToken, 
+    adminOrSecretary, 
+    upload.single('foto_perfil'), 
+    UserController.createUser
+  );
 router.put('/:id', authenticateToken, authorizeRoles(['admin', 'secretaria_de_decanatura']), upload.single('foto_perfil'), UserController.updateUser );
 
 router.delete('/:id_usuario', authenticateToken, adminOnly, UserController.deleteUser);
