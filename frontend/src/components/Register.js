@@ -10,7 +10,7 @@ const Register = () => {
         apellido_paterno: '',
         apellido_materno: '',
         rol: 'personal_administrativo', // Rol por defecto consistente
-        contraseña: '',
+        contrasena: '',
         celular: ''
     });
 
@@ -39,7 +39,7 @@ const Register = () => {
                 Apellido_paterno: '',
                 Apellido_materno: '',
                 Rol: 'admin',
-                Contraseña: '',
+                Contrasena: '',
                 Celular: ''
             });
         } catch (error) {
@@ -54,7 +54,7 @@ const Register = () => {
             <input type="text" name="Nombres" placeholder="Nombres" value={formData.Nombres} onChange={handleChange} required />
             <input type="text" name="Apellido_paterno" placeholder="Apellido Paterno" value={formData.Apellido_paterno} onChange={handleChange} required />
             <input type="text" name="Apellido_materno" placeholder="Apellido Materno" value={formData.Apellido_materno} onChange={handleChange} required />
-            <input type="password" name="Contraseña" placeholder="Contraseña" value={formData.Contraseña} onChange={handleChange} required />
+            <input type="password" name="Contrasena" placeholder="Contrasena" value={formData.Contrasena} onChange={handleChange} required />
             <input type="text" name="Celular" placeholder="Celular" value={formData.Celular} onChange={handleChange} required />
             <select name="Rol" value={formData.Rol} onChange={handleChange} required>
                 <option value="admin">Admin</option>

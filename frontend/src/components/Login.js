@@ -26,7 +26,7 @@ axios.interceptors.request.use(config => {
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({
         id_usuario: '',
-        Contraseña: ''
+        Contrasena: ''
     });
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -45,7 +45,7 @@ const Login = ({ setAuth }) => {
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', {
                 id_usuario: formData.id_usuario,
-                contraseña: formData.Contraseña 
+                contrasena: formData.Contrasena 
             }, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -115,9 +115,9 @@ const Login = ({ setAuth }) => {
                             <div className="form-group-login">
                                 <input 
                                     type="password" 
-                                    name="Contraseña" 
-                                    placeholder="Contraseña" 
-                                    value={formData.contraseña} 
+                                    name="Contrasena" 
+                                    placeholder="Contrasena" 
+                                    value={formData.contrasena} 
                                     onChange={handleChange} 
                                     required 
                                     className="form-control" 

@@ -16,8 +16,8 @@ const generateToken = (user) => {
 };
 
 const loginUser = async (req, res) => {
-    const { id_usuario, contraseña } = req.body;
-    if (!id_usuario || !contraseña) {
+    const { id_usuario, contrasena } = req.body;
+    if (!id_usuario || !contrasena) {
         return res.status(400).json({ error: 'ID de usuario y contraseña son requeridos' });
     }
     try {
@@ -27,10 +27,10 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ error: 'Credenciales inválidas' }); 
         }
 
-        if (!user.contraseña) {
+        if (!user.contrasena) {
             return res.status(500).json({ error: 'Error en la configuración del usuario' });
         }
-        const validPassword = await bcrypt.compare(contraseña, user.contraseña);
+        const validPassword = await bcrypt.compare(contrasena, user.contrasena);
         if (!validPassword) {
             return res.status(400).json({ error: 'Credenciales inválidas' }); 
         }

@@ -9,7 +9,7 @@ const CreateUser = () => {
         Apellido_paterno: '',
         Apellido_materno: '',
         Rol: 'secretaria_de_decanatura', 
-        Contraseña: '',
+        Contrasena: '',
         Celular: '',
     });
 
@@ -48,7 +48,7 @@ const CreateUser = () => {
                     <option value="tecnico_vicerrectorado">Técnico de Vicerrectorado</option>
                     <option value="vicerrectorado">Vicerrectorado</option>
                 </select>
-                <input type="password" name="Contraseña" placeholder="Contraseña" value={userData.Contraseña} onChange={handleChange} required />
+                <input type="password" name="Contrasena" placeholder="Contrasena" value={userData.Contrasena} onChange={handleChange} required />
                 <input type="text" name="Celular" placeholder="Celular" value={userData.Celular} onChange={handleChange} required />
                 <button type="submit">Crear Usuario</button>
             </form>

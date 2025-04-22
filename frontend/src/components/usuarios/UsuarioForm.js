@@ -280,8 +280,8 @@ const UsuarioForm = ({ isEdit = false }) => {
                       fullWidth
                       type="password"
                       label="Contraseña"
-                      name="contrasena" // Cambiado de 'contraseña' a 'contrasena'
-                      value={usuario.contrasena} // Cambiado aquí
+                      name="contrasena" 
+                      value={usuario.contrasena} 
                       onChange={handleChange}
                       required
                       margin="normal"

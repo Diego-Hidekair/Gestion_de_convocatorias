@@ -47,7 +47,7 @@ const routes = [
     { path: '/documentos', route: './routes/documentosRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
-    { path: '/honorarios', route: './routes/honorariosRoutes' },
+//    { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
     { path: '/convocatorias-archivos', route: './routes/convocatoriasArchivosRoutes' } 
