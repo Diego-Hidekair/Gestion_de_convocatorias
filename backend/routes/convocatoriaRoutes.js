@@ -1,19 +1,16 @@
+// backend/routes/convocatoriaRoutes.js
 const express = require('express');
 const router = express.Router();
 const convocatoriaController = require('../controllers/convocatoriaController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const { authenticateToken, verificarRolSecretaria } = require('../middleware/authMiddleware');
 
-// Aplicar middleware de autenticación a todas las rutas
-router.use(authMiddleware);
-
-// Rutas para convocatorias
+router.use(authenticateToken); 
 router.get('/', convocatoriaController.getConvocatorias);
 router.get('/:id', convocatoriaController.getConvocatoriaById);
-router.post('/', convocatoriaController.createConvocatoria);
-router.put('/:id', convocatoriaController.updateConvocatoria);
-router.put('/:id/estado', convocatoriaController.updateEstadoConvocatoria);
+router.post('/', verificarRolSecretaria, convocatoriaController.createConvocatoria);
+router.put('/:id', verificarRolSecretaria, convocatoriaController.updateConvocatoria);
+router.put('/:id/estado', (req, res, next) => { if (['tecnico_vicerrectorado', 'vicerrectorado', 'admin'].includes(req.user.rol)) { return next();}return res.status(403).json({ error: 'Acceso denegado' });},convocatoriaController.updateEstadoConvocatoria);
 
-// Rutas específicas por facultad/estado
 router.get('/facultad/actual', convocatoriaController.getConvocatoriasByFacultad);
 router.get('/facultad/estado/:estado', convocatoriaController.getConvocatoriasByFacultadAndEstado);
 
