@@ -5,22 +5,34 @@ const pool = require('../db');
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
+    
+    if (!token) {
+        console.error('Token no proporcionado');
+        return res.status(401).json({ error: 'Acceso denegado: Token no proporcionado.' });
+    }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-        if (err) return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
-        
+        if (err) {
+            console.error('Token inválido:', err);
+            return res.status(403).json({ error: 'Acceso denegado: Token inválido o expirado.' });
+        }
         try {
-            const user = await pool.query('SELECT rol, id_programa FROM usuarios WHERE id_usuario = $1', [decoded.id_usuario]);
-            
+            console.log('Token decodificado:', decoded);
+            const userId = decoded.id_usuario || decoded.id;
+            const user = await pool.query(
+                'SELECT id_usuario, rol, id_programa FROM usuarios WHERE id_usuario = $1', 
+                [userId]
+            );
             if (user.rows.length === 0) {
+                console.error('Usuario no encontrado en BD con ID:', userId);
                 return res.status(403).json({ error: 'Usuario no encontrado' });
             }
-
             req.user = {
-                ...decoded,
-                ...user.rows[0]
+                id: user.rows[0].id_usuario,
+                rol: user.rows[0].rol,
+                id_programa: user.rows[0].id_programa ? user.rows[0].id_programa.trim() : null 
             };
+            console.log('Usuario autenticado:', req.user);
             next();
         } catch (error) {
             console.error('Error al verificar usuario:', error);

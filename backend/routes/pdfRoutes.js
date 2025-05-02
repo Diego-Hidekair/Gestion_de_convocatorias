@@ -2,12 +2,17 @@
 const express = require('express');
 const router = express.Router();
 const pdfController = require('../controllers/pdfController');
-const { authenticateToken, verificarRolSecretaria } = require('../middleware/authMiddleware');
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-router.get('/generar/:id_convocatoria/:id_honorario', authenticateToken, verificarRolSecretaria, pdfController.generatePDF);
-router.get('/combinado/ver/:id_convocatoria', authenticateToken, verificarRolSecretaria, pdfController.viewCombinedPDF);
-router.post('/combinar-y-guardar/:id_convocatoria', authenticateToken, verificarRolSecretaria, pdfController.combinarYGuardarPDFs);
-router.get('/descargar/:id_convocatoria', pdfController.downloadCombinedPDF);
-router.delete('/eliminar/:id_convocatoria', authenticateToken, verificarRolSecretaria, pdfController.deletePDF);
+const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
+
+router.use(authenticateToken);
+
+// Rutas de PDF
+router.post('/:id/pdf/generar', secretariaOnly, pdfController.generatePDF);
+router.post('/:id/pdf/combinar', secretariaOnly, pdfController.combinarYGuardarPDFs);
+router.get('/:id/pdf', pdfController.viewCombinedPDF);
+router.get('/:id/pdf/descargar', pdfController.downloadCombinedPDF);
+router.delete('/:id/pdf', secretariaOnly, pdfController.deletePDF);
 
 module.exports = router;

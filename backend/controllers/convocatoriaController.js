@@ -50,17 +50,16 @@ const validateConvocatoria = [
     check('materias.*.total_horas').isInt({ min: 1 })
 ];
 
-// Crear convocatoria con flujo completo
 const createConvocatoria = async (req, res) => {
+    console.log('Datos del usuario:', req.user); 
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        
         const { 
             tipo_jornada, 
             fecha_fin, 
@@ -74,37 +73,39 @@ const createConvocatoria = async (req, res) => {
             materias = []
         } = req.body;
 
-        // Obtener datos del usuario y programa
+        if (!req.user || !req.user.id) {
+            throw new Error('Usuario no autenticado correctamente');
+        }
         const id_usuario = req.user.id;
-        const id_programa = req.user.id_programa;
-        
-        // Obtener datos del programa para nombre automático
+        const id_programa = req.user.id_programa ? req.user.id_programa.trim() : null; // Limpia espacios
+
+        if (!id_programa) {
+            throw new Error('El usuario no tiene programa asociado');
+        }
+
+        console.log(`Creando convocatoria para usuario ${id_usuario} del programa ${id_programa}`);
         const programaData = await client.query(`
             SELECT p.programa, f.facultad 
             FROM datos_universidad.alm_programas p
             JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
             WHERE p.id_programa = $1
         `, [id_programa]);
-        
         if (programaData.rows.length === 0) {
             throw new Error('Programa no encontrado');
         }
-        
-        // Generar nombre automático para la convocatoria
         const tipoConvocatoria = await client.query(
             'SELECT nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', 
             [id_tipoconvocatoria]
         );
         
+        if (tipoConvocatoria.rows.length === 0) {
+            throw new Error('Tipo de convocatoria no encontrado');
+        }
         const nombre_conv = `CONVOCATORIA ${tipoConvocatoria.rows[0].nombre_tipo_conv} - ${programaData.rows[0].programa} - ${etapa_convocatoria} ETAPA`;
-
-        // Obtener vicerrector
         const vicerrector = await client.query('SELECT id_vicerector FROM vicerrector LIMIT 1');
         if (!vicerrector.rows[0]) {
             throw new Error('No se ha configurado un vicerrector');
         }
-
-        // Insertar convocatoria principal
         const convResult = await client.query(`
             INSERT INTO convocatorias (
                 tipo_jornada, nombre_conv, fecha_inicio, fecha_fin,
@@ -114,17 +115,23 @@ const createConvocatoria = async (req, res) => {
             ) VALUES ($1, $2, CURRENT_DATE, $3, $4, 'Para Revisión', $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING id_convocatoria
         `, [
-            tipo_jornada, nombre_conv, fecha_fin,
-            etapa_convocatoria, gestion, pago_mensual,
-            resolucion, dictamen, perfil_profesional,
-            vicerrector.rows[0].id_vicerector, id_usuario, id_tipoconvocatoria, id_programa
+            tipo_jornada, 
+            nombre_conv, 
+            fecha_fin,
+            etapa_convocatoria, 
+            gestion, 
+            pago_mensual,
+            resolucion, 
+            dictamen, 
+            perfil_profesional,
+            vicerrector.rows[0].id_vicerector, 
+            id_usuario, 
+            id_tipoconvocatoria, 
+            id_programa
         ]);
-
         const id_convocatoria = convResult.rows[0].id_convocatoria;
-
-        // Insertar materias con validación de horas
+        console.log(`Convocatoria creada con ID: ${id_convocatoria}`);
         for (const materia of materias) {
-            // Verificar que la materia pertenece al programa
             const materiaExists = await client.query(`
                 SELECT 1 FROM datos_universidad.pln_materias 
                 WHERE id_materia = $1 AND id_programa = $2
@@ -140,29 +147,20 @@ const createConvocatoria = async (req, res) => {
                 ) VALUES ($1, $2, $3)
             `, [id_convocatoria, materia.id_materia, materia.total_horas]);
         }
-
-        // Generar PDF automáticamente
-        const pdfBuffer = await generatePDF({
-            id_convocatoria,
-            convocatoriaData: {
-                nombre: nombre_conv,
-                nombre_convocatoria: tipoConvocatoria.rows[0].nombre_tipo_conv,
-                nombre_carrera: programaData.rows[0].programa,
-                nombre_facultad: programaData.rows[0].facultad,
-                fecha_inicio: new Date(),
-                fecha_fin: new Date(fecha_fin),
-                resolucion,
-                dictamen,
-                prioridad: etapa_convocatoria,
-                tipo_jornada
-            },
-            materias,
-            pago_mensual
-        });
-
-        // Guardar archivos (PDF generado)
+        const pdfData = {
+            nombre: nombre_conv,
+            nombre_convocatoria: tipoConvocatoria.rows[0].nombre_tipo_conv,
+            nombre_carrera: programaData.rows[0].programa,
+            nombre_facultad: programaData.rows[0].facultad,
+            fecha_inicio: new Date(),
+            fecha_fin: new Date(fecha_fin),
+            resolucion,
+            dictamen,
+            prioridad: etapa_convocatoria,
+            tipo_jornada
+        };
+        const pdfBuffer = await generatePDF(pdfData, materias, pago_mensual);
         const nombre_archivo = `CONVOCATORIA_${id_convocatoria}_${programaData.rows[0].programa.replace(/\s+/g, '_')}.pdf`;
-        
         await client.query(`
             INSERT INTO convocatorias_archivos (
                 id_convocatoria, nombre_archivo, doc_conv,
@@ -175,11 +173,9 @@ const createConvocatoria = async (req, res) => {
             resolucion ? Buffer.from(resolucion) : null,
             dictamen ? Buffer.from(dictamen) : null
         ]);
-
         await client.query('COMMIT');
-        
-        // Obtener y devolver convocatoria completa
         const convocatoriaCompleta = await getFullConvocatoria(id_convocatoria);
+        console.log('Convocatoria creada:', convocatoriaCompleta);
         res.status(201).json(convocatoriaCompleta);
 
     } catch (error) {
@@ -591,6 +587,4 @@ const updateComentarioObservado = async (req, res) => {
     }
 };
 
-
-module.exports = { getFullConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, updateEstadoConvocatoria, updateComentarioObservado };
-
+module.exports = { getFullConvocatoria, validateConvocatoria, getConvocatorias, getConvocatoriaById, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, createConvocatoria, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado};
