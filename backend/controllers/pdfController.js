@@ -2,8 +2,6 @@
 const { Pool } = require('pg');
 const pdf = require('html-pdf'); 
 const { PDFDocument } = require('pdf-lib');
-const path = require('path');  
-const fs = require('fs');
 
 const pool = new Pool({
     user: process.env.DB_USER,
