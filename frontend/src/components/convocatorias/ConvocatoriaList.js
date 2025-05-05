@@ -1,4 +1,4 @@
-// frontend/src/components/convocatorias/ConvocatoriaList.js
+// frontend/src/components/ConvocatoriaList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert } from "@mui/material";
