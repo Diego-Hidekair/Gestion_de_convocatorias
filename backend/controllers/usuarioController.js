@@ -283,8 +283,11 @@ const UserController = {
 
     async getCurrentUser(req, res) {
         try {
-            const userId = req.user.id_usuario;
+            console.log('Usuario en req.user:', req.user);
             
+            if (!req.user?.id_usuario) {
+                return res.status(401).json({ error: 'Usuario no autenticado correctamente' });
+            }
             const result = await pool.query(`
                 SELECT 
                     u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno, 
@@ -295,15 +298,16 @@ const UserController = {
                 LEFT JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa
                 LEFT JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
                 WHERE u.id_usuario = $1
-            `, [userId]);
-
+            `, [req.user.id_usuario]);  // Usar id_usuario directamente
+    
             if (result.rows.length === 0) {
+                console.error('Usuario no encontrado en BD con ID:', req.user.id_usuario);
                 return res.status(404).json({ error: 'Usuario no encontrado' });
             }
-
+    
             res.json(result.rows[0]);
         } catch (error) {
-            console.error('Error al obtener usuario actual:', error);
+            console.error('Error en getCurrentUser:', error);
             res.status(500).json({ 
                 error: 'Error al obtener usuario actual',
                 details: process.env.NODE_ENV === 'development' ? error.message : null

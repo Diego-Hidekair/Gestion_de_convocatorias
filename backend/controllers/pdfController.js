@@ -104,11 +104,15 @@ const generatePDF = async (convocatoriaData, materias, pago_mensual) => {
             default:
                 throw new Error(`Tipo de convocatoria no aplicable: ${nombre_convocatoria}`);
         }
+        if (!materias || materias.length === 0) {
+            throw new Error('Debe especificar al menos una materia');
+          }
 
         const options = { format: 'Letter', border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } };
         const pdfBuffer = await generarPDFBuffer(htmlContent, options);
         
         return pdfBuffer;
+        
     } catch (error) {
         console.error('Error al generar PDF:', error);
         throw error;

@@ -11,7 +11,7 @@ const generateToken = (user) => {
             rol: user.rol
         }, 
         process.env.JWT_SECRET,
-        { expiresIn: '4h' } 
+        { expiresIn: '4h' }
     );
 };
 

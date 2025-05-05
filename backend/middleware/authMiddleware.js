@@ -28,9 +28,9 @@ const authenticateToken = (req, res, next) => {
                 return res.status(403).json({ error: 'Usuario no encontrado' });
             }
             req.user = {
-                id: user.rows[0].id_usuario,
+                id_usuario: user.rows[0].id_usuario,
                 rol: user.rows[0].rol,
-                id_programa: user.rows[0].id_programa ? user.rows[0].id_programa.trim() : null 
+                id_programa: user.rows[0].id_programa ? user.rows[0].id_programa.trim() : null
             };
             console.log('Usuario autenticado:', req.user);
             next();

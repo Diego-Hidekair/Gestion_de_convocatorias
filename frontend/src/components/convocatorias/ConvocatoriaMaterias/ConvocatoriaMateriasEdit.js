@@ -1,86 +1,116 @@
-// frontend/src/components/ConvocatoriaMateriasEdit.js
-
+// frontend/src/components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasEdit.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  Container, TextField, Button, Typography, Paper, Box, Alert, CircularProgress 
+} from '@mui/material';
 
 const ConvocatoriaMateriasEdit = () => {    
     const { id_convocatoria, id_materia } = useParams();
     const navigate = useNavigate();
     const [materia, setMateria] = useState(null);
     const [perfilProfesional, setPerfilProfesional] = useState('');
-    const [totalHoras, setTotalHoras] = useState('');
+    const [totalHoras, setTotalHoras] = useState(0);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Obtener los datos de la materia para editar
     useEffect(() => {
         const fetchMateria = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/convocatoria_materias/${id_materia}`);
                 setMateria(response.data);
-                setPerfilProfesional(response.data.perfil_profesional);
-                setTotalHoras(response.data.total_horas);
+                setPerfilProfesional(response.data.perfil_profesional || '');
+                setTotalHoras(response.data.total_horas || 0);
+                setLoading(false);
             } catch (err) {
                 setError('Error al obtener los datos de la materia');
                 console.error(err);
+                setLoading(false);
             }
         };
         fetchMateria();
     }, [id_materia]);
  
-    // Manejar la edición de la materia
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             await axios.put(`http://localhost:5000/convocatoria_materias/${id_materia}`, {
                 perfil_profesional: perfilProfesional,
-                total_horas: totalHoras, // Asegúrate de que se envíe este dato
+                total_horas: totalHoras
             });
-            alert('Materia editada exitosamente');
-            // Redirigir nuevamente a la creación de honorarios
+            
             navigate(`/honorarios/new/${id_convocatoria}/${id_materia}`);
-
-
         } catch (err) {
             setError('Error al editar la materia');
             console.error(err);
         }
     };
-    
 
-    if (!materia) return <p>Cargando datos...</p>;
+    if (loading) {
+        return (
+            <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+            </Container>
+        );
+    }
+
+    if (!materia) {
+        return (
+            <Container maxWidth="md" sx={{ mt: 4 }}>
+                <Alert severity="error">No se pudo cargar la información de la materia</Alert>
+            </Container>
+        );
+    }
 
     return (
-        <div className="container-conv-mat mt-4-conv-mat">
-            <h2>Editar Materia de la Convocatoria</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3-conv-mat">
-                    <label className="form-label-conv-mat">Perfil Profesional:</label>
-                    <input
-                        type="text"
-                        className="form-control-conv-mat"
+        <Container maxWidth="md">
+            <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+                <Typography variant="h5" gutterBottom>
+                    Editar Materia de la Convocatoria
+                </Typography>
+                
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                
+                <Box component="form" onSubmit={handleSubmit}>
+                    <TextField
+                        label="Perfil Profesional"
+                        fullWidth
                         value={perfilProfesional}
                         onChange={(e) => setPerfilProfesional(e.target.value)}
+                        margin="normal"
                         required
                     />
-                </div>
-
-                <div className="mb-3-conv-mat">
-                    <label className="form-label-conv-mat">Total Horas:</label>
-                    <input
+                    
+                    <TextField
+                        label="Total Horas"
                         type="number"
-                        className="form-control-conv-mat"
+                        fullWidth
                         value={totalHoras}
-                        onChange={(e) => setTotalHoras(e.target.value)}
+                        onChange={(e) => setTotalHoras(Number(e.target.value))}
+                        margin="normal"
                         required
+                        inputProps={{ min: 1 }}
                     />
-                </div>
-
-                <button type="submit" className="btn btn-primary-conv-mat">Guardar Cambios</button>
-            </form>
-        </div>
+                    
+                    <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+                        <Button 
+                            variant="outlined" 
+                            onClick={() => navigate(-1)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            color="primary"
+                        >
+                            Guardar Cambios
+                        </Button>
+                    </Box>
+                </Box>
+            </Paper>
+        </Container>
     );
 };
 

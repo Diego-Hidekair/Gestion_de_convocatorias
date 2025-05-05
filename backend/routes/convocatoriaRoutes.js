@@ -16,34 +16,24 @@ router.get('/facultad/estado/:estado', convocatoriaController.getConvocatoriasBy
 router.get('/:id', convocatoriaController.getConvocatoriaById);
 
 // Ruta POST con validación
-router.post(
-  '/',
-  secretariaOnly,
-  convocatoriaController.validateConvocatoria,
+router.post( '/', secretariaOnly, convocatoriaController.validateConvocatoria,
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
     next();
-  },
-  convocatoriaController.createConvocatoria
-);
+  }, convocatoriaController.createConvocatoria);
 
 // Ruta PUT con validación
-router.put(
-  '/:id',
-  secretariaOnly,
-  convocatoriaController.validateConvocatoria,
+router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
     next();
-  },
-  convocatoriaController.updateConvocatoria
-);
+  }, convocatoriaController.updateConvocatoria );
 
 // Rutas de estado
 router.put('/:id/estado', vicerrectorOnly, convocatoriaController.updateEstadoConvocatoria);

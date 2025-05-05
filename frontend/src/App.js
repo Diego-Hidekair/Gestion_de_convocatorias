@@ -8,20 +8,20 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import FacultadList from './components/FacultadList';
-import ConvocatoriaList from './components/convocatorias/ConvocatoriaList';
+import ConvocatoriaList from './components/convocatorias/ConvocatoriaList'; 
 import ConvocatoriaForm from './components/convocatorias/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/convocatorias/ConvocatoriaEdit';
-import ConvocatoriaListSecretaria from './components/ConvocatoriaList_secretaria';
-import ConvocatoriaParaRevision from './components/ConvocatoriaParaRevision';
-import ConvocatoriaEnRevision from './components/ConvocatoriaEnRevision';
-import ConvocatoriaObservado from './components/ConvocatoriaObservado';
-import ConvocatoriaRevisado from './components/ConvocatoriaRevisado';
+//import ConvocatoriaListSecretaria from './components/ConvocatoriaList_secretaria';
+//import ConvocatoriaParaRevision from './components/convocatorias/estados/ConvocatoriaParaRevision';
+//import ConvocatoriaEnRevision from './components/convocatorias/estados/ConvocatoriaEnRevision';
+//import ConvocatoriaObservado from './components/convocatorias/estados/ConvocatoriaObservado';
+//import ConvocatoriaRevisado from './components/convocatorias/estados/ConvocatoriaRevisado';
 import TipoconvocatoriaList from './components/TipoconvocatoriaList';
 import TipoconvocatoriaForm from './components/TipoconvocatoriaForm';
 import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
 import MateriaList from './components/MateriaList';
-import ConvocatoriaMateriasEdit from './components/ConvocatoriaMateriasEdit';
-import ConvocatoriaMateriasForm from './components/ConvocatoriaMateriasForm';
+import ConvocatoriaMateriasEdit from './components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasEdit';
+import ConvocatoriaMateriasForm from './components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasForm';
 import Login from './components/Login';
 import Register from './components/Register';
 import FileUpload from './components/FileUpload';
@@ -170,17 +170,18 @@ const AuthWrapper = () => {
             {userRole === 'secretaria_de_decanatura' && (
               <>
                 <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                <Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />
+                {/*<Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />*/}
               </>
             )}
             
             <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
             <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
             
-            <Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />
-            <Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />
-            <Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />
-            <Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />
+            {/*<Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />*/}
+            {/*<Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />*/}
+            {/*<Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />*/}
+            {/*<Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />*/}
+            <Route path="/convocatorias/:estado?" element={<ConvocatoriaList />} />
             
             <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
             <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} />

@@ -40,7 +40,12 @@ const getFullConvocatoria = async (id_convocatoria) => {
 
 const validateConvocatoria = [
     check('tipo_jornada').isIn(['TIEMPO COMPLETO', 'TIEMPO HORARIO']),
-    check('fecha_fin').isDate(),
+    check('fecha_fin').custom((value, { req }) => {
+        if (new Date(value) <= new Date(req.body.fecha_inicio)) {
+          throw new Error('La fecha fin debe ser posterior a la fecha inicio');
+        }
+        return true;
+      }),
     check('id_tipoconvocatoria').isInt(),
     check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']),
     check('pago_mensual').optional().isInt({ min: 0 }),
@@ -48,6 +53,7 @@ const validateConvocatoria = [
     check('materias').isArray(),
     check('materias.*.id_materia').isInt(),
     check('materias.*.total_horas').isInt({ min: 1 })
+    
 ];
 
 const createConvocatoria = async (req, res) => {

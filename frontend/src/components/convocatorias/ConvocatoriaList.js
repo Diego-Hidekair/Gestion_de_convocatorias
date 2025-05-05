@@ -1,11 +1,12 @@
-// frontend/src/components/ConvocatoriaList.js
+// frontend/src/components/convocatorias/ConvocatoriaList.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert, Badge  } from "@mui/material";
 import { Edit, Delete, Preview, Download, Search, Comment } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom"; 
 
 const ConvocatoriaList = () => {
+    const { estado: estadoParam } = useParams();
     const [convocatorias, setConvocatorias] = useState([]);
     const [filteredConvocatorias, setFilteredConvocatorias] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
