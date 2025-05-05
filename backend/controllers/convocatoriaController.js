@@ -575,7 +575,7 @@ const updateComentarioObservado = async (req, res) => {
 
         // Actualizar el comentario
         const result = await pool.query(`
-            UPDATE convocatorias 
+            UPDATE convocatorias  
             SET comentario_observado = $1
             WHERE id_convocatoria = $2 
             RETURNING id_convocatoria, estado, comentario_observado
