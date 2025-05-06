@@ -12,71 +12,59 @@ const ConvocatoriaForm = () => {
     const navigate = useNavigate();
     const [convocatoria, setConvocatoria] = useState({
         nombre: '',
-        fecha_inicio: null,
+        fecha_inicio: new Date(), 
         fecha_fin: null,
         id_tipoconvocatoria: '',
         id_programa: '',
-        id_facultad: '',
-        horario: 'TIEMPO COMPLETO',
-        prioridad: 'PRIMERA', 
-        gestion: 'GESTION 1', 
+        tipo_jornada: 'TIEMPO COMPLETO',
+        etapa_convocatoria: 'PRIMERA', 
+        gestion: 'GESTION 1',
+        resolucion: '',
+        dictamen: '',
+        perfil_profesional: '',
+        materias: []
     });
-
     const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
     const [carrerasFiltradas, setCarrerasFiltradas] = useState([]);
     const [nombreFacultad, setNombreFacultad] = useState('');
-    const [tituloConvocatoria, setTituloConvocatoria] = useState('');
     const currentYear = new Date().getFullYear();
 
     useEffect(() => {
-        // Guardar la página actual en localStorage
         localStorage.setItem('currentPage', '/convocatorias/new');
-
-        const today = new Date();
-        if (!id) {
-            setConvocatoria((prevConvocatoria) => ({
-                ...prevConvocatoria,
-                fecha_inicio: today,
-            }));
-        }
-        if (id) {
-            const fetchConvocatoria = async () => {
-                try {
-                    const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
-                    const data = response.data;
-                    setConvocatoria({
-                        ...data,
-                        fecha_inicio: data.fecha_inicio ? new Date(data.fecha_inicio) : null,
-                        fecha_fin: data.fecha_fin ? new Date(data.fecha_fin) : null,
-                    });
-                } catch (error) {
-                    console.error('Error fetching convocatoria:', error);
-                }
-            };
-            fetchConvocatoria();
-        }
 
         const fetchData = async () => {
             try {
-                const userResponse = await axios.get('http://localhost:5000/usuarios/me');
+                const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 const userData = userResponse.data;
 
-                const nombreFacultad = userData.nombre_facultad || '';
-                setNombreFacultad(nombreFacultad);
-                setConvocatoria((prevConvocatoria) => ({
-                    ...prevConvocatoria,
-                    id_facultad: userData.id_facultad || '',
-                }));
-
+                setNombreFacultad(userData.nombre_facultad || '');
+                
                 const [tiposResponse, carrerasResponse] = await Promise.all([
                     axios.get('http://localhost:5000/tipos-convocatorias'),
-                    axios.get(`http://localhost:5000/carreras/facultad/${nombreFacultad}`),
+                    axios.get(`http://localhost:5000/carreras/facultad/${userData.id_facultad}`)
                 ]);
 
                 setTiposConvocatoria(tiposResponse.data);
                 setCarrerasFiltradas(carrerasResponse.data);
+
+                if (id) {
+                    const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+                    const data = response.data;
+                    setConvocatoria({
+                        ...data,
+                        fecha_inicio: data.fecha_inicio ? new Date(data.fecha_inicio) : new Date(),
+                        fecha_fin: data.fecha_fin ? new Date(data.fecha_fin) : null,
+                        tipo_jornada: data.tipo_jornada,
+                        etapa_convocatoria: data.etapa_convocatoria
+                    });
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
+                alert(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
             }
         };
 
@@ -85,101 +73,67 @@ const ConvocatoriaForm = () => {
 
     const handleTipoConvocatoriaChange = (e) => {
         const tipoId = e.target.value;
-        setConvocatoria((prevConvocatoria) => ({
-            ...prevConvocatoria,
-            id_tipoconvocatoria: tipoId,
+        setConvocatoria(prev => ({
+            ...prev,
+            id_tipoconvocatoria: tipoId
         }));
-
-        const selectedTipo = tiposConvocatoria.find((tipo) => tipo.id_tipoconvocatoria === parseInt(tipoId));
-        setTituloConvocatoria(selectedTipo ? selectedTipo.titulo : '');
-        handleNombreAutoFill();
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setConvocatoria((prevConvocatoria) => ({
-            ...prevConvocatoria,
-            [name]: value,
-        }));
-        handleNombreAutoFill();
-    };
-
-    const handleDateChange = (name, date) => {
-        setConvocatoria((prevConvocatoria) => ({
-            ...prevConvocatoria,
-            [name]: date,
+        setConvocatoria(prev => ({
+            ...prev,
+            [name]: value
         }));
     };
 
-    const handleNombreAutoFill = () => {
-        const programaNombre =
-            carrerasFiltradas.find((p) => p.id_programa === parseInt(convocatoria.id_programa))?.nombre_carrera || '';
-        const nombreCompleto = `${convocatoria.prioridad} ${tituloConvocatoria} ${convocatoria.horario} PARA EL PROGRAMA DE ${programaNombre} ${convocatoria.gestion}/${currentYear}`;
-
-        setConvocatoria((prevConvocatoria) => ({
-            ...prevConvocatoria,
-            nombre: nombreCompleto,
+    const handleDateChange = (date) => {
+        setConvocatoria(prev => ({
+            ...prev,
+            fecha_fin: date
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        handleNombreAutoFill();
 
-        const formattedConvocatoria = {
-            ...convocatoria,
-            fecha_inicio: convocatoria.fecha_inicio ? convocatoria.fecha_inicio.toISOString().split('T')[0] : null,
-            fecha_fin: convocatoria.fecha_fin ? convocatoria.fecha_fin.toISOString().split('T')[0] : null,
-        };
-
-        console.log('Datos enviados:', formattedConvocatoria); // Verificar datos
+        // Validación básica
+        if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
+            alert('Por favor complete todos los campos requeridos');
+            return;
+        }
 
         try {
+            const payload = {
+                ...convocatoria,
+                fecha_fin: convocatoria.fecha_fin.toISOString().split('T')[0],
+                id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
+                id_programa: convocatoria.id_programa.toString().trim(), // Limpiar espacios
+                materias: [] // Array vacío si no hay materias
+            };
+
+            console.log('Enviando datos:', payload);
+
             if (id) {
-                await axios.put(`http://localhost:5000/convocatorias/${id}`, formattedConvocatoria);
+                await axios.put(`http://localhost:5000/convocatorias/${id}`, payload, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 navigate('/convocatorias');
             } else {
-                const response = await axios.post('http://localhost:5000/convocatorias', formattedConvocatoria);
-                const newConvocatoriaId = response.data.id_convocatoria;
-
-                localStorage.removeItem('convocatoriaState');
-                localStorage.setItem('currentPage', `/convocatorias_materias/new/${newConvocatoriaId}`);
-                navigate(`/convocatorias_materias/new/${newConvocatoriaId}`);
+                const response = await axios.post('http://localhost:5000/convocatorias', payload, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                navigate(`/convocatorias_materias/new/${response.data.id_convocatoria}`);
             }
         } catch (error) {
             console.error('Error submitting form:', error);
-            alert(`Hubo un error al crear la convocatoria: ${error.response?.data?.error || error.message}`);
+            alert(`Error: ${error.response?.data?.error || error.message}`);
         }
-    };
-
-    useEffect(() => {
-        if (convocatoria.nombre && convocatoria.fecha_inicio && convocatoria.fecha_fin) {
-            localStorage.setItem('convocatoriaState', JSON.stringify(convocatoria));
-        }
-    }, [convocatoria]);
-
-    useEffect(() => {
-        const savedState = JSON.parse(localStorage.getItem('convocatoriaState'));
-        if (savedState) {
-            setConvocatoria(savedState);
-        }
-    }, []);
-
-    const handleCancel = () => {
-        localStorage.removeItem('convocatoriaState');
-        localStorage.removeItem('currentPage');
-        setConvocatoria({
-            nombre: '',
-            fecha_inicio: null,
-            fecha_fin: null,
-            id_tipoconvocatoria: '',
-            id_programa: '',
-            id_facultad: '',
-            horario: 'TIEMPO COMPLETO',
-            prioridad: 'PRIMERA',
-            gestion: 'GESTION 1',
-        });
-        navigate('/');
     };
 
     return (
@@ -207,45 +161,47 @@ const ConvocatoriaForm = () => {
                                     ))}
                                 </TextField>
                             </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Nombre de Convocatoria"
-                                    fullWidth
-                                    value={convocatoria.nombre}
-                                    InputProps={{ readOnly: true }}
-                                    required
-                                />
-                            </Grid>
+
                             <Grid item xs={12} md={6}>
                                 <Typography variant="subtitle1" gutterBottom>
-                                    Fecha de Publicación
+                                    Fecha de Inicio (Generación)
                                 </Typography>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <StaticDatePicker
                                         displayStaticWrapperAs="desktop"
                                         label="Fecha de Inicio"
                                         value={convocatoria.fecha_inicio}
-                                        onChange={(date) => handleDateChange('fecha_inicio', date)}
-                                        inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => <TextField {...params} fullWidth style={{ borderRadius: '10px' }} />}
+                                        onChange={() => {}} 
+                                        readOnly
+                                        renderInput={(params) => (
+                                            <TextField 
+                                                {...params} 
+                                                fullWidth 
+                                                InputProps={{ ...params.InputProps, readOnly: true }}
+                                            />
+                                        )}
                                     />
                                 </LocalizationProvider>
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    La fecha de inicio se establece automáticamente al crear la convocatoria
+                                </Typography>
                             </Grid>
+
                             <Grid item xs={12} md={6}>
                                 <Typography variant="subtitle1" gutterBottom>
-                                    Fecha de Conclusión de la Convocatoria
+                                    Fecha de Conclusión
                                 </Typography>
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <StaticDatePicker
                                         displayStaticWrapperAs="desktop"
-                                        label="Fecha de Fin"
+                                        label="Fecha de Fin*"
                                         value={convocatoria.fecha_fin}
-                                        onChange={(date) => handleDateChange('fecha_fin', date)}
-                                        inputFormat="yyyy-MM-dd"
-                                        renderInput={(params) => <TextField {...params} fullWidth style={{ borderRadius: '10px' }} />}
+                                        onChange={(date) => handleDateChange(date)}
+                                        renderInput={(params) => <TextField {...params} fullWidth />}
                                     />
                                 </LocalizationProvider>
                             </Grid>
+
                             <Grid item xs={6}>
                                 <TextField
                                     label="Facultad"
@@ -254,6 +210,7 @@ const ConvocatoriaForm = () => {
                                     InputProps={{ readOnly: true }}
                                 />
                             </Grid>
+
                             <Grid item xs={6}>
                                 <TextField
                                     select
@@ -261,10 +218,7 @@ const ConvocatoriaForm = () => {
                                     fullWidth
                                     name="id_programa"
                                     value={convocatoria.id_programa}
-                                    onChange={(e) => {
-                                        handleChange(e);
-                                        handleNombreAutoFill();
-                                    }}
+                                    onChange={handleChange}
                                     required
                                 >
                                     {carrerasFiltradas.map((programa) => (
@@ -274,27 +228,29 @@ const ConvocatoriaForm = () => {
                                     ))}
                                 </TextField>
                             </Grid>
+
                             <Grid item xs={6}>
                                 <TextField
                                     select
-                                    label="Horario"
+                                    label="Tipo de Jornada"
                                     fullWidth
-                                    name="horario"
-                                    value={convocatoria.horario}
+                                    name="tipo_jornada"
+                                    value={convocatoria.tipo_jornada}
                                     onChange={handleChange}
                                     required
                                 >
                                     <MenuItem value="TIEMPO COMPLETO">Tiempo Completo</MenuItem>
-                                    <MenuItem value="MEDIO TIEMPO">Medio Tiempo</MenuItem>
+                                    <MenuItem value="TIEMPO HORARIO">Medio Tiempo</MenuItem>
                                 </TextField>
                             </Grid>
+
                             <Grid item xs={6}>
                                 <TextField
                                     select
-                                    label="Prioridad"
+                                    label="Etapa"
                                     fullWidth
-                                    name="prioridad"
-                                    value={convocatoria.prioridad}
+                                    name="etapa_convocatoria"
+                                    value={convocatoria.etapa_convocatoria}
                                     onChange={handleChange}
                                     required
                                 >
@@ -303,6 +259,7 @@ const ConvocatoriaForm = () => {
                                     <MenuItem value="TERCERA">Tercera</MenuItem>
                                 </TextField>
                             </Grid>
+
                             <Grid item xs={6}>
                                 <TextField
                                     select
@@ -317,11 +274,53 @@ const ConvocatoriaForm = () => {
                                     <MenuItem value="GESTION 2">Gestión 2</MenuItem>
                                 </TextField>
                             </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Resolución"
+                                    fullWidth
+                                    name="resolucion"
+                                    value={convocatoria.resolucion}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Dictamen"
+                                    fullWidth
+                                    name="dictamen"
+                                    value={convocatoria.dictamen}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Perfil Profesional"
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                    name="perfil_profesional"
+                                    value={convocatoria.perfil_profesional}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Grid>
+
                             <Grid item xs={12} align="center">
-                                <Button variant="contained" color="primary" type="submit">
-                                    {id ? 'Actualizar' : 'Siguiente'}
+                                <Button variant="contained" color="primary" type="submit" size="large">
+                                    {id ? 'Actualizar' : 'Crear Convocatoria'}
                                 </Button>
-                                <Button variant="contained" color="secondary" onClick={handleCancel} style={{ marginLeft: '10px' }}>
+                                <Button 
+                                    variant="outlined" 
+                                    color="secondary" 
+                                    onClick={() => navigate('/convocatorias')} 
+                                    style={{ marginLeft: '10px' }}
+                                    size="large"
+                                >
                                     Cancelar
                                 </Button>
                             </Grid>

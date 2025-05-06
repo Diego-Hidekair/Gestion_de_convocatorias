@@ -1,13 +1,19 @@
 // backend/routes/tipoConvocatoriaRoutes.js
 const express = require('express');
 const router = express.Router();
-const { getAllTiposConvocatoria, getTipoConvocatoriaById, createTipoConvocatoria, updateTipoConvocatoria, deleteTipoConvocatoria } = require('../controllers/tipoConvocatoriaController');
+const { getAllTiposConvocatoria, getTipoConvocatoriaById, createTipoConvocatoria, updateTipoConvocatoria, deleteTipoConvocatoria} = require('../controllers/tipoConvocatoriaController');
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-// Rutas para la gestión de tipos de convocatoria
-router.get('/', getAllTiposConvocatoria); // Obtener todos los tipos de convocatoria
-router.get('/:id', getTipoConvocatoriaById); // Obtener un tipo de convocatoria por ID
-router.post('/', createTipoConvocatoria); // Crear un nuevo tipo de convocatoria
-router.put('/:id', updateTipoConvocatoria); // Actualizar un tipo de convocatoria por ID
-router.delete('/:id', deleteTipoConvocatoria); // Eliminar un tipo de convocatoria por ID
+// Rutas públicas
+router.get('/', getAllTiposConvocatoria);
+router.get('/:id', getTipoConvocatoriaById);
+
+// Rutas protegidas (requieren autenticación y rol admin)
+router.use(authenticateToken);
+router.use(authorizeRoles(['admin']));
+
+router.post('/', createTipoConvocatoria);
+router.put('/:id', updateTipoConvocatoria);
+router.delete('/:id', deleteTipoConvocatoria);
 
 module.exports = router;
