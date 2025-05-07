@@ -23,7 +23,7 @@ pool.connect()
     .then(() => console.log('Conexión a la base de datos exitosa'))
     .catch(err => console.error('Error conectando a la base de datos', err));
 
-app.use(cors({
+app.use(cors({ 
     origin: 'http://localhost:3000',  
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],  
     allowedHeaders: ['Content-Type', 'Authorization']   
@@ -50,7 +50,7 @@ const routes = [
 //    { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
-    { path: '/convocatorias-archivos', route: './routes/convocatoriasArchivosRoutes' } 
+    { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' } 
 ];
 
 // Montar las rutas

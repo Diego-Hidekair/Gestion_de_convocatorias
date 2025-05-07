@@ -1,75 +1,89 @@
 //backend/controllers/convocatoriaArchivosController.js
-const { Pool } = require('pg');
-const { PDFDocument } = require('pdf-lib');
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-});
+const pool = require('../db');
+const { generatePDF } = require('./pdfController');
 
-// Función para combinar PDFs
-const combinarPDFs = async (pdfBuffers) => {
-    const mergedPdf = await PDFDocument.create();
-    for (const pdfBuffer of pdfBuffers) {
-        const pdf = await PDFDocument.load(pdfBuffer);
-        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        copiedPages.forEach((page) => mergedPdf.addPage(page));
-    }
-    return await mergedPdf.save();
-};
-
-// Guardar documentos adicionales en convocatorias_archivos
-exports.guardarDocumentosAdicionales = async (req, res) => {
-    const { id_convocatoria } = req.params;
-    const { resolucion, dictamen, carta, nota, certificado_item, certificado_resumen_presupuestario } = req.files;
-
+// Subir/actualizar archivos
+const uploadArchivos = async (req, res) => {
+    const { id } = req.params; // id_convocatoria
+    
     try {
-        // Obtener el documento inicial de la tabla documentos
-        const documentoInicial = await pool.query(
-            `SELECT id_documentos, documento_path FROM documentos WHERE id_convocatoria = $1`,
-            [id_convocatoria]
-        );
+        // 1. Obtener archivos subidos
+        const archivos = {
+            doc_conv: req.files['doc_conv']?.[0]?.buffer,
+            resolucion: req.files['resolucion']?.[0]?.buffer,
+            dictamen: req.files['dictamen']?.[0]?.buffer
+        };
 
-        if (documentoInicial.rows.length === 0) {
-            return res.status(404).json({ error: "Documento inicial no encontrado." });
+        // 2. Generar PDF (si es necesario)
+        const convocatoria = await pool.query(`
+            SELECT c.*, p.programa, f.facultad 
+            FROM convocatorias c
+            JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            WHERE c.id_convocatoria = $1
+        `, [id]);
+
+        if (!convocatoria.rows[0]) {
+            throw new Error('Convocatoria no encontrada');
         }
 
-        const pdfInicial = documentoInicial.rows[0].documento_path;
+        const materias = await pool.query(`
+            SELECT m.materia, m.cod_materia, cm.total_horas
+            FROM convocatorias_materias cm
+            JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+            WHERE cm.id_convocatoria = $1
+        `, [id]);
 
-        // Combinar PDFs (si es necesario)
-        const archivosParaCombinar = [pdfInicial];
-        if (resolucion) archivosParaCombinar.push(resolucion[0].buffer);
-        if (dictamen) archivosParaCombinar.push(dictamen[0].buffer);
-        if (carta) archivosParaCombinar.push(carta[0].buffer);
-        if (nota) archivosParaCombinar.push(nota[0].buffer);
-        if (certificado_item) archivosParaCombinar.push(certificado_item[0].buffer);
-        if (certificado_resumen_presupuestario) archivosParaCombinar.push(certificado_resumen_presupuestario[0].buffer);
+        const pdfBuffer = await generatePDF({
+            convocatoria: convocatoria.rows[0],
+            materias: materias.rows
+        });
 
-        const pdfCombinado = await combinarPDFs(archivosParaCombinar);
+        // 3. Guardar en base de datos
+        await pool.query(`
+            UPDATE convocatorias_archivos SET
+                nombre_archivo = $1,
+                doc_conv = $2,
+                resolucion = $3,
+                dictamen = $4,
+                fecha_actualizacion = CURRENT_TIMESTAMP
+            WHERE id_convocatoria = $5
+        `, [
+            `CONVOCATORIA_${id}.pdf`,
+            pdfBuffer,
+            archivos.resolucion,
+            archivos.dictamen,
+            id
+        ]);
 
-        // Guardar en convocatorias_archivos
-        await pool.query(
-            `INSERT INTO convocatorias_archivos (
-                convocatoria, resolucion, dictamen, carta, nota, certificado_item, certificado_resumen_presupuestario, id_convocatoria, id_documentos
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [
-                pdfCombinado,
-                resolucion ? resolucion[0].buffer : null,
-                dictamen ? dictamen[0].buffer : null,
-                carta ? carta[0].buffer : null,
-                nota ? nota[0].buffer : null,
-                certificado_item ? certificado_item[0].buffer : null,
-                certificado_resumen_presupuestario ? certificado_resumen_presupuestario[0].buffer : null,
-                id_convocatoria,
-                documentoInicial.rows[0].id_documentos // Referencia al documento inicial
-            ]
-        );
-
-        res.status(201).json({ message: "Documentos adicionales guardados correctamente." });
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error al guardar documentos adicionales:', error);
-        res.status(500).json({ error: "Error al guardar documentos adicionales." });
+        res.status(500).json({ error: error.message });
     }
 };
+
+// Descargar archivos
+const downloadArchivo = async (req, res) => {
+    const { id, tipo } = req.params; // tipo puede ser: doc_conv, resolucion, dictamen
+    
+    try {
+        const result = await pool.query(
+            `SELECT ${tipo}, nombre_archivo 
+             FROM convocatorias_archivos 
+             WHERE id_convocatoria = $1`,
+            [id]
+        );
+
+        if (!result.rows[0] || !result.rows[0][tipo]) {
+            return res.status(404).json({ error: 'Archivo no encontrado' });
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=${result.rows[0].nombre_archivo}`);
+        res.send(result.rows[0][tipo]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { uploadArchivos, downloadArchivo};

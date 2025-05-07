@@ -9,7 +9,7 @@ const vicerrectorOnly = authorizeRoles(['vicerrectorado', 'tecnico_vicerrectorad
 const upload = require('../middleware/uploadMiddleware');
 
 
-router.use(authenticateToken);
+router.use(authenticateToken); 
 
 // Rutas GET
 router.get('/', convocatoriaController.getConvocatorias);

@@ -1,165 +1,97 @@
 // backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
-const getConvocatoriaMaterias = async (req, res) => {
-    const { id_convocatoria } = req.params;
+// Agregar materias a una convocatoria
+const addMaterias = async (req, res) => {
+    const { id } = req.params; // id_convocatoria
+    const { materias } = req.body; // Array de {id_materia, total_horas}
+    
+    const client = await pool.connect();
     try {
-        const result = await pool.query(`
-            SELECT cm.id_materias, cm.total_horas, cm.perfil_profesional, 
-                cm.tiempo_trabajo,a
-                m.nombre AS nombre_materia,
-                c.nombre AS nombre_convocatoria
-            FROM convocatorias_materias cm 
-            JOIN planes.pln_materias m ON cm.id_materia = m.id_materia
-            JOIN convocatorias c ON cm.id_convocatoria = c.id_convocatoria
-            WHERE cm.id_convocatoria = $1
-        `, [id_convocatoria]);
+        await client.query('BEGIN');
+        
+        // 1. Verificar que la convocatoria existe y obtener su programa
+        const convocatoria = await client.query(
+            'SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1', 
+            [id]
+        );
+        
+        if (!convocatoria.rows[0]) {
+            throw new Error('Convocatoria no encontrada');
+        }
+
+        // 2. Eliminar materias existentes (para actualización)
+        await client.query(
+            'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
+            [id]
+        );
+
+        // 3. Insertar nuevas materias con validación
+        for (const materia of materias) {
+            // Verificar que cada materia pertenece al programa de la convocatoria
+            const materiaValida = await client.query(
+                `SELECT 1 FROM datos_universidad.pln_materias 
+                 WHERE id_materia = $1 AND id_programa = $2`,
+                [materia.id_materia, convocatoria.rows[0].id_programa]
+            );
             
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'No se encontraron materias para esta convocatoria' });
-        }
-         
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error buscando convocatorias_materias:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
-    }
-};
-
-const getConvocatoriaMateriaById = async (req, res) => {
-    const { id_convocatoria, id_materia } = req.params;
-    try {
-        const result = await pool.query(`
-            SELECT cm.id_materias, cm.total_horas, cm.perfil_profesional, 
-                cm.tiempo_trabajo,
-                m.nombre AS nombre_materia,
-                c.nombre AS nombre_convocatoria
-            FROM convocatorias_materias cm
-            JOIN planes.pln_materias m ON cm.id_materia = m.id_materia
-            JOIN convocatorias c ON cm.id_convocatoria = c.id_convocatoria
-            WHERE cm.id_convocatoria = $1 AND cm.id_materia = $2
-        `, [id_convocatoria, id_materia]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada' });
-        }
-        
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Error buscando convocatorias_materias por ID:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
-    }
-};
-
-const createConvocatoriaMateriaMultiple = async (req, res) => {
-    const { id_convocatoria, materiasSeleccionadas, perfil_profesional } = req.body;
-    try {
-        let idsMaterias = [];
-        
-        for (const id_materia of materiasSeleccionadas) {
-            const materiaResult = await pool.query(`
-                SELECT total_horas 
-                FROM planes.pln_materias 
-                WHERE id_materia = $1
-            `, [id_materia]);
-
-            if (materiaResult.rows.length === 0) {
-                return res.status(404).json({ error: 'Materia no encontrada' });
+            if (!materiaValida.rows[0]) {
+                throw new Error(`Materia ${materia.id_materia} no válida para este programa`);
             }
 
-            const total_horas = materiaResult.rows[0].total_horas;
-            const tiempoTrabajo = total_horas >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
-
-            const result = await pool.query(`
-                INSERT INTO convocatorias_materias (id_convocatoria, id_materia, perfil_profesional, total_horas, tiempo_trabajo) 
-                VALUES ($1, $2, $3, $4, $5) 
-                RETURNING id_materias, id_materia;
-            `, [id_convocatoria, id_materia, perfil_profesional, total_horas, tiempoTrabajo]);
-
-            idsMaterias.push(result.rows[0].id_materia);
+            await client.query(
+                `INSERT INTO convocatorias_materias 
+                 (id_convocatoria, id_materia, total_horas) 
+                 VALUES ($1, $2, $3)`,
+                [id, materia.id_materia, materia.total_horas]
+            );
         }
 
-        res.status(201).json({ mensaje: 'Materias agregadas con éxito', idsMaterias });
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Materias actualizadas correctamente' });
     } catch (error) {
-        console.error('Error creando convocatorias_materias:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: error.message });
+    } finally {
+        client.release();
     }
 };
 
-const updateConvocatoriaMateria = async (req, res) => {
-    const { id_convocatoria, id_materia } = req.params;
-    const { perfil_profesional } = req.body;
-    try {
-        const result = await pool.query(`
-            UPDATE convocatorias_materias 
-            SET perfil_profesional = $1 
-            WHERE id_convocatoria = $2 AND id_materia = $3 RETURNING *
-        `, [perfil_profesional, id_convocatoria, id_materia]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada', id_convocatoria, id_materia });
-        }        
-
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Error actualizando convocatorias_materias:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
-    }
-};
-
-const deleteConvocatoriaMateria = async (req, res) => {
+// Obtener materias de una convocatoria
+const getMateriasByConvocatoria = async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query('DELETE FROM convocatorias_materias WHERE id_materias = $1 RETURNING *', [id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Relación convocatoria-materia no encontrada', id_convocatoria, id_materia });
-        }        
-
-        res.json(result.rows[0]);
+        const result = await pool.query(`
+            SELECT cm.id_materia, cm.total_horas, 
+                   m.materia, m.cod_materia, m.horas_teoria, m.horas_practica
+            FROM convocatorias_materias cm
+            JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+            WHERE cm.id_convocatoria = $1
+        `, [id]);
+        
+        res.json(result.rows);
     } catch (error) {
-        console.error('Error eliminando convocatorias_materias:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
+        res.status(500).json({ error: error.message });
     }
 };
 
-
-const getMateriasByCarrera = async (req, res) => {
-    const { id_convocatoria } = req.params;
-    console.log("ID Convocatoria recibido:", id_convocatoria); 
+// Eliminar una materia específica
+const deleteMateria = async (req, res) => {
+    const { id, id_materia } = req.params;
     try {
-        // Obtén el id_programa de la convocatoria
-        const convocatoriaResult = await pool.query(`
-            SELECT id_programa 
-            FROM convocatorias 
-            WHERE id_convocatoria = $1
-        `, [id_convocatoria]);
-
-        console.log("Resultado de la convocatoria:", convocatoriaResult.rows); 
-
-        if (convocatoriaResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        const result = await pool.query(
+            'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1 AND id_materia = $2 RETURNING *',
+            [id, id_materia]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Relación no encontrada' });
         }
-        const id_programa = convocatoriaResult.rows[0].id_programa;
-
-        // Filtra las materias por programa (carrera)
-        const materiasResult = await pool.query(`
-            SELECT m.id_materia, m.nombre, m.total_horas
-            FROM planes.pln_materias m
-            WHERE m.id_programa = $1
-        `, [id_programa]);
-
-        console.log("Resultado de las materias:", materiasResult.rows); 
-
-        if (materiasResult.rows.length === 0) {
-            return res.status(404).json({ error: 'No hay materias disponibles para esta carrera' });
-        }
-
-        res.json(materiasResult.rows);
+        
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error al obtener materias por carrera:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
-    } 
+        res.status(500).json({ error: error.message });
+    }
 };
 
-module.exports = { getConvocatoriaMaterias, getConvocatoriaMateriaById, createConvocatoriaMateriaMultiple, updateConvocatoriaMateria, deleteConvocatoriaMateria, getMateriasByCarrera }
+module.exports = { addMaterias, getMateriasByConvocatoria,deleteMateria};
