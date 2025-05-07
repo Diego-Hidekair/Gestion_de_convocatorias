@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert } from '@mui/material';
+import { 
+  Container, Typography, Button, TextField, 
+  Select, MenuItem, FormControl, InputLabel, 
+  List, ListItem, ListItemText, IconButton, 
+  Paper, Box, Alert, Divider
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const ConvocatoriaMateriasForm = () => {
@@ -10,196 +15,187 @@ const ConvocatoriaMateriasForm = () => {
     const navigate = useNavigate();
     const [materias, setMaterias] = useState([]);
     const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
-    const [perfilProfesional, setPerfilProfesional] = useState('');
     const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
     const [error, setError] = useState(null);
-    const [totalHoras, setTotalHoras] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        localStorage.setItem('currentPage', `/convocatorias_materias/new/${id_convocatoria}`);
-
-        const fetchMaterias = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/materias');
-                setMaterias(response.data);
+                setLoading(true);
+                // Obtener convocatoria para saber el programa
+                const convResponse = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
+                
+                // Obtener materias del programa
+                const materiasResponse = await axios.get(
+                  `http://localhost:5000/materias/programa/${convResponse.data.id_programa}`
+                );
+                
+                // Obtener materias ya asignadas (si es edición)
+                const asignadasResponse = await axios.get(
+                  `http://localhost:5000/convocatorias/${id_convocatoria}/materias`
+                );
+
+                setMaterias(materiasResponse.data);
+                setMateriasSeleccionadas(asignadasResponse.data);
+                setLoading(false);
+                
             } catch (err) {
-                setError('Error al obtener las materias');
+                setError('Error al cargar los datos');
                 console.error(err);
+                setLoading(false);
             }
         };
-        fetchMaterias();
+
+        fetchData();
     }, [id_convocatoria]);
 
-    useEffect(() => {
-        const total = materiasSeleccionadas.reduce((acc, materia) => acc + materia.total_horas, 0);
-        setTotalHoras(total);
-    }, [materiasSeleccionadas]);
+    const handleAddMateria = () => {
+        if (!materiaSeleccionada) return;
+        
+        const materia = materias.find(m => m.id_materia == materiaSeleccionada);
+        if (materia && !materiasSeleccionadas.some(m => m.id_materia == materia.id_materia)) {
+            setMateriasSeleccionadas(prev => [
+                ...prev, 
+                { ...materia, total_horas: materia.horas_teoria + materia.horas_practica }
+            ]);
+            setMateriaSeleccionada('');
+        }
+    };
+
+    const handleRemoveMateria = (id) => {
+        setMateriasSeleccionadas(prev => prev.filter(m => m.id_materia !== id));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (materiasSeleccionadas.length === 0 || !perfilProfesional) {
-            setError('Por favor, complete todos los campos');
+        
+        if (materiasSeleccionadas.length === 0) {
+            setError('Debe seleccionar al menos una materia');
             return;
         }
 
-        const tiempoTrabajo = totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO';
-
         try {
-            const response = await axios.post('http://localhost:5000/convocatoria-materias/multiple', {
-                id_convocatoria,
-                materiasSeleccionadas: materiasSeleccionadas.map((m) => m.id_materia),
-                perfil_profesional: perfilProfesional,
-                tiempo_trabajo: tiempoTrabajo,
+            await axios.post(`http://localhost:5000/convocatorias/${id_convocatoria}/materias`, {
+                materias: materiasSeleccionadas.map(m => ({
+                    id_materia: m.id_materia,
+                    total_horas: m.total_horas
+                }))
             });
-
-            alert(`Materias agregadas exitosamente. Total de horas: ${totalHoras}`);
-            const firstIdMateria = response.data.idsMaterias ? response.data.idsMaterias[0] : null;
-
-            localStorage.removeItem('materiasState');
-            localStorage.setItem('currentPage', `/honorarios/new/${id_convocatoria}/${firstIdMateria}`);
-            if (firstIdMateria) {
-                navigate(`/honorarios/new/${id_convocatoria}/${firstIdMateria}`);
-            } else {
-                setError('No se pudo obtener el ID de la materia');
-            }
+            
+            navigate(`/convocatorias/${id_convocatoria}/archivos`);
+            
         } catch (err) {
-            setError('Error al agregar materias');
+            setError(err.response?.data?.message || 'Error al guardar');
             console.error(err);
         }
     };
 
-    useEffect(() => {
-        const fetchMateriasPorCarrera = async () => {
-            try {
-                const response = await axios.get(`http://localhost:5000/convocatoria-materias/materias/carrera/${id_convocatoria}`);
-                setMaterias(response.data);
-            } catch (err) {
-                setError('Error al obtener las materias de la carrera');
-                console.error(err);
-            }
-        };
-
-        fetchMateriasPorCarrera();
-    }, [id_convocatoria]);
-
-    const handleAddMateria = () => {
-        const materia = materias.find((m) => m.id_materia === parseInt(materiaSeleccionada));
-        if (materia && !materiasSeleccionadas.some((m) => m.id_materia === materia.id_materia)) {
-            setMateriasSeleccionadas([...materiasSeleccionadas, materia]);
-            setMateriaSeleccionada('');
-        } else {
-            setError('Materia ya seleccionada o no válida');
-        }
-    };
-
-    const handleRemoveMateria = (id_materia) => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar esta materia?')) {
-            setMateriasSeleccionadas(materiasSeleccionadas.filter((m) => m.id_materia !== id_materia));
-        }
-    };
-
-    useEffect(() => {
-        if (materiasSeleccionadas.length > 0) {
-            localStorage.setItem('materiasState', JSON.stringify(materiasSeleccionadas));
-        }
-    }, [materiasSeleccionadas]);
-
-    useEffect(() => {
-        const savedState = JSON.parse(localStorage.getItem('materiasState'));
-        if (savedState) {
-            setMateriasSeleccionadas(savedState);
-        }
-    }, []);
-
-    const handleCancel = () => {
-        localStorage.removeItem('materiasState');
-        navigate('/convocatorias'); 
-        localStorage.removeItem('currentPage');
-        setMateriasSeleccionadas([]);
-        navigate('/');
-    };
+    if (loading) return <Typography>Cargando...</Typography>;
+    if (error) return <Alert severity="error">{error}</Alert>;
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-            <Paper elevation={3} sx={{ p: 3 }}>
-                <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
-                    Agregar Materias a la Convocatoria
+        <Container maxWidth="md">
+            <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
+                <Typography variant="h5" gutterBottom>
+                    Asignar Materias a la Convocatoria
                 </Typography>
-                {error && <Alert severity="error">{error}</Alert>}
-                <form onSubmit={handleSubmit}>
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel id="materia-label">Seleccionar Materia</InputLabel>
+                
+                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <FormControl fullWidth>
+                        <InputLabel>Seleccionar Materia</InputLabel>
                         <Select
-                            labelId="materia-label"
                             value={materiaSeleccionada}
                             onChange={(e) => setMateriaSeleccionada(e.target.value)}
+                            label="Seleccionar Materia"
                         >
-                            <MenuItem value="">
-                                <em>Seleccione una materia</em>
-                            </MenuItem>
-                            {materias.map((materia) => (
-                                <MenuItem key={materia.id_materia} value={materia.id_materia}>
-                                    {materia.nombre}
+                            <MenuItem value=""><em>Seleccione una materia</em></MenuItem>
+                            {materias.map(materia => (
+                                <MenuItem 
+                                    key={materia.id_materia} 
+                                    value={materia.id_materia}
+                                    disabled={materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)}
+                                >
+                                    {materia.nombre} ({materia.cod_materia})
                                 </MenuItem>
                             ))}
                         </Select>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            sx={{ mt: 2 }}
-                            onClick={handleAddMateria}
-                        >
-                            Agregar Materia
-                        </Button>
                     </FormControl>
+                    <Button 
+                        variant="contained" 
+                        onClick={handleAddMateria}
+                        disabled={!materiaSeleccionada}
+                    >
+                        Agregar
+                    </Button>
+                </Box>
 
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="h6" sx={{ mb: 1 }}>
-                            Materias Seleccionadas:
-                        </Typography>
-                        <List>
-                            {materiasSeleccionadas.map((materia) => (
-                                <ListItem
-                                    key={materia.id_materia}
-                                    secondaryAction={
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="h6" gutterBottom>
+                    Materias Seleccionadas
+                </Typography>
+                
+                {materiasSeleccionadas.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                        No hay materias seleccionadas
+                    </Typography>
+                ) : (
+                    <List dense>
+                        {materiasSeleccionadas.map(materia => (
+                            <ListItem 
+                                key={materia.id_materia}
+                                secondaryAction={
+                                    <>
+                                        <TextField
+                                            type="number"
+                                            size="small"
+                                            value={materia.total_horas}
+                                            onChange={(e) => 
+                                                setMateriasSeleccionadas(prev => 
+                                                    prev.map(m => 
+                                                        m.id_materia === materia.id_materia 
+                                                            ? { ...m, total_horas: parseInt(e.target.value) || 0 } 
+                                                            : m
+                                                    )
+                                                )
+                                            }
+                                            sx={{ width: '100px', mr: 2 }}
+                                            inputProps={{ min: 1 }}
+                                        />
                                         <IconButton
                                             edge="end"
-                                            color="error"
                                             onClick={() => handleRemoveMateria(materia.id_materia)}
                                         >
-                                            <DeleteIcon />
+                                            <DeleteIcon color="error" />
                                         </IconButton>
-                                    }
-                                >
-                                    <ListItemText primary={materia.nombre} />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Box>
+                                    </>
+                                }
+                            >
+                                <ListItemText 
+                                    primary={`${materia.nombre} (${materia.cod_materia})`}
+                                    secondary={`Teoría: ${materia.horas_teoria}h - Práctica: ${materia.horas_practica}h`}
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                )}
 
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                        <strong>Tiempo de Trabajo:</strong>{' '}
-                        {totalHoras >= 24 ? 'TIEMPO COMPLETO' : 'TIEMPO HORARIO'}
-                    </Typography>
-
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                        <TextField
-                            label="Perfil Profesional"
-                            variant="outlined"
-                            value={perfilProfesional}
-                            onChange={(e) => setPerfilProfesional(e.target.value)}
-                            placeholder="Ingrese el perfil profesional (Ej: Ingeniero Comercial)"
-                            required
-                        />
-                    </FormControl>
-
-                    <Button variant="contained" color="primary" type="submit" fullWidth>
-                        Siguiente
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                    <Button 
+                        variant="outlined" 
+                        onClick={() => navigate(`/convocatorias/${id_convocatoria}`)}
+                    >
+                        Volver
                     </Button>
-                    <Button variant="contained" color="secondary" onClick={handleCancel} fullWidth sx={{ mt: 2 }}>
-                        Cancelar
+                    <Button 
+                        variant="contained" 
+                        onClick={handleSubmit}
+                        disabled={materiasSeleccionadas.length === 0}
+                    >
+                        Siguiente: Subir Archivos
                     </Button>
-                </form>
+                </Box>
             </Paper>
         </Container>
     );

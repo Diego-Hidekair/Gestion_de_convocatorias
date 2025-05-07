@@ -34,18 +34,23 @@ const ConvocatoriaForm = () => {
 
         const fetchData = async () => {
             try {
-                const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                const userData = userResponse.data;
+              const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              });
+              const userData = userResponse.data;
+              console.log('Datos del usuario:', userData);
+    
+                if (!userData.id_facultad) {
+                throw new Error('El usuario no tiene facultad asignada');
+                }
 
                 setNombreFacultad(userData.nombre_facultad || '');
                 
                 const [tiposResponse, carrerasResponse] = await Promise.all([
-                    axios.get('http://localhost:5000/tipos-convocatorias'),
-                    axios.get(`http://localhost:5000/carreras/facultad/${userData.id_facultad}`)
+                axios.get('http://localhost:5000/tipos-convocatorias'),
+                axios.get(`http://localhost:5000/carreras/facultad-id/${userData.id_facultad}`)
                 ]);
 
                 setTiposConvocatoria(tiposResponse.data);
@@ -55,18 +60,18 @@ const ConvocatoriaForm = () => {
                     const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
                     const data = response.data;
                     setConvocatoria({
-                        ...data,
-                        fecha_inicio: data.fecha_inicio ? new Date(data.fecha_inicio) : new Date(),
-                        fecha_fin: data.fecha_fin ? new Date(data.fecha_fin) : null,
-                        tipo_jornada: data.tipo_jornada,
-                        etapa_convocatoria: data.etapa_convocatoria
+                      ...data,
+                      fecha_inicio: data.fecha_inicio ? new Date(data.fecha_inicio) : new Date(),
+                      fecha_fin: data.fecha_fin ? new Date(data.fecha_fin) : null,
+                      tipo_jornada: data.tipo_jornada,
+                      etapa_convocatoria: data.etapa_convocatoria
                     });
+                  }
+                } catch (error) {
+                  console.error('Error fetching data:', error);
+                  alert(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
                 }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                alert(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
-            }
-        };
+              };
 
         fetchData();
     }, [id]);
@@ -97,7 +102,6 @@ const ConvocatoriaForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validación básica
         if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
             alert('Por favor complete todos los campos requeridos');
             return;
@@ -105,36 +109,26 @@ const ConvocatoriaForm = () => {
 
         try {
             const payload = {
-                ...convocatoria,
-                fecha_fin: convocatoria.fecha_fin.toISOString().split('T')[0],
-                id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
-                id_programa: convocatoria.id_programa.toString().trim(), // Limpiar espacios
-                materias: [] // Array vacío si no hay materias
+              ...convocatoria,
+              fecha_fin: convocatoria.fecha_fin.toISOString().split('T')[0],
+              id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
+              id_programa: convocatoria.id_programa.toString().trim(),
+              materias: []
             };
 
-            console.log('Enviando datos:', payload);
-
             if (id) {
-                await axios.put(`http://localhost:5000/convocatorias/${id}`, payload, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                await axios.put(`http://localhost:5000/convocatorias/${id}`, payload);
                 navigate('/convocatorias');
-            } else {
-                const response = await axios.post('http://localhost:5000/convocatorias', payload, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                
-                navigate(`/convocatorias_materias/new/${response.data.id_convocatoria}`);
+              } else {
+                const response = await axios.post('http://localhost:5000/convocatorias', payload);
+                const newId = response.data.id_convocatoria;
+                navigate(`/convocatorias/${newId}/materias`);
             }
-        } catch (error) {
-            console.error('Error submitting form:', error);
+        }  catch (error) {
+            console.error('Error:', error);
             alert(`Error: ${error.response?.data?.error || error.message}`);
-        }
-    };
+          }
+        };
 
     return (
         <Container>
@@ -307,6 +301,16 @@ const ConvocatoriaForm = () => {
                                     value={convocatoria.perfil_profesional}
                                     onChange={handleChange}
                                     required
+                                    placeholder="Ejemplo: Profesional en Ingeniería de Sistemas con especialización en..." 
+                                    InputLabelProps={{
+                                    shrink: true,
+                                    }}
+                                    InputProps={{
+                                    style: {
+                                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                    },
+                                    }}
+                                    helperText="Describa los requisitos profesionales necesarios para el cargo"
                                 />
                             </Grid>
 

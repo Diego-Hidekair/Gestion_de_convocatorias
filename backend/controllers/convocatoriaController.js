@@ -593,4 +593,68 @@ const updateComentarioObservado = async (req, res) => {
     }
 };
 
-module.exports = { getFullConvocatoria, validateConvocatoria, getConvocatorias, getConvocatoriaById, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, createConvocatoria, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado};
+const addMaterias = async (req, res) => {
+    const { id } = req.params;
+    const { materias } = req.body;
+    
+    try {
+      await pool.query('BEGIN');
+      
+      // Eliminar materias existentes
+      await pool.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id]);
+      
+      // Insertar nuevas materias
+      for (const materia of materias) {
+        await pool.query(
+          'INSERT INTO convocatorias_materias (id_convocatoria, id_materia, total_horas) VALUES ($1, $2, $3)',
+          [id, materia.id_materia, materia.total_horas]
+        );
+      }
+      
+      await pool.query('COMMIT');
+      res.json({ success: true });
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      res.status(500).json({ error: error.message });
+    }
+  };
+  
+  // Nuevo endpoint para subir archivos
+  const uploadArchivos = async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+      const archivos = {
+        doc_conv: req.files['doc_conv']?.[0]?.buffer,
+        resolucion: req.files['resolucion']?.[0]?.buffer,
+        dictamen: req.files['dictamen']?.[0]?.buffer
+      };
+      
+      // Generar PDF con todos los datos completos
+      const convocatoria = await getFullConvocatoria(id);
+      const pdfBuffer = await generatePDF(convocatoria);
+      
+      await pool.query(`
+        INSERT INTO convocatorias_archivos 
+          (id_convocatoria, nombre_archivo, doc_conv, resolucion, dictamen)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id_convocatoria) DO UPDATE SET
+          nombre_archivo = EXCLUDED.nombre_archivo,
+          doc_conv = EXCLUDED.doc_conv,
+          resolucion = EXCLUDED.resolucion,
+          dictamen = EXCLUDED.dictamen
+      `, [
+        id,
+        `CONVOCATORIA_${id}.pdf`,
+        pdfBuffer,
+        archivos.resolucion,
+        archivos.dictamen
+      ]);
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+module.exports = { getFullConvocatoria, validateConvocatoria, getConvocatorias, getConvocatoriaById, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, createConvocatoria, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, uploadArchivos, addMaterias};

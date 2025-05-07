@@ -39,4 +39,8 @@ router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
 router.put('/:id/estado', vicerrectorOnly, convocatoriaController.updateEstadoConvocatoria);
 router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateComentarioObservado);
 
+// En convocatoriaRoutes.js
+router.post('/:id/materias', authenticateToken, secretariaOnly, convocatoriaController.addMaterias);
+router.post('/:id/archivos', authenticateToken, secretariaOnly, upload.array(), convocatoriaController.uploadArchivos);
+
 module.exports = router;
