@@ -4,11 +4,8 @@ const router = express.Router();
 const { getAllTiposConvocatoria, getTipoConvocatoriaById, createTipoConvocatoria, updateTipoConvocatoria, deleteTipoConvocatoria} = require('../controllers/tipoConvocatoriaController');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-// Rutas públicas
 router.get('/', getAllTiposConvocatoria);
 router.get('/:id', getTipoConvocatoriaById);
-
-// Rutas protegidas (requieren autenticación y rol admin)
 router.use(authenticateToken);
 router.use(authorizeRoles(['admin']));
 

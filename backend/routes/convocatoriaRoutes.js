@@ -3,9 +3,11 @@ const express = require('express');
 const router = express.Router();
 const convocatoriaController = require('../controllers/convocatoriaController');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
-const { validationResult } = require('express-validator');
+const { validationResult } = require('express-validator'); 
 const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
 const vicerrectorOnly = authorizeRoles(['vicerrectorado', 'tecnico_vicerrectorado']);
+const upload = require('../middleware/uploadMiddleware');
+
 
 router.use(authenticateToken);
 
@@ -22,10 +24,9 @@ router.post( '/', secretariaOnly, convocatoriaController.validateConvocatoria,
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    next();
+    next(); 
   }, convocatoriaController.createConvocatoria);
 
-// Ruta PUT con validación
 router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
   (req, res, next) => {
     const errors = validationResult(req);
@@ -35,12 +36,20 @@ router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
     next();
   }, convocatoriaController.updateConvocatoria );
 
-// Rutas de estado
 router.put('/:id/estado', vicerrectorOnly, convocatoriaController.updateEstadoConvocatoria);
 router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateComentarioObservado);
 
-// En convocatoriaRoutes.js
 router.post('/:id/materias', authenticateToken, secretariaOnly, convocatoriaController.addMaterias);
-router.post('/:id/archivos', authenticateToken, secretariaOnly, upload.array(), convocatoriaController.uploadArchivos);
+router.post(
+  '/:id/archivos',
+  authenticateToken,
+  secretariaOnly,
+  upload.fields([
+    { name: 'doc_conv', maxCount: 1 },
+    { name: 'resolucion', maxCount: 1 },
+    { name: 'dictamen', maxCount: 1 },
+  ]),
+  convocatoriaController.uploadArchivos
+);
 
 module.exports = router;

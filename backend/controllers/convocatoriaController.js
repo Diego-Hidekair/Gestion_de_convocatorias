@@ -3,7 +3,6 @@ const pool = require('../db');
 const { generatePDF } = require('./pdfController');
 const { check, validationResult } = require('express-validator');
 
-// Obtener todas las convocatorias con información relacionada
 const getFullConvocatoria = async (id_convocatoria) => {
     const convocatoria = await pool.query(`
         SELECT c.*, tc.nombre_tipo_conv, p.programa, f.facultad, 
@@ -262,10 +261,7 @@ const updateConvocatoria = async (req, res) => {
             materias = []
         } = req.body;
 
-        // Obtener datos del programa
         const id_programa = req.user.id_programa;
-        
-        // Actualizar convocatoria principal
         const convResult = await client.query(`
             UPDATE convocatorias SET
                 tipo_jornada = $1, 
@@ -288,15 +284,11 @@ const updateConvocatoria = async (req, res) => {
         if (convResult.rows.length === 0) {
             throw new Error('Convocatoria no encontrada');
         }
-
-        // Eliminar y recrear materias
         await client.query(
             'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
             [id]
         );
-
         for (const materia of materias) {
-            // Verificar que la materia pertenece al programa
             const materiaExists = await client.query(`
                 SELECT 1 FROM datos_universidad.pln_materias 
                 WHERE id_materia = $1 AND id_programa = $2
@@ -312,8 +304,6 @@ const updateConvocatoria = async (req, res) => {
                 ) VALUES ($1, $2, $3)
             `, [id, materia.id_materia, materia.total_horas]);
         }
-
-        // Regenerar PDF si hay cambios relevantes
         if ([tipo_jornada, fecha_fin, id_tipoconvocatoria, etapa_convocatoria, perfil_profesional].some(Boolean)) {
             const convocatoriaData = await client.query(`
                 SELECT c.nombre_conv, tc.nombre_tipo_conv, p.programa, f.facultad
@@ -370,7 +360,6 @@ const getConvocatoriasByFacultad = async (req, res) => {
     }
 
     try {
-        // Obtener facultad del programa del usuario
         const facultadResult = await pool.query(
             `SELECT f.id_facultad 
              FROM datos_universidad.alm_programas p
@@ -436,7 +425,6 @@ const getConvocatoriasByFacultadAndEstado = async (req, res) => {
     }
 
     try {
-        // Obtener facultad del programa del usuario
         const facultadResult = await pool.query(
             `SELECT f.id_facultad 
              FROM datos_universidad.alm_programas p
@@ -486,7 +474,6 @@ const updateEstadoConvocatoria = async (req, res) => {
     const { estado, comentario_observado } = req.body;
 
     try {
-        // Verificar que la convocatoria existe
         const convocatoriaExistente = await pool.query(
             'SELECT estado FROM convocatorias WHERE id_convocatoria = $1', 
             [id]
@@ -497,8 +484,6 @@ const updateEstadoConvocatoria = async (req, res) => {
         }
 
         const estadoActual = convocatoriaExistente.rows[0].estado;
-
-        // Validaciones según el rol del usuario
         if (rol === 'tecnico_vicerrectorado') {
             const estadosPermitidosTecnico = ['Para Revisión', 'En Revisión', 'Observado', 'Revisado'];
             if (!estadosPermitidosTecnico.includes(estado)) {
@@ -517,15 +502,11 @@ const updateEstadoConvocatoria = async (req, res) => {
         } else if (rol !== 'admin') {
             return res.status(403).json({ error: 'No tienes permisos para esta acción' });
         }
-
-        // Validaciones específicas para estados que requieren comentario
         if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
             return res.status(400).json({ 
                 error: 'Se requiere un comentario cuando el estado es "Observado" o "Devuelto"' 
             });
         }
-
-        // Construir la consulta según el estado
         let query;
         let values;
 
@@ -556,30 +537,23 @@ const updateComentarioObservado = async (req, res) => {
     const { id } = req.params;
     const { comentario_observado } = req.body;
     const { rol } = req.user;
-
-    // Verificar permisos
     if (rol !== 'tecnico_vicerrectorado' && rol !== 'vicerrectorado' && rol !== 'admin') {
         return res.status(403).json({ error: 'No tienes permisos para editar comentarios' });
     }
 
     try {
-        // Primero verificar que la convocatoria existe y está en estado que permite comentarios
         const convocatoria = await pool.query(
             'SELECT estado FROM convocatorias WHERE id_convocatoria = $1', 
             [id]
         );
-
         if (convocatoria.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
-
         if (!['Observado', 'Devuelto'].includes(convocatoria.rows[0].estado)) {
             return res.status(400).json({ 
                 error: 'Solo se puede editar comentario en convocatorias con estado "Observado" o "Devuelto"' 
             });
         }
-
-        // Actualizar el comentario
         const result = await pool.query(`
             UPDATE convocatorias  
             SET comentario_observado = $1
@@ -599,18 +573,13 @@ const addMaterias = async (req, res) => {
     
     try {
       await pool.query('BEGIN');
-      
-      // Eliminar materias existentes
       await pool.query('DELETE FROM convocatorias_materias WHERE id_convocatoria = $1', [id]);
-      
-      // Insertar nuevas materias
       for (const materia of materias) {
         await pool.query(
           'INSERT INTO convocatorias_materias (id_convocatoria, id_materia, total_horas) VALUES ($1, $2, $3)',
           [id, materia.id_materia, materia.total_horas]
         );
       }
-      
       await pool.query('COMMIT');
       res.json({ success: true });
     } catch (error) {
@@ -619,7 +588,6 @@ const addMaterias = async (req, res) => {
     }
   };
   
-  // Nuevo endpoint para subir archivos
   const uploadArchivos = async (req, res) => {
     const { id } = req.params;
     
@@ -628,9 +596,7 @@ const addMaterias = async (req, res) => {
         doc_conv: req.files['doc_conv']?.[0]?.buffer,
         resolucion: req.files['resolucion']?.[0]?.buffer,
         dictamen: req.files['dictamen']?.[0]?.buffer
-      };
-      
-      // Generar PDF con todos los datos completos
+      };     
       const convocatoria = await getFullConvocatoria(id);
       const pdfBuffer = await generatePDF(convocatoria);
       
