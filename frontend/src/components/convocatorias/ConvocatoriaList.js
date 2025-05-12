@@ -1,494 +1,518 @@
 // frontend/src/components/convocatorias/ConvocatoriaList.js
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Paper, Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, Button, Modal, Snackbar, Alert, Badge  } from "@mui/material";
-import { Edit, Delete, Preview, Download, Search, Comment } from "@mui/icons-material";
-import { useNavigate, useParams } from "react-router-dom"; 
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Container, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, MenuItem, FormControl, InputLabel, Select, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Snackbar, Chip, Badge, Tooltip} from '@mui/material';
+import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 const ConvocatoriaList = () => {
-    const { estado: estadoParam } = useParams();
-    const [convocatorias, setConvocatorias] = useState([]);
-    const [filteredConvocatorias, setFilteredConvocatorias] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchCategory, setSearchCategory] = useState("nombre");
-    const [previewUrl, setPreviewUrl] = useState("");
-    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [convocatoriaToDelete, setConvocatoriaToDelete] = useState(null);
-    const [userRole, setUserRole] = useState("");
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [selectedEstado, setSelectedEstado] = useState(null);
-    const [comentarioModalOpen, setComentarioModalOpen] = useState(false);
-    const [comentario, setComentario] = useState("");
-    const [convocatoriaId, setConvocatoriaId] = useState(null);
-    const [isEditingComentario, setIsEditingComentario] = useState(false);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [convocatorias, setConvocatorias] = useState([]);
+  const [filteredConvocatorias, setFilteredConvocatorias] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchField, setSearchField] = useState('nombre_conv');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [convocatoriaToDelete, setConvocatoriaToDelete] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [userRole, setUserRole] = useState('');
 
-    useEffect(() => {
-        const fetchConvocatorias = async () => {
-            try {
-                const response = await axios.get("http://localhost:5000/convocatorias");
-                setConvocatorias(response.data);
-                setFilteredConvocatorias(response.data);
-            } catch (error) {
-                console.error("Error fetching convocatorias:", error);
-            }
-        };
+  // Estados para manejar cambios de estado
+  const [estadoDialogOpen, setEstadoDialogOpen] = useState(false);
+  const [selectedEstado, setSelectedEstado] = useState('');
+  const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
+  const [comentario, setComentario] = useState('');
 
-        const fetchUserRole = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:5000/api/auth/me', {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setUserRole(response.data.rol);
-            } catch (error) {
-                console.error('Error fetching user role:', error);
-            }
-        };
+  // Campos de búsqueda disponibles
+  const searchFields = [
+    { value: 'nombre_conv', label: 'Nombre' },
+    { value: 'nombre_programa', label: 'Programa' },
+    { value: 'nombre_facultad', label: 'Facultad' },
+    { value: 'estado', label: 'Estado' }
+  ];
 
-        fetchConvocatorias();
-        fetchUserRole();
-    }, []);
-
-    const updateConvocatoriaEstado = async (id, estado, comentario = null) => {
-        try {
-            const token = localStorage.getItem("token");
-            const payload = { estado };
-            
-            if (comentario) {
-                payload.comentario_observado = comentario;
-            }
-
-            await axios.patch(
-                `http://localhost:5000/convocatorias/${id}/estado`,
-                payload,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-
-            setConvocatorias(convocatorias.map(convocatoria =>
-                convocatoria.id_convocatoria === id 
-                    ? { 
-                        ...convocatoria, 
-                        estado: estado,
-                        ...(comentario ? { comentario_observado: comentario } : {}) 
-                    } 
-                    : convocatoria
-            ));
-
-            setSnackbarMessage("Estado actualizado correctamente.");
-            setSnackbarOpen(true);
-        } catch (error) {
-            console.error("Error updating estado:", error);
-            setSnackbarMessage("No se pudo actualizar el estado.");
-            setSnackbarOpen(true);
-        }
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/usuarios/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUserRole(response.data.rol);
+      } catch (error) {
+        console.error('Error al obtener el rol del usuario:', error);
+      }
     };
 
-    const updateComentario = async (id, comentario) => {
-        try {
-            const token = localStorage.getItem("token");
-            await axios.patch(
-                `http://localhost:5000/convocatorias/${id}/comentario`,
-                { comentario_observado: comentario },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+    fetchUserRole();
+    fetchConvocatorias();
+  }, []);
 
-            setConvocatorias(convocatorias.map(convocatoria =>
-                convocatoria.id_convocatoria === id 
-                    ? { ...convocatoria, comentario_observado: comentario } 
-                    : convocatoria
-            ));
+  const fetchConvocatorias = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:5000/convocatorias');
+      setConvocatorias(response.data);
+      setFilteredConvocatorias(response.data);
+      setError(null);
+    } catch (error) {
+      console.error('Error al obtener convocatorias:', error);
+      setError(error.response?.data?.error || 'Error al cargar convocatorias');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            setSnackbarMessage("Comentario actualizado correctamente.");
-            setSnackbarOpen(true);
-        } catch (error) {
-            console.error("Error updating comentario:", error);
-            setSnackbarMessage("No se pudo actualizar el comentario.");
-            setSnackbarOpen(true);
-        }
-    };
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredConvocatorias(convocatorias);
+    } else {
+      const filtered = convocatorias.filter(conv => 
+        String(conv[searchField]).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredConvocatorias(filtered);
+    }
+  }, [searchTerm, searchField, convocatorias]);
 
-    const handleEstadoChange = async (id, newEstado) => {
-        if (userRole !== "tecnico_vicerrectorado" && userRole !== "vicerrectorado" && userRole !== "admin") {
-            setSnackbarMessage("No tiene el rol autorizado para modificar este estado.");
-            setSnackbarOpen(true);
-            return;
-        }
+  const handleDeleteClick = (id) => {
+    setConvocatoriaToDelete(id);
+    setDeleteDialogOpen(true);
+  };
 
-        if (newEstado === "Observado" || newEstado === "Devuelto") {
-            setConvocatoriaId(id);
-            setSelectedEstado(newEstado);
-            setIsEditingComentario(false);
-            setComentarioModalOpen(true);
-        } else {
-            await updateConvocatoriaEstado(id, newEstado);
-        }
-    };
+  const handleDeleteConfirm = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/convocatorias/${convocatoriaToDelete}`);
+      setConvocatorias(convocatorias.filter(c => c.id_convocatoria !== convocatoriaToDelete));
+      showSnackbar('Convocatoria eliminada correctamente', 'success');
+    } catch (error) {
+      console.error('Error al eliminar convocatoria:', error);
+      showSnackbar('Error al eliminar convocatoria', 'error');
+    } finally {
+      setDeleteDialogOpen(false);
+      setConvocatoriaToDelete(null);
+    }
+  };
 
-    const handleComentarioSubmit = async () => {
-        if (!comentario) {
-            setSnackbarMessage("El comentario no puede estar vacío.");
-            setSnackbarOpen(true);
-            return;
-        }
+  const handleEstadoChangeClick = (convocatoria, nuevoEstado) => {
+    setSelectedConvocatoria(convocatoria);
+    setSelectedEstado(nuevoEstado);
+    
+    if (['Observado', 'Devuelto'].includes(nuevoEstado)) {
+      setEstadoDialogOpen(true);
+    } else {
+      confirmEstadoChange(nuevoEstado);
+    }
+  };
 
-        try {
-            if (isEditingComentario) {
-                await updateComentario(convocatoriaId, comentario);
-            } else {
-                await updateConvocatoriaEstado(convocatoriaId, selectedEstado, comentario);
-            }
-            
-            handleComentarioClose();
-        } catch (error) {
-            console.error("Error al guardar comentario:", error);
-            setSnackbarMessage("Error al guardar el comentario.");
-            setSnackbarOpen(true);
-        }
-    };
+  const confirmEstadoChange = async (comentario = null) => {
+    try {
+      const payload = { estado: selectedEstado };
+      if (comentario) payload.comentario_observado = comentario;
+      
+      await axios.patch(
+        `http://localhost:5000/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`,
+        payload
+      );
+      
+      // Actualizar el estado localmente
+      const updatedConvocatorias = convocatorias.map(conv => 
+        conv.id_convocatoria === selectedConvocatoria.id_convocatoria 
+          ? { 
+              ...conv, 
+              estado: selectedEstado,
+              ...(comentario ? { comentario_observado: comentario } : {}) 
+            } 
+          : conv
+      );
+      
+      setConvocatorias(updatedConvocatorias);
+      showSnackbar('Estado actualizado correctamente', 'success');
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      showSnackbar('Error al cambiar estado', 'error');
+    } finally {
+      setEstadoDialogOpen(false);
+      setSelectedConvocatoria(null);
+      setSelectedEstado('');
+      setComentario('');
+    }
+  };
 
-    const handleComentarioClose = () => {
-        setComentarioModalOpen(false);
-        setComentario("");
-        setSelectedEstado(null);
-        setIsEditingComentario(false);
-    };
+  const handleEditComentario = (convocatoria) => {
+    setSelectedConvocatoria(convocatoria);
+    setComentario(convocatoria.comentario_observado || '');
+    setSelectedEstado('EDIT_COMENTARIO');
+    setEstadoDialogOpen(true);
+  };
 
-    const handleEditComentario = (convocatoria) => {
-        setConvocatoriaId(convocatoria.id_convocatoria);
-        setComentario(convocatoria.comentario_observado);
-        setIsEditingComentario(true);
-        setComentarioModalOpen(true);
-    };
+  const handleDownloadPdf = async (id) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/pdf/download/${id}`,
+        { responseType: 'blob' }
+      );
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `convocatoria_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      
+      showSnackbar('Descarga iniciada', 'success');
+    } catch (error) {
+      console.error('Error al descargar PDF:', error);
+      showSnackbar('Error al descargar PDF', 'error');
+    }
+  };
 
-    const handleEdit = (id) => {
-        navigate(`/convocatorias/edit/${id}`);
-    };
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
-    const handleDeleteClick = (id) => {
-        setConvocatoriaToDelete(id);
-        setDeleteModalOpen(true);
-    };
+  const getEstadoColor = (estado) => {
+    switch (estado) {
+      case 'Para Revisión': return 'default';
+      case 'En Revisión': return 'info';
+      case 'Observado': return 'warning';
+      case 'Revisado': return 'primary';
+      case 'Aprobado': return 'success';
+      case 'Devuelto': return 'error';
+      case 'Para Publicar': return 'secondary';
+      default: return 'default';
+    }
+  };
 
-    const handleDeleteConfirm = async () => {
-        try {
-            await axios.delete(`http://localhost:5000/convocatorias/${convocatoriaToDelete}`);
-            const updatedConvocatorias = convocatorias.filter(
-                (c) => c.id_convocatoria !== convocatoriaToDelete
-            );
-            setConvocatorias(updatedConvocatorias);
-            setFilteredConvocatorias(updatedConvocatorias);
-            setDeleteModalOpen(false);
-            setSnackbarMessage("Convocatoria eliminada correctamente.");
-            setSnackbarOpen(true);
-        } catch (error) {
-            console.error("Error deleting convocatoria:", error);
-            setSnackbarMessage("Hubo un error al eliminar la convocatoria.");
-            setSnackbarOpen(true);
-        }
-    };
-
-    const handleDeleteCancel = () => {
-        setConvocatoriaToDelete(null);
-        setDeleteModalOpen(false);
-    };
-
-    const handlePreview = async (id) => {
-        const token = localStorage.getItem("token");
-        try {
-            const response = await axios.get(`http://localhost:5000/pdf/combinado/ver/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                responseType: "blob",
-            });
-
-            const pdfBlob = new Blob([response.data], { type: "application/pdf" });
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            setPreviewUrl(pdfUrl);
-            setIsPreviewModalOpen(true);
-        } catch (error) {
-            console.error("Error al obtener el PDF:", error);
-            setSnackbarMessage("No se pudo cargar el PDF. Verifica tu conexión o intenta más tarde.");
-            setSnackbarOpen(true);
-        }
-    };
-
-    const handleDownload = async (id) => {
-        try {
-            const response = await axios.get(
-                `http://localhost:5000/pdf/download/${id}`,
-                { responseType: "blob" }
-            );
-            const url = URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", `documento_${id}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode.removeChild(link);
-        } catch (error) {
-            console.error("Error descargando el documento:", error);
-            setSnackbarMessage("Error al descargar el documento.");
-            setSnackbarOpen(true);
-        }
-    };
-
-    useEffect(() => {
-        const filtered = convocatorias.filter((convocatoria) =>
-            convocatoria[searchCategory]
-                ?.toString()
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase())
-        );
-        setFilteredConvocatorias(filtered);
-    }, [searchQuery, searchCategory, convocatorias]);
-
-    const getEstadoColor = (estado) => {
-        switch (estado) {
-            case "Para Revisión":
-                return "#ffc107"; // Amarillo
-            case "En Revisión":
-                return "#17a2b8"; // Cyan
-            case "Observado":
-                return "#fd7e14"; // Naranja
-            case "Revisado":
-                return "#28a745"; // Verde
-            case "Aprobado":
-                return "#20c997"; // Verde claro
-            case "Devuelto":
-                return "#dc3545"; // Rojo
-            case "Para Publicar":
-                return "#007bff"; // Azul
-            default:
-                return "#6c757d"; // Gris
-        }
-    };
-
-    const getEstadoTextColor = (estado) => {
-        // Para asegurar buen contraste con el fondo
-        return ["Para Revisión", "Observado"].includes(estado) ? "#ffffff" : "#ffffff";
-    };
-
-    return (
-        <>
-            <Typography variant="h4" component="h1" gutterBottom>
-                Lista de Convocatorias
-            </Typography>
-            <Box display="flex" justifyContent="center" alignItems="center" mb={2} gap={2}>
-                <TextField
-                    label="Buscar..."
-                    variant="outlined"
-                    size="small"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                        startAdornment: <Search color="disabled" />,
-                    }}
-                />
-                <FormControl variant="outlined" size="small">
-                    <InputLabel>Categoría</InputLabel>
-                    <Select
-                        value={searchCategory}
-                        onChange={(e) => setSearchCategory(e.target.value)}
-                        label="Categoría"
-                    >
-                        <MenuItem value="nombre">Nombre</MenuItem>
-                        <MenuItem value="fecha_inicio">Fecha de Inicio</MenuItem>
-                        <MenuItem value="nombre_programa">Carrera</MenuItem>
-                        <MenuItem value="nombre_facultad">Facultad</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Nombre</TableCell>
-                            <TableCell>Fecha Inicio</TableCell>
-                            <TableCell>Fecha Fin</TableCell>
-                            <TableCell>Estado</TableCell>
-                            <TableCell>Comentario</TableCell>
-                            <TableCell>Acciones</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredConvocatorias.map((convocatoria) => (
-                            <TableRow key={convocatoria.id_convocatoria}>
-                                <TableCell>{convocatoria.nombre}</TableCell>
-                                <TableCell>{convocatoria.fecha_inicio}</TableCell>
-                                <TableCell>{convocatoria.fecha_fin}</TableCell>
-                                <TableCell>
-                                    <FormControl variant="outlined" size="small">
-                                        <Select
-                                            value={convocatoria.estado}
-                                            onChange={(e) => handleEstadoChange(convocatoria.id_convocatoria, e.target.value)}
-                                            style={{ 
-                                                backgroundColor: getEstadoColor(convocatoria.estado), 
-                                                color: getEstadoTextColor(convocatoria.estado),
-                                                minWidth: "150px",
-                                                fontWeight: "bold"
-                                            }}
-                                        >
-                                            <MenuItem value="Para Revisión">Para Revisión</MenuItem>
-                                            <MenuItem value="En Revisión">En Revisión</MenuItem>
-                                            <MenuItem value="Observado">Observado</MenuItem>
-                                            <MenuItem value="Revisado">Revisado</MenuItem>
-                                            {userRole === "vicerrectorado" || userRole === "admin" ? (
-                                                <>
-                                                    <MenuItem value="Aprobado">Aprobado</MenuItem>
-                                                    <MenuItem value="Devuelto">Devuelto</MenuItem>
-                                                    <MenuItem value="Para Publicar">Para Publicar</MenuItem>
-                                                </>
-                                            ) : null}
-                                        </Select>
-                                    </FormControl>
-                                </TableCell>
-                                <TableCell>
-                                    {(convocatoria.comentario_observado || ["Observado", "Devuelto"].includes(convocatoria.estado)) && (
-                                        <IconButton
-                                            style={{ color: "#007bff" }}
-                                            onClick={() => handleEditComentario(convocatoria)}
-                                            title={convocatoria.comentario_observado ? "Editar comentario" : "Agregar comentario"}
-                                        >
-                                            <Comment />
-                                        </IconButton>
-                                    )}
-                                </TableCell>
-                                <TableCell>
-                                    <IconButton
-                                        style={{ color: "#007bff" }}
-                                        onClick={() => handlePreview(convocatoria.id_convocatoria)}
-                                        title="Vista previa"
-                                    >
-                                        <Preview />
-                                    </IconButton>
-                                    <IconButton
-                                        style={{ color: "#28a745" }}
-                                        onClick={() => handleDownload(convocatoria.id_convocatoria)}
-                                        title="Descargar"
-                                    >
-                                        <Download />
-                                    </IconButton>
-                                    <IconButton
-                                        style={{ color: "#ffc107" }}
-                                        onClick={() => handleEdit(convocatoria.id_convocatoria)}
-                                        title="Editar"
-                                    >
-                                        <Edit />
-                                    </IconButton>
-                                    <IconButton
-                                        style={{ color: "#dc3545" }}
-                                        onClick={() => handleDeleteClick(convocatoria.id_convocatoria)}
-                                        title="Eliminar"
-                                    >
-                                        <Delete />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
-            <Modal open={isPreviewModalOpen} onClose={() => setIsPreviewModalOpen(false)}>
-                <Box sx={{ 
-                    width: "80%", 
-                    margin: "auto", 
-                    marginTop: "5%", 
-                    bgcolor: "background.paper", 
-                    p: 4,
-                    borderRadius: 2,
-                    boxShadow: 24
-                }}>
-                    <iframe 
-                        src={previewUrl} 
-                        width="100%" 
-                        height="600px" 
-                        title="Vista previa del PDF"
-                        style={{ border: "none" }}
-                    />
-                </Box>
-            </Modal>
-
-            <Dialog open={deleteModalOpen} onClose={handleDeleteCancel}>
-                <DialogTitle>Confirmar Eliminación</DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        ¿Estás seguro de que deseas eliminar esta convocatoria?
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDeleteCancel} color="primary">
-                        Cancelar
-                    </Button>
-                    <Button onClick={handleDeleteConfirm} color="error">
-                        Eliminar
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Dialog open={comentarioModalOpen} onClose={handleComentarioClose} fullWidth maxWidth="sm">
-                <DialogTitle>
-                    {isEditingComentario ? "Editar Comentario" : `Agregar Comentario para estado '${selectedEstado}'`}
-                </DialogTitle>
-                <DialogContent>
-                    {!isEditingComentario && (
-                        <Typography variant="body1" gutterBottom>
-                            Por favor ingrese los motivos por los cuales la convocatoria está siendo {selectedEstado === "Devuelto" ? "devuelta" : "observada"}:
-                        </Typography>
-                    )}
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Comentario"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        multiline
-                        rows={4}
-                        value={comentario}
-                        onChange={(e) => setComentario(e.target.value)}
-                        required
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleComentarioClose} color="primary">
-                        Cancelar
-                    </Button>
-                    <Button 
-                        onClick={handleComentarioSubmit} 
-                        color="primary"
-                        variant="contained"
-                        disabled={!comentario}
-                    >
-                        {isEditingComentario ? "Actualizar Comentario" : "Guardar y Cambiar Estado"}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+  const renderEstadoActions = (convocatoria) => {
+    if (userRole === 'tecnico_vicerrectorado') {
+      switch (convocatoria.estado) {
+        case 'Para Revisión':
+          return (
+            <Button 
+              size="small" 
+              color="info" 
+              onClick={() => handleEstadoChangeClick(convocatoria, 'En Revisión')}
             >
-                <Alert 
-                    onClose={() => setSnackbarOpen(false)} 
-                    severity="info" 
-                    sx={{ width: '100%' }}
-                >
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </>
-    );
+              Marcar en Revisión
+            </Button>
+          );
+        case 'En Revisión':
+          return (
+            <>
+              <Button 
+                size="small" 
+                color="success" 
+                onClick={() => handleEstadoChangeClick(convocatoria, 'Revisado')}
+                sx={{ mr: 1 }}
+              >
+                Revisado
+              </Button>
+              <Button 
+                size="small" 
+                color="warning" 
+                onClick={() => handleEstadoChangeClick(convocatoria, 'Observado')}
+              >
+                Observar
+              </Button>
+            </>
+          );
+        default:
+          return null;
+      }
+    } else if (userRole === 'vicerrectorado') {
+      if (convocatoria.estado === 'Revisado') {
+        return (
+          <>
+            <Button 
+              size="small" 
+              color="success" 
+              onClick={() => handleEstadoChangeClick(convocatoria, 'Aprobado')}
+              sx={{ mr: 1 }}
+            >
+              Aprobar
+            </Button>
+            <Button 
+              size="small" 
+              color="error" 
+              onClick={() => handleEstadoChangeClick(convocatoria, 'Devuelto')}
+            >
+              Devolver
+            </Button>
+          </>
+        );
+      } else if (convocatoria.estado === 'Aprobado') {
+        return (
+          <Button 
+            size="small" 
+            color="secondary" 
+            onClick={() => handleEstadoChangeClick(convocatoria, 'Para Publicar')}
+          >
+            Marcar para Publicar
+          </Button>
+        );
+      }
+    }
+    return null;
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Lista de Convocatorias
+      </Typography>
+      
+      {/* Barra de búsqueda y acciones */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            label="Buscar"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: <Search color="action" sx={{ mr: 1 }} />,
+            }}
+          />
+          
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Buscar por</InputLabel>
+            <Select
+              value={searchField}
+              onChange={(e) => setSearchField(e.target.value)}
+              label="Buscar por"
+            >
+              {searchFields.map((field) => (
+                <MenuItem key={field.value} value={field.value}>
+                  {field.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        
+        <Box>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => navigate('/convocatorias/new')}
+            sx={{ mr: 2 }}
+          >
+            Nueva Convocatoria
+          </Button>
+          
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={fetchConvocatorias}
+          >
+            Actualizar
+          </Button>
+        </Box>
+      </Box>
+      
+      {/* Tabla de convocatorias */}
+      <TableContainer component={Paper} sx={{ mt: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Programa</TableCell>
+              <TableCell>Facultad</TableCell>
+              <TableCell>Fecha Inicio</TableCell>
+              <TableCell>Fecha Fin</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  Cargando...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ color: 'error.main' }}>
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : filteredConvocatorias.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No se encontraron convocatorias
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredConvocatorias.map((convocatoria) => (
+                <TableRow key={convocatoria.id_convocatoria}>
+                  <TableCell>{convocatoria.nombre_conv}</TableCell>
+                  <TableCell>{convocatoria.nombre_programa}</TableCell>
+                  <TableCell>{convocatoria.nombre_facultad}</TableCell>
+                  <TableCell>
+                    {format(new Date(convocatoria.fecha_inicio), 'dd/MM/yyyy')}
+                  </TableCell>
+                  <TableCell>
+                    {convocatoria.fecha_fin ? format(new Date(convocatoria.fecha_fin), 'dd/MM/yyyy') : 'N/A'}
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip 
+                        label={convocatoria.estado} 
+                        color={getEstadoColor(convocatoria.estado)} 
+                        size="small"
+                      />
+                      
+                      {convocatoria.comentario_observado && (
+                        <Tooltip title="Ver comentario">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleEditComentario(convocatoria)}
+                          >
+                            <Badge color="error" variant="dot">
+                              <Comment fontSize="small" />
+                            </Badge>
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                    
+                    <Box sx={{ mt: 1 }}>
+                      {renderEstadoActions(convocatoria)}
+                    </Box>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Tooltip title="Ver detalles">
+                        <IconButton
+                          size="small"
+                          onClick={() => navigate(`/convocatorias/${convocatoria.id_convocatoria}`)}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      
+                      <Tooltip title="Editar">
+                        <IconButton
+                          size="small"
+                          onClick={() => navigate(`/convocatorias/edit/${convocatoria.id_convocatoria}`)}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      
+                      <Tooltip title="Descargar PDF">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDownloadPdf(convocatoria.id_convocatoria)}
+                        >
+                          <Download fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      
+                      <Tooltip title="Eliminar">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteClick(convocatoria.id_convocatoria)}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      
+      {/* Diálogo para eliminar */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          ¿Está seguro que desea eliminar esta convocatoria? Esta acción no se puede deshacer.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={handleDeleteConfirm} color="error">Eliminar</Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Diálogo para cambiar estado con comentario */}
+      <Dialog 
+        open={estadoDialogOpen} 
+        onClose={() => setEstadoDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          {selectedEstado === 'EDIT_COMENTARIO' ? 'Editar Comentario' : `Cambiar estado a ${selectedEstado}`}
+        </DialogTitle>
+        <DialogContent>
+          {(selectedEstado === 'Observado' || selectedEstado === 'Devuelto') && (
+            <Typography paragraph>
+              Por favor ingrese los motivos por los cuales la convocatoria está siendo {selectedEstado.toLowerCase()}:
+            </Typography>
+          )}
+          
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Comentario"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={4}
+            value={comentario}
+            onChange={(e) => setComentario(e.target.value)}
+            required={selectedEstado !== 'EDIT_COMENTARIO'}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEstadoDialogOpen(false)}>Cancelar</Button>
+          <Button 
+            onClick={() => selectedEstado === 'EDIT_COMENTARIO' 
+              ? confirmEstadoChange(comentario) 
+              : confirmEstadoChange(comentario)
+            }
+            disabled={!comentario && selectedEstado !== 'EDIT_COMENTARIO'}
+            color="primary"
+          >
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Snackbar para mensajes */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
 };
 
 export default ConvocatoriaList;

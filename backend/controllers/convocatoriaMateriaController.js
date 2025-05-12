@@ -1,44 +1,33 @@
 // backend/controllers/convocatoriaMateriaController.js
 const pool = require('../db');
 
-// Agregar materias a una convocatoria
 const addMaterias = async (req, res) => {
-    const { id } = req.params; // id_convocatoria
-    const { materias } = req.body; // Array de {id_materia, total_horas}
-    
+    const { id } = req.params; 
+    const { materias } = req.body;    
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        
-        // 1. Verificar que la convocatoria existe y obtener su programa
         const convocatoria = await client.query(
             'SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1', 
             [id]
         );
-        
         if (!convocatoria.rows[0]) {
             throw new Error('Convocatoria no encontrada');
         }
 
-        // 2. Eliminar materias existentes (para actualización)
         await client.query(
             'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
             [id]
         );
-
-        // 3. Insertar nuevas materias con validación
         for (const materia of materias) {
-            // Verificar que cada materia pertenece al programa de la convocatoria
             const materiaValida = await client.query(
                 `SELECT 1 FROM datos_universidad.pln_materias 
                  WHERE id_materia = $1 AND id_programa = $2`,
                 [materia.id_materia, convocatoria.rows[0].id_programa]
             );
-            
             if (!materiaValida.rows[0]) {
                 throw new Error(`Materia ${materia.id_materia} no válida para este programa`);
             }
-
             await client.query(
                 `INSERT INTO convocatorias_materias 
                  (id_convocatoria, id_materia, total_horas) 
@@ -57,7 +46,7 @@ const addMaterias = async (req, res) => {
     }
 };
 
-// Obtener materias de una convocatoria
+// obtener materias de una convocatoria
 const getMateriasByConvocatoria = async (req, res) => {
     const { id } = req.params;
     try {
@@ -75,7 +64,7 @@ const getMateriasByConvocatoria = async (req, res) => {
     }
 };
 
-// Eliminar una materia específica
+// eliminar una materia especifica
 const deleteMateria = async (req, res) => {
     const { id, id_materia } = req.params;
     try {

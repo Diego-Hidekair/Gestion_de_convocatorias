@@ -42,12 +42,9 @@ const routes = [
     { path: '/carreras', route: './routes/carreraRoutes' },
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
- //   { path: '/materias', route: './routes/materiaRoutes' },
- // { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
-// { path: '/documentos', route: './routes/documentosRoutes' },
+    { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
-//    { path: '/honorarios', route: './routes/honorariosRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
     { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' } 

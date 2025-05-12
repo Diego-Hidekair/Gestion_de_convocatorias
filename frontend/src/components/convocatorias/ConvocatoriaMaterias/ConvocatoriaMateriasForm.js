@@ -2,11 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  Container, Typography, Button, TextField, 
+import { Container, Typography, Button, TextField, 
   Select, MenuItem, FormControl, InputLabel, 
   List, ListItem, ListItemText, IconButton, 
-  Paper, Box, Alert, Divider
+  Paper, Box, Alert, Divider, CircularProgress
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -23,17 +22,17 @@ const ConvocatoriaMateriasForm = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // Obtener convocatoria para saber el programa
-                const convResponse = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
+                // 1. Obtener datos de la convocatoria (para saber el programa)
+                const convResponse = await axios.get(`/convocatorias/${id_convocatoria}`);
                 
-                // Obtener materias del programa
+                // 2. Obtener materias del programa (asumiendo que tienes este endpoint)
                 const materiasResponse = await axios.get(
-                  `http://localhost:5000/materias/programa/${convResponse.data.id_programa}`
+                  `/materias/programa/${convResponse.data.id_programa}`
                 );
                 
-                // Obtener materias ya asignadas (si es edición)
+                // 3. Obtener materias ya asignadas a la convocatoria
                 const asignadasResponse = await axios.get(
-                  `http://localhost:5000/convocatorias/${id_convocatoria}/materias`
+                  `/convocatoria-materias/${id_convocatoria}/materias`
                 );
 
                 setMaterias(materiasResponse.data);
@@ -53,11 +52,14 @@ const ConvocatoriaMateriasForm = () => {
     const handleAddMateria = () => {
         if (!materiaSeleccionada) return;
         
-        const materia = materias.find(m => m.id_materia == materiaSeleccionada);
-        if (materia && !materiasSeleccionadas.some(m => m.id_materia == materia.id_materia)) {
+        const materia = materias.find(m => m.id_materia === materiaSeleccionada);
+        if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
             setMateriasSeleccionadas(prev => [
                 ...prev, 
-                { ...materia, total_horas: materia.horas_teoria + materia.horas_practica }
+                { 
+                    ...materia, 
+                    total_horas: materia.horas_teoria + materia.horas_practica 
+                }
             ]);
             setMateriaSeleccionada('');
         }
@@ -76,23 +78,41 @@ const ConvocatoriaMateriasForm = () => {
         }
 
         try {
-            await axios.post(`http://localhost:5000/convocatorias/${id_convocatoria}/materias`, {
+            // Usamos la ruta correcta /convocatoria-materias/:id/materias
+            await axios.post(`/convocatoria-materias/${id_convocatoria}/materias`, {
                 materias: materiasSeleccionadas.map(m => ({
                     id_materia: m.id_materia,
                     total_horas: m.total_horas
                 }))
             });
             
-            navigate(`/convocatorias/${id_convocatoria}/archivos`);
+            // Redirigir a la siguiente pantalla (ajusta según tu flujo)
+            navigate(`/convocatorias/${id_convocatoria}`);
             
         } catch (err) {
-            setError(err.response?.data?.message || 'Error al guardar');
+            setError(err.response?.data?.error || 'Error al guardar las materias');
             console.error(err);
         }
     };
 
-    if (loading) return <Typography>Cargando...</Typography>;
-    if (error) return <Alert severity="error">{error}</Alert>;
+    if (loading) {
+        return (
+            <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+            </Container>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container maxWidth="md" sx={{ mt: 4 }}>
+                <Alert severity="error">{error}</Alert>
+                <Button onClick={() => window.location.reload()} sx={{ mt: 2 }}>
+                    Reintentar
+                </Button>
+            </Container>
+        );
+    }
 
     return (
         <Container maxWidth="md">
@@ -100,6 +120,8 @@ const ConvocatoriaMateriasForm = () => {
                 <Typography variant="h5" gutterBottom>
                     Asignar Materias a la Convocatoria
                 </Typography>
+                
+                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
                 
                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                     <FormControl fullWidth>
@@ -116,7 +138,7 @@ const ConvocatoriaMateriasForm = () => {
                                     value={materia.id_materia}
                                     disabled={materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)}
                                 >
-                                    {materia.nombre} ({materia.cod_materia})
+                                    {materia.materia} ({materia.cod_materia})
                                 </MenuItem>
                             ))}
                         </Select>
@@ -173,7 +195,7 @@ const ConvocatoriaMateriasForm = () => {
                                 }
                             >
                                 <ListItemText 
-                                    primary={`${materia.nombre} (${materia.cod_materia})`}
+                                    primary={`${materia.materia} (${materia.cod_materia})`}
                                     secondary={`Teoría: ${materia.horas_teoria}h - Práctica: ${materia.horas_practica}h`}
                                 />
                             </ListItem>
@@ -193,7 +215,7 @@ const ConvocatoriaMateriasForm = () => {
                         onClick={handleSubmit}
                         disabled={materiasSeleccionadas.length === 0}
                     >
-                        Siguiente: Subir Archivos
+                        Guardar Materias
                     </Button>
                 </Box>
             </Paper>

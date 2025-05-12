@@ -11,11 +11,8 @@ import FacultadList from './components/FacultadList';
 import ConvocatoriaList from './components/convocatorias/ConvocatoriaList'; 
 import ConvocatoriaForm from './components/convocatorias/ConvocatoriaForm';
 import ConvocatoriaEdit from './components/convocatorias/ConvocatoriaEdit';
-//import ConvocatoriaListSecretaria from './components/ConvocatoriaList_secretaria';
-//import ConvocatoriaParaRevision from './components/convocatorias/estados/ConvocatoriaParaRevision';
-//import ConvocatoriaEnRevision from './components/convocatorias/estados/ConvocatoriaEnRevision';
-//import ConvocatoriaObservado from './components/convocatorias/estados/ConvocatoriaObservado';
-//import ConvocatoriaRevisado from './components/convocatorias/estados/ConvocatoriaRevisado';
+import ConvocatoriaDetalle from './components/convocatorias/ConvocatoriaDetalle'; 
+import ConvocatoriaMaterias from './components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasEdit';
 import TipoconvocatoriaList from './components/TipoconvocatoriaList';
 import TipoconvocatoriaForm from './components/TipoconvocatoriaForm';
 import TipoconvocatoriaEdit from './components/TipoconvocatoriaEdit';
@@ -32,7 +29,9 @@ import NavBar from './components/NavBar';
 import PDFGenerator from './components/PDFGenerator';
 import PDFViewer from './components/PDFViewer';
 
+
 axios.defaults.baseURL = 'http://localhost:5000/';
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -117,22 +116,29 @@ const AuthWrapper = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken = jwtDecode(token);
-      const expiryTime = decodedToken.exp * 1000;
-      const currentTime = Date.now();
+      try {
+        const decodedToken = jwtDecode(token);
+        const expiryTime = decodedToken.exp * 1000;
+        const currentTime = Date.now();
 
-      if (currentTime >= expiryTime) {
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
-        navigate('/login');
-      } else {
-        setUserRole(decodedToken.rol);
-        setIsAuthenticated(true);
-        setTimeout(() => {
+        if (currentTime >= expiryTime) {
           localStorage.removeItem('token');
           setIsAuthenticated(false);
           navigate('/login');
-        }, expiryTime - currentTime);
+        } else {
+          setUserRole(decodedToken.rol);
+          setIsAuthenticated(true);
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            setIsAuthenticated(false);
+            navigate('/login');
+          }, expiryTime - currentTime);
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        localStorage.removeItem('token');
+        setIsAuthenticated(false);
+        navigate('/login');
       }
     } else {
       navigate('/login');
@@ -150,6 +156,7 @@ const AuthWrapper = () => {
     navigate('/login');
   };
 
+
   return (
     <Box>
       {isAuthenticated ? (
@@ -157,32 +164,31 @@ const AuthWrapper = () => {
           <NavBar onLogout={handleLogout} userRole={userRole} />
           <Routes>
             <Route path="/" element={<Navigate to="/redirect" />} />
-            <Route path="/redirect" element={<RedirectPage />} /> 
+            <Route path="/redirect" element={<RedirectPage />} />
             <Route path="/carreras" element={<CarreraList />} />
             <Route path="/facultades" element={<FacultadList />} />
             
+            {/* Rutas de convocatorias */}
             {(userRole === 'admin' || userRole === 'secretaria_de_decanatura' || 
               userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado' || 
               userRole === 'personal_administrativo') && (
-              <Route path="/convocatorias" element={<ConvocatoriaList />} />
+              <>
+                <Route path="/convocatorias" element={<ConvocatoriaList />} />
+                <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
+              </>
             )}
             
             {userRole === 'secretaria_de_decanatura' && (
               <>
                 <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                {/*<Route path="/convocatorias/facultad" element={<ConvocatoriaListSecretaria />} />*/}
+                <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
+                <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
               </>
             )}
             
-            <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
-            <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMateriasEdit />} />
+            <Route path="/convocatorias/:estado" element={<ConvocatoriaList />} />
             
-            {/*<Route path="/convocatorias/estado/para-revision" element={<ConvocatoriaParaRevision />} />*/}
-            {/*<Route path="/convocatorias/estado/en-revision" element={<ConvocatoriaEnRevision />} />*/}
-            {/*<Route path="/convocatorias/estado/observado" element={<ConvocatoriaObservado />} />*/}
-            {/*<Route path="/convocatorias/estado/revisado" element={<ConvocatoriaRevisado />} />*/}
-            <Route path="/convocatorias/:estado?" element={<ConvocatoriaList />} />
-            
+            {/* Otras rutas */}
             <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
             <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} />
             <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
@@ -190,11 +196,15 @@ const AuthWrapper = () => {
             <Route path="/materias" element={<MateriaList />} />
             <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
             <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
+            
             <Route path="/file-upload" element={<FileUpload />} />
             <Route path="/usuarios/*" element={<UsuarioManager />} />
             <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
             <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
             <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} />
+            
+            {/* Ruta de fallback */}
+            <Route path="*" element={<Navigate to="/redirect" />} />
           </Routes>
         </>
       ) : (
