@@ -1,12 +1,10 @@
 // frontend/src/components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasForm.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Button, TextField, 
-  Select, MenuItem, FormControl, InputLabel, 
-  List, ListItem, ListItemText, IconButton, 
-  Paper, Box, Alert, Divider, CircularProgress
-} from '@mui/material';
+import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert, Divider, CircularProgress} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const ConvocatoriaMateriasForm = () => {
@@ -223,4 +221,4 @@ const ConvocatoriaMateriasForm = () => {
     );
 };
 
-export default ConvocatoriaMateriasForm;
+export default ConvocatoriaMateriasForm; 
