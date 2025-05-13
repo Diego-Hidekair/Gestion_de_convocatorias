@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert, Divider, CircularProgress} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Tooltip from '@mui/material/Tooltip';
 
 const ConvocatoriaMateriasForm = () => {
     const { id_convocatoria } = useParams();
@@ -17,34 +18,34 @@ const ConvocatoriaMateriasForm = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                // 1. Obtener datos de la convocatoria (para saber el programa)
-                const convResponse = await axios.get(`/convocatorias/${id_convocatoria}`);
-                
-                // 2. Obtener materias del programa (asumiendo que tienes este endpoint)
-                const materiasResponse = await axios.get(
-                  `/materias/programa/${convResponse.data.id_programa}`
-                );
-                
-                // 3. Obtener materias ya asignadas a la convocatoria
-                const asignadasResponse = await axios.get(
-                  `/convocatoria-materias/${id_convocatoria}/materias`
-                );
+    const fetchData = async () => {
+        try {
+        setLoading(true);
+        const convResponse = await axios.get(
+            `http://localhost:5000/convocatorias/${id_convocatoria}`,
+            { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+        );
+        const materiasResponse = await axios.get(
+            `http://localhost:5000/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`,
+            { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }}
+        );
+         const asignadasResponse = await axios.get(
+            `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`,
+            { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }  }
+        );
 
-                setMaterias(materiasResponse.data);
-                setMateriasSeleccionadas(asignadasResponse.data);
-                setLoading(false);
-                
-            } catch (err) {
-                setError('Error al cargar los datos');
-                console.error(err);
-                setLoading(false);
-            }
-        };
+        setMaterias(materiasResponse.data);
+        setMateriasSeleccionadas(asignadasResponse.data);
+        setLoading(false);
+        
+        } catch (err) {
+        setError('Error al cargar los datos');
+        console.error(err);
+        setLoading(false);
+        }
+    };
 
-        fetchData();
+    fetchData();
     }, [id_convocatoria]);
 
     const handleAddMateria = () => {
@@ -55,9 +56,9 @@ const ConvocatoriaMateriasForm = () => {
             setMateriasSeleccionadas(prev => [
                 ...prev, 
                 { 
-                    ...materia, 
-                    total_horas: materia.horas_teoria + materia.horas_practica 
-                }
+                    ...materia,
+                    total_horas: materia.horas_teoria + materia.horas_practica + materia.horas_laboratorio
+            }
             ]);
             setMateriaSeleccionada('');
         }
@@ -76,22 +77,26 @@ const ConvocatoriaMateriasForm = () => {
         }
 
         try {
-            // Usamos la ruta correcta /convocatoria-materias/:id/materias
-            await axios.post(`/convocatoria-materias/${id_convocatoria}/materias`, {
+            await axios.post(
+            `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`, 
+            {
                 materias: materiasSeleccionadas.map(m => ({
-                    id_materia: m.id_materia,
-                    total_horas: m.total_horas
+                id_materia: m.id_materia,
+                total_horas: m.total_horas
                 }))
-            });
+            },
+                {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                }
+        );
             
-            // Redirigir a la siguiente pantalla (ajusta según tu flujo)
-            navigate(`/convocatorias/${id_convocatoria}`);
-            
+        navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
+    
         } catch (err) {
             setError(err.response?.data?.error || 'Error al guardar las materias');
             console.error(err);
         }
-    };
+        };
 
     if (loading) {
         return (
@@ -163,41 +168,48 @@ const ConvocatoriaMateriasForm = () => {
                 ) : (
                     <List dense>
                         {materiasSeleccionadas.map(materia => (
-                            <ListItem 
-                                key={materia.id_materia}
-                                secondaryAction={
-                                    <>
-                                        <TextField
-                                            type="number"
-                                            size="small"
-                                            value={materia.total_horas}
-                                            onChange={(e) => 
+                        <ListItem 
+                            key={materia.id_materia}
+                            secondaryAction={
+                                <>
+                                    <TextField
+                                        type="number"
+                                        size="small"
+                                        value={materia.total_horas}
+                                        onChange={(e) => {
+                                            const newValue = parseInt(e.target.value) || 0;
+                                            if (newValue > 0) { // Validación básica
                                                 setMateriasSeleccionadas(prev => 
                                                     prev.map(m => 
                                                         m.id_materia === materia.id_materia 
-                                                            ? { ...m, total_horas: parseInt(e.target.value) || 0 } 
+                                                            ? { ...m, total_horas: newValue } 
                                                             : m
                                                     )
-                                                )
+                                                );
                                             }
-                                            sx={{ width: '100px', mr: 2 }}
-                                            inputProps={{ min: 1 }}
-                                        />
-                                        <IconButton
-                                            edge="end"
-                                            onClick={() => handleRemoveMateria(materia.id_materia)}
-                                        >
-                                            <DeleteIcon color="error" />
-                                        </IconButton>
-                                    </>
-                                }
-                            >
-                                <ListItemText 
-                                    primary={`${materia.materia} (${materia.cod_materia})`}
-                                    secondary={`Teoría: ${materia.horas_teoria}h - Práctica: ${materia.horas_practica}h`}
-                                />
-                            </ListItem>
-                        ))}
+                                        }}
+                                        sx={{ width: '100px', mr: 2 }}
+                                        inputProps={{ 
+                                            min: 1,
+                                            title: "Horas totales (puede modificar este valor)"
+                                        }}
+                                        helperText="Horas totales"
+                                    />
+                                    <IconButton
+                                        edge="end"
+                                        onClick={() => handleRemoveMateria(materia.id_materia)}
+                                    >
+                                        <DeleteIcon color="error" />
+                                    </IconButton>
+                                </>
+                            }
+                        >
+                            <ListItemText 
+                                primary={`${materia.materia} (${materia.cod_materia})`}
+                                secondary={`Teoría: ${materia.horas_teoria}h - Práctica: ${materia.horas_practica}h - Lab: ${materia.horas_laboratorio}h`}
+                            />
+                        </ListItem>
+                    ))}
                     </List>
                 )}
 

@@ -26,7 +26,8 @@ import UsuarioManager from './components/usuarios/UsuarioManager';
 import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import NavBar from './components/NavBar';
-import PDFGenerator from './components/PDFGenerator';
+//import PDFGenerator from './components/PDFGenerator';
+import GenerarPDF from './components/GenerarPDF';
 import PDFViewer from './components/PDFViewer';
 
 
@@ -194,13 +195,13 @@ const AuthWrapper = () => {
             <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
             
             <Route path="/materias" element={<MateriaList />} />
-            <Route path="/convocatorias_materias/new/:id_convocatoria" element={<ConvocatoriaMateriasForm />} />
+            <Route path="/convocatoria-materias/:id_convocatoria/materias" element={<ConvocatoriaMateriasForm />} />
             <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
             
             <Route path="/file-upload" element={<FileUpload />} />
             <Route path="/usuarios/*" element={<UsuarioManager />} />
             <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
-            <Route path="/pdf/generar/:id_convocatoria/:id_honorario" element={<PDFGenerator />} />
+            <Route path="/convocatorias/:id_convocatoria/generar-pdf" element={<GenerarPDF />} />
             <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} />
             
             {/* Ruta de fallback */}

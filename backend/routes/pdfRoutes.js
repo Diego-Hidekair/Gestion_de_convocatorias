@@ -8,7 +8,7 @@ const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
 
 router.use(authenticateToken);
 
-// Rutas de PDF
+// Rutas de PDF 
 router.post('/:id/pdf/generar', secretariaOnly, pdfController.generatePDF);
 router.post('/:id/pdf/combinar', secretariaOnly, pdfController.combinarYGuardarPDFs);
 router.get('/:id/pdf', pdfController.viewCombinedPDF);

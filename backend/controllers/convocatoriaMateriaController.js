@@ -2,13 +2,14 @@
 const pool = require('../db');
 
 const addMaterias = async (req, res) => {
-    const { id } = req.params; 
-    const { materias } = req.body;    
+    const { id } = req.params;
+    const { materias } = req.body;
+    
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const convocatoria = await client.query(
-            'SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1', 
+        await client.query(
+            'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
             [id]
         );
         if (!convocatoria.rows[0]) {
@@ -19,28 +20,27 @@ const addMaterias = async (req, res) => {
             'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
             [id]
         );
-        for (const materia of materias) {
-            const materiaValida = await client.query(
-                `SELECT 1 FROM datos_universidad.pln_materias 
-                 WHERE id_materia = $1 AND id_programa = $2`,
-                [materia.id_materia, convocatoria.rows[0].id_programa]
-            );
-            if (!materiaValida.rows[0]) {
-                throw new Error(`Materia ${materia.id_materia} no válida para este programa`);
-            }
-            await client.query(
-                `INSERT INTO convocatorias_materias 
-                 (id_convocatoria, id_materia, total_horas) 
-                 VALUES ($1, $2, $3)`,
-                [id, materia.id_materia, materia.total_horas]
-            );
+         for (const materia of materias) {
+            await client.query(`
+                INSERT INTO convocatorias_materias 
+                (id_convocatoria, id_materia, total_horas)
+                VALUES ($1, $2, 
+                    CASE 
+                        WHEN $3 > 0 THEN $3 
+                        ELSE (SELECT m.total_horas FROM datos_universidad.pln_materias m WHERE m.id_materia = $2)
+                    END)
+                RETURNING *
+            `, [id, materia.id_materia, materia.total_horas]);
         }
-
+        
         await client.query('COMMIT');
-        res.json({ success: true, message: 'Materias actualizadas correctamente' });
+        res.status(200).json({ message: 'Materias asignadas correctamente' });
     } catch (error) {
         await client.query('ROLLBACK');
-        res.status(500).json({ error: error.message });
+        console.error('Error al asignar materias:', error);
+        res.status(500).json({error: 'Error al asignar materias',
+            details: error.message 
+        });
     } finally {
         client.release();
     }
@@ -83,4 +83,30 @@ const deleteMateria = async (req, res) => {
     }
 };
 
-module.exports = { addMaterias, getMateriasByConvocatoria,deleteMateria};
+const getMateriasByPrograma = async (req, res) => {
+    try {
+        const { id_programa } = req.params;
+        
+        const result = await pool.query(`
+            SELECT m.id_materia, m.materia, m.cod_materia, 
+                   m.horas_teoria, m.horas_practica, m.horas_laboratorio
+            FROM datos_universidad.pln_materias m
+            WHERE m.id_programa = $1
+            ORDER BY m.materia
+        `, [id_programa]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                error: 'No se encontraron materias para este programa',
+                details: `Programa ID: ${id_programa}`
+            });
+        }
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener materias por programa:', error);
+        res.status(500).json({ error: 'Error al obtener materias por programa' });
+    }
+};
+
+module.exports = { addMaterias, getMateriasByConvocatoria,deleteMateria, getMateriasByPrograma};

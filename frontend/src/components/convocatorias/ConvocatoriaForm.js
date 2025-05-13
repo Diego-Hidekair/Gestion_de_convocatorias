@@ -2,11 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  Container, TextField, MenuItem, Button, Grid, 
-  Typography, Card, CardContent, Alert, FormControl, 
-  InputLabel, Select 
-} from '@mui/material';
+import { Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select } from '@mui/material';
 import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO } from 'date-fns';
@@ -101,11 +97,9 @@ const ConvocatoriaForm = () => {
 
     fetchData();
   }, [id]);
-
-  // Generar título automático cuando cambian los campos relevantes
   useEffect(() => {
     if (tiposConvocatoria.length > 0 && convocatoria.id_tipoconvocatoria && programaSeleccionado && convocatoria.etapa_convocatoria) {
-      const tipoSeleccionado = tiposConvocatoria.find(t => t.id_tipoconvocatoria == convocatoria.id_tipoconvocatoria);
+      const tipoSeleccionado = tiposConvocatoria.find(t => t.id_tipoconvocatoria === convocatoria.id_tipoconvocatoria);
       if (tipoSeleccionado) {
         const nuevoNombre = `CONVOCATORIA ${tipoSeleccionado.nombre_tipo_conv || tipoSeleccionado.nombre_convocatoria} - ${programaSeleccionado} - ${convocatoria.etapa_convocatoria} ETAPA`;
         setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre }));
@@ -137,49 +131,50 @@ const ConvocatoriaForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
+  e.preventDefault();
+  setError(null);
+  setSuccess(null);
+  
+  try {
+    setLoading(true);
     
-    try {
-      setLoading(true);
-      
-      if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
-        throw new Error('Por favor complete todos los campos requeridos');
-      }
-      
-      if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
-        throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
-      }
-      
-      // Preparar payload para el backend
-      const payload = {
-        ...convocatoria,
-        nombre_conv: convocatoria.nombre, // Asegurar compatibilidad con backend
-        fecha_inicio: format(convocatoria.fecha_inicio, 'yyyy-MM-dd'),
-        fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
-        id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
-        pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
-        id_programa: convocatoria.id_programa.toString().trim()
-      };
-
-      if (id) {
-        await axios.put(`http://localhost:5000/convocatorias/${id}`, payload);
-        setSuccess('Convocatoria actualizada exitosamente');
-        setTimeout(() => navigate('/convocatorias'), 2000);
-      } else {
-        const response = await axios.post('http://localhost:5000/convocatorias', payload);
-        const newId = response.data.id_convocatoria;
-        setSuccess('Convocatoria creada exitosamente');
-        navigate(`/convocatorias/${newId}/materias`);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(error.response?.data?.error || error.message);
-    } finally {
-      setLoading(false);
+    if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
+      throw new Error('Por favor complete todos los campos requeridos');
     }
-  };
+    
+    if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
+      throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
+    }
+    
+    const payload = {
+      ...convocatoria,
+      nombre_conv: convocatoria.nombre,
+      fecha_inicio: format(convocatoria.fecha_inicio, 'yyyy-MM-dd'),
+      fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
+      id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
+      pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
+      id_programa: convocatoria.id_programa.toString().trim()
+    };
+
+    if (id) {
+      await axios.put(`http://localhost:5000/convocatorias/${id}`, payload);
+      setSuccess('Convocatoria actualizada exitosamente');
+      setTimeout(() => navigate('/convocatorias'), 2000);
+    } else {
+      const response = await axios.post('http://localhost:5000/convocatorias', payload, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const newId = response.data.id_convocatoria;
+      setSuccess('Convocatoria creada exitosamente');
+      navigate(`/convocatoria-materias/${newId}/materias`);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    setError(error.response?.data?.error || error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Container>
@@ -405,7 +400,7 @@ const ConvocatoriaForm = () => {
                   size="large"
                   disabled={loading}
                 >
-                  {loading ? 'Procesando...' : (id ? 'Actualizar' : 'Crear Convocatoria')}
+                  {loading ? 'Procesando...' : (id ? 'Actualizar' : 'Siguiente')}
                 </Button>
                 <Button 
                   variant="outlined" 

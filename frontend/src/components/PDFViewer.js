@@ -13,36 +13,33 @@ const PDFViewer = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCombinedPDF = async () => {
-            try {
-                const response = await axios.get(
-                    `http://localhost:5000/pdf/combinado/ver/${id_convocatoria}`,
-                    {
-                        responseType: 'blob',
-                    }
-                );
-
-                if (response.status === 200) {
-                    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-                    const pdfUrl = URL.createObjectURL(pdfBlob);
-                    setPdfUrl(pdfUrl);
-                } else {
-                    setError('No se encontró el PDF combinado.');
-                }
-            } catch (error) {
-                console.error('Error obteniendo el PDF combinado:', error);
-                setError('Error al cargar el PDF combinado.');
-            } finally {
-                setLoading(false);
+    const fetchCombinedPDF = async () => {
+        try {
+        const response = await axios.get(
+            `http://localhost:5000/pdf/${id_convocatoria}`,
+            {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            responseType: 'blob'
             }
-        };
+        );
 
-        fetchCombinedPDF();
+        if (response.status === 200) {
+            const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            setPdfUrl(pdfUrl);
+        } else {
+            setError('No se encontró el PDF.');
+        }
+        } catch (error) {
+        console.error('Error obteniendo el PDF:', error);
+        setError('Error al cargar el PDF.');
+        } finally {
+        setLoading(false);
+        }
+    };
 
-        return () => {
-            if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-        };
-    }, [id_convocatoria]);
+  fetchCombinedPDF();
+}, [id_convocatoria]);
 
     return (
         <div className="pdf-viewer-container">
