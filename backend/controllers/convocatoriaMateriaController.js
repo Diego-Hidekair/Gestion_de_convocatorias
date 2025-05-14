@@ -8,19 +8,19 @@ const addMaterias = async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        await client.query(
-            'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
+        const convocatoriaCheck = await client.query(
+            'SELECT id_convocatoria FROM convocatorias WHERE id_convocatoria = $1',
             [id]
         );
-        if (!convocatoria.rows[0]) {
-            throw new Error('Convocatoria no encontrada');
+        
+        if (convocatoriaCheck.rows.length === 0) {
+            throw new Error('La convocatoria no existe');
         }
-
         await client.query(
             'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1',
             [id]
         );
-         for (const materia of materias) {
+        for (const materia of materias) {
             await client.query(`
                 INSERT INTO convocatorias_materias 
                 (id_convocatoria, id_materia, total_horas)
@@ -32,22 +32,25 @@ const addMaterias = async (req, res) => {
                 RETURNING *
             `, [id, materia.id_materia, materia.total_horas]);
         }
-        
         await client.query('COMMIT');
-        res.status(200).json({ message: 'Materias asignadas correctamente' });
+        res.status(200).json({ 
+            message: 'Materias asignadas correctamente',
+            convocatoriaId: id,
+            materiasCount: materias.length
+        });
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Error al asignar materias:', error);
-        res.status(500).json({error: 'Error al asignar materias',
-            details: error.message 
+        res.status(500).json({
+            error: error.message || 'Error al asignar materias',
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     } finally {
         client.release();
     }
 };
 
-// obtener materias de una convocatoria
-const getMateriasByConvocatoria = async (req, res) => {
+const getMateriasByConvocatoria = async (req, res) => {// obtener materias de una convocatoria
     const { id } = req.params;
     try {
         const result = await pool.query(`
@@ -64,8 +67,7 @@ const getMateriasByConvocatoria = async (req, res) => {
     }
 };
 
-// eliminar una materia especifica
-const deleteMateria = async (req, res) => {
+const deleteMateria = async (req, res) => {// eliminar una materia especifica
     const { id, id_materia } = req.params;
     try {
         const result = await pool.query(

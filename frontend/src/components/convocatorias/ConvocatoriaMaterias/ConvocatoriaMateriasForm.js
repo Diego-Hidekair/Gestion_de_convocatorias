@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert, Divider, CircularProgress} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Tooltip from '@mui/material/Tooltip';
 
 const ConvocatoriaMateriasForm = () => {
     const { id_convocatoria } = useParams();
@@ -70,6 +69,7 @@ const ConvocatoriaMateriasForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
         
         if (materiasSeleccionadas.length === 0) {
             setError('Debe seleccionar al menos una materia');
@@ -77,45 +77,37 @@ const ConvocatoriaMateriasForm = () => {
         }
 
         try {
-            await axios.post(
-            `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`, 
-            {
-                materias: materiasSeleccionadas.map(m => ({
-                id_materia: m.id_materia,
-                total_horas: m.total_horas
-                }))
-            },
+            const response = await axios.post(
+                `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`, 
                 {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    materias: materiasSeleccionadas.map(m => ({
+                        id_materia: m.id_materia,
+                        total_horas: m.total_horas
+                    }))
+                },
+                {
+                    headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
                 }
-        );
-            
-        navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
-    
+            );
+
+            if (response.data.success) {
+                navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
+            } else {
+                setError(response.data.error || 'Error al guardar las materias');
+            }
         } catch (err) {
-            setError(err.response?.data?.error || 'Error al guardar las materias');
-            console.error(err);
+            console.error('Error detallado:', err.response?.data || err);
+            setError(
+                err.response?.data?.error || 
+                err.response?.data?.message || 
+                'Error al guardar las materias'
+            );
         }
-        };
-
-    if (loading) {
-        return (
-            <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <CircularProgress />
-            </Container>
-        );
-    }
-
-    if (error) {
-        return (
-            <Container maxWidth="md" sx={{ mt: 4 }}>
-                <Alert severity="error">{error}</Alert>
-                <Button onClick={() => window.location.reload()} sx={{ mt: 2 }}>
-                    Reintentar
-                </Button>
-            </Container>
-        );
-    }
+    };
+    
 
     return (
         <Container maxWidth="md">
