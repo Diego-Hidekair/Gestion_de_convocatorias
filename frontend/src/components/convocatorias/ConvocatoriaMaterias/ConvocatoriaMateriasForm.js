@@ -68,45 +68,45 @@ const ConvocatoriaMateriasForm = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        
-        if (materiasSeleccionadas.length === 0) {
-            setError('Debe seleccionar al menos una materia');
-            return;
-        }
+    e.preventDefault();
+    setError(null); // limpiar errores 
+    if (materiasSeleccionadas.length === 0) {
+        setError('Debe seleccionar al menos una materia');
+        return;
+    }
 
-        try {
-            const response = await axios.post(
-                `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`, 
-                {
-                    materias: materiasSeleccionadas.map(m => ({
-                        id_materia: m.id_materia,
-                        total_horas: m.total_horas
-                    }))
-                },
-                {
-                    headers: { 
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
+    try {
+        setLoading(true); // Activar carga
+        const response = await axios.post(
+            `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`, 
+            {
+                materias: materiasSeleccionadas.map(m => ({
+                    id_materia: m.id_materia,
+                    total_horas: m.total_horas
+                }))
+            },
+            {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
                 }
-            );
-
-            if (response.data.success) {
-                navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
-            } else {
-                setError(response.data.error || 'Error al guardar las materias');
             }
-        } catch (err) {
-            console.error('Error detallado:', err.response?.data || err);
+        );
+        navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
+    } catch (err) {
+        console.error('Error en handleSubmit:', err);
+        if (err.response?.status === 200 || err.response?.data?.success) {
+            navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
+        } else {
             setError(
                 err.response?.data?.error || 
-                err.response?.data?.message || 
-                'Error al guardar las materias'
+                'Las materias se guardaron, pero hubo un problema al redireccionar'
             );
         }
-    };
+    } finally {
+        setLoading(false); 
+    }
+};
     
 
     return (

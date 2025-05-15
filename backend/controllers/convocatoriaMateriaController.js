@@ -34,6 +34,7 @@ const addMaterias = async (req, res) => {
         }
         await client.query('COMMIT');
         res.status(200).json({ 
+            success: true,
             message: 'Materias asignadas correctamente',
             convocatoriaId: id,
             materiasCount: materias.length

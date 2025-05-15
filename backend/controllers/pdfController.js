@@ -11,7 +11,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-const generarPDFBuffer = (htmlContent, options) => {
+const generarPDFBuffer = (htmlContent, options) => {//generar buffer pdf
     return new Promise((resolve, reject) => {
         pdf.create(htmlContent, options).toBuffer((err, buffer) => {
             if (err) {
@@ -34,91 +34,105 @@ const combinarPDFs = async (pdfBuffers) => {
     return await mergedPdf.save();
 };
 
-const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
-    const documentoExistente = await pool.query(
-        `SELECT id_documentos FROM documentos WHERE id_convocatoria = $1`,
-        [id_convocatoria]
-    );
-
-    if (documentoExistente.rowCount > 0) {
-        await pool.query(
-            `UPDATE documentos SET documento_path = $1, fecha_generacion = CURRENT_TIMESTAMP WHERE id_convocatoria = $2`,
-            [pdfBuffer, id_convocatoria]
-        );
-    } else {
-        const result = await pool.query(
-            `INSERT INTO documentos (documento_path, id_convocatoria) VALUES ($1, $2) RETURNING id_documentos`,
-            [pdfBuffer, id_convocatoria]
-        );
-        return result.rows[0].id_documentos;
-    }
-};
-
-const guardarConvocatoriaArchivo = async (id_convocatoria, pdfBuffer, id_documentos) => {
-    const convocatoriaArchivoExistente = await pool.query(
-        `SELECT id_conv_combinado FROM convocatorias_archivos WHERE id_convocatoria = $1`,
-        [id_convocatoria]
-    );
-
-    if (convocatoriaArchivoExistente.rowCount > 0) {
-        await pool.query(
-            `UPDATE convocatorias_archivos SET convocatoria = $1 WHERE id_convocatoria = $2`,
-            [pdfBuffer, id_convocatoria]
-        );
-    } else {
-        await pool.query(
-            `INSERT INTO convocatorias_archivos (convocatoria, id_convocatoria, id_documentos) VALUES ($1, $2, $3)`,
-            [pdfBuffer, id_convocatoria, id_documentos]
-        );
-    }
-};
-
-const generatePDF = async (convocatoriaData, materias, pago_mensual) => {
+const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {//guardar documento
     try {
-        const { 
-            nombre, 
-            nombre_convocatoria, 
-            nombre_carrera, 
-            nombre_facultad, 
-            fecha_inicio, 
-            fecha_fin, 
-            resolucion, 
-            dictamen, 
-            prioridad, 
-            tipo_jornada 
-        } = convocatoriaData;
+        const existeArchivo = await pool.query(
+            `SELECT id_conv_doc FROM convocatorias_archivos WHERE id_convocatoria = $1`,
+            [id_convocatoria]
+        );
+        const nombreArchivo = `convocatoria_${id_convocatoria}_${new Date().toISOString().slice(0,10)}.pdf`;
 
-        const totalHoras = materias.reduce((sum, m) => sum + m.total_horas, 0);
-
-        let htmlContent;
-        switch (nombre_convocatoria) { 
-            case 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA':
-                htmlContent = generateConsultoresLineaHTML(convocatoriaData, materias, totalHoras);
-                break;
-            case 'DOCENTE EN CALIDAD ORDINARIO':
-                htmlContent = generateOrdinarioHTML(convocatoriaData, materias, totalHoras);
-                break;
-            case 'DOCENTE EN CALIDAD EXTRAORDINARIO':
-                htmlContent = generateExtraordinarioHTML(convocatoriaData, materias, totalHoras);
-                break;
-            default:
-                throw new Error(`Tipo de convocatoria no aplicable: ${nombre_convocatoria}`);
+        if (existeArchivo.rowCount > 0) {
+            await pool.query(
+                `UPDATE convocatorias_archivos 
+                 SET doc_conv = $1, nombre_archivo = $2, fecha_creacion = CURRENT_TIMESTAMP 
+                 WHERE id_convocatoria = $3`,
+                [pdfBuffer, nombreArchivo, id_convocatoria]
+            );
+        } else {
+            await pool.query(
+                `INSERT INTO convocatorias_archivos 
+                 (doc_conv, nombre_archivo, id_convocatoria) 
+                 VALUES ($1, $2, $3)`,
+                [pdfBuffer, nombreArchivo, id_convocatoria]
+            );
         }
-        if (!materias || materias.length === 0) {
-            throw new Error('Debe especificar al menos una materia');
-          }
-
-        const options = { format: 'Letter', border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } };
-        const pdfBuffer = await generarPDFBuffer(htmlContent, options);
-        
-        return pdfBuffer;
-        
     } catch (error) {
-        console.error('Error al generar PDF:', error);
+        console.error('Error al guardar documento:', error);
         throw error;
     }
 };
 
+const generatePDF = async (req, res) => {
+    const { id } = req.params;
+    try {
+        console.log(`Buscando convocatoria con ID: ${id}`);
+        const convocatoriaResult = await pool.query(`
+            SELECT 
+                c.id_convocatoria, c.nombre_conv, c.fecha_inicio, c.fecha_fin,
+                c.resolucion, c.dictamen, c.tipo_jornada, c.etapa_convocatoria,
+                tc.nombre_tipo_conv,
+                p.programa,
+                f.facultad AS nombre_facultad,
+                d.nombres || ' ' || d.apellidos AS nombre_decano,
+                v.nombre_vicerector
+            FROM convocatorias c
+            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+            JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            JOIN datos_universidad.docente d ON f.id_facultad = d.id_facultad
+            JOIN vicerrector v ON c.id_vicerector = v.id_vicerector
+            WHERE c.id_convocatoria = $1
+        `, [id]); 
+        console.log('Resultado query convocatoria:', convocatoriaResult.rows);
+
+        if (convocatoriaResult.rows.length === 0) {
+            return res.status(404).json({ error: "Convocatoria no encontrada" });
+        }
+        const convocatoria = convocatoriaResult.rows[0];
+         const materiasResult = await pool.query(`
+            SELECT m.materia, m.cod_materia, cm.total_horas
+            FROM convocatorias_materias cm
+            JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+            WHERE cm.id_convocatoria = $1
+        `, [id]); 
+
+        const materias = materiasResult.rows;
+        const totalHoras = materias.reduce((sum, m) => sum + (m.total_horas || 0), 0);
+        let htmlContent;
+        switch (convocatoria.nombre_tipo_conv) { 
+            case 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA':
+                htmlContent = generateConsultoresLineaHTML(convocatoria, materias, totalHoras);
+                break;
+            case 'DOCENTE EN CALIDAD ORDINARIO':
+                htmlContent = generateOrdinarioHTML(convocatoria, materias, totalHoras);
+                break;
+            case 'DOCENTE EN CALIDAD EXTRAORDINARIO':
+                htmlContent = generateExtraordinarioHTML(convocatoria, materias, totalHoras);
+                break;
+            default:
+                return res.status(400).json({ error: `Tipo de convocatoria no soportado: ${convocatoria.nombre_tipo_conv}` });
+        }
+        const options = { 
+            format: 'Letter', 
+            border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } 
+        };
+        const pdfBuffer = await generarPDFBuffer(htmlContent, options);
+        await guardarDocumentoPDF(id_convocatoria, pdfBuffer);
+        res.status(201).json({ 
+            message: "PDF generado y almacenado correctamente.",
+            pdfBuffer: pdfBuffer.toString('base64') 
+        });
+
+    } catch (error) {
+        console.error('Error completo:', error);
+        res.status(500).json({ 
+            error: "Error al generar el PDF",
+            detalle: error.message,
+            stack: error.stack 
+        });
+    }
+};
 function generateConsultoresLineaHTML(convocatoria, materias, totalHoras) {
     return `
     <html>
@@ -283,7 +297,7 @@ function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
 }
 
 const combinarYGuardarPDFs = async (req, res) => {  
-    const { id_convocatoria } = req.params;
+    const { id } = req.params; // Cambiado de id_convocatoria a id
     let { archivos } = req.body; 
     
     try {
@@ -292,15 +306,15 @@ const combinarYGuardarPDFs = async (req, res) => {
         }
 
         const documentoInicial = await pool.query(
-            `SELECT documento_path FROM documentos WHERE id_convocatoria = $1`,
-            [id_convocatoria]
+            `SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1`,
+            [id]
         );
 
         if (documentoInicial.rows.length === 0) {
             return res.status(404).json({ error: "Documento inicial no encontrado." });
         }
 
-        const pdfInicial = documentoInicial.rows[0].documento_path;
+        const pdfInicial = documentoInicial.rows[0].doc_conv;
         
         const archivosConvertidos = archivos.map((archivo) => {
             return typeof archivo === 'string' ? Buffer.from(archivo, 'base64') : archivo;
@@ -309,7 +323,7 @@ const combinarYGuardarPDFs = async (req, res) => {
         const archivosParaCombinar = [pdfInicial, ...archivosConvertidos];
         const pdfCombinado = await combinarPDFs(archivosParaCombinar);
         
-        await guardarDocumentoPDF(id_convocatoria, pdfCombinado);
+        await guardarDocumentoPDF(id, pdfCombinado);
 
         res.status(201).json({ message: "PDFs combinados y almacenados correctamente." });
     } catch (error) {
@@ -381,4 +395,4 @@ const deletePDF = async (req, res) => {
     }
 };
 
-module.exports = { generatePDF, combinarYGuardarPDFs, viewCombinedPDF, downloadCombinedPDF, deletePDF};
+module.exports = { generatePDF, combinarYGuardarPDFs, viewCombinedPDF, downloadCombinedPDF, deletePDF, combinarPDFs};
