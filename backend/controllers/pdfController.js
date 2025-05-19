@@ -64,7 +64,7 @@ const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {//guardar doc
 };
 
 const generatePDF = async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params; // Recibes 'id' del parámetro de ruta
     try {
         console.log(`Buscando convocatoria con ID: ${id}`);
         const convocatoriaResult = await pool.query(`
@@ -118,12 +118,11 @@ const generatePDF = async (req, res) => {
             border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' } 
         };
         const pdfBuffer = await generarPDFBuffer(htmlContent, options);
-        await guardarDocumentoPDF(id_convocatoria, pdfBuffer);
+        await guardarDocumentoPDF(id, pdfBuffer);
         res.status(201).json({ 
             message: "PDF generado y almacenado correctamente.",
             pdfBuffer: pdfBuffer.toString('base64') 
         });
-
     } catch (error) {
         console.error('Error completo:', error);
         res.status(500).json({ 
@@ -333,20 +332,20 @@ const combinarYGuardarPDFs = async (req, res) => {
 };
 
 const viewCombinedPDF = async (req, res) => {
-    const { id_convocatoria } = req.params;
+    const { id } = req.params;
 
     try {
         const result = await pool.query(
-            'SELECT documento_path FROM documentos WHERE id_convocatoria = $1',
-            [id_convocatoria]
+            'SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1',
+            [id]
         );
 
-        if (result.rows.length === 0 || !result.rows[0].documento_path) {
+        if (result.rows.length === 0 || !result.rows[0].doc_conv) {
             return res.status(404).send('Documento no encontrado.');
         }
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.send(result.rows[0].documento_path);
+        res.send(result.rows[0].doc_conv);
     } catch (error) {
         console.error('Error al recuperar el PDF:', error);
         res.status(500).send('Error al recuperar el PDF.');
