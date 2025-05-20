@@ -35,7 +35,16 @@ const uploadArchivos = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const existe = await pool.query(
+    const convocatoriaExiste = await pool.query(
+      'SELECT id_convocatoria FROM convocatorias WHERE id_convocatoria = $1',
+      [id]
+    );
+    
+    if (convocatoriaExiste.rows.length === 0) {
+      return res.status(404).json({ error: 'Convocatoria no encontrada' });
+    }
+
+    const existeRegistro = await pool.query(
       'SELECT id_conv_doc FROM convocatorias_archivos WHERE id_convocatoria = $1',
       [id]
     );
@@ -50,9 +59,9 @@ const uploadArchivos = async (req, res) => {
       certificado_presupuestario: req.files['certificado_presupuestario']?.[0]?.buffer
     };
 
-    const nombreArchivo = `CONVOCATORIA_${id}_${new Date().toISOString().slice(0,10)}.pdf`;
+     const nombreArchivo = `CONVOCATORIA_${id}_${new Date().toISOString().slice(0,10)}.pdf`;
 
-    if (existe.rows.length > 0) {
+    if (existeRegistro.rows.length > 0) {
       await pool.query(
         `UPDATE convocatorias_archivos SET
           nombre_archivo = $1,
@@ -67,40 +76,48 @@ const uploadArchivos = async (req, res) => {
         WHERE id_convocatoria = $9`,
         [
           nombreArchivo,
-          archivos.doc_conv,
-          archivos.resolucion,
-          archivos.dictamen,
-          archivos.carta,
-          archivos.nota,
-          archivos.certificado_item,
-          archivos.certificado_presupuestario,
+          archivos.doc_conv || null,
+          archivos.resolucion || null,
+          archivos.dictamen || null,
+          archivos.carta || null,
+          archivos.nota || null,
+          archivos.certificado_item || null,
+          archivos.certificado_presupuestario || null,
           id
         ]
       );
     } else {
-       await pool.query(
+      await pool.query(
         `INSERT INTO convocatorias_archivos (
           nombre_archivo, doc_conv, resolucion, dictamen, carta, nota,
           certificado_item, certificado_presupuestario, id_convocatoria
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           nombreArchivo,
-          archivos.doc_conv,
-          archivos.resolucion,
-          archivos.dictamen,
-          archivos.carta,
-          archivos.nota,
-          archivos.certificado_item,
-          archivos.certificado_presupuestario,
+          archivos.doc_conv || null,
+          archivos.resolucion || null,
+          archivos.dictamen || null,
+          archivos.carta || null,
+          archivos.nota || null,
+          archivos.certificado_item || null,
+          archivos.certificado_presupuestario || null,
           id
         ]
       );
     }
 
-    res.json({ success: true });
+    res.json({ 
+      success: true,
+      message: 'Archivos subidos correctamente',
+      convocatoriaId: id
+    });
+
   } catch (error) {
     console.error('Error al subir archivos:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      error: 'Error al subir archivos',
+      details: error.message 
+    });
   }
 };
 
@@ -108,21 +125,27 @@ const downloadArchivo = async (req, res) => {
   const { id, tipo } = req.params;
   
   try {
+    const tiposValidos = ['doc_conv', 'resolucion', 'dictamen', 'carta', 'nota', 'certificado_item', 'certificado_presupuestario'];
+    if (!tiposValidos.includes(tipo)) {
+      return res.status(400).json({ error: 'Tipo de archivo no válido' });
+    }
+
     const result = await pool.query(
-      `SELECT ${tipo}, nombre_archivo 
+      `SELECT ${tipo} as archivo, nombre_archivo 
        FROM convocatorias_archivos 
        WHERE id_convocatoria = $1`,
       [id]
     );
 
-    if (!result.rows[0] || !result.rows[0][tipo]) {
+    if (!result.rows[0] || !result.rows[0].archivo) {
       return res.status(404).json({ error: 'Archivo no encontrado' });
     }
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${result.rows[0].nombre_archivo}`);
-    res.send(result.rows[0][tipo]);
+    res.setHeader('Content-Disposition', `inline; filename="${result.rows[0].nombre_archivo || `documento_${id}.pdf`}"`);
+    res.send(result.rows[0].archivo);
   } catch (error) {
+    console.error('Error al descargar archivo:', error);
     res.status(500).json({ error: error.message });
   }
 };

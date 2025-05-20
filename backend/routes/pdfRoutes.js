@@ -8,11 +8,11 @@ const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
 
 router.use(authenticateToken);
 
-// Rutas actualizadas
-router.post('/convocatorias/:id/pdf/generar', secretariaOnly, pdfController.generatePDF);
-router.post('/convocatorias/:id/pdf/combinar', secretariaOnly, pdfController.combinarYGuardarPDFs);
-router.get('/convocatorias/:id/pdf', pdfController.viewCombinedPDF);
-router.get('/convocatorias/:id/pdf/descargar', pdfController.downloadCombinedPDF);
-router.delete('/convocatorias/:id/pdf', secretariaOnly, pdfController.deletePDF);
+// Rutas mejor organizadas
+router.post('/:id/generar', secretariaOnly, pdfController.generatePDF); // POST /pdf/57/generar
+router.post('/:id/combinar', secretariaOnly, pdfController.combinarYGuardarPDFs);
+router.get('/:id/visualizar', pdfController.viewCombinedPDF); // GET /pdf/57/visualizar
+router.get('/:id/descargar', pdfController.downloadCombinedPDF);
+router.delete('/:id', secretariaOnly, pdfController.deletePDF);
 
 module.exports = router;

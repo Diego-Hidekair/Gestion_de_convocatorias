@@ -335,20 +335,36 @@ const viewCombinedPDF = async (req, res) => {
     const { id } = req.params;
 
     try {
+        const convocatoriaExiste = await pool.query(
+            'SELECT id_convocatoria FROM convocatorias WHERE id_convocatoria = $1',
+            [id]
+        );
+        
+        if (convocatoriaExiste.rows.length === 0) {
+            return res.status(404).json({ error: 'Convocatoria no encontrada' });
+        }
+
         const result = await pool.query(
-            'SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1',
+            'SELECT doc_conv, nombre_archivo FROM convocatorias_archivos WHERE id_convocatoria = $1',
             [id]
         );
 
         if (result.rows.length === 0 || !result.rows[0].doc_conv) {
-            return res.status(404).send('Documento no encontrado.');
+            return res.status(404).json({ 
+                error: 'Documento no encontrado',
+                solution: 'Debe generar primero el PDF usando POST /pdf/convocatorias/:id/pdf/generar'
+            });
         }
 
         res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${result.rows[0].nombre_archivo}"`);
         res.send(result.rows[0].doc_conv);
     } catch (error) {
         console.error('Error al recuperar el PDF:', error);
-        res.status(500).send('Error al recuperar el PDF.');
+        res.status(500).json({ 
+            error: 'Error al recuperar el PDF',
+            details: error.message 
+        });
     }
 };
 

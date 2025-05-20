@@ -2,12 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
-  Container, Typography, Button, CircularProgress, Alert, 
-  Card, CardContent, Box, Grid, Paper, Table, TableBody, 
-  TableCell, TableContainer, TableHead, TableRow, Dialog, 
-  DialogContent, IconButton, FormControl
-} from '@mui/material';
+import {Container, Typography, Button, CircularProgress, Alert, Card, CardContent, Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogContent, IconButton, FormControl } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import UploadIcon from '@mui/icons-material/Upload';
@@ -34,26 +29,39 @@ const GenerarPDF = () => {
   });
 
   const cargarVistaPrevia = useCallback(async () => {
-    try {
-      const pdfResponse = await axios.get(
-        `http://localhost:5000/pdf/convocatorias/${id_convocatoria}/pdf`,
-        { 
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-          responseType: 'blob'
-        }
-      );
-      setPdfPreview(URL.createObjectURL(new Blob([pdfResponse.data])));
+  try {
+    const pdfResponse = await axios.get(
+      `http://localhost:5000/pdf/${id_convocatoria}/visualizar`,
+      { 
+        headers: { 'Authorization': `Bearer ${token}` },
+        responseType: 'blob'
+      }
+    );
+        setPdfPreview(URL.createObjectURL(new Blob([pdfResponse.data])));
     } catch (err) {
       console.error("Error al cargar vista previa:", err);
-    }
+      }
+      try {
+        const fallbackResponse = await axios.get(
+          `http://localhost:5000/convocatorias-archivos/${id_convocatoria}/archivos/doc_conv`,
+          {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            responseType: 'blob'
+          }
+        );
+        setPdfPreview(URL.createObjectURL(new Blob([fallbackResponse.data])));
+      } catch (fallbackErr) {
+        console.error("Error al cargar vista previa alternativa:", fallbackErr);
+        setError('No se pudo cargar el documento principal');
+      }
   }, [id_convocatoria]);
 
   const generarPDF = useCallback(async () => {
     try {
       await axios.post(
-        `http://localhost:5000/pdf/convocatorias/${id_convocatoria}/pdf/generar`, 
+        `http://localhost:5000/pdf/${id_convocatoria}/generar`,
         {},
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+        { headers: { 'Authorization': `Bearer ${token}` } }
       );
       setSuccess('PDF generado correctamente');
       // Recargar documentos
@@ -67,8 +75,6 @@ const GenerarPDF = () => {
       setError(err.response?.data?.error || 'Error al generar PDF');
     }
   }, [id_convocatoria, cargarVistaPrevia]);
-
-  // Cargar documentos y generar PDF si es necesario
   useEffect(() => {
     const cargarDocumentos = async () => {
       try {
@@ -118,7 +124,7 @@ const GenerarPDF = () => {
         formData,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
         }

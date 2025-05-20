@@ -33,7 +33,12 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
-//app.use(fileUpload());
+app.use(fileUpload({
+  useTempFiles: true,  
+  tempFileDir: '/tmp/',
+  limits: { fileSize: 50 * 1024 * 1024 },
+  createParentPath: true  
+}));
 
 
 // Rutas
@@ -47,7 +52,7 @@ const routes = [
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
-    { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' } 
+    { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' }
 ];
 
 // Montar las rutas
@@ -80,3 +85,5 @@ process.on('SIGINT', shutdown);
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
+
+
