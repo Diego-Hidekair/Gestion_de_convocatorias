@@ -1,32 +1,47 @@
 // backend/middleware/uploadMiddleware.js
 const multer = require('multer');
 const path = require('path');
-const memoryStorage = multer.memoryStorage();
-
 
 const storage = multer.memoryStorage();
+
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); 
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
   } else {
-    cb(new Error('Tipo de archivo no soportado. Solo PDF, JPEG o PNG.'), false);
+    cb(new Error('Solo se permiten archivos PDF'), false);
   }
 };
 
 const upload = multer({
-  storage: memoryStorage,
+  storage: storage,
   limits: {
     fileSize: 50 * 1024 * 1024 
   },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten archivos PDF'), false);
-    }
-  }
+  fileFilter: fileFilter
 });
 
-module.exports = upload;
+const handleFileUpload = (fields) => {
+  return (req, res, next) => {
+    upload.fields(fields)(req, res, (err) => {
+      if (err) {
+        console.error('Error en upload middleware:', err);
+        return res.status(400).json({
+          error: 'Error al procesar archivos',
+          details: err.message
+        });
+      }
+      
+      if (!req.files || Object.keys(req.files).length === 0) {
+        return res.status(400).json({
+          error: 'No se subieron archivos',
+          details: 'Debe subir al menos un archivo PDF'
+        });
+      }
+      
+      console.log('Archivos recibidos:', Object.keys(req.files));
+      next();
+    });
+  };
+};
 
+module.exports = { upload, handleFileUpload };

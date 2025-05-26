@@ -1,4 +1,5 @@
-// backend/middleware/authMiddleware.js
+// backend/middleware/uploadMiddleware.js
+const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
 

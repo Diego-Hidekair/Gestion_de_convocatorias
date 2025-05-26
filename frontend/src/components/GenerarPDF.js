@@ -1,378 +1,185 @@
 // frontend/src/components/GenerarPDF.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {Container, Typography, Button, CircularProgress, Alert, Card, CardContent, Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogContent, IconButton, FormControl } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import {
+  Container, Typography, Button, CircularProgress, Alert,
+  Card, CardContent, Box, Dialog, DialogContent, IconButton
+} from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import UploadIcon from '@mui/icons-material/Upload';
 import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const GenerarPDF = () => {
-  const { id_convocatoria } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  const [documentos, setDocumentos] = useState([]);
-  const [pdfPreview, setPdfPreview] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
   const [openPreview, setOpenPreview] = useState(false);
-  const [archivos, setArchivos] = useState({
-    doc_conv: null,
-    resolucion: null,
-    dictamen: null,
-    carta: null,
-    nota: null,
-    certificado_item: null,
-    certificado_presupuestario: null
-  });
 
-  const cargarVistaPrevia = useCallback(async () => {
-  try {
-    const pdfResponse = await axios.get(
-      `http://localhost:5000/pdf/${id_convocatoria}/visualizar`,
-      { 
-        headers: { 'Authorization': `Bearer ${token}` },
-        responseType: 'blob'
-      }
-    );
-        setPdfPreview(URL.createObjectURL(new Blob([pdfResponse.data])));
-    } catch (err) {
-      console.error("Error al cargar vista previa:", err);
-      }
-      try {
-        const fallbackResponse = await axios.get(
-          `http://localhost:5000/convocatorias-archivos/${id_convocatoria}/archivos/doc_conv`,
-          {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-            responseType: 'blob'
-          }
-        );
-        setPdfPreview(URL.createObjectURL(new Blob([fallbackResponse.data])));
-      } catch (fallbackErr) {
-        console.error("Error al cargar vista previa alternativa:", fallbackErr);
-        setError('No se pudo cargar el documento principal');
-      }
-  }, [id_convocatoria]);
+  const token = localStorage.getItem('token');
 
-  const generarPDF = useCallback(async () => {
-    try {
-      await axios.post(
-        `http://localhost:5000/pdf/${id_convocatoria}/generar`,
-        {},
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      setSuccess('PDF generado correctamente');
-      // Recargar documentos
-      const response = await axios.get(
-        `http://localhost:5000/convocatorias-archivos/${id_convocatoria}`,
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-      );
-      setDocumentos(response.data);
-      await cargarVistaPrevia();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al generar PDF');
-    }
-  }, [id_convocatoria, cargarVistaPrevia]);
-  useEffect(() => {
-    const cargarDocumentos = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-          `http://localhost:5000/convocatorias-archivos/${id_convocatoria}`,
-          { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-        );
 
-        if (response.data.length === 0) {
-          await generarPDF();
-        } else {
-          setDocumentos(response.data);
-          await cargarVistaPrevia();
-        }
-      } catch (err) {
-        setError(err.response?.data?.error || 'Error al cargar documentos');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarDocumentos();
-  }, [id_convocatoria, generarPDF, cargarVistaPrevia]);
-
-  const handlePreviewPDF = () => setOpenPreview(true);
-  const handleClosePreview = () => setOpenPreview(false);
-
-  const handleFileChange = (e, tipo) => {
-    setArchivos({
-      ...archivos,
-      [tipo]: e.target.files[0]
-    });
-  };
-
-  const subirArchivos = async () => {
+ const cargarPDF = async () => {
     try {
       setLoading(true);
-      const formData = new FormData();
+      setError(null);
       
-      Object.entries(archivos).forEach(([key, value]) => {
-        if (value) formData.append(key, value);
+      // Verificar si la convocatoria existe primero
+      await axios.get(`http://localhost:5000/convocatorias/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      await axios.post(
-        `http://localhost:5000/convocatorias-archivos/${id_convocatoria}/archivos`,
-        formData,
+      // Intentar cargar el PDF
+      const response = await axios.get(
+        `http://localhost:5000/convocatorias/${id}/archivos/doc_conv`,
         {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
+          headers: { 'Authorization': `Bearer ${token}` },
+          responseType: 'blob'
         }
       );
 
-      // Actualizar lista
-      const response = await axios.get(
-        `http://localhost:5000/convocatorias-archivos/${id_convocatoria}`,
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-      );
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      setPdfUrl(URL.createObjectURL(blob));
       
-      setDocumentos(response.data);
-      setSuccess('Archivos subidos correctamente');
-      setArchivos({
-        doc_conv: null,
-        resolucion: null,
-        dictamen: null,
-        carta: null,
-        nota: null,
-        certificado_item: null,
-        certificado_presupuestario: null
-      });
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al subir archivos');
+      if (err.response?.status === 404) {
+        console.log("PDF no encontrado, se debe generar");
+      } else {
+        setError('Error al cargar el documento');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const descargarArchivo = async (tipo) => {
+  const generarPDF = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/convocatorias-archivos/${id_convocatoria}/archivos/${tipo.toLowerCase()}`,
-        {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-          responseType: 'blob'
-        }
+      setLoading(true);
+      setError(null);
+      
+      // Generar el PDF
+      await axios.post(
+        `http://localhost:5000/pdf/${id}/generar`,
+        {},
+        { headers: { 'Authorization': `Bearer ${token}` } }
       );
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${tipo}_convocatoria_${id_convocatoria}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      
+      setSuccess('PDF generado correctamente');
+      
+      // Recargar el PDF después de generarlo
+      await cargarPDF();
+      
     } catch (err) {
-      setError('Error al descargar el archivo');
+      setError(err.response?.data?.error || 'Error al generar PDF');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderFileInput = (tipo, label) => (
-    <Grid item xs={12} sm={6} md={4}>
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => handleFileChange(e, tipo)}
-          style={{ display: 'none' }}
-          id={`${tipo}-input`}
-        />
-        <label htmlFor={`${tipo}-input`}>
-          <Button 
-            variant="outlined" 
-            component="span" 
-            fullWidth
-            startIcon={<UploadIcon />}
-          >
-            {archivos[tipo]?.name || label}
-          </Button>
-        </label>
-      </FormControl>
-    </Grid>
-  );
+  const descargarPDF = () => {
+    if (!pdfUrl) return;
+    
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', `convocatoria_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
 
-  return (
+  useEffect(() => {
+    cargarPDF();
+    
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [id]);
+
+return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {/* Encabezado */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Gestión de Documentos - Convocatoria #{id_convocatoria}
+          Documento de Convocatoria #{id}
         </Typography>
         <Button 
           variant="contained" 
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(`/convocatorias/${id_convocatoria}`)}
+          onClick={() => navigate(`/convocatorias/${id}`)}
         >
           Volver
         </Button>
       </Box>
 
-      {/* Alertas */}
-      {error && <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)}>{success}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {/* Columna izquierda: Vista previa del PDF */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                  <PictureAsPdfIcon color="error" sx={{ mr: 1 }} />
-                  Documento Principal
-                </Typography>
-                
-                {pdfPreview ? (
-                  <>
-                    <Box sx={{ 
-                      height: '400px', 
-                      border: '1px dashed #ccc',
-                      mb: 2,
-                      overflow: 'hidden'
-                    }}>
-                      <iframe 
-                        src={pdfPreview} 
-                        width="100%" 
-                        height="100%" 
-                        style={{ border: 'none' }}
-                        title="Vista previa del PDF"
-                      />
-                    </Box>
-                    <Button 
-                      variant="contained" 
-                      onClick={handlePreviewPDF}
-                      fullWidth
-                      startIcon={<PictureAsPdfIcon />}
-                    >
-                      Ampliar Vista Previa
-                    </Button>
-                  </>
+      <Card>
+        <CardContent>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ height: '500px', border: '1px dashed #ccc', mb: 2 }}>
+                {pdfUrl ? (
+                  <iframe 
+                    src={pdfUrl}
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 'none' }}
+                    title="Vista previa del PDF"
+                  />
                 ) : (
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    p: 4,
-                    border: '1px dashed #ccc',
-                    borderRadius: 1
-                  }}>
-                    <Typography color="textSecondary" sx={{ mb: 2 }}>
-                      No hay PDF generado
+                  <Box sx={{ textAlign: 'center', p: 4 }}>
+                    <Typography variant="h6" sx={{ mb: 2 }}>
+                      No hay PDF generado para esta convocatoria
                     </Typography>
                     <Button 
-                      variant="outlined" 
+                      variant="contained" 
                       onClick={generarPDF}
                       startIcon={<PictureAsPdfIcon />}
                     >
-                      Generar PDF
+                      Generar Documento
                     </Button>
                   </Box>
                 )}
-              </CardContent>
-            </Card>
-          </Grid>
+              </Box>
 
-          {/* Columna derecha: Subida de documentos */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                  <UploadIcon color="primary" sx={{ mr: 1 }} />
-                  Documentos Adicionales
-                </Typography>
-
-                <Grid container spacing={2} sx={{ mb: 3 }}>
-                  {renderFileInput('resolucion', 'Subir Resolución')}
-                  {renderFileInput('dictamen', 'Subir Dictamen')}
-                  {renderFileInput('carta', 'Subir Carta')}
-                  {renderFileInput('nota', 'Subir Nota')}
-                  {renderFileInput('certificado_item', 'Subir Certificado Ítem')}
-                  {renderFileInput('certificado_presupuestario', 'Subir Certificado Presup.')}
-                </Grid>
-
-                <Button 
-                  variant="contained" 
-                  onClick={subirArchivos}
-                  disabled={!Object.values(archivos).some(Boolean)}
-                  fullWidth
-                  size="large"
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenPreview(true)}
+                  disabled={!pdfUrl}
+                  startIcon={<PictureAsPdfIcon />}
                 >
-                  Subir Documentos Seleccionados
+                  Vista Ampliada
                 </Button>
+                <Button
+                  variant="outlined"
+                  onClick={descargarPDF}
+                  disabled={!pdfUrl}
+                  startIcon={<DownloadIcon />}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-                {/* Lista de documentos existentes */}
-                {documentos.length > 0 && (
-                  <>
-                    <Typography variant="h6" gutterBottom sx={{ mt: 4, display: 'flex', alignItems: 'center' }}>
-                      <DownloadIcon color="action" sx={{ mr: 1 }} />
-                      Documentos Adjuntos
-                    </Typography>
-                    <TableContainer component={Paper} sx={{ mt: 2 }}>
-                      <Table size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Tipo</TableCell>
-                            <TableCell align="right">Acciones</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {documentos.map((doc) => (
-                            <TableRow key={doc.tipo}>
-                              <TableCell>{doc.tipo}</TableCell>
-                              <TableCell align="right">
-                                <Button
-                                  size="small"
-                                  onClick={() => descargarArchivo(doc.tipo.split(' ')[0])}
-                                  startIcon={<DownloadIcon />}
-                                >
-                                  Descargar
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
-
-      {/* Diálogo para vista ampliada del PDF */}
-      <Dialog 
-        open={openPreview} 
-        onClose={handleClosePreview} 
-        maxWidth="md" 
-        fullWidth
-        PaperProps={{ sx: { height: '90vh' } }}
-      >
-        <DialogContent sx={{ p: 0, height: '100%' }}>
-          <Box sx={{ position: 'absolute', right: 8, top: 8, zIndex: 1 }}>
-            <IconButton onClick={handleClosePreview}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          {pdfPreview && (
+      <Dialog open={openPreview} onClose={() => setOpenPreview(false)} fullWidth maxWidth="lg">
+        <DialogContent sx={{ height: '80vh', p: 0 }}>
+          {pdfUrl && (
             <iframe 
-              src={pdfPreview} 
-              width="100%" 
-              height="100%" 
+              src={pdfUrl}
+              width="100%"
+              height="100%"
               style={{ border: 'none' }}
               title="Vista ampliada del PDF"
             />

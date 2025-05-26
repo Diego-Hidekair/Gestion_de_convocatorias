@@ -26,12 +26,36 @@ import UsuarioManager from './components/usuarios/UsuarioManager';
 import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import NavBar from './components/NavBar';
-//import PDFGenerator from './components/PDFGenerator';
 import GenerarPDF from './components/GenerarPDF';
+import SubirArchivos from './components/SubirArchivos'; 
 import PDFViewer from './components/PDFViewer';
 
-
 axios.defaults.baseURL = 'http://localhost:5000/';
+
+axios.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para manejar errores de autenticación
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 const theme = createTheme({
   palette: {
@@ -157,7 +181,6 @@ const AuthWrapper = () => {
     navigate('/login');
   };
 
-
   return (
     <Box>
       {isAuthenticated ? (
@@ -170,20 +193,22 @@ const AuthWrapper = () => {
             <Route path="/facultades" element={<FacultadList />} />
             
             {/* Rutas de convocatorias */}
-            {(userRole === 'admin' || userRole === 'secretaria_de_decanatura' || 
-              userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado' || 
-              userRole === 'personal_administrativo') && (
-              <>
-                <Route path="/convocatorias" element={<ConvocatoriaList />} />
-                <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
-              </>
-            )}
-            
             {userRole === 'secretaria_de_decanatura' && (
               <>
                 <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
                 <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                 <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
+                {/* Nuevas rutas para PDF y archivos */}
+                <Route path="/convocatorias/:id/generar-pdf" element={<GenerarPDF />} />
+                <Route path="/convocatorias/:id/archivos" element={<SubirArchivos />} />
+              </>
+            )}
+            
+            {/* Rutas accesibles para vicerrectorado y técnicos */}
+            {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
+              <>
+                <Route path="/convocatorias/:id/generar-pdf" element={<GenerarPDF />} />
+                <Route path="/convocatorias/:id/archivos" element={<SubirArchivos />} />
               </>
             )}
             
@@ -201,8 +226,10 @@ const AuthWrapper = () => {
             <Route path="/file-upload" element={<FileUpload />} />
             <Route path="/usuarios/*" element={<UsuarioManager />} />
             <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
-            <Route path="/convocatorias/:id_convocatoria/generar-pdf" element={<GenerarPDF />} />
-            <Route path="/pdf/combinado/:id_convocatoria" element={<PDFViewer />} />
+            
+            {/* Rutas para visualización de PDF */}
+            <Route path="/pdf/view/:id" element={<PDFViewer />} />
+            <Route path="/pdf/download/:id" element={<PDFViewer download />} />
             
             {/* Ruta de fallback */}
             <Route path="*" element={<Navigate to="/redirect" />} />

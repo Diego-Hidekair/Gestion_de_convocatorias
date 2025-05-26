@@ -6,7 +6,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
-const fileUpload = require('express-fileupload');
 
 // Middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
@@ -33,13 +32,6 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
-app.use(fileUpload({
-  useTempFiles: true,  
-  tempFileDir: '/tmp/',
-  limits: { fileSize: 50 * 1024 * 1024 },
-  createParentPath: true  
-}));
-
 
 // Rutas
 const routes = [
