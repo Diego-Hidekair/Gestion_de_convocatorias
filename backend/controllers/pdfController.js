@@ -5,12 +5,18 @@ const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 
 types.setTypeParser(17, val => val); 
+//const { Pool } = require('pg');
+
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT,
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
+    max: 20,
+    binary: true,
 });
 
 const generarPDFBuffer = (htmlContent, options) => {//generar buffer pdf
@@ -40,17 +46,26 @@ const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
     try {
         const nombreArchivo = `convocatoria_${id_convocatoria}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
-     const existeArchivo = await pool.query(
+        // Verificar que el buffer no esté vacío
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+            throw new Error("El buffer del PDF está vacío");
+        }
+
+        const existeArchivo = await pool.query(
             `SELECT id_conv_doc FROM convocatorias_archivos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
-if (existeArchivo.rowCount > 0) {
-            // Actualizar el registro existente
+
+        if (existeArchivo.rowCount > 0) {
+            // Actualizar el registro existente con el buffer directamente
             await pool.query(
-                `UPDATE convocatorias_archivos SET doc_conv = decode($1, 'hex') WHERE id_convocatoria = $2`,
-                [pdfBuffer.toString('hex'), id_convocatoria]
+                `UPDATE convocatorias_archivos 
+                 SET doc_conv = $1, nombre_archivo = $2, fecha_creacion = CURRENT_TIMESTAMP 
+                 WHERE id_convocatoria = $3`,
+                [pdfBuffer, nombreArchivo, id_convocatoria]
             );
         } else {
+            // Insertar nuevo registro con el buffer directamente
             await pool.query(
                 `INSERT INTO convocatorias_archivos 
                  (doc_conv, nombre_archivo, id_convocatoria) 
@@ -339,7 +354,7 @@ const combinarYGuardarPDFs = async (req, res) => {
 const viewCombinedPDF = async (req, res) => {
     const { id } = req.params;
     try {
-        // 1. Recuperar el PDF como buffer binario
+        // 1. Recuperar el PDF como buffer binario directamente
         const result = await pool.query(
             'SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1 LIMIT 1',
             [id]
@@ -352,22 +367,22 @@ const viewCombinedPDF = async (req, res) => {
         const pdfBuffer = result.rows[0].doc_conv;
 
         // 2. Verificación adicional del buffer
-        if (!pdfBuffer || pdfBuffer.length === 0) {
+        if (!(pdfBuffer instanceof Buffer)) {
+            throw new Error("El dato recuperado no es un buffer válido");
+        }
+
+        if (pdfBuffer.length === 0) {
             throw new Error("El buffer del PDF está vacío");
         }
 
-        // 3. Guardar copia para diagnóstico
-        fs.writeFileSync('retrieved.pdf', pdfBuffer);
-        console.log('PDF recuperado guardado como retrieved.pdf - Tamaño:', pdfBuffer.length, 'bytes');
-
-        // 4. Configurar headers correctamente
+        // 3. Configurar headers correctamente
         res.writeHead(200, {
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'inline; filename="convocatoria.pdf"',
             'Content-Length': pdfBuffer.length
         });
 
-        // 5. Enviar el buffer directamente
+        // 4. Enviar el buffer directamente
         res.end(pdfBuffer);
 
     } catch (error) {
