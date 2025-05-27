@@ -1,34 +1,40 @@
 // backend/controllers/pdfController.js
-const { Pool, types } = require('pg');
+//const { Pool, types } = require('pg');
 const pdf = require('html-pdf'); 
 const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
+const puppeteer = require('puppeteer');
+const { Pool } = require('pg');
+const types = require('pg').types;
 
-types.setTypeParser(17, val => val); 
-//const { Pool } = require('pg');
+types.setTypeParser(17, val => val);
 
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-    connectionTimeoutMillis: 10000,
-    idleTimeoutMillis: 30000,
-    max: 20,
-    binary: true,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT
 });
 
-const generarPDFBuffer = (htmlContent, options) => {//generar buffer pdf
-    return new Promise((resolve, reject) => {
-        pdf.create(htmlContent, options).toBuffer((err, buffer) => {
-            if (err) {
-                console.error('Error al generar PDF:', err);
-                reject(err);
-            }
-            resolve(buffer);
-        });
-    });
+const generarPDFBuffer = async (htmlContent) => {
+  const browser = await puppeteer.launch({
+    headless: "new",
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+  const page = await browser.newPage();
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  const pdfBuffer = await page.pdf({
+    format: 'Letter',
+    margin: {
+      top: '3cm',
+      right: '2cm',
+      bottom: '2cm',
+      left: '2cm'
+    }
+  });
+  await browser.close();
+  return pdfBuffer;
 };
 
 const combinarPDFs = async (pdfBuffers) => {
@@ -44,20 +50,14 @@ const combinarPDFs = async (pdfBuffers) => {
 
 const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
     try {
-        const nombreArchivo = `convocatoria_${id_convocatoria}_${new Date().toISOString().slice(0, 10)}.pdf`;
-
-        // Verificar que el buffer no esté vacío
-        if (!pdfBuffer || pdfBuffer.length === 0) {
-            throw new Error("El buffer del PDF está vacío");
-        }
-
         const existeArchivo = await pool.query(
             `SELECT id_conv_doc FROM convocatorias_archivos WHERE id_convocatoria = $1`,
             [id_convocatoria]
         );
+        
+        const nombreArchivo = `convocatoria_${id_convocatoria}_${new Date().toISOString().slice(0, 10)}.pdf`;
 
         if (existeArchivo.rowCount > 0) {
-            // Actualizar el registro existente con el buffer directamente
             await pool.query(
                 `UPDATE convocatorias_archivos 
                  SET doc_conv = $1, nombre_archivo = $2, fecha_creacion = CURRENT_TIMESTAMP 
@@ -65,7 +65,6 @@ const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
                 [pdfBuffer, nombreArchivo, id_convocatoria]
             );
         } else {
-            // Insertar nuevo registro con el buffer directamente
             await pool.query(
                 `INSERT INTO convocatorias_archivos 
                  (doc_conv, nombre_archivo, id_convocatoria) 
@@ -99,22 +98,27 @@ const generatePDF = async (req, res) => {
             JOIN datos_universidad.docente d ON f.id_facultad = d.id_facultad
             JOIN vicerrector v ON c.id_vicerector = v.id_vicerector
             WHERE c.id_convocatoria = $1
-        `, [id]); 
-        console.log('Resultado query convocatoria:', convocatoriaResult.rows);
+        `, [id]);
 
         if (convocatoriaResult.rows.length === 0) {
             return res.status(404).json({ error: "Convocatoria no encontrada" });
         }
+
         const convocatoria = convocatoriaResult.rows[0];
-         const materiasResult = await pool.query(`
+        const materiasResult = await pool.query(`
             SELECT m.materia, m.cod_materia, cm.total_horas
             FROM convocatorias_materias cm
             JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
             WHERE cm.id_convocatoria = $1
-        `, [id]); 
+        `, [id]);
 
         const materias = materiasResult.rows;
         const totalHoras = materias.reduce((sum, m) => sum + (m.total_horas || 0), 0);
+        
+            console.log('Datos de convocatoria:', convocatoria);
+            console.log('Materias:', materias);
+            
+            
         let htmlContent;
         switch (convocatoria.nombre_tipo_conv) { 
             case 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA':
@@ -129,94 +133,91 @@ const generatePDF = async (req, res) => {
             default:
                 return res.status(400).json({ error: `Tipo de convocatoria no soportado: ${convocatoria.nombre_tipo_conv}` });
         }
-        const options = { 
-            format: 'Letter', 
-            border: { top: '3cm', right: '2cm', bottom: '2cm', left: '2cm' },
-            quality: 100,
-            timeout: 30000 
-        };
-        const pdfBuffer = await generarPDFBuffer(htmlContent, options);
-        if (!pdfBuffer || pdfBuffer.length === 0) {
-            throw new Error("El buffer del PDF está vacío");
-        }
-        fs.writeFileSync('temp.pdf', pdfBuffer);
-        console.log('PDF guardado como temp.pdf para verificación');
 
+        const pdfBuffer = await generarPDFBuffer(htmlContent);
+        
+        // Guardar en la base de datos
         await guardarDocumentoPDF(id, pdfBuffer);
-        res.status(201).json({
-            message: "PDF generado y almacenado correctamente",
-            pdfBuffer: pdfBuffer.toString('base64') 
+
+        // Enviar respuesta
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="convocatoria_${id}.pdf"`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('Error al generar el PDF:', error);
+        res.status(500).json({ 
+            error: "Error al generar el PDF",
+            details: error.message 
         });
-        } catch (error) {
-            console.error('Error al generar el PDF:', error);
-            res.status(500).json({ error: "Error al generar el PDF", details: error.message });
-        }
-    };
+    }
+};
 
 function generateConsultoresLineaHTML(convocatoria, materias, totalHoras) {
     return `
+    <!DOCTYPE html>
     <html>
-        <head>
-            <style>
-                body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
-                h1 { font-size: 24pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
-                h2 { font-size: 18pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
-                h3 { font-size: 14pt; font-weight: bold; text-align: left; margin-bottom: 10px; }
-                p { font-size: 12pt; text-align: justify; margin-bottom: 10px; }
-                .centrado { text-align: center; }
-                .left-align { text-align: left; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
-                th, td { text-align: center; border: 1px solid black; padding: 8px; }
-                th { background-color: #f2f2f2; }
-                .notas { margin-top: 20px; }
-                strong { font-weight: bold; }
-                u { text-decoration: underline; }
-            </style> 
-        </head>
-        <body>
-            <h1>${convocatoria.nombre_conv}</h1>
-            <h2>${convocatoria.nombre_tipo_conv}</h2>
-            <p>
-                Por determinación del Consejo de Carrera de <strong>${convocatoria.programa}</strong>, 
-                mediante Dictamen N° <strong>${convocatoria.dictamen}</strong>; homologado por Resolución del Consejo Facultativo N° 
-                <strong>${convocatoria.resolucion}</strong> de la Facultad de <strong>${convocatoria.facultad}</strong>, se convoca a los profesionales en 
-                ${convocatoria.programa} al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, 
-                como Docente Consultor de Línea a <strong>${convocatoria.tipo_jornada}</strong> para la gestión académica 
-                ${convocatoria.etapa_convocatoria}.
-            </p>
-            <h3>Tiempo de trabajo: ${convocatoria.tipo_jornada}</h3>
-            <h2>MATERIAS OBJETO DE LA CONVOCATORIA:</h2>
-            <p><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></p>
-            <table>
-                <thead>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: 'Times New Roman', Times, serif; line-height: 1.5; margin: 4cm 2cm 2cm 2cm; }
+            h1 { font-size: 24pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
+            h2 { font-size: 18pt; font-weight: bold; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
+            h3 { font-size: 14pt; font-weight: bold; text-align: left; margin-bottom: 10px; }
+            p { font-size: 12pt; text-align: justify; margin-bottom: 10px; }
+            .centrado { text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+            th, td { text-align: center; border: 1px solid black; padding: 8px; }
+            th { background-color: #f2f2f2; }
+        </style>
+    </head>
+    <body>
+        <h1>${convocatoria.nombre_conv}</h1>
+        <h2>${convocatoria.nombre_tipo_conv}</h2>
+        
+        <p>
+            Por determinación del Consejo de Carrera de <strong>${convocatoria.programa}</strong>, 
+            mediante Dictamen N° <strong>${convocatoria.dictamen || 'N/A'}</strong>; homologado por Resolución del Consejo Facultativo N° 
+            <strong>${convocatoria.resolucion || 'N/A'}</strong> de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>, 
+            se convoca a los profesionales en ${convocatoria.programa} al <strong>CONCURSO DE MÉRITOS</strong> 
+            para optar por la docencia universitaria, como Docente Consultor de Línea a 
+            <strong>${convocatoria.tipo_jornada}</strong> para la gestión académica 
+            ${convocatoria.etapa_convocatoria}.
+        </p>
+
+        <h3>Tiempo de trabajo: ${convocatoria.tipo_jornada}</h3>
+        
+        <h2>MATERIAS OBJETO DE LA CONVOCATORIA:</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>SIGLA</th>
+                    <th>MATERIA</th>
+                    <th>HORAS</th>
+                    <th>PERFIL REQUERIDO</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${materias.map((m, index) => `
                     <tr>
-                        <th>SIGLA</th>
-                        <th>MATERIA</th>
-                        <th>HORAS</th>
-                        <th>PERFIL REQUERIDO</th>
+                        <td>${m.cod_materia}</td>
+                        <td>${m.materia}</td>
+                        <td>${m.total_horas}</td>
+                        ${index === 0 ? `<td rowspan="${materias.length}">${convocatoria.perfil_profesional || 'No especificado'}</td>` : ''}
                     </tr>
-                </thead>
-                <tbody>
-                    ${materias.map((m, index) => `
-                        <tr>
-                            <td>${m.cod_materia}</td>
-                            <td>${m.materia}</td>
-                            <td>${m.total_horas}</td>
-                            ${index === 0 ? `<td rowspan="${materias.length}">${m.perfil_profesional}</td>` : ''}
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            <h3>Total Horas: ${totalHoras}</h3>
-            <p class="notas">
-                Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por
-                la Universidad Boliviana que cumplan los requisitos mínimos habilitantes de acuerdo al
-                XII Congreso Nacional de Universidades.
-            </p>
-            <p class="centrado">Potosí, ${new Date(convocatoria.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        </body>
+                `).join('')}
+            </tbody>
+        </table>
+        
+        <h3>Total Horas: ${totalHoras}</h3>
+        
+        <p class="centrado">
+            Potosí, ${new Date(convocatoria.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+    </body>
     </html>
     `;
+    
 }
 
 function generateOrdinarioHTML(convocatoria, materias, totalHoras) {
@@ -263,7 +264,7 @@ function generateOrdinarioHTML(convocatoria, materias, totalHoras) {
                             <td>${m.cod_materia}</td>
                             <td>${m.materia}</td>
                             <td>${m.total_horas}</td>
-                            ${index === 0 ? `<td rowspan="${materias.length}">${m.perfil_profesional}</td>` : ''}
+                            ${index === 0 ? `<td rowspan="${materias.length}">${convocatoria.perfil_profesional || 'No especificado'}</td>` : ''}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -292,7 +293,7 @@ function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
             <h2>${convocatoria.nombre_tipo_conv}</h2>
             <p>
                 Convocatoria extraordinaria para la carrera de ${convocatoria.programa}, 
-                Facultad de ${convocatoria.facultad}, con ${totalHoras} horas totales.
+                Facultad de ${convocatoria.nombre_facultad}, con ${totalHoras} horas totales.
             </p>
             <table>
                 <thead>
@@ -354,43 +355,29 @@ const combinarYGuardarPDFs = async (req, res) => {
 const viewCombinedPDF = async (req, res) => {
     const { id } = req.params;
     try {
-        // 1. Recuperar el PDF como buffer binario directamente
         const result = await pool.query(
-            'SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1 LIMIT 1',
+            'SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1',
             [id]
         );
 
         if (!result.rows[0]?.doc_conv) {
-            return res.status(404).json({ error: 'Documento no encontrado' });
+            return res.status(404).json({ 
+                error: 'Documento no encontrado',
+                solution: 'Primero genere el PDF usando POST /pdf/:id/generar'
+            });
         }
 
         const pdfBuffer = result.rows[0].doc_conv;
-
-        // 2. Verificación adicional del buffer
-        if (!(pdfBuffer instanceof Buffer)) {
-            throw new Error("El dato recuperado no es un buffer válido");
-        }
-
-        if (pdfBuffer.length === 0) {
-            throw new Error("El buffer del PDF está vacío");
-        }
-
-        // 3. Configurar headers correctamente
-        res.writeHead(200, {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': 'inline; filename="convocatoria.pdf"',
-            'Content-Length': pdfBuffer.length
-        });
-
-        // 4. Enviar el buffer directamente
-        res.end(pdfBuffer);
-
+        
+        // Enviar el buffer binario directamente
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="convocatoria_${id}.pdf"`);
+        res.send(pdfBuffer);
     } catch (error) {
         console.error('Error al recuperar el PDF:', error);
         res.status(500).json({ 
             error: 'Error al recuperar el PDF',
-            details: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            details: error.message
         });
     }
 };
@@ -410,16 +397,19 @@ const downloadCombinedPDF = async (req, res) => {
         const pdfBuffer = result.rows[0].doc_conv;
         const nombreArchivo = result.rows[0].nombre_archivo || `convocatoria_${id}.pdf`;
 
-        // Configurar headers para descarga
+        // Forzar la descarga (attachment) en lugar de visualización (inline)
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
         res.send(pdfBuffer);
-
     } catch (error) {
         console.error('Error al descargar el PDF:', error);
-        res.status(500).json({ error: 'Error al descargar el PDF', details: error.message });
+        res.status(500).json({ 
+            error: 'Error al descargar el PDF',
+            details: error.message
+        });
     }
 };
+
 
 const deletePDF = async (req, res) => {
     const { id } = req.params;
