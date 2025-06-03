@@ -123,11 +123,17 @@ const NavBar = ({ onLogout }) => {
                     key="convocatorias" 
                     sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias" ? "#000" : "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
-                </ListItem>,
+                </ListItem>
+
+
+                
+
+
+
             ],
             secretaria_de_decanatura: [
                 <ListItem 
@@ -137,7 +143,7 @@ const NavBar = ({ onLogout }) => {
                     key="convocatorias" 
                     sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias" ? "#000" : "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
@@ -163,7 +169,7 @@ const NavBar = ({ onLogout }) => {
                     key="convocatorias" 
                     sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias" ? "#000" : "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
                     {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}

@@ -212,7 +212,8 @@ const AuthWrapper = () => {
               </>
             )}
             
-            <Route path="/convocatorias/:estado" element={<ConvocatoriaList />} />
+            <Route path="/convocatorias" element={<ConvocatoriaList />} />
+            <Route path="/convocatorias/estado/:estado" element={<ConvocatoriaList />} />
             
             {/* Otras rutas */}
             <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
