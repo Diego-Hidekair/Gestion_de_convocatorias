@@ -69,15 +69,14 @@ const ConvocatoriaMateriasForm = () => {
 
     const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // limpiar errores 
+    setError(null);
     if (materiasSeleccionadas.length === 0) {
         setError('Debe seleccionar al menos una materia');
         return;
     }
-
     try {
-        setLoading(true); // Activar carga
-        const response = await axios.post(
+        setLoading(true);
+        await axios.post(
             `http://localhost:5000/convocatoria-materias/${id_convocatoria}/materias`, 
             {
                 materias: materiasSeleccionadas.map(m => ({
@@ -92,15 +91,15 @@ const ConvocatoriaMateriasForm = () => {
                 }
             }
         );
-        navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
+        navigate(`/convocatorias/${id_convocatoria}/archivos`);
     } catch (err) {
         console.error('Error en handleSubmit:', err);
         if (err.response?.status === 200 || err.response?.data?.success) {
-            navigate(`/convocatorias/${id_convocatoria}/generar-pdf`);
+            navigate(`/convocatorias/${id_convocatoria}/archivos`);
         } else {
             setError(
                 err.response?.data?.error || 
-                'Las materias se guardaron, pero hubo un problema al redireccionar'
+                'Error al guardar las materias'
             );
         }
     } finally {

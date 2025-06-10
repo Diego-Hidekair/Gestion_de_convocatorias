@@ -1,14 +1,9 @@
-//backend/controllers/convocatoriaArchivosController.js
+// backend/controllers/convocatoriaArchivosController.js
 const pool = require('../db');
 const fs = require('fs');
 const path = require('path');
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
-const { authenticateToken } = require('../middleware/authMiddleware');
-//const pdfBytes = await pdfDoc.save();
-//const pdfBase64 = pdfBytes.toString('base64');
 
-
-// Directorio para guardar los PDFs generados
 const PDF_DIR = path.join(__dirname, '..', 'pdfs');
 if (!fs.existsSync(PDF_DIR)) {
     fs.mkdirSync(PDF_DIR, { recursive: true });
@@ -34,6 +29,7 @@ const generateConvocatoriaPDF = async (req, res) => {
         if (convocatoria.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
+
         const conv = convocatoria.rows[0];
         const materias = await pool.query(`
             SELECT cm.*, m.materia, m.cod_materia, m.horas_teoria, m.horas_practica
@@ -41,52 +37,34 @@ const generateConvocatoriaPDF = async (req, res) => {
             JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
             WHERE cm.id_convocatoria = $1
         `, [id]);
+
         const pdfDoc = await PDFDocument.create();
         const page = pdfDoc.addPage([600, 800]);
         const { width, height } = page.getSize();
         const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
         page.drawText('UNIVERSIDAD AUTÓNOMA TOMÁS FRÍAS', {
-            x: 50,
-            y: height - 50,
-            size: 16,
-            font: fontBold,
-            color: rgb(0, 0, 0),
+            x: 50, y: height - 50, size: 16, font: fontBold, color: rgb(0, 0, 0),
         });
         
         page.drawText('VICERRECTORADO', {
-            x: 50,
-            y: height - 80,
-            size: 14,
-            font: fontBold,
-            color: rgb(0, 0, 0),
+            x: 50, y: height - 80, size: 14, font: fontBold, color: rgb(0, 0, 0),
         });
         
         page.drawText(`CONVOCATORIA: ${conv.nombre_conv}`, {
-            x: 50,
-            y: height - 110,
-            size: 12,
-            font: fontBold,
-            color: rgb(0, 0, 0),
+            x: 50, y: height - 110, size: 12, font: fontBold, color: rgb(0, 0, 0),
         });
 
         let yPosition = height - 150;
         
         const addSection = (title, content) => {
             page.drawText(`${title}:`, {
-                x: 50,
-                y: yPosition,
-                size: 10,
-                font: fontBold,
-                color: rgb(0, 0, 0),
+                x: 50, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0),
             });
             
             page.drawText(content, {
-                x: 200,
-                y: yPosition,
-                size: 10,
-                font: font,
-                color: rgb(0, 0, 0),
+                x: 200, y: yPosition, size: 10, font: font, color: rgb(0, 0, 0),
             });
             
             yPosition -= 20;
@@ -101,79 +79,31 @@ const generateConvocatoriaPDF = async (req, res) => {
         addSection('Facultad', conv.facultad);
         
         yPosition -= 30;
-
         page.drawText('MATERIAS CONVOCADAS:', {
-            x: 50,
-            y: yPosition,
-            size: 12,
-            font: fontBold,
-            color: rgb(0, 0, 0),
+            x: 50, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0),
         });
         
         yPosition -= 30;
-        
-        page.drawText('Código', {
-            x: 50,
-            y: yPosition,
-            size: 10,
-            font: fontBold,
-            color: rgb(0, 0, 0),
-        });
-        
-        page.drawText('Materia', {
-            x: 120,
-            y: yPosition,
-            size: 10,
-            font: fontBold,
-            color: rgb(0, 0, 0),
-        });
-        
-        page.drawText('Horas', {
-            x: 400,
-            y: yPosition,
-            size: 10,
-            font: fontBold,
-            color: rgb(0, 0, 0),
-        });
+        page.drawText('Código', { x: 50, y: yPosition, size: 10, font: fontBold });
+        page.drawText('Materia', { x: 120, y: yPosition, size: 10, font: fontBold });
+        page.drawText('Horas', { x: 400, y: yPosition, size: 10, font: fontBold });
         
         yPosition -= 20;
         
         for (const materia of materias.rows) {
-            page.drawText(materia.cod_materia, {
-                x: 50,
-                y: yPosition,
-                size: 10,
-                font: font,
-                color: rgb(0, 0, 0),
-            });
-            
-            page.drawText(materia.materia, {
-                x: 120,
-                y: yPosition,
-                size: 10,
-                font: font,
-                color: rgb(0, 0, 0),
-            });
-            
-            page.drawText(materia.total_horas.toString(), {
-                x: 400,
-                y: yPosition,
-                size: 10,
-                font: font,
-                color: rgb(0, 0, 0),
-            });
+            page.drawText(materia.cod_materia, { x: 50, y: yPosition, size: 10, font: font });
+            page.drawText(materia.materia, { x: 120, y: yPosition, size: 10, font: font });
+            page.drawText(materia.total_horas.toString(), { x: 400, y: yPosition, size: 10, font: font });
             
             yPosition -= 20;
-            
             if (yPosition < 50) {
-                const newPage = pdfDoc.addPage([600, 800]);
+                pdfDoc.addPage([600, 800]);
                 yPosition = 750;
             }
         }
         
         const pdfBytes = await pdfDoc.save();
-        const pdfBase64 = pdfBytes.toString('base64');
-
+        
         await pool.query(
             `UPDATE convocatorias_archivos 
              SET nombre_archivo = $1, doc_conv = $2 
@@ -181,15 +111,8 @@ const generateConvocatoriaPDF = async (req, res) => {
             [`convocatoria_${id}.pdf`, pdfBytes, id]
         );
         
-     res.json({
-            success: true,
-            pdf: pdfBase64,
-            fileName: `convocatoria_${id}.pdf`,
-            message: 'PDF generado correctamente'
-        });
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename=convocatoria_${id}.pdf`);
-        res.setHeader('Content-Length', pdfBytes.length);
         res.send(pdfBytes);
         
     } catch (error) {
@@ -210,7 +133,6 @@ const uploadConvocatoriaFiles = async (req, res) => {
     }
     
     try {
-        // Verificar que la convocatoria existe
         const convocatoriaCheck = await pool.query(
             'SELECT id_convocatoria FROM convocatorias WHERE id_convocatoria = $1',
             [id]
@@ -219,14 +141,20 @@ const uploadConvocatoriaFiles = async (req, res) => {
         if (convocatoriaCheck.rows.length === 0) {
             return res.status(404).json({ error: 'Convocatoria no encontrada' });
         }
+  
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/png'
+        ];
         
-        // Preparar los datos para actualizar
         const updateData = {};
         const updateFields = [];
         const updateValues = [];
         let paramCount = 1;
         
-        // Procesar cada tipo de archivo
         const fileTypes = {
             resolucion: 'resolucion',
             dictamen: 'dictamen',
@@ -238,7 +166,14 @@ const uploadConvocatoriaFiles = async (req, res) => {
         
         for (const [field, fileType] of Object.entries(fileTypes)) {
             if (files[field]) {
-                const file = files[field][0]; // Tomamos el primer archivo si hay múltiples
+                const file = files[field][0];
+                
+                if (!allowedTypes.includes(file.mimetype)) {
+                    return res.status(400).json({ 
+                        error: `Tipo de archivo no permitido para ${field}` 
+                    });
+                }
+                
                 updateData[field] = file.buffer;
                 updateFields.push(`${fileType} = $${paramCount}`);
                 updateValues.push(file.buffer);
@@ -246,12 +181,10 @@ const uploadConvocatoriaFiles = async (req, res) => {
             }
         }
         
-        // Si no hay archivos válidos para actualizar
         if (updateFields.length === 0) {
             return res.status(400).json({ error: 'No se proporcionaron archivos válidos' });
         }
-        
-        // Actualizar la base de datos
+  
         const query = `
             UPDATE convocatorias_archivos 
             SET ${updateFields.join(', ')} 
@@ -259,7 +192,7 @@ const uploadConvocatoriaFiles = async (req, res) => {
             RETURNING *`;
         
         updateValues.push(id);
-        const result = await pool.query(query, updateValues);
+        await pool.query(query, updateValues);
         
         res.json({
             success: true,

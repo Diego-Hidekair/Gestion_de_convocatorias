@@ -32,80 +32,135 @@ const ConvocatoriaForm = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [generandoNombre, setGenerandoNombre] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        
-        const userData = userResponse.data;
-        console.log('Datos del usuario:', userData);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+            
+      const userData = userResponse.data;
+      console.log('Datos del usuario:', userData);
 
-        if (!userData.id_facultad) {
-          throw new Error('El usuario no tiene facultad asignada');
-        }
+      if (!userData.id_facultad) {
+        throw new Error('El usuario no tiene facultad asignada');
+      }
 
-        setNombreFacultad(userData.nombre_facultad || '');
-        
-        const [tiposResponse, carrerasResponse] = await Promise.all([
-          axios.get('http://localhost:5000/tipos-convocatorias'),
-          axios.get(`http://localhost:5000/carreras/facultad-id/${userData.id_facultad}`)
-        ]);
+      const [tiposResponse, carrerasResponse] = await Promise.all([
+        axios.get('http://localhost:5000/tipos-convocatorias'),
+        axios.get(`http://localhost:5000/carreras/facultad-id/${userData.id_facultad}`)
+      ]);
+      console.log('Tipos de convocatoria recibidos:', tiposResponse.data);
+      console.log('Carreras recibidas:', carrerasResponse.data);
 
-        setTiposConvocatoria(tiposResponse.data);
-        setCarrerasFiltradas(carrerasResponse.data);
+      const carreras = carrerasResponse.data.map(c => ({
+        ...c,
+        id_programa: c.id_programa.trim()
+      }));
+
+      setTiposConvocatoria(tiposResponse.data);
+      setCarrerasFiltradas(carreras);
+      if (carreras.length > 0 && carreras[0].facultad) {
+        setNombreFacultad(carreras[0].facultad);
+      } else if (userData.nombre_facultad) {
+        setNombreFacultad(userData.nombre_facultad);
+      }
 
         if (id) {
-          const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
-          const data = response.data;
-          setConvocatoria({
-            ...data,
-            nombre: data.nombre_conv || '',
-            fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
-            fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
-            id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
-          });
+        const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+        const data = response.data;
+        setConvocatoria({
+          ...data,
+          nombre: data.nombre_conv || '',
+          fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
+          fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
+          id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
+        });
           
-          // Encontrar el programa seleccionado para mostrar su nombre
-          const programa = carrerasResponse.data.find(p => p.id_programa === data.id_programa);
+        const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
           if (programa) {
             setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
           }
         } else {
-          // Establecer programa del usuario para nuevas convocatorias
           setConvocatoria(prev => ({
             ...prev,
             id_programa: userData.id_programa?.trim() || ''
           }));
           
-          // Encontrar el programa del usuario para mostrar su nombre
-          const programa = carrerasResponse.data.find(p => p.id_programa === userData.id_programa?.trim());
+          const userPrograma = userData.id_programa?.trim() || '';
+          setConvocatoria(prev => ({
+            ...prev,
+            id_programa: userPrograma
+          }));
+          const programa = carreras.find(p => p.id_programa === userPrograma);
           if (programa) {
             setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
           }
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setError(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-  useEffect(() => {
-    if (tiposConvocatoria.length > 0 && convocatoria.id_tipoconvocatoria && programaSeleccionado && convocatoria.etapa_convocatoria) {
-      const tipoSeleccionado = tiposConvocatoria.find(t => t.id_tipoconvocatoria === convocatoria.id_tipoconvocatoria);
-      if (tipoSeleccionado) {
-        const nuevoNombre = `CONVOCATORIA ${tipoSeleccionado.nombre_tipo_conv || tipoSeleccionado.nombre_convocatoria} - ${programaSeleccionado} - ${convocatoria.etapa_convocatoria} ETAPA`;
-        setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre }));
-      }
+      console.error('Error completo:', error);
+      console.error('Error response:', error.response);
+      setError(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setLoading(false);
     }
-  }, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, tiposConvocatoria]);
+  };
+  fetchData();
+}, [id]);
+  
+ useEffect(() => {
+  const year = new Date().getFullYear();
+  let nuevoNombre = '';
+
+  if (convocatoria.etapa_convocatoria) {
+    nuevoNombre += `${convocatoria.etapa_convocatoria} `;
+  }
+
+  nuevoNombre += 'CONVOCATORIA ';
+
+  if (convocatoria.id_tipoconvocatoria && tiposConvocatoria?.length > 0) {
+    const tipoSeleccionado = tiposConvocatoria.find(t => 
+      t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+    );
+    
+    const tipoNombre = tipoSeleccionado?.nombre_tipo_conv?.toUpperCase() || '';
+    
+    if (tipoNombre.includes('EXTRAORDINARIO')) {
+      nuevoNombre += 'A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO ';
+    } else if (tipoNombre.includes('ORDINARIO')) {
+      nuevoNombre += 'A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO ';
+    } else if (tipoNombre.includes('CONSULTORES')) {
+      nuevoNombre += 'A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA ';
+    } else if (tipoNombre) {
+      nuevoNombre += `${tipoNombre} `;
+    }
+  }
+
+  if (convocatoria.tipo_jornada) {
+    nuevoNombre += `A ${convocatoria.tipo_jornada} `;
+  }
+  if (programaSeleccionado) {
+    nuevoNombre += `PARA LA CARRERA DE ${programaSeleccionado} `;
+  }
+
+  if (convocatoria.id_tipoconvocatoria && tiposConvocatoria?.length > 0) {
+    const tipoSeleccionado = tiposConvocatoria.find(t => 
+      t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+    );
+    const tipoNombre = tipoSeleccionado?.nombre_tipo_conv?.toUpperCase() || '';
+    
+    if (tipoNombre.includes('EXTRAORDINARIO')) {
+      nuevoNombre += `SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
+    } else {
+      nuevoNombre += `- GESTION ${year}`;
+    }
+  }
+
+  setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre.trim() }));
+}, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, convocatoria.tipo_jornada, tiposConvocatoria]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -213,16 +268,19 @@ const ConvocatoriaForm = () => {
                 <TextField
                   label="Nombre de la Convocatoria"
                   name="nombre"
-                  value={convocatoria.nombre}
-                  onChange={handleChange}
+                  value={convocatoria.nombre || "Complete los campos para generar el título"}
                   fullWidth
                   required
                   InputProps={{
+                    readOnly: true,
                     style: {
-                      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                      color: !convocatoria.nombre ? '#888' : 'inherit'
                     },
                   }}
-                  helperText="Este campo se llena automáticamente pero puede editarlo si lo desea"
+                  multiline
+                  rows={3}
+                  helperText="El título se genera automáticamente al completar los campos"
                 />
               </Grid>
 
@@ -234,17 +292,14 @@ const ConvocatoriaForm = () => {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <StaticDatePicker
                     displayStaticWrapperAs="desktop"
-                    label="Fecha de Inicio"
                     value={convocatoria.fecha_inicio}
-                    onChange={() => {}} 
                     readOnly
-                    renderInput={(params) => (
-                      <TextField 
-                        {...params} 
-                        fullWidth 
-                        InputProps={{ ...params.InputProps, readOnly: true }}
-                      />
-                    )}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        InputProps: { readOnly: true }
+                      }
+                    }}
                   />
                 </LocalizationProvider>
                 <Typography variant="caption" display="block" gutterBottom>
@@ -279,21 +334,24 @@ const ConvocatoriaForm = () => {
 
               <Grid item xs={6}>
                 <FormControl fullWidth required>
-                  <InputLabel>Programa</InputLabel>
-                  <Select
-                    name="id_programa"
-                    value={convocatoria.id_programa}
-                    onChange={handleChange}
-                    label="Programa"
-                    disabled={!!id}
-                  >
-                    {carrerasFiltradas.map((programa) => (
-                      <MenuItem key={programa.id_programa} value={programa.id_programa}>
-                        {programa.programa || programa.nombre_carrera}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <InputLabel>Programa</InputLabel>
+                <Select
+                  name="id_programa"
+                  value={convocatoria.id_programa?.trim() || ''}
+                  onChange={handleChange}
+                  label="Programa"
+                  disabled={!!id}
+                >
+                  {carrerasFiltradas.map((programa) => (
+                    <MenuItem 
+                      key={programa.id_programa} 
+                      value={programa.id_programa?.trim()}
+                    >
+                      {programa.programa || programa.nombre_carrera}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               </Grid>
 
               {/* Resto del formulario (igual que antes) */}

@@ -61,22 +61,37 @@ const createConvocatoria = async (req, res) => {
         const { tipo_jornada, fecha_fin, id_tipoconvocatoria, etapa_convocatoria, 
                 pago_mensual = 0, resolucion, dictamen, perfil_profesional, gestion } = req.body;
 
-            if (!req.user?.id_usuario) throw new Error('Usuario no autenticado');
-            const id_usuario = req.user.id_usuario;
+        if (!req.user?.id_usuario) throw new Error('Usuario no autenticado');
+        const id_usuario = req.user.id_usuario;
         const id_programa = req.user.id_programa?.trim();
         if (!id_programa) throw new Error('El usuario no tiene programa asociado');
 
         const [programaData, tipoConvocatoria, vicerrector] = await Promise.all([
             client.query('SELECT p.programa, f.facultad FROM datos_universidad.alm_programas p JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad WHERE p.id_programa = $1', [id_programa]),
-            client.query('SELECT nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [id_tipoconvocatoria]),
+            client.query('SELECT id_tipoconvocatoria, nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [id_tipoconvocatoria]),
             client.query('SELECT id_vicerector FROM vicerrector LIMIT 1')
         ]);
+
 
         if (!programaData.rows[0] || !tipoConvocatoria.rows[0] || !vicerrector.rows[0]) {
             throw new Error('Datos requeridos no encontrados');
         }
 
-        const nombre_conv = `CONVOCATORIA ${tipoConvocatoria.rows[0].nombre_tipo_conv} - ${programaData.rows[0].programa} - ${etapa_convocatoria} ETAPA`;
+        const programa = programaData.rows[0].programa;
+        const tipo = tipoConvocatoria.rows[0].nombre_tipo_conv;
+        const year = new Date().getFullYear();
+        
+        let nombre_conv;
+        if (tipo.includes('EXTRAORDINARIO')) {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO A ${tipo_jornada} PARA LA CARRERA DE ${programa} SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
+        } else if (tipo.includes('ORDINARIO')) {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO A ${tipo_jornada} PARA LA CARRERA DE ${programa} - GESTION ${year}`;
+        } else if (tipo.includes('CONSULTORES')) {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${tipo_jornada} PARA LA CARRERA DE ${programa} POR LA GESTIÓN ACADÉMICA ${year}`;
+        } else {
+            // Formato por defecto si no coincide con los anteriores
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - GESTION ${year}`;
+        }
 
         const convResult = await client.query(
             `INSERT INTO convocatorias (
@@ -134,6 +149,20 @@ const getConvocatorias = async (req, res) => {
     }
 };
 
+const getTiposConvocatoria = async (req, res) => {
+  try {
+    console.log('Consultando tipos de convocatorias...');
+    const result = await pool.query(
+      'SELECT id_tipoconvocatoria, nombre_tipo_conv FROM tipos_convocatorias'
+    );
+    console.log('Resultados encontrados:', result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error en getTiposConvocatoria:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const getConvocatoriaById = async (req, res) => {
     try {
         const convocatoria = await getFullConvocatoria(req.params.id);
@@ -170,9 +199,33 @@ const updateConvocatoria = async (req, res) => {
             gestion
         } = req.body;
 
-        // Actualizar solo los campos de la tabla convocatorias
-        const convResult = await client.query(`
-            UPDATE convocatorias SET
+        const [convocatoriaActual, tipoConvocatoria, programaData] = await Promise.all([
+            client.query('SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1', [id]),
+            client.query('SELECT nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [id_tipoconvocatoria]),
+            client.query('SELECT programa FROM datos_universidad.alm_programas WHERE id_programa = (SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1)', [id])
+        ]);
+
+        if (!convocatoriaActual.rows[0] || !tipoConvocatoria.rows[0] || !programaData.rows[0]) {
+            throw new Error('Datos requeridos no encontrados');
+        }
+
+        const programa = programaData.rows[0].programa;
+        const tipo = tipoConvocatoria.rows[0].nombre_tipo_conv;
+        const year = new Date().getFullYear();
+        
+        let nombre_conv;
+        if (tipo.includes('EXTRAORDINARIO')) {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO A ${tipo_jornada} PARA LA CARRERA DE ${programa} SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
+        } else if (tipo.includes('ORDINARIO')) {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO A ${tipo_jornada} PARA LA CARRERA DE ${programa} - GESTION ${year}`;
+        } else if (tipo.includes('CONSULTORES')) {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${tipo_jornada} PARA LA CARRERA DE ${programa} POR LA GESTIÓN ACADÉMICA ${year}`;
+        } else {
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - GESTION ${year}`;
+        }
+
+        const convResult = await client.query(
+            `UPDATE convocatorias SET
                 tipo_jornada = $1, 
                 fecha_fin = $2,
                 etapa_convocatoria = $3, 
@@ -181,21 +234,24 @@ const updateConvocatoria = async (req, res) => {
                 dictamen = $6, 
                 perfil_profesional = $7,
                 gestion = $8,
-                id_tipoconvocatoria = $9
-            WHERE id_convocatoria = $10
-            RETURNING *
-        `, [
-            tipo_jornada, 
-            fecha_fin,
-            etapa_convocatoria, 
-            pago_mensual, 
-            resolucion, 
-            dictamen,
-            perfil_profesional, 
-            gestion, 
-            id_tipoconvocatoria, 
-            id
-        ]);
+                id_tipoconvocatoria = $9,
+                nombre_conv = $10
+            WHERE id_convocatoria = $11
+            RETURNING *`,
+            [
+                tipo_jornada, 
+                fecha_fin,
+                etapa_convocatoria, 
+                pago_mensual, 
+                resolucion, 
+                dictamen,
+                perfil_profesional, 
+                gestion, 
+                id_tipoconvocatoria,
+                nombre_conv,
+                id
+            ]
+        );
 
         if (convResult.rows.length === 0) {
             throw new Error('Convocatoria no encontrada');
@@ -203,7 +259,6 @@ const updateConvocatoria = async (req, res) => {
 
         await client.query('COMMIT');
         
-        // Devolver la convocatoria actualizada
         const convocatoriaActualizada = await getFullConvocatoria(id);
         res.json(convocatoriaActualizada);
 
@@ -434,4 +489,4 @@ const updateComentarioObservado = async (req, res) => {
     }
 };
 
-module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado};
+module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria};
