@@ -1,11 +1,14 @@
 // frontend/src/components/convocatorias/ConvocatoriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, MenuItem, FormControl, InputLabel, Select, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Snackbar, Chip, Badge, Tooltip} from '@mui/material';
-import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh } from '@mui/icons-material';
+import { Container, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, FormControl, InputLabel, Select, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Snackbar, Chip, Badge, Tooltip} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-
+import { Menu, MenuItem, ListItemIcon } from '@mui/material';
+//import { CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon } from '@mui/icons-material';
+//import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh } from '@mui/icons-material';
+//import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
+import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
 const ConvocatoriaList = () => {
   const navigate = useNavigate();
   const [convocatorias, setConvocatorias] = useState([]);
@@ -26,7 +29,9 @@ const ConvocatoriaList = () => {
   const [selectedEstado, setSelectedEstado] = useState('');
   const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
   const [comentario, setComentario] = useState('');
-
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [currentConvocatoria, setCurrentConvocatoria] = useState(null);
+  
   // Campos de búsqueda disponibles
   const searchFields = [
     { value: 'nombre_conv', label: 'Nombre' },
@@ -34,7 +39,8 @@ const ConvocatoriaList = () => {
     { value: 'nombre_facultad', label: 'Facultad' },
     { value: 'estado', label: 'Estado' }
   ];
-
+  const handleOpenEstadoMenu = (event, convocatoria) => { setAnchorEl(event.currentTarget); setCurrentConvocatoria(convocatoria); };
+  const handleCloseEstadoMenu = () => { setAnchorEl(null); setCurrentConvocatoria(null); };
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
@@ -191,76 +197,69 @@ const ConvocatoriaList = () => {
   };
 
   const renderEstadoActions = (convocatoria) => {
-    if (userRole === 'tecnico_vicerrectorado') {
-      switch (convocatoria.estado) {
-        case 'Para Revisión':
-          return (
-            <Button 
-              size="small" 
-              color="info" 
-              onClick={() => handleEstadoChangeClick(convocatoria, 'En Revisión')}
-            >
-              Marcar en Revisión
-            </Button>
-          );
-        case 'En Revisión':
-          return (
-            <>
-              <Button 
-                size="small" 
-                color="success" 
-                onClick={() => handleEstadoChangeClick(convocatoria, 'Revisado')}
-                sx={{ mr: 1 }}
-              >
-                Revisado
-              </Button>
-              <Button 
-                size="small" 
-                color="warning" 
-                onClick={() => handleEstadoChangeClick(convocatoria, 'Observado')}
-              >
-                Observar
-              </Button>
-            </>
-          );
-        default:
-          return null;
-      }
-    } else if (userRole === 'vicerrectorado') {
-      if (convocatoria.estado === 'Revisado') {
-        return (
-          <>
-            <Button 
-              size="small" 
-              color="success" 
-              onClick={() => handleEstadoChangeClick(convocatoria, 'Aprobado')}
-              sx={{ mr: 1 }}
-            >
-              Aprobar
-            </Button>
-            <Button 
-              size="small" 
-              color="error" 
-              onClick={() => handleEstadoChangeClick(convocatoria, 'Devuelto')}
-            >
-              Devolver
-            </Button>
-          </>
-        );
-      } else if (convocatoria.estado === 'Aprobado') {
-        return (
-          <Button 
-            size="small" 
-            color="secondary" 
-            onClick={() => handleEstadoChangeClick(convocatoria, 'Para Publicar')}
+  const estadosPermitidos = getEstadosPermitidos();
+  
+  if (estadosPermitidos.length === 0) {
+    return (
+      <Chip 
+        label={convocatoria.estado} 
+        color={getEstadoColor(convocatoria.estado)} 
+        size="small"
+      />
+    );
+  } return (
+    <>
+      <Button
+        variant="outlined"
+        size="small"
+        color={getEstadoColor(convocatoria.estado)}
+        endIcon={<ArrowDropDownIcon />}
+        onClick={(e) => handleOpenEstadoMenu(e, convocatoria)}
+      >
+        {convocatoria.estado}
+      </Button>
+      
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseEstadoMenu}
+      >
+        {estadosPermitidos.map((estado) => (
+          <MenuItem
+            key={estado.value}
+            onClick={() => {
+              handleCloseEstadoMenu();
+              handleEstadoChangeClick(currentConvocatoria, estado.value);
+            }}
+            disabled={currentConvocatoria?.estado === estado.value}
           >
-            Marcar para Publicar
-          </Button>
-        );
+            <ListItemIcon>{estado.icon}</ListItemIcon>
+            {estado.label}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};
+
+  const getEstadosPermitidos = () => {
+  if (!userRole) return [];
+  
+  if (userRole === 'tecnico_vicerrectorado') {
+    return [
+      { value: 'En Revisión', label: 'En Revisión', icon: <AutorenewIcon /> },
+      { value: 'Revisado', label: 'Revisado', icon: <CheckCircleIcon /> },
+      { value: 'Observado', label: 'Observado', icon: <WarningIcon /> }
+    ];
+      } else if (userRole === 'vicerrectorado') {
+        return [
+          { value: 'Aprobado', label: 'Aprobado', icon: <CheckCircleIcon /> },
+          { value: 'Devuelto', label: 'Devuelto', icon: <ErrorIcon /> },
+          { value: 'Para Publicar', label: 'Para Publicar', icon: <SendIcon /> }
+        ];
       }
-    }
-    return null;
-  };
+    return [];
+  };  
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -367,11 +366,7 @@ const ConvocatoriaList = () => {
                   
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Chip 
-                        label={convocatoria.estado} 
-                        color={getEstadoColor(convocatoria.estado)} 
-                        size="small"
-                      />
+                      {renderEstadoActions(convocatoria)}
                       
                       {convocatoria.comentario_observado && (
                         <Tooltip title="Ver comentario">
@@ -385,10 +380,6 @@ const ConvocatoriaList = () => {
                           </IconButton>
                         </Tooltip>
                       )}
-                    </Box>
-                    
-                    <Box sx={{ mt: 1 }}>
-                      {renderEstadoActions(convocatoria)}
                     </Box>
                   </TableCell>
                   
