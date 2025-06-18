@@ -89,7 +89,6 @@ const createConvocatoria = async (req, res) => {
         } else if (tipo.includes('CONSULTORES')) {
             nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${tipo_jornada} PARA LA CARRERA DE ${programa} POR LA GESTIÓN ACADÉMICA ${year}`;
         } else {
-            // Formato por defecto si no coincide con los anteriores
             nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - GESTION ${year}`;
         }
 
@@ -411,24 +410,25 @@ const updateEstadoConvocatoria = async (req, res) => {
             if (!estadosPermitidosTecnico.includes(estado)) {
                 return res.status(400).json({ error: 'Estado no válido para este rol' });
             }
-        } else if (rol === 'vicerrectorado') {
+            } else if (rol === 'vicerrectorado') {
             if (!['Aprobado', 'Devuelto', 'Para Publicar'].includes(estado)) {
                 return res.status(400).json({ error: 'Estado no válido para este rol' });
             }
             
             if (estadoActual !== 'Revisado') {
                 return res.status(400).json({ 
-                    error: 'Solo se pueden aprobar/rechazar convocatorias en estado "Revisado"' 
+                error: 'Solo se pueden aprobar/rechazar convocatorias en estado "Revisado"' 
                 });
             }
-        } else if (rol !== 'admin') {
+            } else if (rol !== 'admin') {
             return res.status(403).json({ error: 'No tienes permisos para esta acción' });
-        }
-        if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
+            }
+
+            if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
             return res.status(400).json({ 
                 error: 'Se requiere un comentario cuando el estado es "Observado" o "Devuelto"' 
             });
-        }
+            }
         let query;
         let values;
 
@@ -453,6 +453,11 @@ const updateEstadoConvocatoria = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+    console.log('Solicitud de cambio de estado recibida:', {
+  id: req.params.id,
+  estado: req.body.estado,
+  rol: req.user.rol
+});
 };
 
 const updateComentarioObservado = async (req, res) => {

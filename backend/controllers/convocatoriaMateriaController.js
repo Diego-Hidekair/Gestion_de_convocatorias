@@ -40,7 +40,7 @@ const addMaterias = async (req, res) => {
             materiasCount: materias.length
         });
     } catch (error) {
-        await client.query('ROLLBACK');
+        await client.query('ROLLBA  K');
         console.error('Error al asignar materias:', error);
         res.status(500).json({
             error: error.message || 'Error al asignar materias',

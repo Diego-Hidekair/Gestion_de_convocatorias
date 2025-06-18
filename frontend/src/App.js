@@ -31,6 +31,9 @@ import ConvocatoriaArchivosManager from './components/convocatorias/Convocatoria
 
 axios.defaults.baseURL = 'http://localhost:5000/';
 
+const drawerWidthExpanded = 200;
+const drawerWidthCollapsed = 70;
+
 axios.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
@@ -91,50 +94,59 @@ const theme = createTheme({
   },
 });
 
-const HeaderSection = () => (
-  <Box
-    sx={{
-      height: '20vh',
-      background: `linear-gradient(to bottom, rgba(21, 101, 192, 0.7), rgba(21, 101, 192, 0.7)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg/800px-University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      color: 'white',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <Box textAlign="center">
-      <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
-        Gestión de Convocatorias
-      </Typography>
-      <Typography variant="h5" sx={{ mt: 2 }}>
-        "Sistema de gestionamiento de convocatorias para docentes"
-      </Typography>
-    </Box>
-  </Box>
-);
+const HeaderSection = ({ isAuthenticated }) => {
+  if (!isAuthenticated) return null;
 
-const FooterSection = () => (
-  <Box
-    sx={{
-      height: '5vh',
-      backgroundColor: '#D32F2F',
-      color: 'white',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      textAlign: 'center',
-      padding: 2,
-    }}
-  >
-    <Typography variant="body2">Copyright © 2025 | Universidad Autónoma Tomás Frías</Typography>
-  </Box>
-);
+  return (
+    <Box
+      sx={{
+        py: 4,
+        background: `linear-gradient(to bottom, rgba(21, 101, 192, 0.7), rgba(21, 101, 192, 0.7)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg/800px-University_Citadel_UATF_-_Ciudadela_Universitaria_UATF.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        mb: 3
+      }}
+    >
+      <Box textAlign="center">
+        <Typography variant="h2" sx={{ fontWeight: 'bold' }}>
+          Gestión de Convocatorias
+        </Typography>
+        <Typography variant="h5" sx={{ mt: 2 }}>
+          "Sistema de gestionamiento de convocatorias para docentes"
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+const FooterSection = ({ isAuthenticated }) => {
+  if (!isAuthenticated) return null;
+
+  return (
+    <Box
+      sx={{
+        py: 2,
+        backgroundColor: '#D32F2F',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+      }}
+    >
+      <Typography variant="body2">Copyright © 2025 | Universidad Autónoma Tomás Frías</Typography>
+    </Box>
+  );
+};
 
 const AuthWrapper = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState('');
+  const [isExpanded, setIsExpanded] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -180,62 +192,90 @@ const AuthWrapper = () => {
     navigate('/login');
   };
 
-  return (
-    <Box>
-      {isAuthenticated ? (
-        <>
-          <NavBar onLogout={handleLogout} userRole={userRole} />
-          <Routes>
-            <Route path="/" element={<Navigate to="/redirect" />} />
-            <Route path="/redirect" element={<RedirectPage />} />
-            <Route path="/carreras" element={<CarreraList />} />
-            <Route path="/facultades" element={<FacultadList />} />
-            
-            {/* Rutas de convocatorias */}
-            {userRole === 'secretaria_de_decanatura' && (
-              <>
-                <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
-                <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
-                {/* Nuevas rutas para PDF y archivos */}
-                <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />}/>
-               
-              </>
-            )}
-            
-            {/* Rutas accesibles para vicerrectorado y técnicos */}
-            {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
-              <>
-                <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
-              </>
-            )}
-            
-            <Route path="/convocatorias" element={<ConvocatoriaList />} />
-            <Route path="/convocatorias/estado/:estado" element={<ConvocatoriaList />} />
-            
-            {/* Otras rutas */}
-            <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
-            <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} />
-            <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
-            
-            <Route path="/materias" element={<MateriaList />} />
-            <Route path="/convocatoria-materias/:id_convocatoria/materias" element={<ConvocatoriaMateriasForm />} />
-            <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
-            
-            <Route path="/file-upload" element={<FileUpload />} />
-            <Route path="/usuarios/*" element={<UsuarioManager />} />
-            <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
-          
-            <Route path="*" element={<Navigate to="/redirect" />} />
-          </Routes>
-        </>
-      ) : (
+   return (
+    <Box sx={{display: 'flex', flexDirection: 'column',minHeight: '100vh'}}>
+  {isAuthenticated && (
+    <NavBar 
+      onLogout={handleLogout} 
+      userRole={userRole} 
+      isExpanded={isExpanded}
+      setIsExpanded={setIsExpanded}
+      drawerWidthExpanded={drawerWidthExpanded}
+      drawerWidthCollapsed={drawerWidthCollapsed}
+    />
+  )}
+      
+      <Box 
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+          p: 3,
+          width: `calc(100% - ${isAuthenticated ? (isExpanded ? drawerWidthExpanded : drawerWidthCollapsed) : 0}px)`,
+          transition: (theme) => theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+          ml: `${isAuthenticated ? (isExpanded ? drawerWidthExpanded : drawerWidthCollapsed) : 0}px`,
+        }}
+      >
+    <HeaderSection isAuthenticated={isAuthenticated} />
+    <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'auto' }}>
         <Routes>
-          <Route path="/login" element={<Login setAuth={handleLogin} />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Navigate to="/login" />} />
+          {isAuthenticated ? (
+            <>
+              <Route path="/" element={<Navigate to="/redirect" />} />
+              <Route path="/redirect" element={<RedirectPage />} />
+              <Route path="/carreras" element={<CarreraList />} />
+              <Route path="/facultades" element={<FacultadList />} />
+              
+              {userRole === 'secretaria_de_decanatura' && (
+                <>
+                  <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
+                  <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
+                  <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
+                  <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />}/>
+                </>
+              )}
+              
+              {/* Rutas accesibles para vicerrectorado y técnicos */}
+              {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
+                <>
+                  <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
+                </>
+              )}
+              
+              <Route path="/convocatorias" element={<ConvocatoriaList />} />
+              <Route path="/convocatorias/estado/:estado" element={<ConvocatoriaList />} />
+              
+              {/* Otras rutas */}
+              <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
+              <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} />
+              <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
+              
+              <Route path="/materias" element={<MateriaList />} />
+              <Route path="/convocatoria-materias/:id_convocatoria/materias" element={<ConvocatoriaMateriasForm />} />
+              <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
+              
+              <Route path="/file-upload" element={<FileUpload />} />
+              <Route path="/usuarios/*" element={<UsuarioManager />} />
+              <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
+            
+              <Route path="*" element={<Navigate to="/redirect" />} />
+            </>
+          ) : (
+            <>
+              <Route path="/login" element={<Login setAuth={handleLogin} />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<Navigate to="/login" />} />
+            </>
+          )}
         </Routes>
-      )}
+    </Box>
+        <FooterSection isAuthenticated={isAuthenticated} />
+      </Box>
     </Box>
   );
 };
@@ -244,9 +284,7 @@ const App = () => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <Router>
-      <HeaderSection />
       <AuthWrapper />
-      <FooterSection />
     </Router>
   </ThemeProvider>
 );

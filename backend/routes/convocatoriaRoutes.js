@@ -38,7 +38,10 @@ router.put(
     },
     convocatoriaController.updateConvocatoria
 );
-router.put('/:id/estado', vicerrectorOnly, convocatoriaController.updateEstadoConvocatoria);
+//router.put('/:id/estado', vicerrectorOnly, convocatoriaController.updateEstadoConvocatoria);
 router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateComentarioObservado);
+//router.patch('/:id/estado', convocatoriaController.updateEstadoConvocatoria);
+router.patch('/convocatorias/:id/estado', convocatoriaController.updateEstadoConvocatoria);
+
 
 module.exports = router;

@@ -2,20 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box, Button } from "@mui/material";
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box } from "@mui/material";
 import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Verified as VerifiedIcon } from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles"
 
-const drawerWidthExpanded = 240;
-const drawerWidthCollapsed = 70;
-
-const NavBar = ({ onLogout }) => {
+const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpanded = 240, drawerWidthCollapsed = 70}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState("");
     const [isOpen, setIsOpen] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(true);
-
+    
     const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -25,9 +21,9 @@ const NavBar = ({ onLogout }) => {
         if (token) {
             setIsLoggedIn(true);
             const decodedToken = jwtDecode(token);
-            setRole(decodedToken.rol);
+            setRole(decodedToken.rol || userRole);
         }
-    }, []);
+    }, [userRole]);
 
     useEffect(() => {
         if (isMobile) {
@@ -73,7 +69,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname === "/usuarios" ? "#000" : "#fff" }}>
                         <PeopleIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Usuarios" />}
+                    {isExpanded && <ListItemText primary="Usuarios" />}
                 </ListItem>
             ),
             <ListItem 
@@ -86,11 +82,10 @@ const NavBar = ({ onLogout }) => {
                 <ListItemIcon sx={{ color: location.pathname === "/usuarios/me" ? "#000" : "#fff" }}>
                     <PersonIcon />
                 </ListItemIcon>
-                {(isExpanded || isMobile) && <ListItemText primary="Perfil" />}
+                {isExpanded && <ListItemText primary="Perfil" />}
             </ListItem>
         ];
-
-        const roleSpecificItems = {
+       const roleSpecificItems = {
             admin: [
                 <ListItem 
                     button
@@ -102,7 +97,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname === "/facultades" ? "#000" : "#fff" }}>
                         <HomeIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Facultades" />}
+                    {isExpanded && <ListItemText primary="Facultades" />}
                 </ListItem>,
                 <ListItem 
                     button
@@ -114,7 +109,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname === "/carreras" ? "#000" : "#fff" }}>
                         <BookIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Carreras" />}
+                    {isExpanded && <ListItemText primary="Carreras" />}
                 </ListItem>,
                 <ListItem 
                     button
@@ -126,14 +121,8 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
-                </ListItem>
-
-
-                
-
-
-
+                    {isExpanded && <ListItemText primary="Convocatorias" />}
+                </ListItem>,
             ],
             secretaria_de_decanatura: [
                 <ListItem 
@@ -146,7 +135,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
+                    {isExpanded && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
                 <ListItem 
                     button
@@ -158,7 +147,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname === "/convocatorias/crear" ? "#000" : "#fff" }}>
                         <CheckBoxIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Crear Convocatoria" />}
+                    {isExpanded && <ListItemText primary="Crear Convocatoria" />}
                 </ListItem>,
             ],
             tecnico_vicerrectorado: [
@@ -172,7 +161,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <ClipboardIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Convocatorias" />}
+                    {isExpanded && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
             ],
             vicerrectorado: [
@@ -186,7 +175,7 @@ const NavBar = ({ onLogout }) => {
                     <ListItemIcon sx={{ color: location.pathname === "/convocatorias-aprobadas" ? "#000" : "#fff" }}>
                         <VerifiedIcon />
                     </ListItemIcon>
-                    {(isExpanded || isMobile) && <ListItemText primary="Convocatorias Aprobadas" />}
+                    {isExpanded && <ListItemText primary="Convocatorias Aprobadas" />}
                 </ListItem>,
             ]
         };
@@ -204,56 +193,45 @@ const NavBar = ({ onLogout }) => {
                 <ListItemIcon sx={{ color: "#fff" }}>
                     <ExitToAppIcon />
                 </ListItemIcon>
-                {(isExpanded || isMobile) && <ListItemText primary="Cerrar Sesión" />}
+                {isExpanded && <ListItemText primary="Cerrar Sesión" />}
             </ListItem>,
         ];
     };
 
     return (
         isLoggedIn && (
-            <div>
-                {isMobile && (
-                    <IconButton
-                        onClick={toggleDrawer}
-                        sx={{
-                            position: "absolute",
-                            top: 10,
-                            left: 10,
-                            zIndex: 1300,
-                            color: "#fff",
-                        }}
-                    >
-                        <MenuIcon />
+            <Drawer
+                open={isMobile ? isOpen : true}
+                onClose={toggleDrawer}
+                variant={isMobile ? "temporary" : "permanent"}
+                sx={{
+                    width: isExpanded ? drawerWidthExpanded : drawerWidthCollapsed,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: isExpanded ? drawerWidthExpanded : drawerWidthCollapsed,
+                        boxSizing: 'border-box',
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        color: "#fff",
+                        transition: theme.transitions.create('width', {
+                            easing: theme.transitions.easing.sharp,
+                            duration: theme.transitions.duration.leavingScreen,
+                        }),
+                    },
+                }}
+            >
+                <Box display="flex" alignItems="center" justifyContent={isExpanded ? "space-between" : "center"} p={2}>
+                    {isExpanded && (
+                        <Typography variant="h6" color="white">
+                            Gestión de Convocatorias
+                        </Typography>
+                    )}
+                    <IconButton onClick={toggleDrawerExpanded} sx={{ color: "white" }}>
+                        {isExpanded ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                     </IconButton>
-                )}
-
-                <Drawer
-                    open={isMobile ? isOpen : true}
-                    onClose={toggleDrawer}
-                    variant={isMobile ? "temporary" : "permanent"}
-                    sx={{
-                        "& .MuiDrawer-paper": {
-                            width: isExpanded ? drawerWidthExpanded : drawerWidthCollapsed,
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            color: "#fff",
-                            transition: "width 0.3s ease",
-                        },
-                    }}
-                >
-                    <Box display="flex" alignItems="center" justifyContent={isExpanded ? "space-between" : "center"} padding="10px">
-                        {isExpanded && (
-                            <Typography variant="h6" color="white">
-                                Gestión de Convocatorias
-                            </Typography>
-                        )}
-                        <IconButton onClick={toggleDrawerExpanded} sx={{ color: "white" }}>
-                            {isExpanded ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                        </IconButton>
-                    </Box>
-                    <Divider />
-                    <List>{renderMenuItems()}</List>
-                </Drawer>
-            </div>
+                </Box>
+                <Divider />
+                <List>{renderMenuItems()}</List>
+            </Drawer>
         )
     );
 };

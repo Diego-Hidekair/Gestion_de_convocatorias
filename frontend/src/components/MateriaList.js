@@ -1,70 +1,114 @@
 // src/components/MateriaList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/materias.css';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, useTheme} from '@mui/material';
 
 const MateriaList = ({ isOpen }) => {
-    const [materias, setMaterias] = useState([]);
-    // eslint-disable-next-line no-unused-vars
-    const [carreras, setCarreras] = useState([]);
+  const [materias, setMaterias] = useState([]);
+  const [carreras, setCarreras] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const theme = useTheme();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const materiasResponse = await axios.get('http://localhost:5000/materias');
-                const carrerasResponse = await axios.get('http://localhost:5000/carreras');
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [materiasResponse, carrerasResponse] = await Promise.all([
+          axios.get('http://localhost:5000/materias'),
+          axios.get('http://localhost:5000/carreras')
+        ]);
 
-                const materiasWithCarreras = materiasResponse.data.map((materia) => {
-                    const carrera = carrerasResponse.data.find(
-                        (c) => c.id_programa === materia.id_programa
-                    );
-                    return {
-                        ...materia,
-                        nombre_carrera: carrera ? carrera.nombre_carrera : 'Desconocido'
-                    };
-                });
+        const materiasWithCarreras = materiasResponse.data.map((materia) => {
+          const carrera = carrerasResponse.data.find(
+            (c) => c.id_programa === materia.id_programa
+          );
+          return {
+            ...materia,
+            nombre_carrera: carrera ? carrera.nombre_carrera : 'Desconocido'
+          };
+        });
 
-                setMaterias(materiasWithCarreras);
-                setCarreras(carrerasResponse.data);
-            } catch (error) {
-                console.error('Error al obtener las materias y carreras:', error);
-            }
-        };
+        setMaterias(materiasWithCarreras);
+        setCarreras(carrerasResponse.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error al obtener las materias y carreras:', err);
+        setError('Error al cargar los datos. Por favor intente nuevamente.');
+        setLoading(false);
+      }
+    };
 
-        fetchData();
-    }, []);
+    fetchData();
+  }, []);
 
+  if (loading) {
     return (
-        <div className={`materia-list-container ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <h2 className="text-center-materia">Lista de Materias</h2>
-            <table className="custom-table">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Nombre</th>
-                        <th>Horas Teoría</th>
-                        <th>Horas Práctica</th>
-                        <th>Horas Laboratorio</th>
-                        <th>Total Horas</th>
-                        <th>Carrera</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {materias.map((materia) => (
-                        <tr key={materia.codigomateria}>
-                            <td>{materia.codigomateria}</td>
-                            <td>{materia.nombre}</td>
-                            <td>{materia.horas_teoria}</td>
-                            <td>{materia.horas_practica}</td>
-                            <td>{materia.horas_laboratorio}</td>
-                            <td>{materia.total_horas}</td>
-                            <td>{materia.nombre_carrera}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <CircularProgress />
+      </Box>
     );
+  }
+
+  if (error) {
+    return (
+      <Box m={2}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        ml: isOpen ? '240px' : '0px',
+        transition: theme.transitions.create('margin', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
+        p: 3,
+        width: isOpen ? 'calc(100% - 240px)' : '100%'
+      }}
+    >
+      <Paper elevation={3} sx={{ p: 2 }}>
+        <Typography variant="h4" component="h2" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
+          Lista de Materias
+        </Typography>
+
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="Tabla de materias">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: theme.palette.primary.main }}>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Código</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Nombre</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Horas Teoría</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Horas Práctica</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Horas Laboratorio</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Total Horas</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Carrera</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {materias.map((materia) => (
+                <TableRow
+                  key={materia.codigomateria}
+                  sx={{ '&:nth-of-type(odd)': { backgroundColor: theme.palette.action.hover } }}
+                >
+                  <TableCell>{materia.codigomateria}</TableCell>
+                  <TableCell>{materia.nombre}</TableCell>
+                  <TableCell align="right">{materia.horas_teoria}</TableCell>
+                  <TableCell align="right">{materia.horas_practica}</TableCell>
+                  <TableCell align="right">{materia.horas_laboratorio}</TableCell>
+                  <TableCell align="right">{materia.total_horas}</TableCell>
+                  <TableCell>{materia.nombre_carrera}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
+  );
 };
 
 export default MateriaList;

@@ -5,10 +5,9 @@ import { Container, Typography, Box, Table, TableBody, TableCell, TableContainer
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Menu, MenuItem, ListItemIcon } from '@mui/material';
-//import { CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon } from '@mui/icons-material';
-//import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh } from '@mui/icons-material';
-//import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
 import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+
 const ConvocatoriaList = () => {
   const navigate = useNavigate();
   const [convocatorias, setConvocatorias] = useState([]);
@@ -32,6 +31,7 @@ const ConvocatoriaList = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentConvocatoria, setCurrentConvocatoria] = useState(null);
   
+  const theme = useTheme();
   // Campos de búsqueda disponibles
   const searchFields = [
     { value: 'nombre_conv', label: 'Nombre' },
@@ -104,27 +104,44 @@ const ConvocatoriaList = () => {
   };
 
   const handleEstadoChangeClick = (convocatoria, nuevoEstado) => {
+    if (!convocatoria || !convocatoria.id_convocatoria) {
+      console.error('Convocatoria inválida:', convocatoria);
+      showSnackbar('No se ha seleccionado una convocatoria válida', 'error');
+      return;
+    }
+    
+    console.log('Cambiando estado de convocatoria:', convocatoria.id_convocatoria, 'a', nuevoEstado);
     setSelectedConvocatoria(convocatoria);
     setSelectedEstado(nuevoEstado);
     
     if (['Observado', 'Devuelto'].includes(nuevoEstado)) {
       setEstadoDialogOpen(true);
     } else {
-      confirmEstadoChange(nuevoEstado);
+      confirmEstadoChange();
     }
   };
 
   const confirmEstadoChange = async (comentario = null) => {
     try {
+      if (!selectedConvocatoria?.id_convocatoria) {
+        throw new Error('Convocatoria no seleccionada');
+      }
+
       const payload = { estado: selectedEstado };
       if (comentario) payload.comentario_observado = comentario;
       
-      await axios.patch(
+      console.log('Enviando cambio de estado:', payload); 
+      
+      const response = await axios.patch(
         `http://localhost:5000/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`,
         payload
-      );
+      ).catch(error => {
+        console.error('Error en la petición:', error.response?.data || error.message);
+        throw error;
+      });
       
-      // Actualizar el estado localmente
+      console.log('Respuesta del servidor:', response.data); 
+
       const updatedConvocatorias = convocatorias.map(conv => 
         conv.id_convocatoria === selectedConvocatoria.id_convocatoria 
           ? { 
@@ -138,8 +155,13 @@ const ConvocatoriaList = () => {
       setConvocatorias(updatedConvocatorias);
       showSnackbar('Estado actualizado correctamente', 'success');
     } catch (error) {
-      console.error('Error al cambiar estado:', error);
-      showSnackbar('Error al cambiar estado', 'error');
+      console.error('Detalles del error:', error.response?.data || error.message);
+      showSnackbar(
+        error.response?.data?.error || 
+        error.response?.data?.message || 
+        'Error al cambiar estado',
+        'error'
+      );
     } finally {
       setEstadoDialogOpen(false);
       setSelectedConvocatoria(null);
@@ -185,12 +207,12 @@ const ConvocatoriaList = () => {
 
   const getEstadoColor = (estado) => {
     switch (estado) {
-      case 'Para Revisión': return 'default';
-      case 'En Revisión': return 'info';
-      case 'Observado': return 'warning';
-      case 'Revisado': return 'primary';
-      case 'Aprobado': return 'success';
-      case 'Devuelto': return 'error';
+      case 'Para Revisión': return 'warning'; // Amarillo
+      case 'En Revisión': return 'info';     // Azul
+      case 'Observado': return 'error';      // Rojo
+      case 'Revisado': return 'success';     // Verde
+      case 'Aprobado': return 'success';     // Verde
+      case 'Devuelto': return 'error';       // Rojo
       case 'Para Publicar': return 'secondary';
       default: return 'default';
     }
@@ -199,31 +221,48 @@ const ConvocatoriaList = () => {
   const renderEstadoActions = (convocatoria) => {
   const estadosPermitidos = getEstadosPermitidos();
   
-  if (estadosPermitidos.length === 0) {
+  if (estadosPermitidos.length === 0 || !['tecnico_vicerrectorado', 'vicerrectorado'].includes(userRole)) {
     return (
       <Chip 
         label={convocatoria.estado} 
         color={getEstadoColor(convocatoria.estado)} 
         size="small"
+        clickable={false}
       />
     );
-  } return (
+  }
+  return (
     <>
-      <Button
-        variant="outlined"
-        size="small"
-        color={getEstadoColor(convocatoria.estado)}
-        endIcon={<ArrowDropDownIcon />}
-        onClick={(e) => handleOpenEstadoMenu(e, convocatoria)}
-      >
-        {convocatoria.estado}
-      </Button>
+      <Tooltip title="Haz clic para cambiar el estado">
+        <Chip
+          label={convocatoria.estado}
+          color={getEstadoColor(convocatoria.estado)}
+          size="small"
+          onClick={(e) => handleOpenEstadoMenu(e, convocatoria)}
+          clickable
+          deleteIcon={<ArrowDropDownIcon />}
+          onDelete={(e) => handleOpenEstadoMenu(e, convocatoria)}
+        />
+      </Tooltip>
       
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleCloseEstadoMenu}
+        PaperProps={{
+          sx: {
+            minWidth: 200,
+            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)'
+          }
+        }}
       >
+        <MenuItem disabled sx={{ fontWeight: 'bold', opacity: 1 }}>
+          <ListItemIcon>
+            <AutorenewIcon color="disabled" />
+          </ListItemIcon>
+          Cambiar estado a:
+        </MenuItem>
+        
         {estadosPermitidos.map((estado) => (
           <MenuItem
             key={estado.value}
@@ -232,9 +271,25 @@ const ConvocatoriaList = () => {
               handleEstadoChangeClick(currentConvocatoria, estado.value);
             }}
             disabled={currentConvocatoria?.estado === estado.value}
+            sx={{
+              color: getEstadoColor(estado.value) === 'error' ? 
+                theme.palette.error.main : 
+                theme.palette[getEstadoColor(estado.value)]?.main,
+              '&.Mui-disabled': {
+                opacity: 0.5,
+                backgroundColor: 'action.selected'
+              }
+            }}
           >
-            <ListItemIcon>{estado.icon}</ListItemIcon>
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              {estado.icon}
+            </ListItemIcon>
             {estado.label}
+            {currentConvocatoria?.estado === estado.value && (
+              <Box sx={{ flexGrow: 1, textAlign: 'right' }}>
+                <CheckCircleIcon fontSize="small" color="inherit" />
+              </Box>
+            )}
           </MenuItem>
         ))}
       </Menu>
@@ -243,23 +298,25 @@ const ConvocatoriaList = () => {
 };
 
   const getEstadosPermitidos = () => {
-  if (!userRole) return [];
-  
-  if (userRole === 'tecnico_vicerrectorado') {
-    return [
-      { value: 'En Revisión', label: 'En Revisión', icon: <AutorenewIcon /> },
-      { value: 'Revisado', label: 'Revisado', icon: <CheckCircleIcon /> },
-      { value: 'Observado', label: 'Observado', icon: <WarningIcon /> }
-    ];
-      } else if (userRole === 'vicerrectorado') {
-        return [
-          { value: 'Aprobado', label: 'Aprobado', icon: <CheckCircleIcon /> },
-          { value: 'Devuelto', label: 'Devuelto', icon: <ErrorIcon /> },
-          { value: 'Para Publicar', label: 'Para Publicar', icon: <SendIcon /> }
-        ];
-      }
+    if (!userRole) return [];
+    
+    console.log('Rol del usuario:', userRole); // Debug
+    
+    if (userRole === 'tecnico_vicerrectorado') {
+      return [
+        { value: 'En Revisión', label: 'En Revisión', icon: <AutorenewIcon /> },
+        { value: 'Revisado', label: 'Revisado', icon: <CheckCircleIcon /> },
+        { value: 'Observado', label: 'Observado', icon: <WarningIcon /> }
+      ];
+    } else if (userRole === 'vicerrectorado') {
+      return [
+        { value: 'Aprobado', label: 'Aprobado', icon: <CheckCircleIcon /> },
+        { value: 'Devuelto', label: 'Devuelto', icon: <ErrorIcon /> },
+        { value: 'Para Publicar', label: 'Para Publicar', icon: <SendIcon /> }
+      ];
+    }
     return [];
-  };  
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -364,7 +421,7 @@ const ConvocatoriaList = () => {
                     {convocatoria.fecha_fin ? format(new Date(convocatoria.fecha_fin), 'dd/MM/yyyy') : 'N/A'}
                   </TableCell>
                   
-                  <TableCell>
+                  <TableCell sx={{ minWidth: 200 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {renderEstadoActions(convocatoria)}
                       
@@ -454,15 +511,20 @@ const ConvocatoriaList = () => {
         </DialogTitle>
         <DialogContent>
           {(selectedEstado === 'Observado' || selectedEstado === 'Devuelto') && (
-            <Typography paragraph>
-              Por favor ingrese los motivos por los cuales la convocatoria está siendo {selectedEstado.toLowerCase()}:
-            </Typography>
+            <>
+              <Typography variant="subtitle1" color="error" gutterBottom>
+                ¡Atención! Este cambio requiere justificación
+              </Typography>
+              <Typography paragraph>
+                Por favor ingrese los motivos por los cuales la convocatoria está siendo {selectedEstado.toLowerCase()}:
+              </Typography>
+            </>
           )}
           
           <TextField
             autoFocus
             margin="dense"
-            label="Comentario"
+            label={selectedEstado === 'EDIT_COMENTARIO' ? 'Comentario' : 'Justificación'}
             fullWidth
             variant="outlined"
             multiline
@@ -470,22 +532,29 @@ const ConvocatoriaList = () => {
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
             required={selectedEstado !== 'EDIT_COMENTARIO'}
+            error={(selectedEstado === 'Observado' || selectedEstado === 'Devuelto') && !comentario}
+            helperText={
+              (selectedEstado === 'Observado' || selectedEstado === 'Devuelto') && !comentario 
+                ? 'Este campo es obligatorio' 
+                : ''
+            }
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEstadoDialogOpen(false)}>Cancelar</Button>
-          <Button 
-            onClick={() => selectedEstado === 'EDIT_COMENTARIO' 
-              ? confirmEstadoChange(comentario) 
-              : confirmEstadoChange(comentario)
-            }
-            disabled={!comentario && selectedEstado !== 'EDIT_COMENTARIO'}
-            color="primary"
-          >
-            Confirmar
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <DialogActions>
+            <Button onClick={() => setEstadoDialogOpen(false)}>Cancelar</Button>
+            <Button 
+              onClick={() => selectedEstado === 'EDIT_COMENTARIO' 
+                ? confirmEstadoChange(comentario) 
+                : confirmEstadoChange(comentario)
+              }
+              disabled={!comentario && (selectedEstado === 'Observado' || selectedEstado === 'Devuelto')}
+              color="primary"
+              variant="contained"
+            >
+              Confirmar
+            </Button>
+          </DialogActions>
+        </Dialog>
       
       {/* Snackbar para mensajes */}
       <Snackbar
