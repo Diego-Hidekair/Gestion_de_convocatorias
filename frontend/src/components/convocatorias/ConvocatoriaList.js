@@ -10,6 +10,8 @@ import { useTheme } from '@mui/material/styles';
 
 const ConvocatoriaList = () => {
   const navigate = useNavigate();
+///  const theme = useTheme();
+
   const [convocatorias, setConvocatorias] = useState([]);
   const [filteredConvocatorias, setFilteredConvocatorias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ const ConvocatoriaList = () => {
   const fetchConvocatorias = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/convocatorias');
+      const response = await axios.get('http://localhost:5000/convocatorias'); // Correcto
       setConvocatorias(response.data);
       setFilteredConvocatorias(response.data);
       setError(null);
@@ -91,7 +93,7 @@ const ConvocatoriaList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/convocatorias/${convocatoriaToDelete}`);
+      await axios.delete(`http://localhost:5000/convocatorias/${convocatoriaToDelete}`); 
       setConvocatorias(convocatorias.filter(c => c.id_convocatoria !== convocatoriaToDelete));
       showSnackbar('Convocatoria eliminada correctamente', 'success');
     } catch (error) {
@@ -103,84 +105,58 @@ const ConvocatoriaList = () => {
     }
   };
 
-  const handleEstadoChangeClick = (convocatoria, nuevoEstado) => {
-    if (!convocatoria || !convocatoria.id_convocatoria) {
-      console.error('Convocatoria inválida:', convocatoria);
-      showSnackbar('No se ha seleccionado una convocatoria válida', 'error');
-      return;
-    }
-    
-    console.log('Cambiando estado de convocatoria:', convocatoria.id_convocatoria, 'a', nuevoEstado);
-    setSelectedConvocatoria(convocatoria);
-    setSelectedEstado(nuevoEstado);
-    
+  const handleEstadoChangeClick = async (convocatoria, nuevoEstado) => {
+  if (!convocatoria?.id_convocatoria) {
+    console.error('Convocatoria inválida:', convocatoria);
+    showSnackbar('No se ha seleccionado una convocatoria válida', 'error');
+    return;
+  }
+  
+  const convocatoriaSeleccionada = {...convocatoria};
+  
     if (['Observado', 'Devuelto'].includes(nuevoEstado)) {
+      setSelectedConvocatoria(convocatoriaSeleccionada);
+      setSelectedEstado(nuevoEstado);
       setEstadoDialogOpen(true);
     } else {
-      confirmEstadoChange();
-    }
-  };
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No hay token de autenticación');
 
-  const confirmEstadoChange = async (comentario = null) => {
-    try {
-      if (!selectedConvocatoria?.id_convocatoria) {
-        throw new Error('Convocatoria no seleccionada');
+        const payload = { estado: nuevoEstado };
+        
+        const response = await axios.patch(
+          `http://localhost:5000/convocatorias/${convocatoriaSeleccionada.id_convocatoria}/estado`,
+          payload,
+          { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+        );
+
+        const updatedConvocatorias = convocatorias.map(conv => 
+          conv.id_convocatoria === convocatoriaSeleccionada.id_convocatoria 
+            ? { ...conv, ...response.data }
+            : conv
+        );
+        
+        setConvocatorias(updatedConvocatorias);
+        showSnackbar(`Estado cambiado a "${nuevoEstado}"`, 'success');
+      } catch (error) {
+        console.error('Error al cambiar estado:', error);
+        showSnackbar(error.response?.data?.error || error.message || 'Error al cambiar estado', 'error');
       }
-
-      const payload = { estado: selectedEstado };
-      if (comentario) payload.comentario_observado = comentario;
-      
-      console.log('Enviando cambio de estado:', payload); 
-      
-      const response = await axios.patch(
-        `http://localhost:5000/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`,
-        payload
-      ).catch(error => {
-        console.error('Error en la petición:', error.response?.data || error.message);
-        throw error;
-      });
-      
-      console.log('Respuesta del servidor:', response.data); 
-
-      const updatedConvocatorias = convocatorias.map(conv => 
-        conv.id_convocatoria === selectedConvocatoria.id_convocatoria 
-          ? { 
-              ...conv, 
-              estado: selectedEstado,
-              ...(comentario ? { comentario_observado: comentario } : {}) 
-            } 
-          : conv
-      );
-      
-      setConvocatorias(updatedConvocatorias);
-      showSnackbar('Estado actualizado correctamente', 'success');
-    } catch (error) {
-      console.error('Detalles del error:', error.response?.data || error.message);
-      showSnackbar(
-        error.response?.data?.error || 
-        error.response?.data?.message || 
-        'Error al cambiar estado',
-        'error'
-      );
-    } finally {
-      setEstadoDialogOpen(false);
-      setSelectedConvocatoria(null);
-      setSelectedEstado('');
-      setComentario('');
     }
   };
-
+  
   const handleEditComentario = (convocatoria) => {
     setSelectedConvocatoria(convocatoria);
     setComentario(convocatoria.comentario_observado || '');
-    setSelectedEstado('EDIT_COMENTARIO');
+    setSelectedEstado(convocatoria.estado); 
     setEstadoDialogOpen(true);
   };
 
   const handleDownloadPdf = async (id) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/pdf/download/${id}`,
+        `http://localhost:5000/pdf/download/${id}`,  // Esta es la ruta correcta
         { responseType: 'blob' }
       );
       
@@ -295,6 +271,45 @@ const ConvocatoriaList = () => {
       </Menu>
     </>
   );
+};
+
+const confirmEstadoChange = async () => {
+  try {
+    if (!selectedConvocatoria?.id_convocatoria || !selectedEstado) {
+      throw new Error('Datos incompletos para el cambio de estado');
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No hay token de autenticación');
+
+    const payload = { 
+      estado: selectedEstado,
+      comentario_observado: comentario 
+    };
+
+    const response = await axios.patch(
+      `http://localhost:5000/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`,
+      payload,
+      { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+    );
+
+    const updatedConvocatorias = convocatorias.map(conv => 
+      conv.id_convocatoria === selectedConvocatoria.id_convocatoria 
+        ? { ...conv, ...response.data }
+        : conv
+    );
+    
+    setConvocatorias(updatedConvocatorias);
+    showSnackbar(`Estado cambiado a "${selectedEstado}"`, 'success');
+  } catch (error) {
+    console.error('Error al cambiar estado:', error);
+    showSnackbar(error.response?.data?.error || error.message || 'Error al cambiar estado', 'error');
+  } finally {
+    setEstadoDialogOpen(false);
+    setSelectedConvocatoria(null);
+    setSelectedEstado('');
+    setComentario('');
+  }
 };
 
   const getEstadosPermitidos = () => {
@@ -507,7 +522,7 @@ const ConvocatoriaList = () => {
         maxWidth="sm"
       >
         <DialogTitle>
-          {selectedEstado === 'EDIT_COMENTARIO' ? 'Editar Comentario' : `Cambiar estado a ${selectedEstado}`}
+          {selectedEstado === 'EDIT_COMENTARIO' ? 'Editar Comentario' : `Editar comentario (Estado: ${selectedEstado})`}
         </DialogTitle>
         <DialogContent>
           {(selectedEstado === 'Observado' || selectedEstado === 'Devuelto') && (
@@ -543,10 +558,7 @@ const ConvocatoriaList = () => {
           <DialogActions>
             <Button onClick={() => setEstadoDialogOpen(false)}>Cancelar</Button>
             <Button 
-              onClick={() => selectedEstado === 'EDIT_COMENTARIO' 
-                ? confirmEstadoChange(comentario) 
-                : confirmEstadoChange(comentario)
-              }
+              onClick={confirmEstadoChange}
               disabled={!comentario && (selectedEstado === 'Observado' || selectedEstado === 'Devuelto')}
               color="primary"
               variant="contained"

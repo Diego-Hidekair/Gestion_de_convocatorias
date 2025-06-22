@@ -44,7 +44,8 @@ const routes = [
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
-    { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' }
+    { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' },
+    { path: '/notificaciones', route: './routes/notificacionRoutes' } 
 ];
 
 // Montar las rutas
@@ -77,5 +78,3 @@ process.on('SIGINT', shutdown);
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
-
-

@@ -12,10 +12,7 @@ router.get('/', convocatoriaController.getConvocatorias);
 router.get('/facultad/actual', convocatoriaController.getConvocatoriasByFacultad);
 router.get('/facultad/estado/:estado', convocatoriaController.getConvocatoriasByFacultadAndEstado);
 router.get('/:id', convocatoriaController.getConvocatoriaById);
-router.post(
-    '/',
-    secretariaOnly,
-    convocatoriaController.validateConvocatoria,
+router.post('/', secretariaOnly, convocatoriaController.validateConvocatoria,
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -25,10 +22,7 @@ router.post(
     },
     convocatoriaController.createConvocatoria
 );
-router.put(
-    '/:id',
-    secretariaOnly,
-    convocatoriaController.validateConvocatoria,
+router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -38,10 +32,7 @@ router.put(
     },
     convocatoriaController.updateConvocatoria
 );
-//router.put('/:id/estado', vicerrectorOnly, convocatoriaController.updateEstadoConvocatoria);
 router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateComentarioObservado);
-//router.patch('/:id/estado', convocatoriaController.updateEstadoConvocatoria);
-router.patch('/convocatorias/:id/estado', convocatoriaController.updateEstadoConvocatoria);
-
+router.patch( '/:id/estado', authenticateToken, authorizeRoles(['tecnico_vicerrectorado', 'vicerrectorado', 'admin']), convocatoriaController.updateEstadoConvocatoria);
 
 module.exports = router;

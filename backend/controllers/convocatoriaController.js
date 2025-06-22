@@ -1,6 +1,7 @@
 // backend/controllers/convocatoriaController.js
 const pool = require('../db');
 const { check, validationResult } = require('express-validator');
+const NotificacionModel = require('../models/notificacionModel');
 
 const validateConvocatoria = [
     check('tipo_jornada').isIn(['TIEMPO COMPLETO', 'TIEMPO HORARIO']),
@@ -106,6 +107,18 @@ const createConvocatoria = async (req, res) => {
 
         await client.query('INSERT INTO convocatorias_archivos (id_convocatoria) VALUES ($1)', [convResult.rows[0].id_convocatoria]);
         await client.query('COMMIT');
+        const vicerrectores = await pool.query(
+            'SELECT id_usuario FROM usuarios WHERE rol = $1', 
+            ['vicerrectorado']
+        );
+        for (const vicerrector of vicerrectores.rows) {
+            await generarNotificacion(
+                convResult.rows[0].id_convocatoria,
+                vicerrector.id_usuario,
+                `Nueva convocatoria creada: ${nombre_conv}`,
+                'nueva'
+            );
+        }
         
         res.status(201).json({
             id_convocatoria: convResult.rows[0].id_convocatoria,
@@ -257,10 +270,14 @@ const updateConvocatoria = async (req, res) => {
         }
 
         await client.query('COMMIT');
-        
         const convocatoriaActualizada = await getFullConvocatoria(id);
+        await generarNotificacion(
+            id,
+            convocatoriaActualizada.id_usuario,
+            `Se han actualizado los datos de tu convocatoria`,
+            'actualizacion'
+        );
         res.json(convocatoriaActualizada);
-
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Error al actualizar convocatoria:', error);
@@ -396,7 +413,7 @@ const updateEstadoConvocatoria = async (req, res) => {
 
     try {
         const convocatoriaExistente = await pool.query(
-            'SELECT estado FROM convocatorias WHERE id_convocatoria = $1', 
+            'SELECT estado, id_usuario FROM convocatorias WHERE id_convocatoria = $1', 
             [id]
         );
 
@@ -405,30 +422,32 @@ const updateEstadoConvocatoria = async (req, res) => {
         }
 
         const estadoActual = convocatoriaExistente.rows[0].estado;
+        const idUsuarioCreador = convocatoriaExistente.rows[0].id_usuario;
         if (rol === 'tecnico_vicerrectorado') {
             const estadosPermitidosTecnico = ['Para Revisión', 'En Revisión', 'Observado', 'Revisado'];
             if (!estadosPermitidosTecnico.includes(estado)) {
                 return res.status(400).json({ error: 'Estado no válido para este rol' });
             }
-            } else if (rol === 'vicerrectorado') {
+        } else if (rol === 'vicerrectorado') {
             if (!['Aprobado', 'Devuelto', 'Para Publicar'].includes(estado)) {
                 return res.status(400).json({ error: 'Estado no válido para este rol' });
             }
             
             if (estadoActual !== 'Revisado') {
                 return res.status(400).json({ 
-                error: 'Solo se pueden aprobar/rechazar convocatorias en estado "Revisado"' 
+                    error: 'Solo se pueden aprobar/rechazar convocatorias en estado "Revisado"' 
                 });
             }
-            } else if (rol !== 'admin') {
+        } else if (rol !== 'admin') {
             return res.status(403).json({ error: 'No tienes permisos para esta acción' });
-            }
+        }
 
-            if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
+        if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
             return res.status(400).json({ 
                 error: 'Se requiere un comentario cuando el estado es "Observado" o "Devuelto"' 
             });
-            }
+        }
+
         let query;
         let values;
 
@@ -447,17 +466,18 @@ const updateEstadoConvocatoria = async (req, res) => {
                 RETURNING *`;
             values = [estado, id];
         }
+      const result = await pool.query(query, values);
+        await generarNotificacion(
+            id,
+            idUsuarioCreador,
+            `El estado de tu convocatoria ha cambiado a "${estado}"`,
+            'estado'
+        );
 
-        const result = await pool.query(query, values);
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-    console.log('Solicitud de cambio de estado recibida:', {
-  id: req.params.id,
-  estado: req.body.estado,
-  rol: req.user.rol
-});
 };
 
 const updateComentarioObservado = async (req, res) => {
@@ -492,6 +512,18 @@ const updateComentarioObservado = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+};
+const generarNotificacion = async (id_convocatoria, id_usuario, mensaje, tipo) => {
+  try {
+    await NotificacionModel.crear({
+      id_convocatoria,
+      id_usuario,
+      mensaje,
+      tipo
+    });
+  } catch (error) {
+    console.error('Error al crear notificación:', error);
+  }
 };
 
 module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria};
