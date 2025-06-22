@@ -27,7 +27,7 @@ import RedirectPage from './components/RedirectPage';
 import HonorariosForm from './components/HonorariosForm';
 import NavBar from './components/NavBar';
 import ConvocatoriaArchivosManager from './components/convocatorias/ConvocatoriaArchivos/ConvocatoriaArchivosManager';
-
+import NotificacionesPage from './components/notificaciones/NotificacionesPage';
 
 axios.defaults.baseURL = 'http://localhost:5000/';
 
@@ -194,16 +194,16 @@ const AuthWrapper = () => {
 
    return (
     <Box sx={{display: 'flex', flexDirection: 'column',minHeight: '100vh'}}>
-  {isAuthenticated && (
-    <NavBar 
-      onLogout={handleLogout} 
-      userRole={userRole} 
-      isExpanded={isExpanded}
-      setIsExpanded={setIsExpanded}
-      drawerWidthExpanded={drawerWidthExpanded}
-      drawerWidthCollapsed={drawerWidthCollapsed}
-    />
-  )}
+      {isAuthenticated && (
+        <NavBar 
+          onLogout={handleLogout} 
+          userRole={userRole} 
+          isExpanded={isExpanded}
+          setIsExpanded={setIsExpanded}
+          drawerWidthExpanded={drawerWidthExpanded}
+          drawerWidthCollapsed={drawerWidthCollapsed}
+        />
+      )}
       
       <Box 
         component="main"
@@ -221,15 +221,20 @@ const AuthWrapper = () => {
           ml: `${isAuthenticated ? (isExpanded ? drawerWidthExpanded : drawerWidthCollapsed) : 0}px`,
         }}
       >
-    <HeaderSection isAuthenticated={isAuthenticated} />
-    <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'auto' }}>
+        <HeaderSection isAuthenticated={isAuthenticated} />
+        <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'auto' }}>
+
+
+
+          
         <Routes>
-          {isAuthenticated ? (
-            <>
-              <Route path="/" element={<Navigate to="/redirect" />} />
-              <Route path="/redirect" element={<RedirectPage />} />
-              <Route path="/carreras" element={<CarreraList />} />
-              <Route path="/facultades" element={<FacultadList />} />
+            {isAuthenticated ? (
+              <>
+                <Route path="/" element={<Navigate to="/redirect" />} />
+                <Route path="/redirect" element={<RedirectPage />} />
+                <Route path="/carreras" element={<CarreraList />} />
+                <Route path="/facultades" element={<FacultadList />} />
+                <Route path="/notificaciones" element={<NotificacionesPage />} />
               
               {userRole === 'secretaria_de_decanatura' && (
                 <>
@@ -240,7 +245,6 @@ const AuthWrapper = () => {
                 </>
               )}
               
-              {/* Rutas accesibles para vicerrectorado y técnicos */}
               {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
                 <>
                   <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
@@ -250,7 +254,6 @@ const AuthWrapper = () => {
               <Route path="/convocatorias" element={<ConvocatoriaList />} />
               <Route path="/convocatorias/estado/:estado" element={<ConvocatoriaList />} />
               
-              {/* Otras rutas */}
               <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
               <Route path="/tipos-convocatorias/crear" element={<TipoconvocatoriaForm />} />
               <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
@@ -264,16 +267,16 @@ const AuthWrapper = () => {
               <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
             
               <Route path="*" element={<Navigate to="/redirect" />} />
-            </>
-          ) : (
-            <>
+              </>
+            ) : (
+              <>
               <Route path="/login" element={<Login setAuth={handleLogin} />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<Navigate to="/login" />} />
             </>
           )}
-        </Routes>
-    </Box>
+          </Routes>
+        </Box>
         <FooterSection isAuthenticated={isAuthenticated} />
       </Box>
     </Box>

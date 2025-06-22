@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
 
-// Middleware de autenticación
 const { authenticateToken } = require('./middleware/authMiddleware');
 
 const pool = new Pool({
@@ -33,8 +32,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
-// Rutas
-const routes = [
+
+const routes = [// Rutas
     { path: '/facultades', route: './routes/facultadRoutes' },
     { path: '/carreras', route: './routes/carreraRoutes' },
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
@@ -51,18 +50,15 @@ const routes = [
 // Montar las rutas
 routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));
 
-// Ruta de verificación
-app.get('/', (req, res) => {
+app.get('/', (req, res) => {// Ruta de verificación
     res.send('API funcionando correctamente');
 });
 
-// Errores 404
-app.use((req, res, next) => {
+app.use((req, res, next) => {// Errores 404
     res.status(404).json({ error: "Ruta no encontrada" });
 });
 
-// Errores globales
-app.use((err, req, res, next) => {
+app.use((err, req, res, next) => {// Errores globales
     console.error(err.stack);
     res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
 });
@@ -75,6 +71,5 @@ const shutdown = () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-// Iniciar servidor
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;// Iniciar servidor
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));

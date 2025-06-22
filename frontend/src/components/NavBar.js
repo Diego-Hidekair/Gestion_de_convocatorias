@@ -3,9 +3,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box } from "@mui/material";
-import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Verified as VerifiedIcon } from "@mui/icons-material";
+import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Verified as VerifiedIcon, Notifications as NotificationsIcon} from "@mui/icons-material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles"
+import NotificacionBadge from './NotificacionBadge';
 
 const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpanded = 240, drawerWidthCollapsed = 70}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -59,15 +60,15 @@ const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpan
     const renderMenuItems = () => {
         const commonItems = [
             role === "admin" && (
-                <ListItem 
-                    button
-                    component={Link} 
-                    to="/usuarios" 
-                    key="usuarios" 
-                    sx={getItemStyle("/usuarios")}
-                >
-                    <ListItemIcon sx={{ color: location.pathname === "/usuarios" ? "#000" : "#fff" }}>
-                        <PeopleIcon />
+            <ListItem 
+                button
+                component={Link} 
+                to="/usuarios" 
+                key="usuarios" 
+                sx={getItemStyle("/usuarios")}
+            >
+                <ListItemIcon sx={{ color: location.pathname === "/usuarios" ? "#000" : "#fff" }}>
+                    <PeopleIcon />
                     </ListItemIcon>
                     {isExpanded && <ListItemText primary="Usuarios" />}
                 </ListItem>
@@ -78,13 +79,37 @@ const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpan
                 to="/usuarios/me" 
                 key="perfil" 
                 sx={getItemStyle("/usuarios/me")}
-            >
+                >
                 <ListItemIcon sx={{ color: location.pathname === "/usuarios/me" ? "#000" : "#fff" }}>
                     <PersonIcon />
                 </ListItemIcon>
-                {isExpanded && <ListItemText primary="Perfil" />}
-            </ListItem>
-        ];
+                    {isExpanded && <ListItemText primary="Perfil" />}
+            </ListItem>,
+                <ListItem 
+                    button
+                    component={Link} 
+                    to="/notificaciones" 
+                    key="notificaciones" 
+                    sx={getItemStyle("/notificaciones")}
+                    >
+                    <ListItemIcon sx={{ color: location.pathname === "/notificaciones" ? "#000" : "#fff" }}>
+                        <NotificationsIcon />
+                    </ListItemIcon>
+                        {isExpanded && <ListItemText primary="Notificaciones" />}
+                </ListItem>
+            ];
+        <ListItem 
+            button
+            component={Link} 
+            to="/notificaciones" 
+            key="notificaciones" 
+            sx={getItemStyle("/notificaciones")}
+            >
+            <ListItemIcon sx={{ color: location.pathname === "/notificaciones" ? "#000" : "#fff" }}>
+                <NotificationsIcon />
+            </ListItemIcon>
+            {isExpanded && <ListItemText primary="Notificaciones" />}
+        </ListItem>
        const roleSpecificItems = {
             admin: [
                 <ListItem 
@@ -222,12 +247,15 @@ const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpan
                 <Box display="flex" alignItems="center" justifyContent={isExpanded ? "space-between" : "center"} p={2}>
                     {isExpanded && (
                         <Typography variant="h6" color="white">
-                            Gestión de Convocatorias
+                        Gestión de Convocatorias
                         </Typography>
                     )}
-                    <IconButton onClick={toggleDrawerExpanded} sx={{ color: "white" }}>
+                    <Box display="flex" alignItems="center">
+                        <NotificacionBadge />
+                        <IconButton onClick={toggleDrawerExpanded} sx={{ color: "white" }}>
                         {isExpanded ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                    </IconButton>
+                        </IconButton>
+                    </Box>
                 </Box>
                 <Divider />
                 <List>{renderMenuItems()}</List>
