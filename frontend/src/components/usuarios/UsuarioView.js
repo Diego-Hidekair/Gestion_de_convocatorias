@@ -23,6 +23,7 @@ const UsuarioView = ({ isCurrentUser = false }) => {
           'admin': 'Administrador',
           'secretaria_de_decanatura': 'Secretaría de Decanatura',
           'tecnico_vicerrectorado': 'Técnico de Vicerrectorado',
+          'personal_administrativo': 'Personal Administrativo',
           'vicerrectorado': 'Vicerrectorado'
         };
         

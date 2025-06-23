@@ -148,6 +148,18 @@ const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpan
                     </ListItemIcon>
                     {isExpanded && <ListItemText primary="Convocatorias" />}
                 </ListItem>,
+                <ListItem 
+                    button
+                    component={Link} 
+                    to="/tipos-convocatorias" 
+                    key="/tipos-convocatorias" 
+                    sx={getItemStyle("/tipos-convocatorias")}
+                >
+                    <ListItemIcon sx={{ color: location.pathname === "/tipos-convocatorias" ? "#000" : "#fff" }}>
+                        <HomeIcon />
+                    </ListItemIcon>
+                    {isExpanded && <ListItemText primary="Tipos de coonvocatorias" />}
+                </ListItem>,
             ],
             secretaria_de_decanatura: [
                 <ListItem 
@@ -193,12 +205,26 @@ const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpan
                 <ListItem 
                     button
                     component={Link} 
-                    to="/convocatorias-aprobadas" 
-                    key="convocatorias-aprobadas" 
-                    sx={getItemStyle("/convocatorias-aprobadas")}
+                    to="/convocatorias" 
+                    key="convocatorias"  
+                    sx={getItemStyle("/convocatorias")}
                 >
-                    <ListItemIcon sx={{ color: location.pathname === "/convocatorias-aprobadas" ? "#000" : "#fff" }}>
+                    <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
                         <VerifiedIcon />
+                    </ListItemIcon>
+                    {isExpanded && <ListItemText primary="Convocatorias Aprobadas" />}
+                </ListItem>,
+            ],
+            personal_administrativo: [
+                <ListItem 
+                    button
+                    component={Link} 
+                    to="/convocatorias" 
+                    key="convocatorias" 
+                    sx={getItemStyle("/convocatorias")}
+                >
+                    <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
+                        <ClipboardIcon />
                     </ListItemIcon>
                     {isExpanded && <ListItemText primary="Convocatorias Aprobadas" />}
                 </ListItem>,

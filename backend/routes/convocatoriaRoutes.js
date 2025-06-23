@@ -6,6 +6,7 @@ const { authenticateToken, authorizeRoles } = require('../middleware/authMiddlew
 const { validationResult } = require('express-validator');
 const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
 const vicerrectorOnly = authorizeRoles(['vicerrectorado', 'tecnico_vicerrectorado']);
+const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authenticateToken);
 router.get('/', convocatoriaController.getConvocatorias);
@@ -34,5 +35,6 @@ router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
 );
 router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateComentarioObservado);
 router.patch( '/:id/estado', authenticateToken, authorizeRoles(['tecnico_vicerrectorado', 'vicerrectorado', 'admin']), convocatoriaController.updateEstadoConvocatoria);
+router.post( '/validar-aprobadas', authenticateToken, authorizeRoles(['vicerrectorado']), convocatoriaController.validarConvocatoriasAprobadas );
 
 module.exports = router;

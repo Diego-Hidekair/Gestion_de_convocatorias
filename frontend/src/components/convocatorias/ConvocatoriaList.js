@@ -24,15 +24,14 @@ const ConvocatoriaList = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [userRole, setUserRole] = useState('');
-
-  // Estados para manejar cambios de estado
   const [estadoDialogOpen, setEstadoDialogOpen] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState('');
   const [selectedConvocatoria, setSelectedConvocatoria] = useState(null);
   const [comentario, setComentario] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentConvocatoria, setCurrentConvocatoria] = useState(null);
-  
+  const [validating, setValidating] = useState(false);
+    
   const theme = useTheme();
   // Campos de búsqueda disponibles
   const searchFields = [
@@ -45,20 +44,24 @@ const ConvocatoriaList = () => {
   const handleCloseEstadoMenu = () => { setAnchorEl(null); setCurrentConvocatoria(null); };
   useEffect(() => {
     const fetchUserRole = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/usuarios/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUserRole(response.data.rol);
-      } catch (error) {
-        console.error('Error al obtener el rol del usuario:', error);
-      }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:5000/usuarios/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUserRole(response.data.rol);
+            
+            if (response.data.rol === 'personal_administrativo') {
+                document.title = "Convocatorias Aprobadas";
+            }
+        } catch (error) {
+            console.error('Error al obtener el rol del usuario:', error);
+        }
     };
 
     fetchUserRole();
     fetchConvocatorias();
-  }, []);
+}, []);
 
   const fetchConvocatorias = async () => {
     try {
@@ -183,16 +186,37 @@ const ConvocatoriaList = () => {
 
   const getEstadoColor = (estado) => {
     switch (estado) {
-      case 'Para Revisión': return 'warning'; // Amarillo
-      case 'En Revisión': return 'info';     // Azul
-      case 'Observado': return 'error';      // Rojo
-      case 'Revisado': return 'success';     // Verde
-      case 'Aprobado': return 'success';     // Verde
-      case 'Devuelto': return 'error';       // Rojo
+      case 'Para Revisión': return 'warning'; 
+      case 'En Revisión': return 'info';     
+      case 'Observado': return 'error';      
+      case 'Revisado': return 'success';    
+      case 'Aprobado': return 'success';     
+      case 'Devuelto': return 'error';       
       case 'Para Publicar': return 'secondary';
       default: return 'default';
     }
   };
+
+  const handleValidarAprobadas = async () => {
+    try {
+        setValidating(true);
+        const token = localStorage.getItem('token');
+        
+        const response = await axios.post(
+            'http://localhost:5000/convocatorias/validar-aprobadas',
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        showSnackbar(response.data.message, 'success');
+        fetchConvocatorias();
+    } catch (error) {
+        console.error('Error al validar convocatorias:', error);
+        showSnackbar(error.response?.data?.error || 'Error al validar convocatorias', 'error');
+    } finally {
+        setValidating(false);
+    }
+};
 
   const renderEstadoActions = (convocatoria) => {
   const estadosPermitidos = getEstadosPermitidos();
@@ -315,30 +339,39 @@ const confirmEstadoChange = async () => {
   const getEstadosPermitidos = () => {
     if (!userRole) return [];
     
-    console.log('Rol del usuario:', userRole); // Debug
-    
     if (userRole === 'tecnico_vicerrectorado') {
-      return [
-        { value: 'En Revisión', label: 'En Revisión', icon: <AutorenewIcon /> },
-        { value: 'Revisado', label: 'Revisado', icon: <CheckCircleIcon /> },
-        { value: 'Observado', label: 'Observado', icon: <WarningIcon /> }
-      ];
+        return [
+            { value: 'En Revisión', label: 'En Revisión', icon: <AutorenewIcon /> },
+            { value: 'Revisado', label: 'Revisado', icon: <CheckCircleIcon /> },
+            { value: 'Observado', label: 'Observado', icon: <WarningIcon /> }
+        ];
     } else if (userRole === 'vicerrectorado') {
-      return [
-        { value: 'Aprobado', label: 'Aprobado', icon: <CheckCircleIcon /> },
-        { value: 'Devuelto', label: 'Devuelto', icon: <ErrorIcon /> },
-        { value: 'Para Publicar', label: 'Para Publicar', icon: <SendIcon /> }
-      ];
+        return [
+            { value: 'Aprobado', label: 'Aprobado', icon: <CheckCircleIcon /> },
+            { value: 'Devuelto', label: 'Devuelto', icon: <ErrorIcon /> }
+        ];
     }
     return [];
-  };
+};
+
+{userRole === 'vicerrectorado' && (
+    <Button
+        variant="contained"
+        color="secondary"
+        startIcon={<CheckCircleIcon />}
+        onClick={handleValidarAprobadas}
+        disabled={validating}
+        sx={{ ml: 2 }}
+    >
+        {validating ? 'Validando...' : 'Validar Aprobadas'}
+    </Button>
+)}
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Lista de Convocatorias
-      </Typography>
-      
+          {userRole === 'personal_administrativo' ? 'Convocatorias Aprobadas' : 'Lista de Convocatorias'}
+      </Typography> 
       {/* Barra de búsqueda y acciones */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -371,20 +404,32 @@ const confirmEstadoChange = async () => {
         
         <Box>
           <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => navigate('/convocatorias/new')}
-            sx={{ mr: 2 }}
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => navigate('/convocatorias/new')}
+              sx={{ mr: 2 }}
           >
-            Nueva Convocatoria
+              Nueva Convocatoria
           </Button>
           
-          <Button
-            variant="outlined"
-            startIcon={<Refresh />}
-            onClick={fetchConvocatorias}
+          {userRole === 'vicerrectorado' && (
+              <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={handleValidarAprobadas}
+                  disabled={validating}
+                  sx={{ ml: 2 }}
+              >
+                  {validating ? 'Validando...' : 'Validar Aprobadas'}
+              </Button>
+          )}
+                <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={fetchConvocatorias}
           >
-            Actualizar
+              Actualizar
           </Button>
         </Box>
       </Box>

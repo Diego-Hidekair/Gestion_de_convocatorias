@@ -41,7 +41,8 @@ const UsuarioForm = ({ isEdit = false }) => {
     { value: 'admin', label: 'Administrador' },
     { value: 'secretaria_de_decanatura', label: 'Secretaría de Decanatura' },
     { value: 'tecnico_vicerrectorado', label: 'Técnico de Vicerrectorado' },
-    { value: 'vicerrectorado', label: 'Vicerrectorado' }
+    { value: 'vicerrectorado', label: 'Vicerrectorado' },
+    { value: 'personal_administrativo', label: 'Personal Administrativo' }
   ];
 
   const validateField = (name, value) => {

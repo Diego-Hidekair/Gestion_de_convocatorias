@@ -134,7 +134,7 @@ const createConvocatoria = async (req, res) => {
 
 const getConvocatorias = async (req, res) => {
     try {
-        const result = await pool.query(`
+        let query = `
             SELECT  
                 c.id_convocatoria, 
                 c.nombre_conv, 
@@ -153,8 +153,25 @@ const getConvocatorias = async (req, res) => {
             LEFT JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
             LEFT JOIN usuarios u ON c.id_usuario = u.id_usuario
             LEFT JOIN convocatorias_archivos ca ON ca.id_convocatoria = c.id_convocatoria
-            ORDER BY c.id_convocatoria DESC
-        `);
+        `;
+
+        const whereClauses = [];
+        
+        if (req.user?.rol === 'vicerrectorado') {
+            whereClauses.push(`c.estado = 'Revisado'`);
+        } else if (req.user?.rol === 'tecnico_vicerrectorado') {
+            whereClauses.push(`c.estado IN ('Para Revisión', 'En Revisión', 'Observado','Revisado', 'Devuelto')`);
+        } else if (req.user?.rol === 'personal_administrativo') {
+            whereClauses.push(`c.estado = 'Aprobado'`);
+        }
+
+        if (whereClauses.length > 0) {
+            query += ` WHERE ${whereClauses.join(' AND ')}`;
+        }
+
+        query += ` ORDER BY c.id_convocatoria DESC`;
+
+        const result = await pool.query(query);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -423,13 +440,14 @@ const updateEstadoConvocatoria = async (req, res) => {
 
         const estadoActual = convocatoriaExistente.rows[0].estado;
         const idUsuarioCreador = convocatoriaExistente.rows[0].id_usuario;
+        
         if (rol === 'tecnico_vicerrectorado') {
             const estadosPermitidosTecnico = ['Para Revisión', 'En Revisión', 'Observado', 'Revisado'];
             if (!estadosPermitidosTecnico.includes(estado)) {
                 return res.status(400).json({ error: 'Estado no válido para este rol' });
             }
-        } else if (rol === 'vicerrectorado') {
-            if (!['Aprobado', 'Devuelto', 'Para Publicar'].includes(estado)) {
+        }  else if (rol === 'vicerrectorado') {
+            if (!['Aprobado', 'Devuelto'].includes(estado)) {
                 return res.status(400).json({ error: 'Estado no válido para este rol' });
             }
             
@@ -438,35 +456,30 @@ const updateEstadoConvocatoria = async (req, res) => {
                     error: 'Solo se pueden aprobar/rechazar convocatorias en estado "Revisado"' 
                 });
             }
-        } else if (rol !== 'admin') {
+        } 
+        else if (rol !== 'admin') {
             return res.status(403).json({ error: 'No tienes permisos para esta acción' });
         }
-
+        
         if ((estado === "Observado" || estado === "Devuelto") && !comentario_observado) {
             return res.status(400).json({ 
                 error: 'Se requiere un comentario cuando el estado es "Observado" o "Devuelto"' 
             });
         }
 
-        let query;
-        let values;
+        const result = await pool.query(
+            `UPDATE convocatorias 
+             SET estado = $1, 
+                 comentario_observado = $2
+             WHERE id_convocatoria = $3 
+             RETURNING *`,
+            [
+                estado, 
+                (estado === "Observado" || estado === "Devuelto") ? comentario_observado : null,
+                id
+            ]
+        );
 
-        if (estado === "Observado" || estado === "Devuelto") {
-            query = `
-                UPDATE convocatorias 
-                SET estado = $1, comentario_observado = $2 
-                WHERE id_convocatoria = $3 
-                RETURNING *`;
-            values = [estado, comentario_observado, id];
-        } else {
-            query = `
-                UPDATE convocatorias 
-                SET estado = $1, comentario_observado = NULL 
-                WHERE id_convocatoria = $2 
-                RETURNING *`;
-            values = [estado, id];
-        }
-      const result = await pool.query(query, values);
         await generarNotificacion(
             id,
             idUsuarioCreador,
@@ -526,4 +539,46 @@ const generarNotificacion = async (id_convocatoria, id_usuario, mensaje, tipo) =
   }
 };
 
-module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria};
+const validarConvocatoriasAprobadas = async (req, res) => {
+    try {
+        const { rol } = req.user;
+        
+        if (rol !== 'vicerrectorado') {
+            return res.status(403).json({ error: 'Solo el vicerrectorado puede realizar esta acción' });
+        }
+
+        // Buscar convocatorias con estado "Aprobado"
+        const convocatoriasAprobadas = await pool.query(
+            'SELECT id_convocatoria, id_usuario, nombre_conv FROM convocatorias WHERE estado = $1',
+            ['Aprobado']
+        );
+
+        if (convocatoriasAprobadas.rows.length === 0) {
+            return res.json({ message: 'No hay convocatorias aprobadas para validar' });
+        }
+
+        // Actualizar cada convocatoria a estado "Para Publicar"
+        for (const convocatoria of convocatoriasAprobadas.rows) {
+            await pool.query(
+                'UPDATE convocatorias SET estado = $1 WHERE id_convocatoria = $2',
+                ['Para Publicar', convocatoria.id_convocatoria]
+            );
+
+            await generarNotificacion(
+                convocatoria.id_convocatoria,
+                convocatoria.id_usuario,
+                `Tu convocatoria "${convocatoria.nombre_conv}" ha sido validada y está lista para publicación`,
+                'publicacion'
+            );
+        }
+
+        res.json({ 
+            message: `${convocatoriasAprobadas.rows.length} convocatoria(s) validada(s) correctamente`,
+            count: convocatoriasAprobadas.rows.length
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria, validarConvocatoriasAprobadas };

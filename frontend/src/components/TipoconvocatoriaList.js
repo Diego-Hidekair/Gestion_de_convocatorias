@@ -1,44 +1,63 @@
-// src/components/TipoconvocatoriaList.js 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, Button, Grid, Card, CardContent, IconButton, Container, useTheme, Paper, CircularProgress, Alert} from '@mui/material';
+import {Box, Typography, Button, Grid, Card, CardContent, Container, useTheme, Paper, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const TipoconvocatoriaList = ({ isOpen }) => {
   const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [tipoToDelete, setTipoToDelete] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const theme = useTheme();
   const navigate = useNavigate();
 
+  const fetchTiposConvocatoria = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:5000/tipos-convocatorias');
+      setTiposConvocatoria(response.data);
+      setError(null);
+    } catch (error) {
+      console.error('Error al obtener los tipos de convocatoria:', error);
+      setError('Error al cargar los tipos de convocatoria');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTiposConvocatoria = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/tipos-convocatorias');
-        setTiposConvocatoria(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error al obtener los tipos de convocatoria:', error);
-        setError('Error al cargar los tipos de convocatoria');
-        setLoading(false);
-      }
-    };
     fetchTiposConvocatoria();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Está seguro que desea eliminar este tipo de convocatoria?')) return;
-    
+  const handleDeleteClick = (id) => {
+    setTipoToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/tipos-convocatorias/${id}`);
-      setTiposConvocatoria(tiposConvocatoria.filter(tipo => tipo.id_tipoconvocatoria !== id));
+      await axios.delete(`http://localhost:5000/tipos-convocatorias/${tipoToDelete}`);
+      setTiposConvocatoria(tiposConvocatoria.filter(tipo => tipo.id_tipoconvocatoria !== tipoToDelete));
+      setSnackbarMessage('Tipo de convocatoria eliminado exitosamente');
+      setSnackbarOpen(true);
     } catch (error) {
       console.error('Error al eliminar el tipo de convocatoria:', error);
       setError('Error al eliminar el tipo de convocatoria');
+    } finally {
+      setDeleteDialogOpen(false);
+      setTipoToDelete(null);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   if (loading) {
@@ -52,7 +71,21 @@ const TipoconvocatoriaList = ({ isOpen }) => {
   if (error) {
     return (
       <Box m={2}>
-        <Alert severity="error">{error}</Alert>
+        <Alert 
+          severity="error"
+          action={
+            <Button 
+              color="inherit" 
+              size="small" 
+              onClick={fetchTiposConvocatoria}
+              startIcon={<RefreshIcon />}
+            >
+              Reintentar
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       </Box>
     );
   }
@@ -76,52 +109,102 @@ const TipoconvocatoriaList = ({ isOpen }) => {
       </Paper>
 
       <Container maxWidth="lg">
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
           <Button
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => navigate('/tipos-convocatorias/crear')}
-            sx={{ mb: 2 }}
           >
-            Crear Nuevo Tipo de Convocatoria
+            Nuevo Tipo
           </Button>
+          
+          <Tooltip title="Actualizar lista">
+            <IconButton onClick={fetchTiposConvocatoria}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
 
-        <Grid container spacing={3}>
-          {tiposConvocatoria.map((tipo) => (
-            <Grid item xs={12} sm={6} md={4} key={tipo.id_tipoconvocatoria}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="h2" textAlign="center">
-                    {tipo.nombre_convocatoria}
-                  </Typography>
-                </CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-around', p: 1 }}>
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    startIcon={<EditIcon />}
-                    onClick={() => navigate(`/tipos-convocatorias/editar/${tipo.id_tipoconvocatoria}`)}
-                    size="small"
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={() => handleDelete(tipo.id_tipoconvocatoria)}
-                    size="small"
-                  >
-                    Eliminar
-                  </Button>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+        {tiposConvocatoria.length === 0 ? (
+          <Paper sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="h6">No hay tipos de convocatoria registrados</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/tipos-convocatorias/crear')}
+              sx={{ mt: 2 }}
+            >
+              Crear Nuevo Tipo
+            </Button>
+          </Paper>
+        ) : (
+          <Grid container spacing={3}>
+            {tiposConvocatoria.map((tipo) => (
+              <Grid item xs={12} sm={6} md={4} key={tipo.id_tipoconvocatoria}>
+                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography gutterBottom variant="h5" component="h2" textAlign="center">
+                      {tipo.nombre_convocatoria}
+                    </Typography>
+                    {tipo.Titulo && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {tipo.Titulo.length > 100 
+                          ? `${tipo.Titulo.substring(0, 100)}...` 
+                          : tipo.Titulo}
+                      </Typography>
+                    )}
+                  </CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-around', p: 1 }}>
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      startIcon={<EditIcon />}
+                      onClick={() => navigate(`/tipos-convocatorias/editar/${tipo.id_tipoconvocatoria}`)}
+                      size="small"
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => handleDeleteClick(tipo.id_tipoconvocatoria)}
+                      size="small"
+                    >
+                      Eliminar
+                    </Button>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Container>
+
+      {/* Diálogo de confirmación para eliminar */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          ¿Está seguro que desea eliminar este tipo de convocatoria? Esta acción no se puede deshacer.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={handleDeleteConfirm} color="error">Eliminar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar para mensajes */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+      />
     </Box>
   );
 };
