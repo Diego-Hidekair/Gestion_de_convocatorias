@@ -71,15 +71,15 @@ const Login = ({ setAuth }) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('http://192.168.0.100:5000/api/auth/login', { 
         id_usuario: formData.id_usuario,
         contrasena: formData.Contrasena 
       }, {
         headers: {
           'Content-Type': 'application/json'
-        }
-      });
-      
+        },
+        withCredentials: true 
+    });      
       const { token, userId, rol } = response.data;
       
       localStorage.setItem('token', token);

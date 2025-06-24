@@ -6,6 +6,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
 
 const { authenticateToken } = require('./middleware/authMiddleware');
 
@@ -21,10 +23,25 @@ pool.connect()
     .then(() => console.log('Conexión a la base de datos exitosa'))
     .catch(err => console.error('Error conectando a la base de datos', err));
 
-app.use(cors({ 
-    origin: 'http://localhost:3000',  
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],  
-    allowedHeaders: ['Content-Type', 'Authorization']   
+app.use(cookieParser()); 
+
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://192.168.0.100:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'tu-secreto-seguro',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false, 
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+  }
 }));
 
 app.use(bodyParser.json());
@@ -71,5 +88,7 @@ const shutdown = () => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-const PORT = process.env.PORT || 5000;// Iniciar servidor
-app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {  
+    console.log(`Servidor corriendo en http://<192.168.0.100>:${PORT}`);
+});

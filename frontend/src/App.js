@@ -29,23 +29,22 @@ import NavBar from './components/NavBar';
 import ConvocatoriaArchivosManager from './components/convocatorias/ConvocatoriaArchivos/ConvocatoriaArchivosManager';
 import NotificacionesPage from './components/notificaciones/NotificacionesPage';
 
-axios.defaults.baseURL = 'http://localhost:5000/';
+
+//axios.defaults.baseURL = 'http://192.168.0.100:5000';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://192.168.0.100:5000';
+axios.defaults.withCredentials = true; 
 
 const drawerWidthExpanded = 200;
 const drawerWidthCollapsed = 70;
 
-axios.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => {
-    return Promise.reject(error);
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+    config.headers['Content-Type'] = 'application/json';
   }
-);
+  return config;
+}, error => Promise.reject(error));
 
 // Interceptor para manejar errores de autenticación
 axios.interceptors.response.use(

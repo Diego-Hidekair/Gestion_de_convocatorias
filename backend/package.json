@@ -24,10 +24,12 @@
     "body-parser": "^1.20.2",
     "bootstrap": "^5.3.3",
     "busboy": "^1.6.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "esm": "^3.2.25",
     "express": "^4.20.0",
+    "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
     "file-upload": "^0.0.0",
     "html-pdf": "^3.0.1",
@@ -48,6 +50,6 @@
     "reactstrap": "^9.2.3"
   },
   "devDependencies": {
-    "puppeteer": "^24.9.0"
+    "puppeteer": "^24.10.2"
   }
 }
