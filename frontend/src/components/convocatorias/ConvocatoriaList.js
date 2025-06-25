@@ -157,26 +157,20 @@ const ConvocatoriaList = () => {
   };
 
   const handleDownloadPdf = async (id) => {
-    try {
-      const response = await api.get(
-        `/pdf/download/${id}`,
-        { responseType: 'blob' }
-      );
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `convocatoria_${id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      
-      showSnackbar('Descarga iniciada', 'success');
-    } catch (error) {
-      console.error('Error al descargar PDF:', error);
-      showSnackbar('Error al descargar PDF', 'error');
-    }
-  };
+  try {
+    const response = await api.get(`/pdf/${id}/descargar`, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `convocatoria_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  } catch (error) {
+    console.error('Error al descargar PDF:', error);
+    showSnackbar('Error al descargar PDF', 'error');
+  }
+};
 
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);

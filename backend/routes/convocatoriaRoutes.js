@@ -37,4 +37,5 @@ router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateCome
 router.patch( '/:id/estado', authenticateToken, authorizeRoles(['tecnico_vicerrectorado', 'vicerrectorado', 'admin']), convocatoriaController.updateEstadoConvocatoria);
 router.post( '/validar-aprobadas', authenticateToken, authorizeRoles(['vicerrectorado']), convocatoriaController.validarConvocatoriasAprobadas );
 
+
 module.exports = router;

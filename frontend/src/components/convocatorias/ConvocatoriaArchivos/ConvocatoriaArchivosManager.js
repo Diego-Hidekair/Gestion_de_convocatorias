@@ -2,8 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../config/axiosConfig';
-import { Box, Button, CircularProgress, Alert, Card, CardContent, CardActions, Typography,  Dialog, DialogTitle, DialogContent, DialogActions, Fab, Tooltip } from '@mui/material';
-import { Check as CheckIcon, Visibility as VisibilityIcon, Download as DownloadIcon, Upload as UploadIcon, Close as CloseIcon } from '@mui/icons-material';
+import {
+  Box, Button, CircularProgress, Alert, Card, CardContent, CardActions, Typography,
+  Dialog, DialogTitle, DialogContent, DialogActions, Fab, Tooltip
+} from '@mui/material';
+import {
+  Check as CheckIcon, Visibility as VisibilityIcon, Download as DownloadIcon,
+  Upload as UploadIcon, Close as CloseIcon
+} from '@mui/icons-material';
+
 import PDFViewer from './PDFViewer';
 import FileUploadForm from './FileUploadForm';
 import FileList from './FileList';
@@ -52,6 +59,12 @@ const ConvocatoriaArchivosManager = () => {
 
   useEffect(() => {
     fetchFilesInfo();
+    // limpiar url blob cuando cambie id o componente se desmonte
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
   }, [id]);
 
   const generatePDF = async () => {
@@ -61,19 +74,58 @@ const ConvocatoriaArchivosManager = () => {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
-      
-      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(pdfBlob);
+
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl); // liberar url anterior
+
+     const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const url = URL.createObjectURL(pdfBlob);
       setPdfUrl(url);
-      setShowPdfViewer(true);
+  setShowPdfViewer(true);
       setIsCompleted(true);
-      
+
       await fetchFilesInfo();
     } catch (err) {
       setError(err.response?.data?.error || 'Error al generar PDF');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewPDF = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob',
+      });
+
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfUrl(url);
+      setShowPdfViewer(true);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Error al cargar PDF');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!pdfUrl) {
+      // Descargar directamente desde backend (si no tienes url blob)
+      window.open(`${baseUrl}/convocatorias-archivos/${id}/descargar/doc_conv`, '_blank');
+      return;
+    }
+
+    // Descargar archivo usando url blob
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', `convocatoria_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
   };
 
   const handleUploadSuccess = () => {
@@ -111,7 +163,7 @@ const ConvocatoriaArchivosManager = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirm}>Cancelar</Button>
-          <Button 
+          <Button
             onClick={handleTerminar}
             variant="contained"
             color="primary"
@@ -124,9 +176,10 @@ const ConvocatoriaArchivosManager = () => {
 
       {showPdfViewer ? (
         <PDFViewer 
-          pdfUrl={pdfUrl} 
+          pdfUrl={pdfUrl}
           onClose={() => setShowPdfViewer(false)}
           onDownload={() => window.open(pdfUrl, '_blank')}
+          open={showPdfViewer}
         />
       ) : (
         <>
@@ -144,20 +197,14 @@ const ConvocatoriaArchivosManager = () => {
                     <Button
                       variant="contained"
                       startIcon={<VisibilityIcon />}
-                      onClick={() => {
-                        const url = `${baseUrl}/convocatorias-archivos/${id}/ver-pdf`;
-                        setPdfUrl(url);
-                        setShowPdfViewer(true);
-                      }}
+                      onClick={handleViewPDF}
                     >
                       Ver PDF
                     </Button>
                     <Button
                       variant="outlined"
                       startIcon={<DownloadIcon />}
-                      onClick={() => {
-                        window.open(`${baseUrl}/convocatorias-archivos/${id}/descargar/doc_conv`, '_blank');
-                      }}
+                      onClick={handleDownloadPDF}
                     >
                       Descargar PDF
                     </Button>
@@ -184,7 +231,7 @@ const ConvocatoriaArchivosManager = () => {
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6">Documentos Adjuntos</Typography>
                 <Button
-                  variant={showUploadForm ? "outlined" : "contained"}
+                  variant={showUploadForm ? 'outlined' : 'contained'}
                   startIcon={showUploadForm ? <CloseIcon /> : <UploadIcon />}
                   onClick={() => setShowUploadForm(!showUploadForm)}
                 >
@@ -193,22 +240,22 @@ const ConvocatoriaArchivosManager = () => {
               </Box>
 
               {showUploadForm && (
-                <FileUploadForm 
-                  convocatoriaId={id} 
+                <FileUploadForm
+                  convocatoriaId={id}
                   onSuccess={handleUploadSuccess}
                   onError={setError}
                 />
               )}
 
-              <FileList 
-                filesInfo={filesInfo} 
+              <FileList
+                filesInfo={filesInfo}
                 convocatoriaId={id}
               />
             </CardContent>
             <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
               <Button
                 variant="contained"
-                color={isCompleted ? "success" : "primary"}
+                color={isCompleted ? 'success' : 'primary'}
                 onClick={handleConfirmTerminar}
                 startIcon={isCompleted ? <CheckIcon /> : null}
                 sx={{ ml: 2 }}
@@ -219,10 +266,10 @@ const ConvocatoriaArchivosManager = () => {
           </Card>
         </>
       )}
-      
+
       <Tooltip title="Terminar proceso">
         <Fab
-          color={isCompleted ? "success" : "primary"}
+          color={isCompleted ? 'success' : 'primary'}
           onClick={handleConfirmTerminar}
           sx={{
             position: 'fixed',
