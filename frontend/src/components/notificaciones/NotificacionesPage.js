@@ -1,10 +1,10 @@
 // frontend/src/components/notificaciones/NotificacionesPage.js
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, List, ListItem, ListItemText, Divider, Chip, Button, ToggleButton, ToggleButtonGroup,IconButton} from '@mui/material';
+import { Container, Typography, Box, List, ListItem, ListItemText, Divider, Chip, Button, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material';
 import { Notifications as NotificationsIcon, NotificationsOff as NotificationsOffIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import axios from 'axios';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import api from '../../config/axiosConfig'; 
 
 const NotificacionesPage = () => {
   const [notificaciones, setNotificaciones] = useState([]);
@@ -13,7 +13,7 @@ const NotificacionesPage = () => {
 
   const fetchNotificaciones = async () => {
     try {
-      const response = await axios.get('/notificaciones');
+      const response = await api.get('/notificaciones'); 
       setNotificaciones(response.data);
     } catch (error) {
       console.error('Error al obtener notificaciones:', error);
@@ -24,9 +24,9 @@ const NotificacionesPage = () => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.patch(`/notificaciones/${id}/leer`);
+      await api.patch(`/notificaciones/${id}/leer`); 
       setNotificaciones(notificaciones.map(n => 
-        n.id_notificacion === id ? {...n, leido: true} : n
+        n.id_notificacion === id ? { ...n, leido: true } : n
       ));
     } catch (error) {
       console.error('Error al marcar como leída:', error);
@@ -35,8 +35,8 @@ const NotificacionesPage = () => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.patch('/notificaciones/marcar-todas-leidas');
-      setNotificaciones(notificaciones.map(n => ({...n, leido: true})));
+      await api.patch('/notificaciones/marcar-todas-leidas'); 
+      setNotificaciones(notificaciones.map(n => ({ ...n, leido: true })));
     } catch (error) {
       console.error('Error al marcar todas como leídas:', error);
     }
@@ -44,7 +44,7 @@ const NotificacionesPage = () => {
 
   const deleteNotification = async (id) => {
     try {
-      await axios.delete(`/notificaciones/${id}`);
+      await api.delete(`/notificaciones/${id}`); 
       setNotificaciones(notificaciones.filter(n => n.id_notificacion !== id));
     } catch (error) {
       console.error('Error al eliminar notificación:', error);

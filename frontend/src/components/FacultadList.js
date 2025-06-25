@@ -1,6 +1,6 @@
 // frontend/src/components/FacultadList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';  
 import { Box, Container, Typography, Grid, Card, CardContent, Avatar, Divider, Skeleton, useTheme, useMediaQuery, Chip } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import PersonIcon from '@mui/icons-material/Person';
@@ -26,7 +26,7 @@ const FacultadList = ({ isOpen }) => {
   useEffect(() => {
     const fetchFacultades = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/facultades');
+        const response = await api.get('/facultades');
         setFacultades(response.data);
       } catch (error) {
         console.error('Error al obtener las facultades:', error);

@@ -1,8 +1,8 @@
 // frontend/src/components/convocatorias/ConvocatoriaArchivos/ConvocatoriaArchivosManager.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Box, Button, CircularProgress, Alert, Card, CardContent, CardActions, Typography, Dialog, DialogTitle, DialogContent, DialogActions, Fab, Tooltip, IconButton } from '@mui/material';
+import api from '../../../config/axiosConfig';
+import { Box, Button, CircularProgress, Alert, Card, CardContent, CardActions, Typography,  Dialog, DialogTitle, DialogContent, DialogActions, Fab, Tooltip } from '@mui/material';
 import { Check as CheckIcon, Visibility as VisibilityIcon, Download as DownloadIcon, Upload as UploadIcon, Close as CloseIcon } from '@mui/icons-material';
 import PDFViewer from './PDFViewer';
 import FileUploadForm from './FileUploadForm';
@@ -21,6 +21,8 @@ const ConvocatoriaArchivosManager = () => {
   const [openConfirm, setOpenConfirm] = useState(false);
   const token = localStorage.getItem('token');
 
+  const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
   const handleTerminar = () => {
     navigate('/convocatorias');
   };
@@ -36,8 +38,8 @@ const ConvocatoriaArchivosManager = () => {
   const fetchFilesInfo = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:5000/convocatorias-archivos/${id}/archivos`,
+      const response = await api.get(
+        `/convocatorias-archivos/${id}/archivos`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setFilesInfo(response.data);
@@ -55,13 +57,10 @@ const ConvocatoriaArchivosManager = () => {
   const generatePDF = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:5000/convocatorias-archivos/${id}/generar-pdf`,
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob'
-        }
-      );
+      const response = await api.get(`/convocatorias-archivos/${id}/generar-pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
       
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
       const url = URL.createObjectURL(pdfBlob);
@@ -146,7 +145,7 @@ const ConvocatoriaArchivosManager = () => {
                       variant="contained"
                       startIcon={<VisibilityIcon />}
                       onClick={() => {
-                        const url = `http://localhost:5000/convocatorias-archivos/${id}/ver-pdf`;
+                        const url = `${baseUrl}/convocatorias-archivos/${id}/ver-pdf`;
                         setPdfUrl(url);
                         setShowPdfViewer(true);
                       }}
@@ -157,10 +156,7 @@ const ConvocatoriaArchivosManager = () => {
                       variant="outlined"
                       startIcon={<DownloadIcon />}
                       onClick={() => {
-                        window.open(
-                          `http://localhost:5000/convocatorias-archivos/${id}/descargar/doc_conv`,
-                          '_blank'
-                        );
+                        window.open(`${baseUrl}/convocatorias-archivos/${id}/descargar/doc_conv`, '_blank');
                       }}
                     >
                       Descargar PDF

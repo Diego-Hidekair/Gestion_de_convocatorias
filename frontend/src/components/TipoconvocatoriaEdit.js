@@ -1,16 +1,16 @@
 // src/components/TipoconvocatoriaEdit.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig'; 
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Box, TextField, Button, Paper, Alert, Snackbar, CircularProgress} from '@mui/material';
+import { Container, Typography, Box, TextField, Button, Paper, Alert, Snackbar, CircularProgress } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 
 const TipoconvocatoriaEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [tipoConvocatoria, setTipoConvocatoria] = useState({ 
-    Nombre_convocatoria: '', 
-    Titulo: '' 
+  const [tipoConvocatoria, setTipoConvocatoria] = useState({
+    Nombre_convocatoria: '',
+    Titulo: ''
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +19,7 @@ const TipoconvocatoriaEdit = () => {
   useEffect(() => {
     const fetchTipoConvocatoria = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/tipos-convocatorias/${id}`);
+        const response = await api.get(`/tipos-convocatorias/${id}`);
         setTipoConvocatoria({
           Nombre_convocatoria: response.data.Nombre_convocatoria || '',
           Titulo: response.data.Titulo || ''
@@ -49,7 +49,7 @@ const TipoconvocatoriaEdit = () => {
     }
 
     try {
-      await axios.put(`http://localhost:5000/tipos-convocatorias/${id}`, tipoConvocatoria);
+      await api.put(`/tipos-convocatorias/${id}`, tipoConvocatoria);
       setOpenSnackbar(true);
       setTimeout(() => navigate('/tipos-convocatorias'), 1500);
     } catch (error) {
@@ -87,7 +87,7 @@ const TipoconvocatoriaEdit = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Editar Tipo de Convocatoria
         </Typography>
-        
+
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
@@ -105,7 +105,7 @@ const TipoconvocatoriaEdit = () => {
             margin="normal"
             variant="outlined"
           />
-          
+
           <TextField
             fullWidth
             label="Título"
@@ -119,7 +119,7 @@ const TipoconvocatoriaEdit = () => {
             multiline
             rows={4}
           />
-          
+
           <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
@@ -130,7 +130,7 @@ const TipoconvocatoriaEdit = () => {
             >
               Guardar Cambios
             </Button>
-            
+
             <Button
               variant="outlined"
               onClick={() => navigate('/tipos-convocatorias')}

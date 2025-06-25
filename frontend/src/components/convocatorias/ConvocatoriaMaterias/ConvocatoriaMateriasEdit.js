@@ -1,10 +1,8 @@
 // frontend/src/components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasEdit.js
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Container, TextField, Button, Typography, Paper, Box, Alert, CircularProgress 
-} from '@mui/material';
+import { Container, TextField, Button, Typography, Paper, Box, Alert, CircularProgress } from '@mui/material';
+import api from '../../../config/axiosConfig';
 
 const ConvocatoriaMateriasEdit = () => {    
     const { id_convocatoria, id_materia } = useParams();
@@ -18,7 +16,7 @@ const ConvocatoriaMateriasEdit = () => {
     useEffect(() => {
         const fetchMateria = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/convocatoria_materias/${id_materia}`);
+                const response = await api.get(`/convocatoria_materias/${id_materia}`);
                 setMateria(response.data);
                 setPerfilProfesional(response.data.perfil_profesional || '');
                 setTotalHoras(response.data.total_horas || 0);
@@ -35,11 +33,10 @@ const ConvocatoriaMateriasEdit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/convocatoria_materias/${id_materia}`, {
+            await api.put(`/convocatoria_materias/${id_materia}`, {
                 perfil_profesional: perfilProfesional,
                 total_horas: totalHoras
             });
-            
             navigate(`/honorarios/new/${id_convocatoria}/${id_materia}`);
         } catch (err) {
             setError('Error al editar la materia');

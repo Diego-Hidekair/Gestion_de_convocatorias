@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, IconButton, Popover, List, ListItem, ListItemText, Typography, Box, Divider, Button } from '@mui/material';
 import { Notifications as NotificationsIcon } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../config/axiosConfig'; 
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -25,7 +25,7 @@ const NotificacionBadge = () => {
 
   const fetchNotificaciones = async () => {
     try {
-      const response = await axios.get('/notificaciones');
+      const response = await api.get('/notificaciones');
       setNotificaciones(response.data);
       setUnreadCount(response.data.filter(n => !n.leido).length);
     } catch (error) {
@@ -37,7 +37,7 @@ const NotificacionBadge = () => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.patch(`/notificaciones/${id}/leer`);
+      await api.patch(`/notificaciones/${id}/leer`);
       setNotificaciones(notificaciones.map(n => 
         n.id_notificacion === id ? {...n, leido: true} : n
       ));
@@ -49,7 +49,7 @@ const NotificacionBadge = () => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.patch('/notificaciones/marcar-todas-leidas');
+      await api.patch('/notificaciones/marcar-todas-leidas');
       setNotificaciones(notificaciones.map(n => ({...n, leido: true})));
       setUnreadCount(0);
     } catch (error) {

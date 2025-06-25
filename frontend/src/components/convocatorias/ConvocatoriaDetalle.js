@@ -1,11 +1,10 @@
 // frontend/src/components/convocatorias/ConvocatoriaDetalle.js
-
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import {Container, Typography, Box, Card, CardContent, Grid, Button, Chip, Divider, List, ListItem, ListItemText, Alert, CircularProgress, Tab, Tabs, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, TextField, Badge} from '@mui/material';
-import {Edit, ArrowBack, Download, Comment, Visibility, PictureAsPdf, Description } from '@mui/icons-material';
+import {Container, Typography, Box, Card, CardContent, Grid, Button, Chip, Divider, List, ListItem, ListItemText, Alert, CircularProgress, Tab, Tabs, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar} from '@mui/material';
+import {Edit, ArrowBack, Download, Visibility, Description, Close} from '@mui/icons-material';
 import { format } from 'date-fns';
+import api from '../../config/axiosConfig'
 
 const ConvocatoriaDetalle = () => {
   const { id } = useParams();
@@ -24,15 +23,9 @@ const ConvocatoriaDetalle = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Obtener datos del usuario
-        const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const userResponse = await api.get('/usuarios/me');
         setUserRole(userResponse.data.rol);
-        
-        // Obtener datos de la convocatoria
-        const convResponse = await axios.get(`http://localhost:5000/convocatorias/${id}`);
+        const convResponse = await api.get(`/convocatorias/${id}`);
         setConvocatoria(convResponse.data);
         setError(null);
       } catch (error) {
@@ -52,9 +45,8 @@ const ConvocatoriaDetalle = () => {
 
   const handleViewPdf = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/pdf/combinado/ver/${id}`, {
-        responseType: 'blob',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await api.get(`/pdf/combinado/ver/${id}`, {
+        responseType: 'blob'
       });
       
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -70,9 +62,8 @@ const ConvocatoriaDetalle = () => {
 
   const handleDownloadPdf = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/pdf/download/${id}`, {
-        responseType: 'blob',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await api.get(`/pdf/download/${id}`, {
+        responseType: 'blob'
       });
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -149,7 +140,7 @@ const ConvocatoriaDetalle = () => {
           
           <Button
             variant="outlined"
-            startIcon={<PictureAsPdf />}
+            startIcon={<Description />}
             onClick={handleViewPdf}
           >
             Ver PDF
@@ -344,7 +335,7 @@ const ConvocatoriaDetalle = () => {
                     <Button 
                       size="small" 
                       startIcon={<Visibility />}
-                      onClick={() => {/* Lógica para ver este documento específico */}}
+                      onClick={() => {/* Lógica para ver este documento */}}
                     >
                       Ver
                     </Button>
@@ -388,7 +379,6 @@ const ConvocatoriaDetalle = () => {
         </Card>
       )}
       
-      {/* Modal para ver PDF */}
       <Dialog 
         open={pdfModalOpen} 
         onClose={() => setPdfModalOpen(false)}
@@ -433,7 +423,6 @@ const ConvocatoriaDetalle = () => {
         </DialogActions>
       </Dialog>
       
-      {/* Snackbar para mensajes */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

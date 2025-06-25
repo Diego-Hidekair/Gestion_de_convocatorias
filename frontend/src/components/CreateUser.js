@@ -1,6 +1,6 @@
 // frontend/src/components/CreateUser.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';
 
 const CreateUser = () => {
     const [userData, setUserData] = useState({
@@ -8,7 +8,7 @@ const CreateUser = () => {
         Nombres: '',
         Apellido_paterno: '',
         Apellido_materno: '',
-        Rol: 'secretaria_de_decanatura', 
+        Rol: 'secretaria_de_decanatura',
         Contrasena: '',
         Celular: '',
     });
@@ -21,13 +21,8 @@ const CreateUser = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/usuarios', userData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
+            const response = await api.post('/usuarios', userData);
             console.log('Usuario creado:', response.data);
-            // Redirigir o limpiar el formulario después de la creación
         } catch (error) {
             console.error('Error al crear usuario:', error);
         }

@@ -1,6 +1,6 @@
 // frontend/src/components/convocatorias/ConvocatoriaForm.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../config/axiosConfig'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import { Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select } from '@mui/material';
 import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns';
 const ConvocatoriaForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [convocatoria, setConvocatoria] = useState({
     nombre: '',
     fecha_inicio: new Date(),
@@ -24,7 +25,7 @@ const ConvocatoriaForm = () => {
     perfil_profesional: '',
     pago_mensual: 0
   });
-  
+
   const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
   const [carrerasFiltradas, setCarrerasFiltradas] = useState([]);
   const [nombreFacultad, setNombreFacultad] = useState('');
@@ -32,135 +33,131 @@ const ConvocatoriaForm = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [generandoNombre, setGenerandoNombre] = useState(false);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const userResponse = await axios.get('http://localhost:5000/usuarios/me', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-            
-      const userData = userResponse.data;
-      console.log('Datos del usuario:', userData);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-      if (!userData.id_facultad) {
-        throw new Error('El usuario no tiene facultad asignada');
-      }
+        // Obtener datos del usuario (token ya se añade automáticamente en el interceptor)
+        const userResponse = await api.get('/usuarios/me');
+        const userData = userResponse.data;
 
-      const [tiposResponse, carrerasResponse] = await Promise.all([
-        axios.get('http://localhost:5000/tipos-convocatorias'),
-        axios.get(`http://localhost:5000/carreras/facultad-id/${userData.id_facultad}`)
-      ]);
-      console.log('Tipos de convocatoria recibidos:', tiposResponse.data);
-      console.log('Carreras recibidas:', carrerasResponse.data);
+        if (!userData.id_facultad) {
+          throw new Error('El usuario no tiene facultad asignada');
+        }
 
-      const carreras = carrerasResponse.data.map(c => ({
-        ...c,
-        id_programa: c.id_programa.trim()
-      }));
+        // Obtener tipos de convocatoria y carreras filtradas por facultad
+        const [tiposResponse, carrerasResponse] = await Promise.all([
+          api.get('/tipos-convocatorias'),
+          api.get(`/carreras/facultad-id/${userData.id_facultad}`)
+        ]);
 
-      setTiposConvocatoria(tiposResponse.data);
-      setCarrerasFiltradas(carreras);
-      if (carreras.length > 0 && carreras[0].facultad) {
-        setNombreFacultad(carreras[0].facultad);
-      } else if (userData.nombre_facultad) {
-        setNombreFacultad(userData.nombre_facultad);
-      }
+        const carreras = carrerasResponse.data.map(c => ({
+          ...c,
+          id_programa: c.id_programa.trim()
+        }));
+
+        setTiposConvocatoria(tiposResponse.data);
+        setCarrerasFiltradas(carreras);
+
+        // Establecer nombre de facultad (prioriza datos de carreras, sino usuario)
+        if (carreras.length > 0 && carreras[0].facultad) {
+          setNombreFacultad(carreras[0].facultad);
+        } else if (userData.nombre_facultad) {
+          setNombreFacultad(userData.nombre_facultad);
+        }
 
         if (id) {
-        const response = await axios.get(`http://localhost:5000/convocatorias/${id}`);
-        const data = response.data;
-        setConvocatoria({
-          ...data,
-          nombre: data.nombre_conv || '',
-          fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
-          fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
-          id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
-        });
-          
-        const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
+          // Si es edición, traer la convocatoria
+          const response = await api.get(`/convocatorias/${id}`);
+          const data = response.data;
+          setConvocatoria({
+            ...data,
+            nombre: data.nombre_conv || '',
+            fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
+            fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
+            id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
+          });
+
+          const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
           if (programa) {
             setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
           }
         } else {
-          setConvocatoria(prev => ({
-            ...prev,
-            id_programa: userData.id_programa?.trim() || ''
-          }));
-          
+          // Nuevo registro, establecer programa por defecto del usuario
           const userPrograma = userData.id_programa?.trim() || '';
           setConvocatoria(prev => ({
             ...prev,
             id_programa: userPrograma
           }));
+
           const programa = carreras.find(p => p.id_programa === userPrograma);
           if (programa) {
             setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
           }
         }
       } catch (error) {
-      console.error('Error completo:', error);
-      console.error('Error response:', error.response);
-      setError(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
-    } finally {
-      setLoading(false);
+        console.error('Error completo:', error);
+        setError(`Error al cargar datos: ${error.response?.data?.error || error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  useEffect(() => {
+    const year = new Date().getFullYear();
+    let nuevoNombre = '';
+
+    if (convocatoria.etapa_convocatoria) {
+      nuevoNombre += `${convocatoria.etapa_convocatoria} `;
     }
-  };
-  fetchData();
-}, [id]);
-  
- useEffect(() => {
-  const year = new Date().getFullYear();
-  let nuevoNombre = '';
 
-  if (convocatoria.etapa_convocatoria) {
-    nuevoNombre += `${convocatoria.etapa_convocatoria} `;
-  }
+    nuevoNombre += 'CONVOCATORIA ';
 
-  nuevoNombre += 'CONVOCATORIA ';
+    if (convocatoria.id_tipoconvocatoria && tiposConvocatoria.length > 0) {
+      const tipoSeleccionado = tiposConvocatoria.find(t =>
+        t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+      );
 
-  if (convocatoria.id_tipoconvocatoria && tiposConvocatoria?.length > 0) {
-    const tipoSeleccionado = tiposConvocatoria.find(t => 
-      t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
-    );
-    
-    const tipoNombre = tipoSeleccionado?.nombre_tipo_conv?.toUpperCase() || '';
-    
-    if (tipoNombre.includes('EXTRAORDINARIO')) {
-      nuevoNombre += 'A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO ';
-    } else if (tipoNombre.includes('ORDINARIO')) {
-      nuevoNombre += 'A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO ';
-    } else if (tipoNombre.includes('CONSULTORES')) {
-      nuevoNombre += 'A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA ';
-    } else if (tipoNombre) {
-      nuevoNombre += `${tipoNombre} `;
+      const tipoNombre = tipoSeleccionado?.nombre_tipo_conv?.toUpperCase() || '';
+
+      if (tipoNombre.includes('EXTRAORDINARIO')) {
+        nuevoNombre += 'A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO ';
+      } else if (tipoNombre.includes('ORDINARIO')) {
+        nuevoNombre += 'A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO ';
+      } else if (tipoNombre.includes('CONSULTORES')) {
+        nuevoNombre += 'A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA ';
+      } else if (tipoNombre) {
+        nuevoNombre += `${tipoNombre} `;
+      }
     }
-  }
 
-  if (convocatoria.tipo_jornada) {
-    nuevoNombre += `A ${convocatoria.tipo_jornada} `;
-  }
-  if (programaSeleccionado) {
-    nuevoNombre += `PARA LA CARRERA DE ${programaSeleccionado} `;
-  }
-
-  if (convocatoria.id_tipoconvocatoria && tiposConvocatoria?.length > 0) {
-    const tipoSeleccionado = tiposConvocatoria.find(t => 
-      t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
-    );
-    const tipoNombre = tipoSeleccionado?.nombre_tipo_conv?.toUpperCase() || '';
-    
-    if (tipoNombre.includes('EXTRAORDINARIO')) {
-      nuevoNombre += `SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
-    } else {
-      nuevoNombre += `- GESTION ${year}`;
+    if (convocatoria.tipo_jornada) {
+      nuevoNombre += `A ${convocatoria.tipo_jornada} `;
     }
-  }
+    if (programaSeleccionado) {
+      nuevoNombre += `PARA LA CARRERA DE ${programaSeleccionado} `;
+    }
 
-  setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre.trim() }));
-}, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, convocatoria.tipo_jornada, tiposConvocatoria]);
+    if (convocatoria.id_tipoconvocatoria && tiposConvocatoria.length > 0) {
+      const tipoSeleccionado = tiposConvocatoria.find(t =>
+        t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+      );
+      const tipoNombre = tipoSeleccionado?.nombre_tipo_conv?.toUpperCase() || '';
+
+      if (tipoNombre.includes('EXTRAORDINARIO')) {
+        nuevoNombre += `SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
+      } else {
+        nuevoNombre += `- GESTION ${year}`;
+      }
+    }
+
+    setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre.trim() }));
+  }, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, convocatoria.tipo_jornada, tiposConvocatoria]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -169,7 +166,6 @@ const ConvocatoriaForm = () => {
       [name]: value
     }));
 
-    // Actualizar programa seleccionado cuando cambia
     if (name === 'id_programa') {
       const programa = carrerasFiltradas.find(p => p.id_programa === value);
       if (programa) {
@@ -186,50 +182,48 @@ const ConvocatoriaForm = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(null);
-  setSuccess(null);
-  
-  try {
-    setLoading(true);
-    
-    if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
-      throw new Error('Por favor complete todos los campos requeridos');
-    }
-    
-    if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
-      throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
-    }
-    
-    const payload = {
-      ...convocatoria,
-      nombre_conv: convocatoria.nombre,
-      fecha_inicio: format(convocatoria.fecha_inicio, 'yyyy-MM-dd'),
-      fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
-      id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
-      pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
-      id_programa: convocatoria.id_programa.toString().trim()
-    };
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
-    if (id) {
-      await axios.put(`http://localhost:5000/convocatorias/${id}`, payload);
-      setSuccess('Convocatoria actualizada exitosamente');
-      setTimeout(() => navigate('/convocatorias'), 2000);
-    } else {
-      const response = await axios.post('http://localhost:5000/convocatorias', payload, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      const newId = response.data.id_convocatoria;
-      setSuccess('Convocatoria creada exitosamente');
-      navigate(`/convocatoria-materias/${newId}/materias`);
+    try {
+      setLoading(true);
+
+      if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
+        throw new Error('Por favor complete todos los campos requeridos');
+      }
+
+      if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
+        throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
+      }
+
+      const payload = {
+        ...convocatoria,
+        nombre_conv: convocatoria.nombre,
+        fecha_inicio: format(convocatoria.fecha_inicio, 'yyyy-MM-dd'),
+        fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
+        id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
+        pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
+        id_programa: convocatoria.id_programa.toString().trim()
+      };
+
+      if (id) {
+        await api.put(`/convocatorias/${id}`, payload);
+        setSuccess('Convocatoria actualizada exitosamente');
+        setTimeout(() => navigate('/convocatorias'), 2000);
+      } else {
+        const response = await api.post('/convocatorias', payload);
+        const newId = response.data.id_convocatoria;
+        setSuccess('Convocatoria creada exitosamente');
+        navigate(`/convocatoria-materias/${newId}/materias`);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error.response?.data?.error || error.message);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error:', error);
-    setError(error.response?.data?.error || error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <Container>
@@ -238,12 +232,13 @@ const ConvocatoriaForm = () => {
           <Typography variant="h5" align="center" gutterBottom>
             {id ? 'Editar' : 'Registrar'} Convocatoria
           </Typography>
-          
+
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
           {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
-          
+
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
+
               {/* Tipo de Convocatoria */}
               <Grid item xs={12}>
                 <FormControl fullWidth required>
@@ -284,7 +279,7 @@ const ConvocatoriaForm = () => {
                 />
               </Grid>
 
-              {/* Fechas con StaticDatePicker (calendarios grandes) */}
+              {/* Fechas con StaticDatePicker */}
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" gutterBottom>
                   Fecha de Inicio (Generación)
@@ -306,7 +301,7 @@ const ConvocatoriaForm = () => {
                   La fecha de inicio se establece automáticamente al crear la convocatoria
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" gutterBottom>
                   Fecha de Conclusión
@@ -334,27 +329,27 @@ const ConvocatoriaForm = () => {
 
               <Grid item xs={6}>
                 <FormControl fullWidth required>
-                <InputLabel>Programa</InputLabel>
-                <Select
-                  name="id_programa"
-                  value={convocatoria.id_programa?.trim() || ''}
-                  onChange={handleChange}
-                  label="Programa"
-                  disabled={!!id}
-                >
-                  {carrerasFiltradas.map((programa) => (
-                    <MenuItem 
-                      key={programa.id_programa} 
-                      value={programa.id_programa?.trim()}
-                    >
-                      {programa.programa || programa.nombre_carrera}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  <InputLabel>Programa</InputLabel>
+                  <Select
+                    name="id_programa"
+                    value={convocatoria.id_programa?.trim() || ''}
+                    onChange={handleChange}
+                    label="Programa"
+                    disabled={!!id}
+                  >
+                    {carrerasFiltradas.map((programa) => (
+                      <MenuItem
+                        key={programa.id_programa}
+                        value={programa.id_programa?.trim()}
+                      >
+                        {programa.programa || programa.nombre_carrera}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
-              {/* Resto del formulario (igual que antes) */}
+              {/* Tipo de Jornada */}
               <Grid item xs={6}>
                 <FormControl fullWidth required>
                   <InputLabel>Tipo de Jornada</InputLabel>
@@ -370,6 +365,7 @@ const ConvocatoriaForm = () => {
                 </FormControl>
               </Grid>
 
+              {/* Etapa */}
               <Grid item xs={6}>
                 <FormControl fullWidth required>
                   <InputLabel>Etapa</InputLabel>
@@ -386,6 +382,7 @@ const ConvocatoriaForm = () => {
                 </FormControl>
               </Grid>
 
+              {/* Gestión */}
               <Grid item xs={6}>
                 <FormControl fullWidth required>
                   <InputLabel>Gestión</InputLabel>
@@ -400,7 +397,8 @@ const ConvocatoriaForm = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              
+
+              {/* Pago Mensual */}
               <Grid item xs={6}>
                 <TextField
                   label="Pago Mensual (Bs)"
@@ -413,6 +411,7 @@ const ConvocatoriaForm = () => {
                 />
               </Grid>
 
+              {/* Resolución */}
               <Grid item xs={12} md={6}>
                 <TextField
                   label="Resolución"
@@ -423,7 +422,8 @@ const ConvocatoriaForm = () => {
                   required
                 />
               </Grid>
-              
+
+              {/* Dictamen */}
               <Grid item xs={12} md={6}>
                 <TextField
                   label="Dictamen"
@@ -435,6 +435,7 @@ const ConvocatoriaForm = () => {
                 />
               </Grid>
 
+              {/* Perfil Profesional */}
               <Grid item xs={12}>
                 <TextField
                   label="Perfil Profesional"
@@ -450,26 +451,28 @@ const ConvocatoriaForm = () => {
                 />
               </Grid>
 
+              {/* Botones */}
               <Grid item xs={12} align="center">
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  type="submit" 
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
                   size="large"
                   disabled={loading}
                 >
                   {loading ? 'Procesando...' : (id ? 'Actualizar' : 'Siguiente')}
                 </Button>
-                <Button 
-                  variant="outlined" 
-                  color="secondary" 
-                  onClick={() => navigate('/convocatorias')} 
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => navigate('/convocatorias')}
                   style={{ marginLeft: '10px' }}
                   size="large"
                 >
                   Cancelar
                 </Button>
               </Grid>
+
             </Grid>
           </form>
         </CardContent>

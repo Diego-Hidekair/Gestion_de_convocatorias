@@ -1,7 +1,7 @@
 // src/components/MateriaList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, useTheme} from '@mui/material';
+import api from '../config/axiosConfig'; 
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, useTheme } from '@mui/material';
 
 const MateriaList = ({ isOpen }) => {
   const [materias, setMaterias] = useState([]);
@@ -15,8 +15,8 @@ const MateriaList = ({ isOpen }) => {
       try {
         setLoading(true);
         const [materiasResponse, carrerasResponse] = await Promise.all([
-          axios.get('http://localhost:5000/materias'),
-          axios.get('http://localhost:5000/carreras')
+          api.get('/materias'),  
+          api.get('/carreras')
         ]);
 
         const materiasWithCarreras = materiasResponse.data.map((materia) => {

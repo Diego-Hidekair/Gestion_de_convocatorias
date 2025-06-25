@@ -1,7 +1,7 @@
 // frontend/src/context/AuthContext.js
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axiosConfig';
 import { jwtDecode } from 'jwt-decode';
 
 const AuthContext = createContext();
@@ -28,10 +28,7 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        // Verificar token con el backend
-        await axios.get('/api/auth/verify', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.get('/api/auth/verify');  // <-- usa api y no pasa headers manuales
         const decoded = jwtDecode(token);
         setUser(decoded);
       } catch (error) {

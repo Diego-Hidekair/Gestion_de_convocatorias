@@ -1,7 +1,7 @@
 // frontend/src/components/ConvocatoriaMateriasList.js
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import api from '../config/axiosConfig'; 
 
 const ConvocatoriaMateriasList = () => {
     const [convocatorias, setConvocatorias] = useState([]);
@@ -11,7 +11,7 @@ const ConvocatoriaMateriasList = () => {
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/convocatorias');
+                const response = await api.get('/convocatorias');
                 setConvocatorias(response.data);
                 setLoading(false);
             } catch (error) {
@@ -26,8 +26,8 @@ const ConvocatoriaMateriasList = () => {
 
     const handleDelete = async (id_convocatoria) => {
         try {
-            await axios.delete(`http://localhost:5000/convocatorias/${id_convocatoria}`);
-            setConvocatorias(convocatorias.filter(c => c.id_convocatoria !== id_convocatoria)); // Eliminar del estado la convocatoria eliminada
+            await api.delete(`/convocatorias/${id_convocatoria}`);
+            setConvocatorias(convocatorias.filter(c => c.id_convocatoria !== id_convocatoria));
         } catch (error) {
             console.error('Error deleting convocatoria:', error);
         }
@@ -42,8 +42,8 @@ const ConvocatoriaMateriasList = () => {
             <ul>
                 {convocatorias.map((convocatoria) => (
                     <li key={convocatoria.id_convocatoria}>
-                        {convocatoria.nombre}
-                        <Link to={`/convocatorias/${convocatoria.id_convocatoria}/materias`}>Ver Materias</Link>
+                        {convocatoria.nombre} {' '}
+                        <Link to={`/convocatorias/${convocatoria.id_convocatoria}/materias`}>Ver Materias</Link> {' '}
                         <button onClick={() => handleDelete(convocatoria.id_convocatoria)}>Eliminar</button>
                     </li>
                 ))}

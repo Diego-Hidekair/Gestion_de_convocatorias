@@ -1,6 +1,7 @@
 // frontend/src/components/convocatorias/ConvocatoriaArchivos/FileList.js
 import React from 'react';
-import { ListGroup, ListGroupItem, Badge, Button } from 'reactstrap';
+import { List, ListItem, ListItemText, ListItemSecondaryAction, Button, Chip, Stack, } from '@mui/material';
+import api from '../../../config/axiosConfig';
 
 const FileList = ({ filesInfo, convocatoriaId }) => {
   if (!filesInfo) return null;
@@ -11,38 +12,56 @@ const FileList = ({ filesInfo, convocatoriaId }) => {
     { key: 'has_carta', label: 'Carta', type: 'carta' },
     { key: 'has_nota', label: 'Nota', type: 'nota' },
     { key: 'has_certificado_item', label: 'Certificado de Ítem', type: 'certificado_item' },
-    { key: 'has_certificado_presupuestario', label: 'Certificado Presupuestario', type: 'certificado_presupuestario' }
+    { key: 'has_certificado_presupuestario', label: 'Certificado Presupuestario', type: 'certificado_presupuestario' },
   ];
 
-  const handleDownload = (fileType) => {
-    window.open(
-      `http://localhost:5000/convocatorias-archivos/${convocatoriaId}/descargar/${fileType}`,
-      '_blank'
-    );
+  const handleDownload = async (fileType) => {
+    try {
+      const response = await api.get(
+        `/convocatorias-archivos/${convocatoriaId}/descargar/${fileType}`,
+        { responseType: 'blob' }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${fileType}_${convocatoriaId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error(`Error al descargar ${fileType}:`, error);
+      alert('Error al descargar el archivo. Verifica si está disponible.');
+    }
   };
 
   return (
-    <ListGroup>
-      {fileTypes.map((fileType) => (
-        <ListGroupItem key={fileType.key} className="d-flex justify-content-between align-items-center">
-          <span>{fileType.label}</span>
-          {filesInfo[fileType.key] ? (
-            <div>
-              <Badge color="success" className="me-2">Disponible</Badge>
-              <Button 
-                size="sm" 
-                color="primary"
-                onClick={() => handleDownload(fileType.type)}
-              >
-                Descargar
-              </Button>
-            </div>
-          ) : (
-            <Badge color="secondary">No disponible</Badge>
-          )}
-        </ListGroupItem>
+    <List>
+      {fileTypes.map(({ key, label, type }) => (
+        <ListItem
+          key={key}
+          divider
+          secondaryAction={
+            filesInfo[key] ? (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Chip color="success" label="Disponible" size="small" />
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleDownload(type)}
+                >
+                  Descargar
+                </Button>
+              </Stack>
+            ) : (
+              <Chip color="default" label="No disponible" size="small" />
+            )
+          }
+        >
+          <ListItemText primary={label} />
+        </ListItem>
       ))}
-    </ListGroup>
+    </List>
   );
 };
 

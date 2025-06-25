@@ -1,12 +1,12 @@
 // frontend/src/components/convocatorias/ConvocatoriaList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Container, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, FormControl, InputLabel, Select, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Snackbar, Chip, Badge, Tooltip} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
+import api from '../../config/axiosConfig'
 
 const ConvocatoriaList = () => {
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ const ConvocatoriaList = () => {
     const fetchUserRole = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:5000/usuarios/me', {
+            const response = await api.get('/usuarios/me', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUserRole(response.data.rol);
@@ -66,7 +66,7 @@ const ConvocatoriaList = () => {
   const fetchConvocatorias = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/convocatorias'); // Correcto
+      const response = await api.get('/convocatorias');
       setConvocatorias(response.data);
       setFilteredConvocatorias(response.data);
       setError(null);
@@ -96,7 +96,7 @@ const ConvocatoriaList = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/convocatorias/${convocatoriaToDelete}`); 
+      await api.delete(`/convocatorias/${convocatoriaToDelete}`);
       setConvocatorias(convocatorias.filter(c => c.id_convocatoria !== convocatoriaToDelete));
       showSnackbar('Convocatoria eliminada correctamente', 'success');
     } catch (error) {
@@ -128,8 +128,8 @@ const ConvocatoriaList = () => {
 
         const payload = { estado: nuevoEstado };
         
-        const response = await axios.patch(
-          `http://localhost:5000/convocatorias/${convocatoriaSeleccionada.id_convocatoria}/estado`,
+        const response = await api.patch(
+          `/convocatorias/${convocatoriaSeleccionada.id_convocatoria}/estado`,
           payload,
           { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
         );
@@ -158,8 +158,8 @@ const ConvocatoriaList = () => {
 
   const handleDownloadPdf = async (id) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/pdf/download/${id}`,  // Esta es la ruta correcta
+      const response = await api.get(
+        `/pdf/download/${id}`,
         { responseType: 'blob' }
       );
       
@@ -202,8 +202,8 @@ const ConvocatoriaList = () => {
         setValidating(true);
         const token = localStorage.getItem('token');
         
-        const response = await axios.post(
-            'http://localhost:5000/convocatorias/validar-aprobadas',
+        const response = await api.post(
+            '/convocatorias/validar-aprobadas',
             {},
             { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -311,8 +311,8 @@ const confirmEstadoChange = async () => {
       comentario_observado: comentario 
     };
 
-    const response = await axios.patch(
-      `http://localhost:5000/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`,
+    const response = await api.patch(
+      `/convocatorias/${selectedConvocatoria.id_convocatoria}/estado`,
       payload,
       { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
     );

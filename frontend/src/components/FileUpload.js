@@ -1,5 +1,6 @@
+// frontend/src/components/FileUpload.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig'; 
 
 const FileUpload = () => {
   const [resolucion, setResolucion] = useState('');
@@ -14,8 +15,7 @@ const FileUpload = () => {
     formData.append('documento', documento);
 
     try {
-      //const response = await axios.post('http://localhost:5000/api/documentos', formData, {
-      const response = await axios.post('http://localhost:5000/documentos', formData, {
+      const response = await api.post('/documentos', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

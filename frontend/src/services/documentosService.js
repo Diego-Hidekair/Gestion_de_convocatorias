@@ -1,12 +1,11 @@
 // frontend/src/services/documentosService.js
-import axios from 'axios';
+import api from '../config/axiosConfig';
 
-const API_URL = 'http://localhost:4000/documentos';
+const endpoint = '/documentos';
 
-// Crear un nuevo documento
 export const createDocumento = async (data) => {
     try {
-        const response = await axios.post(API_URL, data, {
+        const response = await api.post(endpoint, data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -18,10 +17,9 @@ export const createDocumento = async (data) => {
     }
 };
 
-// Obtener todos los documentos
 export const getDocumentos = async () => {
     try {
-        const response = await axios.get(API_URL);
+        const response = await api.get(endpoint);
         return response.data;
     } catch (error) {
         console.error('Error al obtener documentos:', error);
@@ -29,10 +27,9 @@ export const getDocumentos = async () => {
     }
 };
 
-// Subir un documento adicional
 export const subirDocumentoAdicional = async (data) => {
     try {
-        const response = await axios.post(`${API_URL}/adicional`, data, {
+        const response = await api.post(`${endpoint}/adicional`, data, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -44,10 +41,9 @@ export const subirDocumentoAdicional = async (data) => {
     }
 };
 
-// Obtener documentos adicionales por convocatoria
 export const obtenerDocumentosAdicionalesPorConvocatoria = async (idConvocatoria) => {
     try {
-        const response = await axios.get(`${API_URL}/adicional/${idConvocatoria}`);
+        const response = await api.get(`${endpoint}/adicional/${idConvocatoria}`);
         return response.data;
     } catch (error) {
         console.error('Error al obtener documentos adicionales:', error);

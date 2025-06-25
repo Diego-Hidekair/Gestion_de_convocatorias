@@ -1,5 +1,6 @@
+// frontend/src/components/HonorariosForm.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Typography, TextField, Button, Paper, Container, useTheme, CircularProgress, Alert, Grid} from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -26,7 +27,7 @@ const HonorariosForm = () => {
     if (id_honorario) {
       const fetchHonorario = async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/honorarios/${id_honorario}`);
+          const response = await api.get(`/honorarios/${id_honorario}`);
           const honorario = response.data;
           setFormData({
             pagoMensual: honorario.pago_mensual,
@@ -46,7 +47,7 @@ const HonorariosForm = () => {
 
     const fetchNombreConvocatoria = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/convocatorias/${id_convocatoria}`);
+        const response = await api.get(`/convocatorias/${id_convocatoria}`);
         setNombreConvocatoria(response.data.nombre_tipoconvocatoria);
       } catch (err) {
         setError('Error al obtener el tipo de convocatoria.');
@@ -76,8 +77,7 @@ const HonorariosForm = () => {
 
     try {
       if (id_honorario) {
-        // Modo edición
-        await axios.put(`http://localhost:5000/honorarios/${id_honorario}`, {
+        await api.put(`/honorarios/${id_honorario}`, {
           pago_mensual: formData.pagoMensual,
           resolucion: formData.resolucion,
           dictamen: formData.dictamen
@@ -86,8 +86,7 @@ const HonorariosForm = () => {
           state: { message: 'Honorario actualizado correctamente' }
         });
       } else {
-        // Modo creación
-        const response = await axios.post('http://localhost:5000/honorarios', {
+        const response = await api.post('/honorarios', {
           id_convocatoria,
           pago_mensual: formData.pagoMensual,
           resolucion: formData.resolucion,

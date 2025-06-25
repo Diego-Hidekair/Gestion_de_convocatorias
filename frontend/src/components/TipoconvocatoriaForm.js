@@ -1,8 +1,8 @@
 // src/components/TipoconvocatoriaForm.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';  
 import { useNavigate } from 'react-router-dom';
-import {Container, Typography, Box, TextField, Button, Paper, Alert, Snackbar} from '@mui/material';
+import { Container, Typography, Box, TextField, Button, Paper, Alert, Snackbar } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 
 const TipoconvocatoriaForm = () => {
@@ -32,7 +32,7 @@ const TipoconvocatoriaForm = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/tipos-convocatorias', tipoConvocatoria);
+      await api.post('/tipos-convocatorias', tipoConvocatoria);
       setOpenSnackbar(true);
       setTimeout(() => navigate('/tipos-convocatorias'), 1500);
     } catch (error) {

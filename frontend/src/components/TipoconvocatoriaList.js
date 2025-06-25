@@ -1,6 +1,7 @@
+// src/components/TipoconvocatoriaList.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/axiosConfig';  
 import {Box, Typography, Button, Grid, Card, CardContent, Container, useTheme, Paper, CircularProgress, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -21,7 +22,7 @@ const TipoconvocatoriaList = ({ isOpen }) => {
   const fetchTiposConvocatoria = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/tipos-convocatorias');
+      const response = await api.get('/tipos-convocatorias');
       setTiposConvocatoria(response.data);
       setError(null);
     } catch (error) {
@@ -43,7 +44,7 @@ const TipoconvocatoriaList = ({ isOpen }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5000/tipos-convocatorias/${tipoToDelete}`);
+      await api.delete(`/tipos-convocatorias/${tipoToDelete}`);
       setTiposConvocatoria(tiposConvocatoria.filter(tipo => tipo.id_tipoconvocatoria !== tipoToDelete));
       setSnackbarMessage('Tipo de convocatoria eliminado exitosamente');
       setSnackbarOpen(true);

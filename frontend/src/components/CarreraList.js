@@ -1,6 +1,6 @@
 // frontend/src/components/CarreraList.js 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';
 import { Box, Container, Typography, Grid, Card, CardContent, Chip, Avatar, Divider, Skeleton, useTheme, useMediaQuery} from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import CorporateFareIcon from '@mui/icons-material/CorporateFare';
@@ -14,7 +14,7 @@ const CarreraList = ({ isOpen }) => {
   useEffect(() => {
     const fetchCarreras = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/carreras');
+        const response = await api.get('/carreras');
         setCarreras(response.data);
       } catch (error) {
         console.error('Error al obtener las carreras:', error);

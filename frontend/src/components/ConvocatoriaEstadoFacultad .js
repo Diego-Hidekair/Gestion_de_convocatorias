@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../config/axiosConfig';
 import { Container, Button, Table, FormGroup, Input } from 'reactstrap';
-import ConvocatoriaNav from './ConvocatoriaNav'; // Importa el componente de navegación
+import ConvocatoriaNav from './ConvocatoriaNav';
 
 const ConvocatoriaEstadoFacultad = () => {
     const [estadoSeleccionado, setEstadoSeleccionado] = useState('Para Revisión');
@@ -10,7 +10,7 @@ const ConvocatoriaEstadoFacultad = () => {
     useEffect(() => {
         const fetchConvocatorias = async () => {
             try {
-                const response = await axios.get(`/convocatorias/estado/facultad/${estadoSeleccionado}`);
+                const response = await api.get(`/convocatorias/estado/facultad/${estadoSeleccionado}`);
                 setConvocatorias(response.data);
             } catch (error) {
                 console.error('Error fetching convocatorias:', error);

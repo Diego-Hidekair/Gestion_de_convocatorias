@@ -1,7 +1,7 @@
 // frontend/src/components/convocatorias/ConvocatoriaArchivos/FileUploadForm.js
 import React, { useState } from 'react';
-import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
-import axios from 'axios';
+import { Button, Typography, Box, Alert, FormControl, InputLabel, Input,Stack, } from '@mui/material';
+import api from '../../../config/axiosConfig';
 
 const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
   const [files, setFiles] = useState({});
@@ -11,7 +11,7 @@ const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
   const handleFileChange = (e, field) => {
     setFiles(prev => ({
       ...prev,
-      [field]: e.target.files[0]
+      [field]: e.target.files[0],
     }));
   };
 
@@ -28,18 +28,16 @@ const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
     });
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(
-        `http://localhost:5000/convocatorias-archivos/${convocatoriaId}/archivos`,
+      await api.post(
+        `/convocatorias-archivos/${convocatoriaId}/archivos`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         }
       );
-      onSuccess();
+      if (onSuccess) onSuccess();
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.message;
       setError(errorMsg);
@@ -50,43 +48,85 @@ const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit} className="mb-4">
-      {error && <Alert color="danger">{error}</Alert>}
-      
-      <FormGroup>
-        <Label>Resolución</Label>
-        <Input type="file" onChange={(e) => handleFileChange(e, 'resolucion')} />
-      </FormGroup>
-      
-      <FormGroup>
-        <Label>Dictamen</Label>
-        <Input type="file" onChange={(e) => handleFileChange(e, 'dictamen')} />
-      </FormGroup>
-      
-      <FormGroup>
-        <Label>Carta</Label>
-        <Input type="file" onChange={(e) => handleFileChange(e, 'carta')} />
-      </FormGroup>
-      
-      <FormGroup>
-        <Label>Nota</Label>
-        <Input type="file" onChange={(e) => handleFileChange(e, 'nota')} />
-      </FormGroup>
-      
-      <FormGroup>
-        <Label>Certificado de Ítem</Label>
-        <Input type="file" onChange={(e) => handleFileChange(e, 'certificado_item')} />
-      </FormGroup>
-      
-      <FormGroup>
-        <Label>Certificado Presupuestario</Label>
-        <Input type="file" onChange={(e) => handleFileChange(e, 'certificado_presupuestario')} />
-      </FormGroup>
-      
-      <Button type="submit" color="primary" disabled={loading}>
-        {loading ? 'Subiendo...' : 'Subir Archivos'}
-      </Button>
-    </Form>
+    <Box component="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Stack spacing={2}>
+        <FormControl fullWidth>
+          <InputLabel htmlFor="resolucion">Resolución</InputLabel>
+          <Input
+            id="resolucion"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'resolucion')}
+            inputProps={{ accept: '.pdf,.doc,.docx' }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel htmlFor="dictamen">Dictamen</InputLabel>
+          <Input
+            id="dictamen"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'dictamen')}
+            inputProps={{ accept: '.pdf,.doc,.docx' }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel htmlFor="carta">Carta</InputLabel>
+          <Input
+            id="carta"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'carta')}
+            inputProps={{ accept: '.pdf,.doc,.docx' }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel htmlFor="nota">Nota</InputLabel>
+          <Input
+            id="nota"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'nota')}
+            inputProps={{ accept: '.pdf,.doc,.docx' }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel htmlFor="certificado_item">Certificado de Ítem</InputLabel>
+          <Input
+            id="certificado_item"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'certificado_item')}
+            inputProps={{ accept: '.pdf,.doc,.docx' }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel htmlFor="certificado_presupuestario">Certificado Presupuestario</InputLabel>
+          <Input
+            id="certificado_presupuestario"
+            type="file"
+            onChange={(e) => handleFileChange(e, 'certificado_presupuestario')}
+            inputProps={{ accept: '.pdf,.doc,.docx' }}
+          />
+        </FormControl>
+
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          disabled={loading}
+          size="large"
+        >
+          {loading ? 'Subiendo...' : 'Subir Archivos'}
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 

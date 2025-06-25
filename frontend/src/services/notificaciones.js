@@ -1,18 +1,11 @@
 // frontend/src/services/notificaciones.js
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import api from '../config/axiosConfig';
 
 export const cargarNotificaciones = async () => {
   try {
-    const token = localStorage.getItem('token');
     const [notifsResponse, countResponse] = await Promise.all([
-      axios.get(`${API_URL}/notificaciones`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      }),
-      axios.get(`${API_URL}/notificaciones/contar-no-leidas`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      })
+      api.get('/notificaciones'),
+      api.get('/notificaciones/contar-no-leidas')
     ]);
     
     return {
