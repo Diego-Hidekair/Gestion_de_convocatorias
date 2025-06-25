@@ -4,11 +4,10 @@ const pdf = require('html-pdf');
 const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
-//const { Pool } = require('pg');
+const { Pool } = require('pg');
 const types = require('pg').types;
 const multer = require('multer');
 const upload = multer();
-const pool = require('../config/db');
 
 types.setTypeParser(17, val => val);
 
