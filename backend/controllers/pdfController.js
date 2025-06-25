@@ -4,8 +4,11 @@ const pdf = require('html-pdf');
 const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
-const { Pool } = require('pg');
+//const { Pool } = require('pg');
 const types = require('pg').types;
+const multer = require('multer');
+const upload = multer();
+const pool = require('../config/db');
 
 types.setTypeParser(17, val => val);
 
@@ -23,9 +26,14 @@ const generarPDFBuffer = async (htmlContent) => {
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  await page.goto('http://localhost:3000/pdf-template/123', { waitUntil: 'networkidle0' });
+    await page.waitForTimeout(500);
 
-  const pdfBuffer = await page.pdf({ format: 'A4' });
+    const content = await page.content(); 
+    //console.log('Contenido renderizado:',
+    console.log('Contenido renderizado:', content); 
+
+    const pdfBuffer = await page.pdf({ format: 'A4' });
 
   fs.writeFileSync('debug_generado.pdf', pdfBuffer);
   console.log('PDF generado y guardado temporalmente como debug_generado.pdf');
@@ -65,10 +73,7 @@ const guardarDocumentoPDF = async (id_convocatoria, pdfBuffer) => {
                 [pdfBuffer, nombreArchivo, id_convocatoria]
             );
         } else {
-            await pool.query(
-                `INSERT INTO convocatorias_archivos 
-                 (doc_conv, nombre_archivo, id_convocatoria) 
-                 VALUES ($1, $2, $3)`,
+            await pool.query( `INSERT INTO convocatorias_archivos (doc_conv, nombre_archivo, id_convocatoria) VALUES ($1, $2, $3)`,
                 [pdfBuffer, nombreArchivo, id_convocatoria]
             );
         }
@@ -133,7 +138,7 @@ const generatePDF = async (req, res) => {
             default:
                 return res.status(400).json({ error: `Tipo de convocatoria no soportado: ${convocatoria.nombre_tipo_conv}` });
         }
-
+        console.log("HTML generado para PDF:\n", htmlContent);
         const pdfBuffer = await generarPDFBuffer(htmlContent);
         
         await guardarDocumentoPDF(id, pdfBuffer);
@@ -415,7 +420,7 @@ function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
 }
 
 const combinarYGuardarPDFs = async (req, res) => {  
-    const { id } = req.params; // Cambiado de id_convocatoria a id
+    const { id } = req.params; 
     let { archivos } = req.body; 
     
     try {
@@ -530,5 +535,43 @@ const deletePDF = async (req, res) => {
         });
     }
 };
+const uploadPDF = async (req, res) => {
+  const { id } = req.params;
+  const tipo = req.body.tipo;
+  const buffer = req.file?.buffer;
 
-module.exports = { generatePDF, combinarYGuardarPDFs, viewCombinedPDF, downloadCombinedPDF, deletePDF, combinarPDFs};
+  if (!buffer || !tipo) {
+    return res.status(400).json({ error: 'Falta archivo o tipo de documento' });
+  }
+
+  console.log(` Documento recibido: tipo [${tipo}], convocatoria [${id}]`);
+
+  try {
+    await guardarDocumentoPorTipo(id, tipo, buffer);  
+    res.status(200).json({ message: 'Archivo subido correctamente.' });
+  } catch (error) {
+    console.error('Error al guardar el documento:', error);
+    res.status(500).json({ error: 'Error al guardar el archivo' });
+  }
+};
+
+const guardarDocumentoPorTipo = async (idConvocatoria, tipo, buffer) => {
+  const columnas = [
+    'resolucion', 'dictamen', 'carta',
+    'nota', 'certificado_item', 'certificado_presupuestario'
+  ];
+
+  if (!columnas.includes(tipo)) {
+    throw new Error('Tipo de documento inválido');
+  }
+
+  const query = `
+    UPDATE convocatorias_archivos
+    SET ${tipo} = $1
+    WHERE id_convocatoria = $2
+  `;
+
+  await pool.query(query, [buffer, idConvocatoria]);
+};
+
+module.exports = { generatePDF, combinarYGuardarPDFs, viewCombinedPDF, downloadCombinedPDF, deletePDF, combinarPDFs, uploadPDF, guardarDocumentoPorTipo  };

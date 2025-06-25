@@ -4,6 +4,7 @@ import { Button, Typography, Box, Alert, FormControl, InputLabel, Input,Stack, }
 import api from '../../../config/axiosConfig';
 
 const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
+
   const [files, setFiles] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,36 +17,35 @@ const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+
+  try {
+    for (const [field, file] of Object.entries(files)) {
+    if (!file) continue;
 
     const formData = new FormData();
-    Object.entries(files).forEach(([field, file]) => {
-      if (file) {
-        formData.append(field, file);
-      }
-    });
+    formData.append('archivo', file); 
+    formData.append('tipo', field); 
 
-    try {
-      await api.post(
-        `/convocatorias-archivos/${convocatoriaId}/archivos`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      const errorMsg = err.response?.data?.error || err.message;
-      setError(errorMsg);
-      if (onError) onError(errorMsg);
-    } finally {
-      setLoading(false);
+      await api.post(`/pdf/${convocatoriaId}/upload`, formData,{
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     }
-  };
+  );
+}
+
+    if (onSuccess) onSuccess();
+  } catch (err) {
+    const errorMsg = err.response?.data?.error || err.message;
+    setError(errorMsg);
+    if (onError) onError(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
