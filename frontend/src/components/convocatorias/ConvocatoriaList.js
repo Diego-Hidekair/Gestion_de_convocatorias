@@ -156,9 +156,18 @@ const ConvocatoriaList = () => {
     setEstadoDialogOpen(true);
   };
 
-  const handleDownloadPdf = async (id) => {
+  const showSnackbar = (message, severity) => {
+  setSnackbarMessage(message);
+  setSnackbarSeverity(severity);
+  setSnackbarOpen(true);
+};
+
+// Función para descargar el PDF de la convocatoria
+const handleDownloadPdf = async (id) => {
   try {
-    const response = await api.get(`/pdf/${id}/descargar`, { responseType: 'blob' });
+    const response = await api.get(`/convocatorias-archivos/${id}/descargar/convocatoria`, {
+      responseType: 'blob',
+    });
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -172,11 +181,12 @@ const ConvocatoriaList = () => {
   }
 };
 
-  const showSnackbar = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
+// Función para abrir el PDF de la convocatoria en una nueva pestaña
+const handleViewPdf = (id) => {
+  const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  const url = `${baseUrl}/convocatorias-archivos/${id}/ver-pdf/convocatoria`;
+  window.open(url, '_blank');
+};
 
   const getEstadoColor = (estado) => {
     switch (estado) {
@@ -496,15 +506,6 @@ const confirmEstadoChange = async () => {
                   
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Tooltip title="Ver detalles">
-                        <IconButton
-                          size="small"
-                          onClick={() => navigate(`/convocatorias/${convocatoria.id_convocatoria}`)}
-                        >
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      
                       <Tooltip title="Editar">
                         <IconButton
                           size="small"
@@ -514,12 +515,20 @@ const confirmEstadoChange = async () => {
                         </IconButton>
                       </Tooltip>
                       
-                      <Tooltip title="Descargar PDF">
+                     <Tooltip title="Descargar PDF">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDownloadPdf(convocatoria.id_convocatoria)}
+                      >
+                        <Download fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                      <Tooltip title="Ver PDF">
                         <IconButton
                           size="small"
-                          onClick={() => handleDownloadPdf(convocatoria.id_convocatoria)}
+                          onClick={() => handleViewPdf(convocatoria.id_convocatoria)}
                         >
-                          <Download fontSize="small" />
+                          <Visibility fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       

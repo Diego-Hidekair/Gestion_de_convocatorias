@@ -174,15 +174,29 @@ const ConvocatoriaArchivosManager = () => {
         </DialogActions>
       </Dialog>
 
-      {showPdfViewer ? (
-        <PDFViewer 
-          pdfUrl={pdfUrl}
-          onClose={() => setShowPdfViewer(false)}
-          onDownload={() => window.open(pdfUrl, '_blank')}
-          open={showPdfViewer}
-        />
-      ) : (
-        <>
+      {showPdfViewer && (
+  <Dialog
+    open={showPdfViewer}
+    onClose={() => setShowPdfViewer(false)}
+    maxWidth="md"
+    fullWidth
+  >
+    <DialogTitle>Vista previa del Documento PDF</DialogTitle>
+    <DialogContent dividers sx={{ height: '80vh' }}>
+      <PDFViewer
+        pdfUrl={pdfUrl}
+        style={{ width: '100%', height: '100%' }}
+      />
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={() => setShowPdfViewer(false)}>Cerrar</Button>
+      <Button onClick={() => window.open(pdfUrl, '_blank')} variant="contained">
+        Abrir en nueva pestaña
+      </Button>
+    </DialogActions>
+  </Dialog>
+)}
+      <>
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -265,7 +279,7 @@ const ConvocatoriaArchivosManager = () => {
             </CardActions>
           </Card>
         </>
-      )}
+      )
 
       <Tooltip title="Terminar proceso">
         <Fab

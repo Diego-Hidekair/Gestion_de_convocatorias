@@ -114,14 +114,14 @@ const UsuarioView = ({ isCurrentUser = false }) => {
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <Box>
                   <Typography><strong>Celular:</strong> {usuario.celular || 'No registrado'}</Typography>
-                  {usuario.nombre_facultad && (
+                  {usuario.id_programa && usuario.nombre_facultad && (
                     <Typography sx={{ mt: 1 }}>
                       <strong>Facultad:</strong> {usuario.nombre_facultad}
                     </Typography>
                   )}
                 </Box>
                 <Box>
-                  {usuario.nombre_programa && (
+                  {usuario.id_programa && usuario.nombre_programa && (
                     <Typography><strong>Programa:</strong> {usuario.nombre_programa}</Typography>
                   )}
                 </Box>

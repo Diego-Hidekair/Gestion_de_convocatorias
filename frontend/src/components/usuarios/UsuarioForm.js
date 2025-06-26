@@ -1,7 +1,11 @@
 // src/components/usuarios/UsuarioForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, TextField, Button, Select, MenuItem, InputLabel, FormControl, Typography, CircularProgress, Alert, Grid, Avatar, FormHelperText, Paper } from '@mui/material';
+import {
+  Box, TextField, Button, Select, MenuItem, InputLabel,
+  FormControl, Typography, CircularProgress, Alert, Grid,
+  Avatar, Paper
+} from '@mui/material';
 import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import useUsuarios from './hooks/useUsuarios';
 import api from '../../config/axiosConfig';
@@ -10,27 +14,20 @@ const UsuarioForm = ({ isEdit = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { createUsuario, updateUsuario, loading } = useUsuarios();
-  
+
   const [usuario, setUsuario] = useState({
     id_usuario: '',
     nombres: '',
     apellido_paterno: '',
     apellido_materno: '',
     rol: 'secretaria_de_decanatura',
-    contrasena: '', 
+    contrasena: '',
     celular: '',
     id_programa: '',
     foto_file: null
   });
 
-  const [errors, setErrors] = useState({
-    id_usuario: false,
-    nombres: false,
-    apellido_paterno: false,
-    rol: false,
-    contrasena: false 
-});
-
+  const [errors, setErrors] = useState({});
   const [carreras, setCarreras] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -45,9 +42,18 @@ const UsuarioForm = ({ isEdit = false }) => {
     { value: 'personal_administrativo', label: 'Personal Administrativo' }
   ];
 
+  const rolesSinPrograma = [
+    'admin',
+    'personal_administrativo',
+    'tecnico_vicerrectorado',
+    'vicerrectorado'
+  ];
+
+  const requierePrograma = !rolesSinPrograma.includes(usuario.rol);
+
   const validateField = (name, value) => {
     let isValid = true;
-    
+
     if (name === 'id_usuario') {
       isValid = value.trim().length > 0;
     } else if (name === 'nombres') {
@@ -58,10 +64,34 @@ const UsuarioForm = ({ isEdit = false }) => {
       isValid = value.trim().length > 0;
     } else if (name === 'contrasena' && !isEdit) {
       isValid = value.trim().length >= 6;
+    } else if (name === 'id_programa' && requierePrograma) {
+      isValid = value.trim().length > 0;
     }
-    
+
     setErrors(prev => ({ ...prev, [name]: !isValid }));
     return isValid;
+  };
+
+  const validateForm = () => {
+    const fieldsToValidate = ['id_usuario', 'nombres', 'apellido_paterno', 'rol'];
+    if (!isEdit) fieldsToValidate.push('contrasena');
+
+    let allValid = true;
+
+    for (const field of fieldsToValidate) {
+      const isValid = validateField(field, usuario[field]);
+      if (!isValid) {
+        console.log(`Fallo validación en campo: ${field}`, usuario[field]);
+        allValid = false;
+      }
+    }
+    if (requierePrograma && !usuario.id_programa) {
+      console.log('Fallo validación: programa académico obligatorio pero no seleccionado');
+      setError('El programa es obligatorio para el rol seleccionado');
+      allValid = false;
+    }
+
+    return allValid;
   };
 
   const handleFileChange = (e) => {
@@ -75,62 +105,55 @@ const UsuarioForm = ({ isEdit = false }) => {
         setError('Por favor seleccione una imagen válida');
         return;
       }
-      
+
       setUsuario(prev => ({ ...prev, foto_file: file }));
+      if (fotoPreview) URL.revokeObjectURL(fotoPreview);
       setFotoPreview(URL.createObjectURL(file));
       setError('');
     }
   };
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchData = async () => {
       try {
         setLoadingCarreras(true);
-        
-        const carrerasResponse = await api.get('/carreras');
-        setCarreras(carrerasResponse.data);
+        const carrerasRes = await api.get('/carreras');
+        setCarreras(carrerasRes.data);
 
         if (isEdit && id) {
-          const userResponse = await api.get(`/usuarios/${id}`);
-          const userData = userResponse.data;
-          
+          const res = await api.get(`/usuarios/${id}`);
+          const user = res.data;
+
           let preview = null;
-          if (userData.foto_perfil) {
-            preview = `data:image/jpeg;base64,${userData.foto_perfil}`;
+          if (user.foto_perfil) {
+            preview = `data:image/jpeg;base64,${user.foto_perfil}`;
           }
 
           setUsuario({
-            ...userData,
-            contraseña: ''
+            ...user,
+            contrasena: ''
           });
           setFotoPreview(preview);
         }
       } catch (err) {
-        setError('Error al cargar datos iniciales: ' + (err.response?.data?.error || err.message));
         console.error(err);
+        setError('Error al cargar datos: ' + (err.response?.data?.error || err.message));
       } finally {
         setLoadingCarreras(false);
       }
     };
 
-    fetchInitialData();
-  }, [isEdit, id]);
+    fetchData();
+
+    return () => {
+      if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+    };
+  }, [id, isEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUsuario(prev => ({ ...prev, [name]: value }));
     validateField(name, value);
-  };
-
-  const validateForm = () => {
-    const fieldsToValidate = ['id_usuario', 'nombres', 'apellido_paterno', 'rol'];
-    if (!isEdit) fieldsToValidate.push('contraseña');
-    
-    const validationResults = fieldsToValidate.map(field => 
-      validateField(field, usuario[field])
-    );
-    
-    return validationResults.every(result => result);
   };
 
   const handleSubmit = async (e) => {
@@ -150,17 +173,20 @@ const UsuarioForm = ({ isEdit = false }) => {
       formData.append('apellido_paterno', usuario.apellido_paterno.trim());
       formData.append('apellido_materno', usuario.apellido_materno?.trim() || '');
       formData.append('rol', usuario.rol);
-      formData.append('contrasena', usuario.contrasena);
+      formData.append('contrasena', usuario.contrasena || '');
       formData.append('celular', usuario.celular || '');
-      formData.append('id_programa', usuario.id_programa || '');
+
+      if (requierePrograma && usuario.id_programa) {
+        formData.append('id_programa', usuario.id_programa);
+      } else {
+        formData.append('id_programa', '');
+      }
 
       if (usuario.foto_file) {
         formData.append('foto_perfil', usuario.foto_file);
       }
 
-      console.log("Datos a enviar:", Object.fromEntries(formData.entries()));
-
-      const result = isEdit 
+      const result = isEdit
         ? await updateUsuario(id, formData)
         : await createUsuario(formData);
 
@@ -169,15 +195,11 @@ const UsuarioForm = ({ isEdit = false }) => {
         setTimeout(() => navigate('/usuarios'), 1500);
       } else {
         setError(result.error || 'Error al procesar la solicitud');
-        if (result.details) {
-          console.error("Detalles del error:", result.details);
-        }
+        if (result.details) console.error('Detalles:', result.details);
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.error || 
-                     err.message || 
-                     'Error al procesar la solicitud';
-      setError(errorMsg);
+      const msg = err.response?.data?.error || err.message;
+      setError(msg);
       console.error('Error completo:', err);
     }
   };
@@ -185,80 +207,73 @@ const UsuarioForm = ({ isEdit = false }) => {
   return (
     <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
       <Paper elevation={3} sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Button 
-            startIcon={<ArrowBackIcon />} 
-            onClick={() => navigate('/usuarios')}
-            sx={{ mr: 2 }}
-          >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, flexWrap: 'wrap' }}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/usuarios')} sx={{ mr: 2, mb: { xs: 1, sm: 0 } }}>
             Volver
           </Button>
-          <Typography variant="h4">
+          <Typography variant="h4" sx={{ flexGrow: 1, minWidth: 200 }}>
             {isEdit ? 'Editar Usuario' : 'Crear Usuario'}
           </Typography>
         </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
+            {/* Usamos xs=12 para que en móviles ocupe toda la fila */}
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="ID de Usuario"
                 name="id_usuario"
+                fullWidth
                 value={usuario.id_usuario}
                 onChange={handleChange}
                 required
                 disabled={isEdit}
-                margin="normal"
                 error={errors.id_usuario}
-                helperText={errors.id_usuario ? "ID de usuario requerido" : ""}
+                helperText={errors.id_usuario && "Campo requerido"}
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="Nombres"
                 name="nombres"
+                fullWidth
                 value={usuario.nombres}
                 onChange={handleChange}
                 required
-                margin="normal"
                 error={errors.nombres}
-                helperText={errors.nombres ? "Nombres requeridos" : ""}
+                helperText={errors.nombres && "Campo requerido"}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="Apellido Paterno"
                 name="apellido_paterno"
+                fullWidth
                 value={usuario.apellido_paterno}
                 onChange={handleChange}
                 required
-                margin="normal"
                 error={errors.apellido_paterno}
-                helperText={errors.apellido_paterno ? "Apellido paterno requerido" : ""}
+                helperText={errors.apellido_paterno && "Campo requerido"}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="Apellido Materno"
                 name="apellido_materno"
+                fullWidth
                 value={usuario.apellido_materno}
                 onChange={handleChange}
-                margin="normal"
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth margin="normal" required>
+              <FormControl fullWidth required>
                 <InputLabel>Rol</InputLabel>
                 <Select
                   name="rol"
@@ -266,7 +281,7 @@ const UsuarioForm = ({ isEdit = false }) => {
                   onChange={handleChange}
                   label="Rol"
                 >
-                  {rolesValidos.map((rol) => (
+                  {rolesValidos.map(rol => (
                     <MenuItem key={rol.value} value={rol.value}>
                       {rol.label}
                     </MenuItem>
@@ -277,96 +292,81 @@ const UsuarioForm = ({ isEdit = false }) => {
 
             {!isEdit && (
               <Grid item xs={12} sm={6}>
-                  <TextField
-                      fullWidth
-                      type="password"
-                      label="Contraseña"
-                      name="contrasena" 
-                      value={usuario.contrasena} 
-                      onChange={handleChange}
-                      required
-                      margin="normal"
-                  />
+                {/* Contraseña con comentario y validación */}
+                <TextField
+                  label="Contraseña"
+                  name="contrasena"
+                  type="password"
+                  fullWidth
+                  value={usuario.contrasena}
+                  onChange={handleChange}
+                  required
+                  error={errors.contrasena}
+                  helperText={errors.contrasena && "Mínimo 6 caracteres"}
+                />
               </Grid>
-           )}
+            )}
 
             {isEdit && (
               <Grid item xs={12} sm={6}>
-                  <TextField
-                      fullWidth
-                      type="password"
-                      label="Nueva Contraseña (dejar vacío para no cambiar)"
-                      name="contrasena" 
-                      value={usuario.contrasena} 
-                      onChange={handleChange}
-                      margin="normal"
-                  />
+                <TextField
+                  label="Nueva Contraseña (opcional)"
+                  name="contrasena"
+                  type="password"
+                  fullWidth
+                  value={usuario.contrasena}
+                  onChange={handleChange}
+                />
               </Grid>
             )}
 
             <Grid item xs={12} sm={6}>
               <TextField
-                fullWidth
                 label="Celular"
                 name="celular"
+                fullWidth
                 value={usuario.celular}
                 onChange={handleChange}
-                margin="normal"
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Programa Académico</InputLabel>
-                <Select
-                  name="id_programa"
-                  value={usuario.id_programa || ''}
-                  onChange={handleChange}
-                  label="Programa Académico"
-                  disabled={loadingCarreras}
-                >
-                  <MenuItem value="">
-                    <em>Seleccione un programa</em>
-                  </MenuItem>
-                  {carreras.map((carrera) => (
-                    <MenuItem 
-                      key={carrera.id_programa} 
-                      value={carrera.id_programa}
-                    >
-                      {carrera.programa} ({carrera.nombre_facultad})
+            {requierePrograma && (
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Programa Académico</InputLabel>
+                  <Select
+                    name="id_programa"
+                    value={usuario.id_programa || ''}
+                    onChange={handleChange}
+                    disabled={loadingCarreras}
+                    sx={{
+                      minWidth: '100%',
+                      '& .MuiSelect-select': {
+                        padding: '10.5px 14px',
+                      }
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Seleccione un programa</em>
                     </MenuItem>
-                  ))}
-                </Select>
-                {loadingCarreras && (
-                  <CircularProgress size={24} sx={{ position: 'absolute', right: 10, top: '50%' }} />
-                )}
-              </FormControl>
-            </Grid>
+                    {carreras.map(c => (
+                      <MenuItem key={c.id_programa} value={c.id_programa}>
+                        {c.programa} ({c.nombre_facultad})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
 
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Foto de Perfil
-              </Typography>
-              
+              <Typography variant="h6">Foto de Perfil</Typography>
               {fotoPreview && (
-                <Avatar 
-                  src={fotoPreview} 
-                  sx={{ width: 100, height: 100, mb: 2 }}
-                />
+                <Avatar src={fotoPreview} sx={{ width: 100, height: 100, mb: 1 }} />
               )}
-              
-              <Button
-                variant="outlined"
-                component="label"
-                sx={{ width: 'fit-content' }}
-              >
+              <Button variant="outlined" component="label">
                 Seleccionar Imagen
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
+                <input type="file" hidden accept="image/*" onChange={handleFileChange} />
               </Button>
             </Grid>
           </Grid>
@@ -375,9 +375,7 @@ const UsuarioForm = ({ isEdit = false }) => {
             <Button
               type="submit"
               variant="contained"
-              color="primary"
-              size="large"
-              startIcon={loading ? <CircularProgress size={24} /> : <SaveIcon />}
+              startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
               disabled={loading}
             >
               {isEdit ? 'Actualizar Usuario' : 'Crear Usuario'}

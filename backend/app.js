@@ -26,7 +26,7 @@ pool.connect()
 app.use(cookieParser()); 
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://192.168.1.10:3000'],
+  origin: ['http://192.168.1.10:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'] 
 }));
@@ -46,7 +46,7 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-//app.use('/convocatorias', authenticateToken, require('./routes/convocatoriaRoutes'));
+app.use('/convocatorias', authenticateToken, require('./routes/convocatoriaRoutes'));
 app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
 
 app.get('/test', (req, res) => {
@@ -61,6 +61,7 @@ const routes = [
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
     { path: '/pdf', route: './routes/pdfRoutes' },
+    { path: '/convocatorias-archivos', route: './routes/pdfRoutes' },
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },

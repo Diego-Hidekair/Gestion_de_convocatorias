@@ -32,8 +32,8 @@ const upload = multer({
 });
 router.get('/:id/generar-pdf', authenticateToken, secretariaOnly, archivosController.generateConvocatoriaPDF);
 router.get('/:id/archivos', authenticateToken, archivosController.getConvocatoriaFiles);
-router.get('/:id/descargar/:fileType', authenticateToken, archivosController.downloadConvocatoriaFile);1
-router.get('/:id/ver-pdf', authenticateToken, archivosController.viewConvocatoriaPDF);
+router.get('/:id/descargar/:fileType', archivosController.downloadConvocatoriaFile);
+router.get('/:id/ver-pdf/:fileType', archivosController.viewConvocatoriaPDF); 
 router.post('/:id/archivos', authenticateToken, secretariaOnly, upload.fields([
         { name: 'resolucion', maxCount: 1 },
         { name: 'dictamen', maxCount: 1 },

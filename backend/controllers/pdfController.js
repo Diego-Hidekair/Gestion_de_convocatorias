@@ -251,5 +251,62 @@ const debugPDF = async (req, res) => {
     res.status(500).json({ error: 'Error en la consulta', details: error.message });
   }
 };
-// Exportar todas las funciones
-module.exports = { generatePDF, viewPDF, downloadPDF, deletePDF, uploadPDF, guardarDocumentoPorTipo, generarPDFLocal,debugPDF};
+const viewPDFbyType = async (req, res) => {
+  const { id, tipo } = req.params;
+  try {
+    const columnas = [
+      'resolucion', 'dictamen', 'carta',
+      'nota', 'certificado_item', 'certificado_presupuestario'
+    ];
+    if (!columnas.includes(tipo)) {
+      return res.status(400).json({ error: 'Tipo de documento inválido' });
+    }
+
+    const result = await pool.query(
+      `SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1`,
+      [id]
+    );
+
+    if (!result.rows[0]?.[tipo]) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${tipo}_${id}.pdf"`);
+    res.send(result.rows[0][tipo]);
+  } catch (error) {
+    console.error('Error al ver archivo:', error);
+    res.status(500).json({ error: 'Error al ver archivo' });
+  }
+};
+
+const downloadPDFbyType = async (req, res) => {
+  const { id, tipo } = req.params;
+  try {
+    const columnas = [
+      'resolucion', 'dictamen', 'carta',
+      'nota', 'certificado_item', 'certificado_presupuestario'
+    ];
+    if (!columnas.includes(tipo)) {
+      return res.status(400).json({ error: 'Tipo de documento inválido' });
+    }
+
+    const result = await pool.query(
+      `SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1`,
+      [id]
+    );
+
+    if (!result.rows[0]?.[tipo]) {
+      return res.status(404).json({ error: 'Archivo no encontrado' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${tipo}_${id}.pdf"`);
+    res.send(result.rows[0][tipo]);
+  } catch (error) {
+    console.error('Error al descargar archivo:', error);
+    res.status(500).json({ error: 'Error al descargar archivo' });
+  }
+};
+
+module.exports = { generatePDF, viewPDF, downloadPDF, deletePDF, uploadPDF, guardarDocumentoPorTipo, generarPDFLocal,debugPDF, viewPDFbyType, downloadPDFbyType};

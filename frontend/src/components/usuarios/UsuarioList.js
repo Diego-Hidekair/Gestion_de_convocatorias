@@ -93,12 +93,12 @@ const UsuarioList = () => {
                 <Typography variant="body2" gutterBottom>
                   <strong>Rol:</strong> {usuario.rol.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Typography>
-                {usuario.nombre_programa && (
+              {usuario.id_programa && usuario.nombre_programa && (
                   <Typography variant="body2" gutterBottom>
                     <strong>Programa:</strong> {usuario.nombre_programa}
                   </Typography>
                 )}
-                {usuario.nombre_facultad && (
+                {usuario.id_programa && usuario.nombre_facultad && (
                   <Typography variant="body2">
                     <strong>Facultad:</strong> {usuario.nombre_facultad}
                   </Typography>
