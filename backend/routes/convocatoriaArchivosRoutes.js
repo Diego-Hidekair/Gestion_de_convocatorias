@@ -5,15 +5,11 @@ const multer = require('multer');
 const archivosController = require('../controllers/convocatoriaArchivosController');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
-const vicerrectorOnly = authorizeRoles(['vicerrectorado', 'tecnico_vicerrectorado']);
 
 const storage = multer.memoryStorage();
 const upload = multer({ 
-    storage: storage,
-    limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB
-        files: 6
-    },
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024, files: 6 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = [
             'application/pdf',
@@ -22,27 +18,28 @@ const upload = multer({
             'image/jpeg',
             'image/png'
         ];
-        
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Tipo de archivo no permitido'), false);
-        }
+        cb(null, allowedTypes.includes(file.mimetype));
     }
 });
-router.get('/:id/generar-pdf', authenticateToken, secretariaOnly, archivosController.generateConvocatoriaPDF);
-router.get('/:id/archivos', authenticateToken, archivosController.getConvocatoriaFiles);
-router.get('/:id/descargar/:fileType', archivosController.downloadConvocatoriaFile);
-router.get('/:id/ver-pdf/:fileType', archivosController.viewConvocatoriaPDF); 
-router.post('/:id/archivos', authenticateToken, secretariaOnly, upload.fields([
-        { name: 'resolucion', maxCount: 1 },
-        { name: 'dictamen', maxCount: 1 },
-        { name: 'carta', maxCount: 1 },
-        { name: 'nota', maxCount: 1 },
-        { name: 'certificado_item', maxCount: 1 },
-        { name: 'certificado_presupuestario', maxCount: 1 }
-    ]),
-    archivosController.uploadConvocatoriaFiles
-);
+
+router.use(authenticateToken);
+
+router.get('/:id/archivos', archivosController.getConvocatoriaFiles);
+
+router.get('/:id/descargar/:tipo', archivosController.downloadPDFbyType);
+
+router.get('/:id/ver-pdf/:tipo', archivosController.viewPDFbyType);
+
+router.post('/:id/subir-multiple', secretariaOnly, upload.fields([
+    { name: 'resolucion', maxCount: 1 },
+    { name: 'dictamen', maxCount: 1 },
+    { name: 'carta', maxCount: 1 },
+    { name: 'nota', maxCount: 1 },
+    { name: 'certificado_item', maxCount: 1 },
+    { name: 'certificado_presupuestario', maxCount: 1 }
+]), archivosController.uploadConvocatoriaFiles);
+
+
+router.delete('/:id/eliminar/:tipo', secretariaOnly, archivosController.deleteFileByType);
 
 module.exports = router;

@@ -9,7 +9,7 @@ const validateConvocatoria = [
         if (new Date(value) <= new Date(req.body.fecha_inicio)) {
             throw new Error('La fecha fin debe ser posterior a la fecha inicio');
         }
-        return true;
+        return true; 
     }),
     check('id_tipoconvocatoria').isInt(),
     check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']),
@@ -581,4 +581,31 @@ const validarConvocatoriasAprobadas = async (req, res) => {
     }
 };
 
-module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria, validarConvocatoriasAprobadas };
+const deleteConvocatoria = async (req, res) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        await client.query(
+            'DELETE FROM usuarios_notificaciones WHERE id_notificacion IN (SELECT id_notificacion FROM notificaciones WHERE id_convocatoria = $1)',
+            [id]
+        );
+        await client.query('DELETE FROM notificaciones WHERE id_convocatoria = $1', [id]);
+        const result = await client.query('DELETE FROM convocatorias WHERE id_convocatoria = $1 RETURNING *', [id]);
+
+        if (result.rows.length === 0) {
+            throw new Error('Convocatoria no encontrada');
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: 'Convocatoria eliminada correctamente' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error al eliminar convocatoria:', error);
+        res.status(500).json({ error: 'Error al eliminar convocatoria', details: error.message });
+    } finally {
+        client.release();
+    }
+};
+module.exports = { validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria, validarConvocatoriasAprobadas, deleteConvocatoria};

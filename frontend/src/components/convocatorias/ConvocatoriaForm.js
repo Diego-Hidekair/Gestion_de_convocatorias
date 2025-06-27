@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../config/axiosConfig'; 
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box,Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select } from '@mui/material';
+import { Divider, Box,Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select } from '@mui/material';
 import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO } from 'date-fns';
+import { addDays } from 'date-fns';
 
 const ConvocatoriaForm = () => {
   const { id } = useParams();
@@ -107,6 +108,14 @@ const ConvocatoriaForm = () => {
 
     fetchData();
   }, [id]);
+
+  const handleDateInicioChange = (date) => {
+  setConvocatoria(prev => ({
+    ...prev,
+    fecha_inicio: date,
+    fecha_fin: addDays(date, 10) // calcula automáticamente 10 días después
+  }));
+};
 
   useEffect(() => {
     const year = new Date().getFullYear();
@@ -227,7 +236,13 @@ const ConvocatoriaForm = () => {
 
  return (
   <Container maxWidth="md">
-    <Card sx={{ borderRadius: 3, backgroundColor: '#E3F2FD', mt: 4 }}>
+    <Card sx={{
+    borderRadius: 3,
+    backgroundColor: '#ffffff',
+    mt: 4,
+    boxShadow: '0 3px 10px rgba(0,0,0,0.1)'
+  }}
+>
       <CardContent>
         <Typography variant="h5" align="center" gutterBottom>
           {id ? 'Editar' : 'Registrar'} Convocatoria
@@ -273,41 +288,54 @@ const ConvocatoriaForm = () => {
                 helperText="El título se genera automáticamente al completar los campos"
               />
             </Grid>
-
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Fechas
+              </Typography>
+            </Grid>
             {/* Fechas */}
             <Grid item xs={12} md={6}>
               <Typography variant="subtitle1" gutterBottom>
-                Fecha de Inicio (Generación)
+                Fecha de Publicación
               </Typography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <StaticDatePicker
                   value={convocatoria.fecha_inicio}
-                  readOnly
+                  onChange={handleDateInicioChange}
                   displayStaticWrapperAs="desktop"
                   slotProps={{
-                    textField: { fullWidth: true, InputProps: { readOnly: true } }
+                    textField: {
+                      fullWidth: true
+                    }
                   }}
                 />
               </LocalizationProvider>
               <Typography variant="caption" display="block">
-                Se asigna automáticamente
+                Puedes seleccionar la fecha en que se publicará la convocatoria
               </Typography>
             </Grid>
 
             <Grid item xs={12} md={6}>
               <Typography variant="subtitle1" gutterBottom>
-                Fecha de Conclusión
+                Fecha de Finalizacion de la Convocatoria
               </Typography>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <StaticDatePicker
                   value={convocatoria.fecha_fin}
-                  onChange={handleDateChange}
+                  readOnly
                   displayStaticWrapperAs="desktop"
                   slotProps={{
-                    textField: { fullWidth: true }
+                    textField: {
+                      fullWidth: true,
+                      InputProps: { readOnly: true }
+                    }
                   }}
                 />
               </LocalizationProvider>
+              <Typography variant="caption" display="block">
+                Esta fecha se calcula automáticamente 10 días después de la fecha de publicación
+              </Typography>
             </Grid>
 
             {/* Facultad y Programa */}
@@ -445,7 +473,7 @@ const ConvocatoriaForm = () => {
                 color="primary"
                 type="submit"
                 size="large"
-                disabled={loading}
+                sx={{ px: 4 }}
               >
                 {loading ? 'Procesando...' : (id ? 'Actualizar' : 'Siguiente')}
               </Button>

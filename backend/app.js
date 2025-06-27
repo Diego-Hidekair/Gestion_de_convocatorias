@@ -23,7 +23,7 @@ pool.connect()
     .then(() => console.log('Conexión a la base de datos exitosa'))
     .catch(err => console.error('Error conectando a la base de datos', err));
 
-app.use(cookieParser()); 
+app.use(cookieParser());
 
 app.use(cors({
   origin: ['http://192.168.1.10:3000'],
@@ -37,50 +37,60 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false, 
+    secure: false, // En producción debería ser true con HTTPS
     sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000
+    maxAge: 24 * 60 * 60 * 1000 // 1 día
   }
 }));
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Carpeta para archivos estáticos si los tienes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Rutas protegidas o públicas según corresponda
 app.use('/convocatorias', authenticateToken, require('./routes/convocatoriaRoutes'));
-app.use('/pdfs', express.static(path.join(__dirname, 'pdfs')));
+
+// Aquí las rutas de PDF que usan pdfController (para generar PDF con HTML)
+app.use('/pdf', require('./routes/pdfRoutes'));
+
+// Rutas para archivos adjuntos de convocatoria, que usan convocatoriaArchivosController
+app.use('/convocatorias-archivos', require('./routes/convocatoriaArchivosRoutes'));
 
 app.get('/test', (req, res) => {
   console.log("Ruta /test accedida"); 
   res.json({ message: "Conexión exitosa", timestamp: new Date() });
 });
 
+// Otras rutas del sistema
 const routes = [
     { path: '/facultades', route: './routes/facultadRoutes' },
     { path: '/carreras', route: './routes/carreraRoutes' },
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
-    { path: '/pdf', route: './routes/pdfRoutes' },
-    { path: '/convocatorias-archivos', route: './routes/pdfRoutes' },
+    // No montamos aquí convocatorias-archivos para evitar duplicados
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
-    { path: '/convocatorias-archivos', route: './routes/convocatoriaArchivosRoutes' },
-    { path: '/notificaciones', route: './routes/notificacionRoutes' } 
+    { path: '/notificaciones', route: './routes/notificacionRoutes' }
 ];
 
-// Montar las rutas
+// Montar todas las rutas
 routes.forEach(r => app.use(r.path, require(path.join(__dirname, r.route))));
 
 app.get('/', (req, res) => {
   res.send('API funcionando correctamente');
 });
 
-app.use((req, res, next) => {//404
+// Middleware para rutas no encontradas
+app.use((req, res, next) => {
   res.status(404).json({ error: "Ruta no encontrada" });
 });
 
-app.use((err, req, res, next) => {// Errores globales
+// Middleware para errores globales
+app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Ha ocurrido un error interno en el servidor' });
 });

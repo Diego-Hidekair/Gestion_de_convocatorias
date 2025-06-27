@@ -3,53 +3,43 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../config/axiosConfig';
 import {
-  Box, Button, CircularProgress, Alert, Card, CardContent, CardActions, Typography,
-  Dialog, DialogTitle, DialogContent, DialogActions, Fab, Tooltip
+  Box, Button, Alert, Card, CardContent, CardActions, Typography
 } from '@mui/material';
 import {
-  Check as CheckIcon, Visibility as VisibilityIcon, Download as DownloadIcon,
-  Upload as UploadIcon, Close as CloseIcon
+  Check as CheckIcon,
+  Visibility as VisibilityIcon,
+  Download as DownloadIcon,
+  Upload as UploadIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
-
-import PDFViewer from './PDFViewer';
 import FileUploadForm from './FileUploadForm';
 import FileList from './FileList';
 
-const ConvocatoriaArchivosManager = () => {
+const tipos = [
+  'resolucion',
+  'dictamen',
+  'carta',
+  'nota',
+  'certificado_item',
+  'certificado_presupuestario'
+];
+
+function ConvocatoriaArchivosManager() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [filesInfo, setFilesInfo] = useState(null);
+
+  const [filesInfo, setFilesInfo] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [openConfirm, setOpenConfirm] = useState(false);
-  const token = localStorage.getItem('token');
-
-  const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-
-  const handleTerminar = () => {
-    navigate('/convocatorias');
-  };
-
-  const handleConfirmTerminar = () => {
-    setOpenConfirm(true);
-  };
-
-  const handleCloseConfirm = () => {
-    setOpenConfirm(false);
-  };
 
   const fetchFilesInfo = async () => {
     try {
       setLoading(true);
-      const response = await api.get(
-        `/convocatorias-archivos/${id}/archivos`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get(`/convocatorias-archivos/${id}/archivos`);
       setFilesInfo(response.data);
+      setError(null);
     } catch (err) {
       setError(err.response?.data?.error || 'Error al cargar archivos');
     } finally {
@@ -59,243 +49,89 @@ const ConvocatoriaArchivosManager = () => {
 
   useEffect(() => {
     fetchFilesInfo();
-    // limpiar url blob cuando cambie id o componente se desmonte
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
   }, [id]);
 
-  const generatePDF = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/convocatorias-archivos/${id}/generar-pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
-      });
-
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl); // liberar url anterior
-
-     const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-    const url = URL.createObjectURL(pdfBlob);
-      setPdfUrl(url);
-  setShowPdfViewer(true);
-      setIsCompleted(true);
-
-      await fetchFilesInfo();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al generar PDF');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewPDF = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob',
-      });
-
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-
-      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(pdfBlob);
-      setPdfUrl(url);
-      setShowPdfViewer(true);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al cargar PDF');
-    } finally {
-      setLoading(false);
-    }
+  const handleViewPDF = () => {
+    const url = `${import.meta.env.VITE_API_URL}/pdf/${id}/ver`;
+    window.open(url, '_blank');
   };
 
   const handleDownloadPDF = () => {
-    if (!pdfUrl) {
-      // Descargar directamente desde backend (si no tienes url blob)
-      window.open(`${baseUrl}/convocatorias-archivos/${id}/descargar/doc_conv`, '_blank');
-      return;
-    }
-
-    // Descargar archivo usando url blob
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.setAttribute('download', `convocatoria_${id}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.parentNode.removeChild(link);
+    const url = `${import.meta.env.VITE_API_URL}/pdf/${id}/ver`;
+    window.open(url, '_blank');
   };
 
-  const handleUploadSuccess = () => {
-    setShowUploadForm(false);
-    fetchFilesInfo();
+  const handleTerminar = () => {
+    navigate('/convocatorias');
   };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" my={5}>
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ p: 3 }}>
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-      <Dialog
-        open={openConfirm}
-        onClose={handleCloseConfirm}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Confirmar acción</DialogTitle>
-        <DialogContent>
-          <Typography>
-            ¿Estás seguro de que deseas terminar? Serás redirigido a la lista de convocatorias.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseConfirm}>Cancelar</Button>
+      {/* DOCUMENTO GENERADO */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Documento de Convocatoria</Typography>
+          {filesInfo?.nombre_archivo ? (
+            <>
+              <Typography paragraph>Documento generado disponible</Typography>
+              <Box display="flex" gap={2}>
+                <Button variant="contained" startIcon={<VisibilityIcon />} onClick={handleViewPDF}>Ver PDF</Button>
+                <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleDownloadPDF}>Descargar PDF</Button>
+              </Box>
+            </>
+          ) : (
+            <Typography paragraph>No se ha generado el documento de convocatoria.</Typography>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* DOCUMENTOS ADJUNTOS */}
+      <Card>
+        <CardContent>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h6">Documentos Adjuntos</Typography>
+            <Button
+              variant={showUploadForm ? 'outlined' : 'contained'}
+              startIcon={showUploadForm ? <CloseIcon /> : <UploadIcon />}
+              onClick={() => setShowUploadForm(!showUploadForm)}
+            >
+              {showUploadForm ? 'Cancelar' : 'Subir Documentos'}
+            </Button>
+          </Box>
+
+          {/* FORMULARIO DE SUBIDA */}
+          {showUploadForm && (
+            <FileUploadForm
+              convocatoriaId={id}
+              onSuccess={fetchFilesInfo}
+              onError={setError}
+            />
+          )}
+
+          {/* LISTA DE ARCHIVOS */}
+          <FileList
+            filesInfo={filesInfo}
+            convocatoriaId={id}
+            onError={setError}
+            onFilesUpdate={fetchFilesInfo}
+          />
+        </CardContent>
+
+        <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
           <Button
-            onClick={handleTerminar}
             variant="contained"
             color="primary"
+            onClick={handleTerminar}
             startIcon={<CheckIcon />}
           >
-            Confirmar
+            Terminar
           </Button>
-        </DialogActions>
-      </Dialog>
-
-      {showPdfViewer && (
-  <Dialog
-    open={showPdfViewer}
-    onClose={() => setShowPdfViewer(false)}
-    maxWidth="md"
-    fullWidth
-  >
-    <DialogTitle>Vista previa del Documento PDF</DialogTitle>
-    <DialogContent dividers sx={{ height: '80vh' }}>
-      <PDFViewer
-        pdfUrl={pdfUrl}
-        style={{ width: '100%', height: '100%' }}
-      />
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={() => setShowPdfViewer(false)}>Cerrar</Button>
-      <Button onClick={() => window.open(pdfUrl, '_blank')} variant="contained">
-        Abrir en nueva pestaña
-      </Button>
-    </DialogActions>
-  </Dialog>
-)}
-      <>
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Documento de Convocatoria
-              </Typography>
-              {filesInfo?.nombre_archivo ? (
-                <>
-                  <Typography paragraph>
-                    Documento generado: {filesInfo.nombre_archivo}
-                  </Typography>
-                  <Box display="flex" gap={2}>
-                    <Button
-                      variant="contained"
-                      startIcon={<VisibilityIcon />}
-                      onClick={handleViewPDF}
-                    >
-                      Ver PDF
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<DownloadIcon />}
-                      onClick={handleDownloadPDF}
-                    >
-                      Descargar PDF
-                    </Button>
-                  </Box>
-                </>
-              ) : (
-                <Typography paragraph>
-                  No se ha generado el documento de convocatoria
-                </Typography>
-              )}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={generatePDF}
-                sx={{ mt: 2 }}
-              >
-                Generar PDF
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h6">Documentos Adjuntos</Typography>
-                <Button
-                  variant={showUploadForm ? 'outlined' : 'contained'}
-                  startIcon={showUploadForm ? <CloseIcon /> : <UploadIcon />}
-                  onClick={() => setShowUploadForm(!showUploadForm)}
-                >
-                  {showUploadForm ? 'Cancelar' : 'Subir Documentos'}
-                </Button>
-              </Box>
-
-              {showUploadForm && (
-                <FileUploadForm
-                  convocatoriaId={id}
-                  onSuccess={handleUploadSuccess}
-                  onError={setError}
-                />
-              )}
-
-              <FileList
-                filesInfo={filesInfo}
-                convocatoriaId={id}
-              />
-            </CardContent>
-            <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-              <Button
-                variant="contained"
-                color={isCompleted ? 'success' : 'primary'}
-                onClick={handleConfirmTerminar}
-                startIcon={isCompleted ? <CheckIcon /> : null}
-                sx={{ ml: 2 }}
-              >
-                {isCompleted ? 'Terminado' : 'Terminar'}
-              </Button>
-            </CardActions>
-          </Card>
-        </>
-      )
-
-      <Tooltip title="Terminar proceso">
-        <Fab
-          color={isCompleted ? 'success' : 'primary'}
-          onClick={handleConfirmTerminar}
-          sx={{
-            position: 'fixed',
-            bottom: 32,
-            right: 32,
-          }}
-        >
-          <CheckIcon />
-        </Fab>
-      </Tooltip>
+        </CardActions>
+      </Card>
     </Box>
   );
-};
+}
 
 export default ConvocatoriaArchivosManager;

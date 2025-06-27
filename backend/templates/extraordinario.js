@@ -1,3 +1,4 @@
+//backend/templates/extraordinario.js
 function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
 return `
     <html>

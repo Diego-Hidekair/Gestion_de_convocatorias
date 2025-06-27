@@ -1,3 +1,4 @@
+//backend/templates/consultoresLinea.js
 function generateConsultoresLineaHTML(convocatoria, materias, totalHoras) {
  return `
     <!DOCTYPE html>
