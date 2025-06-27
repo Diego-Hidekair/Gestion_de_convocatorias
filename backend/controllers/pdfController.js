@@ -1,12 +1,15 @@
 // backend/controllers/pdfController.js
 const { Pool, types } = require('pg');
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+
 
 const generateConsultoresLineaHTML = require('../templates/consultoresLinea');
 const generateOrdinarioHTML = require('../templates/ordinario');
 const generateExtraordinarioHTML = require('../templates/extraordinario');
 
-types.setTypeParser(17, val => val); // para que BYTEA no convierta a Buffer
+types.setTypeParser(17, val => val); 
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -22,10 +25,15 @@ const generarPDFBuffer = async (htmlContent) => {
     headless: "new",
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-  const page = await browser.newPage();
+ const page = await browser.newPage();
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-  await new Promise(resolve => setTimeout(resolve, 500)); // para que cargue bien
+  await new Promise(resolve => setTimeout(resolve, 500)); // espera para que cargue bien
+
   const pdfBuffer = await page.pdf({ format: 'A4' });
+ const outputPath = path.join(__dirname, '../pdfs/prueba.pdf');
+  fs.writeFileSync(outputPath, pdfBuffer);
+  console.log('✅ PDF generado y guardado localmente en:', outputPath);
+
   await browser.close();
   return pdfBuffer;
 };
@@ -36,29 +44,40 @@ const generateAndSavePDF = async (req, res) => {
 
   try {
     const convocatoriaRes = await pool.query(
-      `SELECT * FROM convocatorias WHERE id_convocatoria = $1`,
-      [id]
-    );
+  `SELECT * FROM convocatorias WHERE id_convocatoria = $1`,
+  [id]
+);
 
-    if (convocatoriaRes.rows.length === 0) {
-      return res.status(404).json({ error: 'Convocatoria no encontrada' });
-    }
+if (convocatoriaRes.rows.length === 0) {
+  return res.status(404).json({ error: 'Convocatoria no encontrada' });
+}
 
-    const convocatoria = convocatoriaRes.rows[0];
+const convocatoria = convocatoriaRes.rows[0];
 
-    let htmlContent = '';
-    if (convocatoria.id_tipoconvocatoria === 1) {
-      htmlContent = await generateOrdinarioHTML(convocatoria);
-    } else if (convocatoria.id_tipoconvocatoria === 2) {
-      htmlContent = await generateExtraordinarioHTML(convocatoria);
-    } else if (convocatoria.id_tipoconvocatoria === 3) {
-      htmlContent = await generateConsultoresLineaHTML(convocatoria);
-    } else {
-      return res.status(400).json({ error: 'Tipo de convocatoria inválido' });
-    }
+const materiasRes = await pool.query(
+  `SELECT * FROM convocatorias_materias WHERE id_convocatoria = $1`,
+  [id]
+);
 
+const materias = materiasRes.rows;
+const totalHoras = materias.reduce((acc, m) => acc + (m.total_horas || 0), 0);
+
+console.log('📄 Convocatoria:', convocatoria);
+console.log('📘 Materias:', materias);
+
+let htmlContent = '';
+if (convocatoria.id_tipoconvocatoria === 1) {
+  htmlContent = await generateOrdinarioHTML(convocatoria, materias, totalHoras);
+} else if (convocatoria.id_tipoconvocatoria === 2) {
+  htmlContent = await generateExtraordinarioHTML(convocatoria, materias, totalHoras);
+} else if (convocatoria.id_tipoconvocatoria === 3) {
+  htmlContent = await generateConsultoresLineaHTML(convocatoria, materias, totalHoras);
+} else {
+  return res.status(400).json({ error: 'Tipo de convocatoria inválido' });
+}
+
+console.log('📝 HTML generado:\n', htmlContent);
     const pdfBuffer = await generarPDFBuffer(htmlContent);
-
     // Guardar o actualizar en convocatorias_archivos
     await pool.query(
       `INSERT INTO convocatorias_archivos (id_convocatoria, nombre_archivo, doc_conv)

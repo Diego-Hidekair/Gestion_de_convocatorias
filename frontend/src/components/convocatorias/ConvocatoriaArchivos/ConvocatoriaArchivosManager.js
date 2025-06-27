@@ -65,11 +65,30 @@ function ConvocatoriaArchivosManager() {
     navigate('/convocatorias');
   };
 
+  const handleGenerarPDF = async () => {
+  try {
+    const response = await api.post(`/pdf/${id}/generar`, {}, {
+      responseType: 'blob'
+    });
+    const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    window.open(url, '_blank');
+    fetchFilesInfo(); // actualiza el estado
+  } catch (err) {
+    setError('Error al generar el PDF');
+  }
+};
   return (
     <Box sx={{ p: 3 }}>
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
       {/* DOCUMENTO GENERADO */}
+      <Button 
+  variant="contained" 
+  startIcon={<UploadIcon />} 
+  onClick={handleGenerarPDF}
+>
+  Generar PDF
+</Button>
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>Documento de Convocatoria</Typography>

@@ -1,6 +1,7 @@
 //backend/templates/ordinario.js
 function generateOrdinarioHTML(convocatoria, materias, totalHoras) {
-return `
+  return `
+  <!DOCTYPE html>
     <html>
         <head>
             <meta charset="UTF-8">
@@ -150,6 +151,6 @@ return `
             </p>
         </body>
     </html>
-    `;
+  `;
 }
 module.exports = generateOrdinarioHTML;
