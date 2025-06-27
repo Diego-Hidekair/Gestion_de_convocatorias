@@ -67,14 +67,14 @@ function generateOrdinarioHTML(convocatoria, materias, totalHoras) {
         </head>
         <body>
             <h1>${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA</h1>
-            <h2>PARA LA PROVISIÓN DE DOCENTE ORDINARIO PARA LA CARRERA DE ${convocatoria.programa.toUpperCase()} - GESTIÓN ${new Date().getFullYear()}</h2>
+            <h2>PARA LA PROVISIÓN DE DOCENTE ORDINARIO PARA LA CARRERA DE ${(convocatoria.programa || '').toUpperCase()} - GESTIÓN ${new Date().getFullYear()}</h2>
             
             <p>
                 En aplicación de la Nota de Instrucción N° 001/2023 y N° 043/2023 emitidas por el Señor Rector 
                 de la Universidad, y por Dictamen de la Comisión Académica N° <strong>${convocatoria.dictamen || 'N/A'}</strong> homologado por la 
                 Resolución del Honorable Consejo Universitario N° <strong>${convocatoria.resolucion || 'N/A'}</strong> y cumpliendo con la normativa 
                 universitaria se convoca a los profesionales <strong>${convocatoria.perfil_profesional || 'No especificado'}</strong>, al 
-                <strong>${convocatoria.etapa_consecatoria}</strong> CONCURSO DE MÉRITOS Y EXÁMENES DE COMPETENCIA para optar por la docencia 
+                <strong>${convocatoria.etapa_convocatoria}</strong> CONCURSO DE MÉRITOS Y EXÁMENES DE COMPETENCIA para optar por la docencia 
                 universitaria en la categoría de <strong>Docente Ordinario</strong> en aplicación del Art. 70 del Reglamento del Régimen Académico 
                 Docente de la Universidad Boliviana, ingresando el ganador como docente Contratado, conforme lo 
                 dispone el Art. 72 del mismo cuerpo normativo, para luego ser sometido a evaluación continua y 

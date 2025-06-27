@@ -51,15 +51,37 @@ function ConvocatoriaArchivosManager() {
     fetchFilesInfo();
   }, [id]);
 
-  const handleViewPDF = () => {
-    const url = `${import.meta.env.VITE_API_URL}/pdf/${id}/ver`;
-    window.open(url, '_blank');
-  };
+  const handleViewPDF = async () => {
+  try {
+    const response = await api.get(`/pdf/${id}/ver`, {
+      responseType: 'blob'
+    });
+    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const pdfURL = URL.createObjectURL(pdfBlob);
+    window.open(pdfURL, '_blank');
+  } catch (err) {
+    setError('Error al visualizar el PDF generado');
+  }
+};
 
-  const handleDownloadPDF = () => {
-    const url = `${import.meta.env.VITE_API_URL}/pdf/${id}/ver`;
-    window.open(url, '_blank');
-  };
+  const handleDownloadPDF = async () => {
+  try {
+    const response = await api.get(`/pdf/${id}/ver`, {
+      responseType: 'blob'
+    });
+    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `convocatoria_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    setError('Error al descargar el PDF');
+  }
+};  
 
   const handleTerminar = () => {
     navigate('/convocatorias');
