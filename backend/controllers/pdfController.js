@@ -18,15 +18,18 @@ const pool = new Pool({
 // 🧠 Genera PDF en buffer
 const generarPDFBuffer = async (htmlContent) => {
   const browser = await puppeteer.launch({
-    headless: "new",
+    headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 
   const page = await browser.newPage();
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-  await new Promise(resolve => setTimeout(resolve, 500)); // evitar errores de carga
+  await new Promise(resolve => setTimeout(resolve, 500)); // prevenir errores de carga
 
-  const pdfBuffer = await page.pdf({ format: 'A4' });
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true // 🔧 Importante para evitar PDF negro
+  });
 
   await browser.close();
   return pdfBuffer;
@@ -37,72 +40,59 @@ const generateAndSavePDF = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Obtener convocatoria
-    const convocatoriaRes = await pool.query(`
-  SELECT c.*, p.programa, f.facultad AS nombre_facultad
-  FROM convocatorias c
-  JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
-  JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
-  WHERE c.id_convocatoria = $1
-`, [id]);
+    const convocatoriaRes = await pool.query(
+      `SELECT * FROM convocatorias WHERE id_convocatoria = $1`,
+      [id]
+    );
     if (convocatoriaRes.rows.length === 0) {
-  return res.status(404).json({ error: 'Convocatoria no encontrada' });
-}
+      return res.status(404).json({ error: 'Convocatoria no encontrada' });
+    }
     const convocatoria = convocatoriaRes.rows[0];
 
-    // Obtener materias
-    const materiasRes = await pool.query(
-  `SELECT cm.*, m.materia AS materia, m.cod_materia
-   FROM convocatorias_materias cm
-   JOIN datos_universidad.pln_materias m ON m.id_materia = cm.id_materia
-   WHERE cm.id_convocatoria = $1`,
-  [id]
-);
+    const materiasRes = await pool.query(`
+      SELECT cm.*, m.materia AS materia, m.cod_materia
+      FROM convocatorias_materias cm
+      JOIN datos_universidad.pln_materias m ON m.id_materia = cm.id_materia
+      WHERE cm.id_convocatoria = $1
+    `, [id]);
+
     const materias = materiasRes.rows;
     const totalHoras = materias.reduce((acc, m) => acc + (m.total_horas || 0), 0);
 
-    console.log('📄 Convocatoria:', convocatoria);
-    console.log('📘 Materias:', materias);
-
-    // Generar HTML según tipo de convocatoria
     let htmlContent = '';
-    if (convocatoria.id_tipoconvocatoria === 1) {
-      htmlContent = await generateOrdinarioHTML(convocatoria, materias, totalHoras);
-    } else if (convocatoria.id_tipoconvocatoria === 2) {
-      htmlContent = await generateExtraordinarioHTML(convocatoria, materias, totalHoras);
-    } else if (convocatoria.id_tipoconvocatoria === 3) {
-      htmlContent = await generateConsultoresLineaHTML(convocatoria, materias, totalHoras);
-    } else {
-      return res.status(400).json({ error: 'Tipo de convocatoria inválido' });
+    switch (convocatoria.id_tipoconvocatoria) {
+      case 1:
+        htmlContent = await generateOrdinarioHTML(convocatoria, materias, totalHoras);
+        break;
+      case 2:
+        htmlContent = await generateExtraordinarioHTML(convocatoria, materias, totalHoras);
+        break;
+      case 3:
+        htmlContent = await generateConsultoresLineaHTML(convocatoria, materias, totalHoras);
+        break;
+      default:
+        return res.status(400).json({ error: 'Tipo de convocatoria inválido' });
     }
 
-    // Generar PDF
     const pdfBuffer = await generarPDFBuffer(htmlContent);
 
-    // Guardar en la base de datos (BYTEA)
-    await pool.query(
-      `INSERT INTO convocatorias_archivos (id_convocatoria, nombre_archivo, doc_conv)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (id_convocatoria) DO UPDATE
-       SET nombre_archivo = EXCLUDED.nombre_archivo,
-           doc_conv = EXCLUDED.doc_conv`,
-      [id, `convocatoria_${id}.pdf`, pdfBuffer]
-    );
-if (!htmlContent) {
-  return res.status(500).json({ error: 'Error al generar el contenido del PDF' });
-}
-    // Visualizar directamente en navegador
+    await pool.query(`
+      INSERT INTO convocatorias_archivos (id_convocatoria, nombre_archivo, doc_conv)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (id_convocatoria) DO UPDATE
+      SET nombre_archivo = EXCLUDED.nombre_archivo,
+          doc_conv = EXCLUDED.doc_conv
+    `, [id, `convocatoria_${id}.pdf`, pdfBuffer]);
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename=convocatoria_${id}.pdf`);
     res.send(pdfBuffer);
-
   } catch (error) {
     console.error('Error generando PDF:', error);
     res.status(500).json({ error: 'Error generando el PDF' });
   }
 };
 
-// 📤 Ver PDF desde la base de datos
 const viewPDF = async (req, res) => {
   const { id } = req.params;
 
