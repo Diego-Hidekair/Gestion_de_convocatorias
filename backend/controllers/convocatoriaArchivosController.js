@@ -1,384 +1,279 @@
 // backend/controllers/convocatoriaArchivosController.js
-const pool = require('../db');
+const { Pool } = require('pg');
+const puppeteer = require('puppeteer');
+const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const pool = require('../db');
 
-const PDF_DIR = path.join(__dirname, '..', 'pdfs');
-if (!fs.existsSync(PDF_DIR)) {
-    fs.mkdirSync(PDF_DIR, { recursive: true });
+const generateConsultoresLineaHTML = require('../templates/consultoresLinea');
+const generateOrdinarioHTML = require('../templates/ordinario');
+const generateExtraordinarioHTML = require('../templates/extraordinario');
+
+const os = require('os');
+const BASE_DESKTOP = path.join(os.homedir(), 'Desktop', 'convocatorias');
+
+const safe = s => s.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+
+const generarPDFBuffer = async html => {
+  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const page = await browser.newPage();
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+  await new Promise(r => setTimeout(r, 500)); 
+  const buf = await page.pdf({ format: 'A4', printBackground: true });
+  await browser.close();
+  return buf;
+};
+
+const getDirs = (facultad, programa, tipo, id) => {
+  const baseDir = path.join(BASE_DESKTOP, safe(facultad), safe(programa), safe(tipo), `convocatoria_${id}`);
+  const pdfPath = path.join(baseDir, `convocatoria_${id}.pdf`);
+  return { baseDir, pdfPath };
+};
+
+
+exports.generateConvocatoriaPDF = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const convRes = await pool.query(`
+      SELECT c.*, tc.nombre_tipo_conv, p.programa, f.facultad
+      FROM convocatorias c
+      JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+      JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+      JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+      WHERE c.id_convocatoria = $1
+    `, [id]);
+
+    if (convRes.rowCount === 0) return res.status(404).json({ error: 'Convocatoria no encontrada' });
+    const conv = convRes.rows[0];
+
+    const matRows = (await pool.query(`
+      SELECT cm.*, m.materia, m.cod_materia
+      FROM convocatorias_materias cm
+      JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+      WHERE cm.id_convocatoria = $1
+    `, [id])).rows;0
+const totalHoras = matRows.reduce((acc, m) => acc + (m.total_horas || 0), 0);
+
+    let html;
+    switch (conv.id_tipoconvocatoria) {
+      case 1: html = await generateOrdinarioHTML(conv, matRows, totalHoras); break;
+      case 2: html = await generateExtraordinarioHTML(conv, matRows, totalHoras); break;
+      case 3: html = await generateConsultoresLineaHTML(conv, matRows, totalHoras); break;
+      default: return res.status(400).json({ error: 'Tipo de convocatoria inválido' });
+    }
+
+    const buffer = await generarPDFBuffer(html);
+    const { baseDir, pdfPath } = getDirs(conv.facultad, conv.programa, conv.nombre_tipo_conv, id);
+    fs.mkdirSync(baseDir, { recursive: true });
+    fs.writeFileSync(pdfPath, buffer);
+
+    const relPath = path.relative(BASE_DESKTOP, pdfPath).replace(/\\/g, '/');
+    await pool.query(`
+      UPDATE convocatorias_archivos
+      SET nombre_archivo = $1, doc_conv = $2
+      WHERE id_convocatoria = $3
+    `, [`convocatoria_${id}.pdf`, relPath, id]);
+
+   res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename=convocatoria_${id}.pdf`);
+    res.send(buffer);
+//    console.log('PDF guardado en:', pdfPath);
+
+  } catch (e) {
+    console.error('Error al generar PDF:', e);
+    res.status(500).json({ error: 'Error generando el PDF' });
+  }
+};
+
+exports.viewConvocatoriaPDF = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const row = (await pool.query(`
+      SELECT nombre_archivo, doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1
+    `, [id])).rows[0];
+
+   if (!row?.doc_conv) return res.status(404).json({ error: 'PDF no generado aún' });
+
+    const file = path.join(BASE_DESKTOP, row.doc_conv); // CAMBIO AQUI
+    if (!fs.existsSync(file)) return res.status(404).json({ error: 'Archivo no encontrado en disco' });
+
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename=${row.nombre_archivo}`);
+    fs.createReadStream(file).pipe(res);
+  } catch (e) {
+  console.error('Error visualizando PDF:', e);
+  res.status(500).json({ error: 'Error al visualizar PDF' });
 }
-
-const generateConvocatoriaPDF = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const convocatoria = await pool.query(` 
-            SELECT c.*, tc.nombre_tipo_conv, p.programa, f.facultad, 
-                   u.nombres || ' ' || u.apellido_paterno AS creador,
-                   v.nombre_vicerector
-            FROM convocatorias c
-            JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-            JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
-            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
-            JOIN usuarios u ON c.id_usuario = u.id_usuario
-            JOIN vicerrector v ON c.id_vicerector = v.id_vicerector
-            WHERE c.id_convocatoria = $1
-        `, [id]);
-
-        if (convocatoria.rows.length === 0) {
-            return res.status(404).json({ error: 'Convocatoria no encontrada' });
-        }
-
-        const conv = convocatoria.rows[0];
-        const materias = await pool.query(`
-            SELECT cm.*, m.materia, m.cod_materia, m.horas_teoria, m.horas_practica
-            FROM convocatorias_materias cm
-            JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
-            WHERE cm.id_convocatoria = $1
-        `, [id]);
-
-        const pdfDoc = await PDFDocument.create();
-        const page = pdfDoc.addPage([600, 800]);
-        const { width, height } = page.getSize();
-        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-        page.drawText('UNIVERSIDAD AUTÓNOMA TOMÁS FRÍAS', {
-            x: 50, y: height - 50, size: 16, font: fontBold, color: rgb(0, 0, 0),
-        });
-        
-        page.drawText('VICERRECTORADO', {
-            x: 50, y: height - 80, size: 14, font: fontBold, color: rgb(0, 0, 0),
-        });
-        
-        page.drawText(`CONVOCATORIA: ${conv.nombre_conv}`, {
-            x: 50, y: height - 110, size: 12, font: fontBold, color: rgb(0, 0, 0),
-        });
-
-        let yPosition = height - 150;
-
-        const addSection = (title, content) => {
-            page.drawText(`${title}:`, {
-                x: 50, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0),
-            });
-            
-            page.drawText(content, {
-                x: 200, y: yPosition, size: 10, font: font, color: rgb(0, 0, 0),
-            });
-            
-            yPosition -= 20;
-        };
-
-        addSection('Tipo de Jornada', conv.tipo_jornada);
-        addSection('Fecha de Inicio', new Date(conv.fecha_inicio).toLocaleDateString());
-        addSection('Fecha de Fin', new Date(conv.fecha_fin).toLocaleDateString());
-        addSection('Etapa', conv.etapa_convocatoria);
-        addSection('Gestión', conv.gestion);
-        addSection('Programa', conv.programa);
-        addSection('Facultad', conv.facultad);
-
-        yPosition -= 30;
-        page.drawText('MATERIAS CONVOCADAS:', {
-            x: 50, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0),
-        });
-
-        yPosition -= 30;
-        page.drawText('Código', { x: 50, y: yPosition, size: 10, font: fontBold });
-        page.drawText('Materia', { x: 120, y: yPosition, size: 10, font: fontBold });
-        page.drawText('Horas', { x: 400, y: yPosition, size: 10, font: fontBold });
-
-        yPosition -= 20;
-
-        for (const materia of materias.rows) {
-            page.drawText(materia.cod_materia, { x: 50, y: yPosition, size: 10, font: font });
-            page.drawText(materia.materia, { x: 120, y: yPosition, size: 10, font: font });
-            page.drawText(materia.total_horas.toString(), { x: 400, y: yPosition, size: 10, font: font });
-
-            yPosition -= 20;
-            if (yPosition < 50) {
-                pdfDoc.addPage([600, 800]);
-                yPosition = 750;
-            }
-        }
-
-        const pdfBytes = await pdfDoc.save();
-
-        await pool.query(
-            `UPDATE convocatorias_archivos 
-             SET nombre_archivo = $1, doc_conv = $2 
-             WHERE id_convocatoria = $3`,
-            [`convocatoria_${id}.pdf`, pdfBytes, id]
-        );
-
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename=convocatoria_${id}.pdf`);
-        res.send(pdfBytes);
-
-    } catch (error) {
-        console.error('Error al generar PDF:', error);
-        res.status(500).json({ 
-            error: 'Error al generar el PDF de la convocatoria',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
 };
 
-const uploadConvocatoriaFiles = async (req, res) => {
-    const { id } = req.params;
-    const files = req.files;
+const upload = multer({ storage: multer.memoryStorage() });
+exports.uploadFileByType = upload.single('file');
 
-    if (!files || Object.keys(files).length === 0) {
-        return res.status(400).json({ error: 'No se subieron archivos' });
-    }
+const tipos = ['resolucion', 'dictamen', 'carta', 'nota', 'certificado_item', 'certificado_presupuestario'];
 
-    try {
-        const convocatoriaCheck = await pool.query(
-            'SELECT id_convocatoria FROM convocatorias WHERE id_convocatoria = $1',
-            [id]
-        );
-
-        if (convocatoriaCheck.rows.length === 0) {
-            return res.status(404).json({ error: 'Convocatoria no encontrada' });
-        }
-
-        const allowedTypes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/jpeg',
-            'image/png'
-        ];
-
-        const updateData = {};
-        const updateFields = [];
-        const updateValues = [];
-        let paramCount = 1;
-
-        const fileTypes = {
-            resolucion: 'resolucion',
-            dictamen: 'dictamen',
-            carta: 'carta',
-            nota: 'nota',
-            certificado_item: 'certificado_item',
-            certificado_presupuestario: 'certificado_presupuestario'
-        };
-
-        for (const [field, fileType] of Object.entries(fileTypes)) {
-            if (files[field]) {
-                const file = files[field][0];
-
-                if (!allowedTypes.includes(file.mimetype)) {
-                    return res.status(400).json({ 
-                        error: `Tipo de archivo no permitido para ${field}` 
-                    });
-                }
-
-                updateData[field] = file.buffer;
-                updateFields.push(`${fileType} = $${paramCount}`);
-                updateValues.push(file.buffer);
-                paramCount++;
-            }
-        }
-
-        if (updateFields.length === 0) {
-            return res.status(400).json({ error: 'No se proporcionaron archivos válidos' });
-        }
-
-        const query = `
-            UPDATE convocatorias_archivos 
-            SET ${updateFields.join(', ')} 
-            WHERE id_convocatoria = $${paramCount}
-            RETURNING *`;
-
-        updateValues.push(id);
-        await pool.query(query, updateValues);
-
-        res.json({
-            success: true,
-            message: 'Archivos subidos correctamente',
-            updatedFields: updateFields.map(f => f.split(' = ')[0])
-        });
-
-    } catch (error) {
-        console.error('Error al subir archivos:', error);
-        res.status(500).json({ error: 'Error al subir archivos a la convocatoria' });
-    }
-};
-
-const getConvocatoriaFiles = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await pool.query(
-            'SELECT * FROM convocatorias_archivos WHERE id_convocatoria = $1',
-            [id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'No se encontraron archivos para esta convocatoria' });
-        }
-
-        const filesInfo = {
-            nombre_archivo: result.rows[0].nombre_archivo,
-            fecha_creacion: result.rows[0].fecha_creacion,
-            has_resolucion: !!result.rows[0].resolucion,
-            has_dictamen: !!result.rows[0].dictamen,
-            has_carta: !!result.rows[0].carta,
-            has_nota: !!result.rows[0].nota,
-            has_certificado_item: !!result.rows[0].certificado_item,
-            has_certificado_presupuestario: !!result.rows[0].certificado_presupuestario
-        };
-
-        res.json(filesInfo);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const downloadConvocatoriaFile = async (req, res) => {
-    const { id, fileType } = req.params;
-
-    const validFileTypes = [
-        'doc_conv', 'resolucion', 'dictamen', 
-        'carta', 'nota', 'certificado_item', 
-        'certificado_presupuestario'
-    ];
-
-    if (!validFileTypes.includes(fileType)) {
-        return res.status(400).json({ error: 'Tipo de archivo no válido' });
-    }
-
-    try {
-        const result = await pool.query(
-            `SELECT ${fileType}, nombre_archivo FROM convocatorias_archivos 
-             WHERE id_convocatoria = $1`,
-            [id]
-        );
-
-        if (result.rows.length === 0 || !result.rows[0][fileType]) {
-            return res.status(404).json({ error: 'Archivo no encontrado' });
-        }
-
-        const fileData = result.rows[0][fileType];
-        let fileName = result.rows[0].nombre_archivo || `convocatoria_${id}_${fileType}`;
-
-        // Determinar el tipo de contenido basado en la extensión del archivo
-        let contentType = 'application/octet-stream';
-        if (fileName.endsWith('.pdf')) {
-            contentType = 'application/pdf';
-        } else if (fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
-            contentType = 'application/msword';
-        } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
-            contentType = 'image/jpeg';
-        } else if (fileName.endsWith('.png')) {
-            contentType = 'image/png';
-        }
-
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-        res.send(fileData);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const viewConvocatoriaPDF = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await pool.query(
-            'SELECT doc_conv FROM convocatorias_archivos WHERE id_convocatoria = $1',
-            [id]
-        );
-
-        if (result.rows.length === 0 || !result.rows[0].doc_conv) {
-            return res.status(404).json({ error: 'PDF no encontrado' });
-        }
-
-        const pdfBytes = result.rows[0].doc_conv;
-
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename=convocatoria_${id}.pdf`);
-        res.send(pdfBytes);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const viewPDFbyType = async (req, res) => {
+exports.handleUploadByType = async (req, res) => {
   const { id, tipo } = req.params;
-  try {
-    const result = await pool.query(
-      `SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1`,
-      [id]
-    );
-
-    if (result.rows.length === 0 || !result.rows[0][tipo]) {
-      return res.status(404).json({ error: 'Archivo no encontrado' });
-    }
-
-    const fileData = result.rows[0][tipo];
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename=${tipo}_${id}.pdf`);
-    res.send(fileData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-const downloadPDFbyType = async (req, res) => {
-  const { id, tipo } = req.params;
-  try {
-    const result = await pool.query(
-      `SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1`,
-      [id]
-    );
-
-    if (result.rows.length === 0 || !result.rows[0][tipo]) {
-      return res.status(404).json({ error: 'Archivo no encontrado' });
-    }
-
-    const fileData = result.rows[0][tipo];
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${tipo}_${id}.pdf`);
-    res.send(fileData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-const deleteFileByType = async (req, res) => {
-  const { id, tipo } = req.params;
-  const allowedFields = ['resolucion', 'dictamen', 'carta', 'nota', 'certificado_item', 'certificado_presupuestario'];
-
-  if (!allowedFields.includes(tipo)) {
-    return res.status(400).json({ error: 'Tipo de archivo inválido' });
-  }
+  if (!tipos.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
+  if (!req.file) return res.status(400).json({ error: 'Archivo no recibido' });
 
   try {
-    const result = await pool.query(
-      `UPDATE convocatorias_archivos SET ${tipo} = NULL WHERE id_convocatoria = $1 RETURNING *`,
-      [id]
-    );
+    const conv = (await pool.query(`
+      SELECT c.id_convocatoria, tc.nombre_tipo_conv, p.programa, f.facultad
+      FROM convocatorias c
+      JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+      JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+      JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+      WHERE c.id_convocatoria = $1
+    `, [id])).rows[0];
 
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Convocatoria no encontrada' });
-    }
+    if (!conv) return res.status(404).json({ error: 'Convocatoria no encontrada' });
 
-    res.json({ success: true, message: `Archivo ${tipo} eliminado correctamente` });
+    const { buffer, originalname } = req.file;
+    const { baseDir } = getDirs(conv.facultad, conv.programa, conv.nombre_tipo_conv, id);
+
+    fs.mkdirSync(baseDir, { recursive: true });
+    const filename = `${tipo}_${Date.now()}${path.extname(originalname)}`;
+    const filePath = path.join(baseDir, filename);
+    fs.writeFileSync(filePath, buffer);
+
+    const relPath = path.relative(BASE_DESKTOP, filePath).replace(/\\/g, '/');
+    await pool.query(`
+      UPDATE convocatorias_archivos
+      SET ${tipo} = $1
+      WHERE id_convocatoria = $2
+    `, [relPath, id]);
+
+    res.json({ success: true, path: relPath });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error subiendo archivo adjunto:', err);
+    res.status(500).json({ error: 'Error subiendo el archivo adjunto' });
   }
 };
 
-module.exports = {
-  generateConvocatoriaPDF,
-  viewConvocatoriaPDF,
-  uploadConvocatoriaFiles,
-  getConvocatoriaFiles,
-  downloadConvocatoriaFile,
-  viewPDFbyType,
-  downloadPDFbyType,
-  deleteFileByType
+exports.viewPDFbyType = async (req, res) => {
+  const { id, tipo } = req.params;
+  if (!tipos.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
+
+  const row = (await pool.query(`
+    SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1
+  `, [id])).rows[0];
+
+  if (!row?.[tipo]) return res.status(404).json({ error: 'Archivo no disponible' });
+
+  const file = path.join(BASE_DESKTOP, row[tipo]);
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Archivo no encontrado' });
+
+//  console.log('PDF guardado en:', pdfPath);
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename=${path.basename(file)}`);
+  fs.createReadStream(file).pipe(res);
 };
+
+exports.downloadPDFbyType = async (req, res) => {
+  const { id, tipo } = req.params;
+  if (!tipos.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
+
+  const row = (await pool.query(`
+    SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1
+  `, [id])).rows[0];
+
+  if (!row?.[tipo]) return res.status(404).json({ error: 'Archivo no disponible' });
+
+  const file = path.join(BASE_DESKTOP, row[tipo]);
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Archivo no encontrado' });
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename=${path.basename(file)}`);
+  fs.createReadStream(file).pipe(res);
+};
+
+exports.deleteFileByType = async (req, res) => {
+  const { id, tipo } = req.params;
+  if (!tipos.includes(tipo)) return res.status(400).json({ error: 'Tipo inválido' });
+
+  const row = (await pool.query(`
+    SELECT ${tipo} FROM convocatorias_archivos WHERE id_convocatoria = $1
+  `, [id])).rows[0];
+
+  if (row?.[tipo]) {
+    const file = path.join(BASE_DESKTOP, row[tipo]);
+    if (fs.existsSync(file)) fs.unlinkSync(file);
+
+    await pool.query(`UPDATE convocatorias_archivos SET ${tipo} = NULL WHERE id_convocatoria = $1`, [id]);
+  }
+
+  res.json({ success: true });
+};
+
+exports.obtenerInfoArchivos = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(`
+      SELECT 
+        nombre_archivo,
+        doc_conv IS NOT NULL AS has_pdf,
+        resolucion IS NOT NULL AS has_resolucion,
+        dictamen IS NOT NULL AS has_dictamen,
+        carta IS NOT NULL AS has_carta,
+        nota IS NOT NULL AS has_nota,
+        certificado_item IS NOT NULL AS has_certificado_item,
+        certificado_presupuestario IS NOT NULL AS has_certificado_presupuestario
+      FROM convocatorias_archivos
+      WHERE id_convocatoria = $1
+    `, [id]);
+
+    if (!result.rowCount) return res.status(404).json({ error: 'No se encontró información de archivos' });
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error al obtener información de archivos:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};  
+
+exports.handleMultipleUploads = async (req, res) => {
+  const { id } = req.params;
+  const archivos = req.files;
+
+  try {
+    const conv = await pool.query(`
+      SELECT tc.nombre_tipo_conv, p.programa, f.facultad
+      FROM convocatorias c
+      JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+      JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+      JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+      WHERE c.id_convocatoria = $1
+    `, [id]);
+
+    if (!conv.rowCount) return res.status(404).json({ error: 'Convocatoria no encontrada' });
+
+    const { facultad, programa, nombre_tipo_conv } = conv.rows[0];
+    const { baseDir } = getDirs(facultad, programa, nombre_tipo_conv, id);
+    fs.mkdirSync(baseDir, { recursive: true });
+
+    const campos = Object.keys(archivos);
+    for (const tipo of campos) {
+      const file = archivos[tipo][0];
+      const filename = `${tipo}_${Date.now()}${path.extname(file.originalname)}`;
+      const filePath = path.join(baseDir, filename);
+      fs.writeFileSync(filePath, file.buffer);
+
+      const relPath = path.relative(BASE_DESKTOP, filePath).replace(/\\/g, '/');
+      await pool.query(`UPDATE convocatorias_archivos SET ${tipo} = $1 WHERE id_convocatoria = $2`, [relPath, id]);
+    }
+
+    res.json({ success: true, uploaded: campos });
+
+  } catch (err) {
+    console.error('Error subiendo múltiples archivos:', err);
+    res.status(500).json({ error: 'Error al subir archivos' });
+  }
+};
+
+

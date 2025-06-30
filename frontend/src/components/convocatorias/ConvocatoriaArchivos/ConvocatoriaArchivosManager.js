@@ -15,21 +15,11 @@ import {
 import FileUploadForm from './FileUploadForm';
 import FileList from './FileList';
 
-const tipos = [
-  'resolucion',
-  'dictamen',
-  'carta',
-  'nota',
-  'certificado_item',
-  'certificado_presupuestario'
-];
-
 function ConvocatoriaArchivosManager() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [filesInfo, setFilesInfo] = useState({});
-  const [selectedFiles, setSelectedFiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
@@ -52,65 +42,66 @@ function ConvocatoriaArchivosManager() {
   }, [id]);
 
   const handleViewPDF = async () => {
-  try {
-    const response = await api.get(`/pdf/${id}/ver`, {
-      responseType: 'blob'
-    });
-    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-    const pdfURL = URL.createObjectURL(pdfBlob);
-    window.open(pdfURL, '_blank');
-  } catch (err) {
-    setError('Error al visualizar el PDF generado');
-  }
-};
+    try {
+      const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf/convocatoria`, {
+        responseType: 'blob'
+      });
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const pdfURL = URL.createObjectURL(pdfBlob);
+      window.open(pdfURL, '_blank');
+    } catch (err) {
+      setError('Error al visualizar el PDF generado');
+    }
+  };
 
   const handleDownloadPDF = async () => {
-  try {
-    const response = await api.get(`/pdf/${id}/ver`, {
-      responseType: 'blob'
-    });
-    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(pdfBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `convocatoria_${id}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    setError('Error al descargar el PDF');
-  }
-};  
+    try {
+      const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf/convocatoria`, {
+        responseType: 'blob'
+      });
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `convocatoria_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError('Error al descargar el PDF');
+    }
+  };
+
+  const handleGenerarPDF = async () => {
+    try {
+      const response = await api.post(`/convocatorias-archivos/${id}/generar-pdf`, {}, {
+        responseType: 'blob'
+      });
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      window.open(url, '_blank');
+      fetchFilesInfo(); // actualiza el estado
+    } catch (err) {
+      setError('Error al generar el PDF');
+    }
+  };
 
   const handleTerminar = () => {
     navigate('/convocatorias');
   };
 
-  const handleGenerarPDF = async () => {
-  try {
-    const response = await api.post(`/pdf/${id}/generar`, {}, {
-      responseType: 'blob'
-    });
-    const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-    window.open(url, '_blank');
-    fetchFilesInfo(); // actualiza el estado
-  } catch (err) {
-    setError('Error al generar el PDF');
-  }
-};
   return (
     <Box sx={{ p: 3 }}>
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-      {/* DOCUMENTO GENERADO */}
       <Button 
-  variant="contained" 
-  startIcon={<UploadIcon />} 
-  onClick={handleGenerarPDF}
->
-  Generar PDF
-</Button>
+        variant="contained" 
+        startIcon={<UploadIcon />} 
+        onClick={handleGenerarPDF}
+      >
+        Generar PDF
+      </Button>
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>Documento de Convocatoria</Typography>
@@ -142,7 +133,6 @@ function ConvocatoriaArchivosManager() {
             </Button>
           </Box>
 
-          {/* FORMULARIO DE SUBIDA */}
           {showUploadForm && (
             <FileUploadForm
               convocatoriaId={id}
@@ -151,7 +141,6 @@ function ConvocatoriaArchivosManager() {
             />
           )}
 
-          {/* LISTA DE ARCHIVOS */}
           <FileList
             filesInfo={filesInfo}
             convocatoriaId={id}

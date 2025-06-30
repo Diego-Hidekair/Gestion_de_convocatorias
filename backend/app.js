@@ -4,20 +4,13 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { Pool } = require('pg');
+//const { Pool } = require('pg');
+const pool = require('../backend/db');
 const app = express();
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 
 const { authenticateToken } = require('./middleware/authMiddleware');
-
-const pool = new Pool({
-    user: process.env.DB_USER, 
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-});
 
 pool.connect()
     .then(() => console.log('Conexión a la base de datos exitosa'))
@@ -26,7 +19,7 @@ pool.connect()
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ['http://192.168.1.10:3000'],
+  origin: ['http://192.168.1.13:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'] 
 }));
@@ -37,9 +30,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false, // En producción debería ser true con HTTPS
+    secure: false,
     sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 1 día
+    maxAge: 24 * 60 * 60 * 1000 
   }
 }));
 
@@ -51,9 +44,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rutas protegidas o públicas según corresponda
 app.use('/convocatorias', authenticateToken, require('./routes/convocatoriaRoutes'));
-
-// Aquí las rutas de PDF que usan pdfController (para generar PDF con HTML)
-app.use('/pdf', require('./routes/pdfRoutes'));
 
 // Rutas para archivos adjuntos de convocatoria, que usan convocatoriaArchivosController
 app.use('/convocatorias-archivos', require('./routes/convocatoriaArchivosRoutes'));
@@ -70,7 +60,6 @@ const routes = [
     { path: '/tipos-convocatorias', route: './routes/tipoConvocatoriaRoutes' },
     { path: '/convocatorias', route: './routes/convocatoriaRoutes' },
     { path: '/convocatoria-materias', route: './routes/convocatoriaMateriaRoutes' },
-    // No montamos aquí convocatorias-archivos para evitar duplicados
     { path: '/api/auth', route: './routes/authRoutes' },
     { path: '/usuarios', route: './routes/usuarioRoutes' },
     { path: '/convocatorias-documentos', route: './routes/convocatoriasDocumentosRoutes' },
@@ -105,5 +94,5 @@ process.on('SIGINT', shutdown);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {  
-    console.log(`Servidor corriendo en http://192.168.1.10:${PORT}`);
+    console.log(`Servidor corriendo en http://192.168.1.13:${PORT}`);
 });

@@ -1,45 +1,30 @@
 // backend/routes/convocatoriaArchivosRoutes.js
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
-const archivosController = require('../controllers/convocatoriaArchivosController');
+
+const archivos = require('../controllers/convocatoriaArchivosController');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 const secretariaOnly = authorizeRoles(['secretaria_de_decanatura']);
 
-const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage,
-    limits: { fileSize: 10 * 1024 * 1024, files: 6 },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/jpeg',
-            'image/png'
-        ];
-        cb(null, allowedTypes.includes(file.mimetype));
-    }
-});
-
+const router = express.Router();
 router.use(authenticateToken);
 
-router.get('/:id/archivos', archivosController.getConvocatoriaFiles);
+const uploadMultiple = multer({ storage: multer.memoryStorage() }).fields([
+  { name: 'resolucion' },
+  { name: 'dictamen' },
+  { name: 'carta' },
+  { name: 'nota' },
+  { name: 'certificado_item' },
+  { name: 'certificado_presupuestario' },
+]);
 
-router.get('/:id/descargar/:tipo', archivosController.downloadPDFbyType);
-
-router.get('/:id/ver-pdf/:tipo', archivosController.viewPDFbyType);
-
-router.post('/:id/subir-multiple', secretariaOnly, upload.fields([
-    { name: 'resolucion', maxCount: 1 },
-    { name: 'dictamen', maxCount: 1 },
-    { name: 'carta', maxCount: 1 },
-    { name: 'nota', maxCount: 1 },
-    { name: 'certificado_item', maxCount: 1 },
-    { name: 'certificado_presupuestario', maxCount: 1 }
-]), archivosController.uploadConvocatoriaFiles);
-
-
-router.delete('/:id/eliminar/:tipo', secretariaOnly, archivosController.deleteFileByType);
+router.get('/:id/archivos', archivos.obtenerInfoArchivos);
+router.post('/:id/generar', secretariaOnly, archivos.generateConvocatoriaPDF);
+router.get('/:id/ver', archivos.viewConvocatoriaPDF);
+router.post('/:id/subir/:tipo', secretariaOnly, archivos.uploadFileByType, archivos.handleUploadByType);
+router.get('/:id/ver-pdf/:tipo', archivos.viewPDFbyType);
+router.get('/:id/descargar/:tipo', archivos.downloadPDFbyType);
+router.delete('/:id/eliminar/:tipo', secretariaOnly, archivos.deleteFileByType);
+router.post('/:id/subir-multiples', secretariaOnly, uploadMultiple, archivos.handleMultipleUploads);
 
 module.exports = router;
