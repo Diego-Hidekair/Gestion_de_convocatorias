@@ -119,6 +119,16 @@ const ConvocatoriaDetalle = () => {
     );
   }
 
+  const handleVerDocumento = (tipo) => {
+  const base = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  window.open(`${base}/convocatorias-archivos/${id}/ver-pdf/${tipo}`, '_blank');
+};
+
+const handleDescargarDocumento = (tipo) => {
+  const base = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  window.open(`${base}/convocatorias-archivos/${id}/descargar/${tipo}`, '_blank');
+};
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -343,18 +353,29 @@ const ConvocatoriaDetalle = () => {
                 </Grid>
                 
                 <Grid item xs={12} sm={6} md={4}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Description fontSize="large" />
-                    <Typography variant="subtitle1">Resolución</Typography>
-                    <Button 
-                      size="small" 
-                      startIcon={<Visibility />}
-                      disabled={!convocatoria.archivos.resolucion}
-                    >
-                      {convocatoria.archivos.resolucion ? 'Ver' : 'No disponible'}
-                    </Button>
-                  </Paper>
-                </Grid>
+  <Paper sx={{ p: 2, textAlign: 'center' }}>
+    <Description fontSize="large" />
+    <Typography variant="subtitle1">Resolución</Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+      <Button 
+  size="small"
+  startIcon={<Visibility />}
+  disabled={!convocatoria.archivos.resolucion}
+  onClick={() => handleVerDocumento('resolucion')}
+>
+         Ver
+</Button>
+<Button 
+  size="small"
+  startIcon={<Download />}
+  disabled={!convocatoria.archivos.resolucion}
+  onClick={() => handleDescargarDocumento('resolucion')}
+>
+  Descargar
+</Button>
+    </Box>
+  </Paper>
+</Grid>
                 
                 <Grid item xs={12} sm={6} md={4}>
                   <Paper sx={{ p: 2, textAlign: 'center' }}>

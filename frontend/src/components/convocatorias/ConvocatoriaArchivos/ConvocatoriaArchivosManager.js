@@ -7,8 +7,6 @@ import {
 } from '@mui/material';
 import {
   Check as CheckIcon,
-  Visibility as VisibilityIcon,
-  Download as DownloadIcon,
   Upload as UploadIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
@@ -23,6 +21,7 @@ function ConvocatoriaArchivosManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
 
   const fetchFilesInfo = async () => {
     try {
@@ -37,50 +36,32 @@ function ConvocatoriaArchivosManager() {
     }
   };
 
+  const fetchPdfPreview = async () => {
+    try {
+      const response = await api.get(`/convocatorias-archivos/${id}/ver`, { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      setPdfUrl(url);
+    } catch (err) {
+      console.error('Error al precargar el PDF:', err);
+    }
+  };
+
   useEffect(() => {
     fetchFilesInfo();
   }, [id]);
 
-  const handleViewPDF = async () => {
-    try {
-      const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf/convocatoria`, {
-        responseType: 'blob'
-      });
-      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      const pdfURL = URL.createObjectURL(pdfBlob);
-      window.open(pdfURL, '_blank');
-    } catch (err) {
-      setError('Error al visualizar el PDF generado');
+  useEffect(() => {
+    if (filesInfo?.nombre_archivo) {
+      fetchPdfPreview();
     }
-  };
-
-  const handleDownloadPDF = async () => {
-    try {
-      const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf/convocatoria`, {
-        responseType: 'blob'
-      });
-      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `convocatoria_${id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setError('Error al descargar el PDF');
-    }
-  };
+  }, [filesInfo]);
 
   const handleGenerarPDF = async () => {
     try {
-      const response = await api.post(`/convocatorias-archivos/${id}/generar-pdf`, {}, {
-        responseType: 'blob'
-      });
+      const response = await api.post(`/convocatorias-archivos/${id}/generar`, {}, { responseType: 'blob' });
       const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      window.open(url, '_blank');
-      fetchFilesInfo(); // actualiza el estado
+      setPdfUrl(url);
+      fetchFilesInfo();
     } catch (err) {
       setError('Error al generar el PDF');
     }
@@ -94,72 +75,68 @@ function ConvocatoriaArchivosManager() {
     <Box sx={{ p: 3 }}>
       {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-      <Button 
-        variant="contained" 
-        startIcon={<UploadIcon />} 
-        onClick={handleGenerarPDF}
-      >
+      <Button variant="contained" startIcon={<UploadIcon />} onClick={handleGenerarPDF}>
         Generar PDF
       </Button>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>Documento de Convocatoria</Typography>
-          {filesInfo?.nombre_archivo ? (
-            <>
-              <Typography paragraph>Documento generado disponible</Typography>
-              <Box display="flex" gap={2}>
-                <Button variant="contained" startIcon={<VisibilityIcon />} onClick={handleViewPDF}>Ver PDF</Button>
-                <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleDownloadPDF}>Descargar PDF</Button>
-              </Box>
-            </>
-          ) : (
-            <Typography paragraph>No se ha generado el documento de convocatoria.</Typography>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* DOCUMENTOS ADJUNTOS */}
-      <Card>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h6">Documentos Adjuntos</Typography>
-            <Button
-              variant={showUploadForm ? 'outlined' : 'contained'}
-              startIcon={showUploadForm ? <CloseIcon /> : <UploadIcon />}
-              onClick={() => setShowUploadForm(!showUploadForm)}
-            >
-              {showUploadForm ? 'Cancelar' : 'Subir Documentos'}
-            </Button>
-          </Box>
-
-          {showUploadForm && (
-            <FileUploadForm
-              convocatoriaId={id}
-              onSuccess={fetchFilesInfo}
-              onError={setError}
+      <Box sx={{ display: 'flex', mt: 3, gap: 3 }}>
+        {/* Vista previa del PDF */}
+        <Box sx={{ flex: 2 }}>
+          <Typography variant="h6" gutterBottom>Vista previa del documento generado</Typography>
+          {pdfUrl ? (
+            <iframe
+              title="PDF Preview"
+              src={pdfUrl}
+              width="100%"
+              height="600px"
+              style={{ border: '1px solid #ccc', borderRadius: 8 }}
             />
+          ) : (
+            <Typography>No se ha generado aún el documento de convocatoria.</Typography>
           )}
+        </Box>
 
-          <FileList
-            filesInfo={filesInfo}
-            convocatoriaId={id}
-            onError={setError}
-            onFilesUpdate={fetchFilesInfo}
-          />
-        </CardContent>
+        {/* Documentos Adjuntos */}
+        <Box sx={{ flex: 1 }}>
+          <Card>
+            <CardContent>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h6">Documentos Adjuntos</Typography>
+                <Button
+                  variant={showUploadForm ? 'outlined' : 'contained'}
+                  startIcon={showUploadForm ? <CloseIcon /> : <UploadIcon />}
+                  onClick={() => setShowUploadForm(!showUploadForm)}
+                >
+                  {showUploadForm ? 'Cancelar' : 'Subir'}
+                </Button>
+              </Box>
 
-        <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleTerminar}
-            startIcon={<CheckIcon />}
-          >
-            Terminar
-          </Button>
-        </CardActions>
-      </Card>
+              {showUploadForm && (
+                <FileUploadForm
+                  convocatoriaId={id}
+                  onSuccess={() => {
+                    fetchFilesInfo();
+                    setShowUploadForm(false); 
+                  }}
+                  onError={setError}
+                />
+              )}
+
+              <FileList
+                filesInfo={filesInfo}
+                convocatoriaId={id}
+                onError={setError}
+                onFilesUpdate={fetchFilesInfo}
+              />
+            </CardContent>
+            <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
+              <Button variant="contained" onClick={handleTerminar} startIcon={<CheckIcon />}>
+                Terminar
+              </Button>
+            </CardActions>
+          </Card>
+        </Box>
+      </Box>
     </Box>
   );
 }

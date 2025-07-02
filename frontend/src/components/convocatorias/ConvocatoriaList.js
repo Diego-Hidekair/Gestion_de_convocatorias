@@ -475,7 +475,12 @@ const confirmEstadoChange = async () => {
             ) : (
               filteredConvocatorias.map((convocatoria) => (
                 <TableRow key={convocatoria.id_convocatoria}>
-                  <TableCell>{convocatoria.nombre_conv}</TableCell>
+<TableCell
+  sx={{ cursor: 'pointer', color: 'primary.main', fontWeight: 'bold' }}
+  onClick={() => navigate(`/convocatorias/${convocatoria.id_convocatoria}`)}
+>
+  {convocatoria.nombre_conv}
+</TableCell>
                   <TableCell>{convocatoria.nombre_programa}</TableCell>
                   <TableCell>{convocatoria.nombre_facultad}</TableCell>
                   <TableCell>

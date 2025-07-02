@@ -51,7 +51,7 @@ const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
     }
 
     try {
-      await api.post(`/convocatorias-archivos/${convocatoriaId}/subir-multiple`, formData, {
+      await api.post(`/convocatorias-archivos/${convocatoriaId}/subir-multiples`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -77,19 +77,55 @@ const FileUploadForm = ({ convocatoriaId, onSuccess, onError }) => {
 
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={3}>
-          {campos.map(({ id, label }) => (
-            <Box key={id}>
-              <InputLabel htmlFor={id}>{label}</InputLabel>
-              <Input
-                id={id}
-                type="file"
-                inputProps={{ accept: 'application/pdf' }}
-                onChange={(e) => handleFileChange(e, id)}
-                startAdornment={<DescriptionIcon sx={{ mr: 1 }} />}
-                fullWidth
-              />
-            </Box>
-          ))}
+         {campos.map(({ id, label }) => {
+  const archivo = files[id];
+
+  return (
+    <Paper
+      key={id}
+      elevation={2}
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        border: '1px solid #e0e0e0',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        justifyContent: 'space-between'
+      }}
+    >
+      <DescriptionIcon color="action" />
+
+      <Box flex={1}>
+        <InputLabel sx={{ mb: 1 }}>{label}</InputLabel>
+
+        <label htmlFor={`file-input-${id}`}>
+          <input
+            id={`file-input-${id}`}
+            type="file"
+            accept="application/pdf"
+            style={{ display: 'none' }}
+            onChange={(e) => handleFileChange(e, id)}
+          />
+          <Button
+            component="span"
+            variant="contained"
+            size="small"
+            color={archivo ? 'success' : 'primary'}
+          >
+            Subir
+          </Button>
+        </label>
+
+        {archivo && (
+          <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', color: 'text.secondary' }}>
+            {archivo.name}
+          </Typography>
+        )}
+      </Box>
+    </Paper>
+  );
+})}
           <Button
             type="submit"
             variant="contained"

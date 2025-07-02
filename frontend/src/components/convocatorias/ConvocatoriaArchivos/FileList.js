@@ -1,12 +1,13 @@
 // frontend/src/components/convocatorias/ConvocatoriaArchivos/FileList.js
 import React, { useState } from 'react';
 import {
-  List, ListItem, ListItemText, Button, Chip, Stack, Alert, Snackbar
+  List, ListItem, ListItemText, Button, Chip, Stack, Alert, Snackbar, Paper
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../../../config/axiosConfig';
+
 
 const fileTypes = [
   { key: 'has_resolucion', label: 'Resolución Facultativa', type: 'resolucion' },
@@ -73,24 +74,30 @@ const FileList = ({ filesInfo, convocatoriaId, onError, onFilesUpdate }) => {
     <>
       <List>
         {fileTypes.map(({ key, label, type }) => (
-          <ListItem
-            key={key}
-            divider
-            secondaryAction={
-              filesInfo[key] ? (
-                <Stack direction="row" spacing={1}>
-                  <Chip color="success" label="Disponible" size="small" />
-                  <Button size="small" variant="outlined" onClick={() => handleView(type)} startIcon={<VisibilityIcon />}>Ver</Button>
-                  <Button size="small" variant="contained" onClick={() => handleDownload(type)} startIcon={<DownloadIcon />}>Descargar</Button>
-                  <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(type)} startIcon={<DeleteIcon />}>Eliminar</Button>
-                </Stack>
-              ) : (
-                <Chip label="No disponible" color="default" size="small" />
-              )
-            }
-          >
-            <ListItemText primary={label} />
-          </ListItem>
+         <Paper
+  elevation={3}
+  sx={{
+    mb: 2,
+    p: 2,
+    borderRadius: 2,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  }}
+  key={key}
+>
+  <ListItemText primary={label} />
+  {filesInfo[key] ? (
+    <Stack direction="row" spacing={1}>
+      <Chip color="success" label="Disponible" size="small" />
+      <Button size="small" variant="outlined" onClick={() => handleView(type)} startIcon={<VisibilityIcon />}>Ver</Button>
+      <Button size="small" variant="contained" onClick={() => handleDownload(type)} startIcon={<DownloadIcon />}>Descargar</Button>
+      <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(type)} startIcon={<DeleteIcon />}>Eliminar</Button>
+    </Stack>
+  ) : (
+    <Chip label="No disponible" color="default" size="small" />
+  )}
+</Paper>
         ))}
       </List>
 

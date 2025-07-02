@@ -185,11 +185,13 @@ const AuthWrapper = () => {
                     <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                     <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
                     <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
+                    <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
                   </>
                 )}
               {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
                 <>
                   <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
+                  <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
                 </>
               )}
                 <Route path="/convocatorias" element={<ConvocatoriaList />} />
@@ -203,6 +205,7 @@ const AuthWrapper = () => {
                 <Route path="/file-upload" element={<FileUpload />} />
                 <Route path="/usuarios/*" element={<UsuarioManager />} />
                 <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
+                <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
                 <Route path="*" element={<Navigate to="/redirect" />} />
               </>
             ) : (

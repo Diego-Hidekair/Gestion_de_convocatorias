@@ -9,7 +9,6 @@ const pool = require('../backend/db');
 const app = express();
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-
 const { authenticateToken } = require('./middleware/authMiddleware');
 
 pool.connect()
@@ -39,14 +38,11 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Carpeta para archivos estáticos si los tienes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Rutas protegidas o públicas según corresponda
 app.use('/convocatorias', authenticateToken, require('./routes/convocatoriaRoutes'));
 
-// Rutas para archivos adjuntos de convocatoria, que usan convocatoriaArchivosController
-app.use('/convocatorias-archivos', require('./routes/convocatoriaArchivosRoutes'));
+app.use('/convocatorias-archivos', authenticateToken, require('./routes/convocatoriaArchivosRoutes'));
 
 app.get('/test', (req, res) => {
   console.log("Ruta /test accedida"); 
