@@ -157,32 +157,6 @@ const ConvocatoriaDetalle = () => {
     }
   };
 
-  const handleDescargarDocumento = async (tipo) => {
-  try {
-    const token = getAuthToken();
-    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/convocatorias-archivos/${id}/descargar/${tipo}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${tipo}_${id}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    setSnackbarMessage(`Descarga de ${tipo} iniciada`);
-    setSnackbarOpen(true);
-  } catch (error) {
-    console.error('Error al descargar documento:', error);
-    setSnackbarMessage('Error al descargar el documento');
-    setSnackbarOpen(true);
-  }
-};
-
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -216,31 +190,6 @@ const ConvocatoriaDetalle = () => {
           Volver
         </Button>
         
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<Edit />}
-            onClick={() => navigate(`/convocatorias/edit/${id}`)}
-          >
-            Editar
-          </Button>
-          
-          <Button
-            variant="outlined"
-            startIcon={<Description />}
-            onClick={handleViewDocument}
-          >
-            Ver PDF
-          </Button>
-          
-          <Button
-            variant="outlined"
-            startIcon={<Download />}
-            onClick={handleDownloadPdf}
-          >
-            Descargar
-          </Button>
-        </Box>
       </Box>
       
       <Typography variant="h4" gutterBottom>

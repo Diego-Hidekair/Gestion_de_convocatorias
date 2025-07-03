@@ -166,7 +166,7 @@ const ConvocatoriaList = () => {
 };
 
 // Función para descargar el PDF de la convocatoria
-const handleDownloadPdf = async () => {
+const handleDownloadPdf = async (id) => {
   try {
     const response = await api.get(`/convocatorias-archivos/${id}/descargar/convocatoria`, {
       responseType: 'blob'
@@ -190,7 +190,7 @@ const handleDownloadPdf = async () => {
 };
 
 // Función para abrir el PDF de la convocatoria en una nueva pestaña
-const handleViewPdf = async () => {
+const handleViewPdf = async (id) => {
   const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf/convocatoria`, {
     responseType: 'blob'
   });
@@ -530,24 +530,6 @@ const confirmEstadoChange = async () => {
                           <Edit fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      
-                     <Tooltip title="Descargar PDF">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDownloadPdf(convocatoria.id_convocatoria)}
-                      >
-                        <Download fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                      <Tooltip title="Ver PDF">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleViewPdf(convocatoria.id_convocatoria)}
-                        >
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      
                       <Tooltip title="Eliminar">
                         <IconButton
                           size="small"
