@@ -28,6 +28,8 @@ import NavBar from './components/NavBar';
 import ConvocatoriaArchivosManager from './components/convocatorias/ConvocatoriaArchivos/ConvocatoriaArchivosManager';
 import NotificacionesPage from './components/notificaciones/NotificacionesPage';
 import api from './config/axiosConfig';
+import DocenteList from './components/usuarios/DocenteList';
+import VicerrectorList from './components/usuarios/VicerrectorList';
 
 const drawerWidthExpanded = 200;
 const drawerWidthCollapsed = 70;
@@ -178,6 +180,8 @@ const AuthWrapper = () => {
                 <Route path="/carreras" element={<CarreraList />} />
                 <Route path="/facultades" element={<FacultadList />} />
                 <Route path="/notificaciones" element={<NotificacionesPage />} />
+                <Route path="/docentes" element={<DocenteList />} />
+                <Route path="/vicerrectores" element={<VicerrectorList />} />
 
                 {userRole === 'secretaria_de_decanatura' && (
                   <>

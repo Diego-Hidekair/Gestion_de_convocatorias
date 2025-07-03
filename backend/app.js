@@ -43,6 +43,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/convocatorias', authenticateToken, require('./routes/convocatoriaRoutes'));
 
 app.use('/convocatorias-archivos', authenticateToken, require('./routes/convocatoriaArchivosRoutes'));
+app.use('/docentes-vicerrectores', authenticateToken, require('./routes/docenteVicerrectorRoutes'));
+
+
 
 app.get('/test', (req, res) => {
   console.log("Ruta /test accedida"); 

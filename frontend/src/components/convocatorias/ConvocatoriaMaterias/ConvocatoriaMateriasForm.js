@@ -1,8 +1,7 @@
 // frontend/src/components/convocatorias/ConvocatoriaMaterias/ConvocatoriaMateriasForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert, Divider  } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Container, Typography, Button, TextField, Select, MenuItem, FormControl, InputLabel, List, ListItem, ListItemText, IconButton, Paper, Box, Alert, Divider } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../../../config/axiosConfig';
 
@@ -14,15 +13,19 @@ const ConvocatoriaMateriasForm = () => {
     const [materiaSeleccionada, setMateriaSeleccionada] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [convocatoriaData, setConvocatoriaData] = useState(null);
 
-     useEffect(() => {
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
                 const convResponse = await api.get(`/convocatorias/${id_convocatoria}`);
+                setConvocatoriaData(convResponse.data);
+                
                 const materiasResponse = await api.get(
                     `/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`
                 );
+                
                 const asignadasResponse = await api.get(
                     `/convocatoria-materias/${id_convocatoria}/materias`
                 );
@@ -61,14 +64,14 @@ const ConvocatoriaMateriasForm = () => {
         setMateriasSeleccionadas(prev => prev.filter(m => m.id_materia !== id));
     };
 
-   const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         if (materiasSeleccionadas.length === 0) {
             setError('Debe seleccionar al menos una materia');
             return;
         }
-    try {
+        try {
             setLoading(true);
             await api.post(
                 `/convocatoria-materias/${id_convocatoria}/materias`,
@@ -81,7 +84,7 @@ const ConvocatoriaMateriasForm = () => {
             );
             navigate(`/convocatorias/${id_convocatoria}/archivos`);
         } catch (err) {
-        console.error('Error en handleSubmit:', err);
+            console.error('Error en handleSubmit:', err);
             if (err.response?.status === 200 || err.response?.data?.success) {
                 navigate(`/convocatorias/${id_convocatoria}/archivos`);
             } else {
@@ -95,6 +98,19 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
+    const handleVolver = () => {
+        // Verificamos si venimos de edición o creación nueva
+        const isEditing = window.location.pathname.includes('/editar/');
+        
+        if (isEditing) {
+            // Si estamos editando, volvemos a la edición
+            navigate(`/convocatorias/editar/${id_convocatoria}`);
+        } else {
+            // Si estamos creando nueva, volvemos al formulario de creación
+            navigate(`/convocatorias/nueva`);
+        }
+    };
+
     return (
         <Container maxWidth="md">
             <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
@@ -103,6 +119,20 @@ const ConvocatoriaMateriasForm = () => {
                 </Typography>
 
                 {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+                {convocatoriaData && (
+                    <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            <strong>Convocatoria:</strong> {convocatoriaData.nombre_conv}
+                        </Typography>
+                        <Typography variant="body2">
+                            <strong>Programa:</strong> {convocatoriaData.programa || convocatoriaData.nombre_programa}
+                        </Typography>
+                        <Typography variant="body2">
+                            <strong>Tipo:</strong> {convocatoriaData.nombre_tipoconvocatoria || convocatoriaData.nombre_tipo_conv}
+                        </Typography>
+                    </Box>
+                )}
 
                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                     <FormControl fullWidth>
@@ -156,7 +186,7 @@ const ConvocatoriaMateriasForm = () => {
                                             value={materia.total_horas}
                                             onChange={(e) => {
                                                 const newValue = parseInt(e.target.value) || 0;
-                                                if (newValue > 0) { // Validación básica
+                                                if (newValue > 0) {
                                                     setMateriasSeleccionadas(prev =>
                                                         prev.map(m =>
                                                             m.id_materia === materia.id_materia
@@ -169,7 +199,7 @@ const ConvocatoriaMateriasForm = () => {
                                             sx={{ width: '100px', mr: 2 }}
                                             inputProps={{
                                                 min: 1,
-                                                title: "Horas totales (puede modificar este valor)"
+                                                title: "Horas totales (puede modificar este value)"
                                             }}
                                             helperText="Horas totales"
                                         />
@@ -194,9 +224,9 @@ const ConvocatoriaMateriasForm = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                     <Button
                         variant="outlined"
-                        onClick={() => navigate(`/convocatorias/${id_convocatoria}`)}
+                        onClick={handleVolver}
                     >
-                        Volver
+                        Volver a {window.location.pathname.includes('/editar/') ? 'Editar' : 'Crear'} Convocatoria
                     </Button>
                     <Button
                         variant="contained"

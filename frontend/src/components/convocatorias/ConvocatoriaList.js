@@ -34,6 +34,7 @@ const ConvocatoriaList = () => {
   const [validating, setValidating] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
+  const [userId, setUserId] = useState(null);
     
   const theme = useTheme();
   // Campos de búsqueda disponibles
@@ -47,20 +48,21 @@ const ConvocatoriaList = () => {
   const handleCloseEstadoMenu = () => { setAnchorEl(null); setCurrentConvocatoria(null); };
   useEffect(() => {
     const fetchUserRole = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await api.get('/usuarios/me', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/usuarios/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
             setUserRole(response.data.rol);
-            
-            if (response.data.rol === 'personal_administrativo') {
-                document.title = "Convocatorias Aprobadas";
-            }
-        } catch (error) {
-            console.error('Error al obtener el rol del usuario:', error);
-        }
-    };
+          setUserId(response.data.id_usuario); 
+
+    if (response.data.rol === 'personal_administrativo') {
+      document.title = "Convocatorias Aprobadas";
+    }
+  } catch (error) {
+    console.error('Error al obtener el rol del usuario:', error);
+  }
+};
 
     fetchUserRole();
     fetchConvocatorias();
@@ -418,14 +420,16 @@ const confirmEstadoChange = async () => {
         </Box>
         
         <Box>
-          <Button
+          {userRole === 'secretaria_de_decanatura' && (
+          <Button 
               variant="contained"
               startIcon={<Add />}
-              onClick={() => navigate('/convocatorias/new')}
+              onClick={() => navigate('/convocatorias/crear')}
               sx={{ mr: 2 }}
           >
               Nueva Convocatoria
           </Button>
+          )}
           
           {userRole === 'vicerrectorado' && (
               <Button
@@ -522,14 +526,16 @@ const confirmEstadoChange = async () => {
                   
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Tooltip title="Editar">
-                        <IconButton
-                          size="small"
-                          onClick={() => navigate(`/convocatorias/edit/${convocatoria.id_convocatoria}`)}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+                      {userRole === 'secretaria_de_decanatura' && convocatoria.estado === 'Observado' && (
+                        <Tooltip title="Editar">
+                          <IconButton
+                            size="small"
+                            onClick={() => navigate(`/convocatorias/edit/${convocatoria.id_convocatoria}`)}
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Tooltip title="Eliminar">
                         <IconButton
                           size="small"

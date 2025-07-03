@@ -160,7 +160,30 @@ const NavBar = ({onLogout, userRole, isExpanded, setIsExpanded, drawerWidthExpan
                     </ListItemIcon>
                     {isExpanded && <ListItemText primary="Tipos de coonvocatorias" />}
                 </ListItem>,
-            ],
+                <ListItem 
+                        button
+                        component={Link} 
+                        to="/docentes" 
+                        key="docentes" 
+                        sx={getItemStyle("/docentes")}
+                    ><ListItemIcon sx={{ color: location.pathname === "/docentes" ? "#000" : "#fff" }}>
+                        <PersonIcon />
+                        </ListItemIcon>
+                        {isExpanded && <ListItemText primary="Docentes" />}
+                    </ListItem>,
+                    <ListItem 
+                        button
+                        component={Link} 
+                        to="/vicerrectores" 
+                        key="vicerrectores" 
+                        sx={getItemStyle("/vicerrectores")}
+                    >
+                        <ListItemIcon sx={{ color: location.pathname === "/vicerrectores" ? "#000" : "#fff" }}>
+                        <VerifiedIcon />
+                        </ListItemIcon>
+                        {isExpanded && <ListItemText primary="Vicerrectores" />}
+                    </ListItem>,
+                    ],
             secretaria_de_decanatura: [
                 <ListItem 
                     button
