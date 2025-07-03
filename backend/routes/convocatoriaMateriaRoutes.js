@@ -12,4 +12,3 @@ router.delete('/:id/materias/:id_materia', authenticateToken, secretariaOnly, ma
 router.get('/programa/:id_programa/materias', authenticateToken, materiaController.getMateriasByPrograma);
 
 module.exports = router;     
-

@@ -1,10 +1,10 @@
 // frontend/src/components/convocatorias/ConvocatoriaDetalle.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {Container, Typography, Box, Card, CardContent, Grid, Button, Chip, Divider, List, ListItem, ListItemText, Alert, CircularProgress, Tab, Tabs, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar} from '@mui/material';
-import {Edit, ArrowBack, Download, Visibility, Description, Close} from '@mui/icons-material';
+import { Container, Typography, Box, Card, CardContent, Grid, Button, Chip, Divider, List, ListItem, ListItemText, Alert, CircularProgress, Tab, Tabs, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar } from '@mui/material';
+import { Edit, ArrowBack, Download, Visibility, Description, Close } from '@mui/icons-material';
 import { format } from 'date-fns';
-import api from '../../config/axiosConfig'
+import api from '../../config/axiosConfig';
 
 const ConvocatoriaDetalle = () => {
   const { id } = useParams();
@@ -13,8 +13,15 @@ const ConvocatoriaDetalle = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
-  const [pdfUrl, setPdfUrl] = useState('');
-  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  //const [pdfUrl, setPdfUrl] = useState('');
+  //const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  
+  const [documentoModal, setDocumentoModal] = useState({
+  abierto: false,
+  url: null,
+  titulo: ''
+});
+  
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -23,14 +30,19 @@ const ConvocatoriaDetalle = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        
+        // Obtener datos del usuario
         const userResponse = await api.get('/usuarios/me');
         setUserRole(userResponse.data.rol);
+        
+        // Obtener datos de la convocatoria
         const convResponse = await api.get(`/convocatorias/${id}`);
         setConvocatoria(convResponse.data);
+        
         setError(null);
       } catch (error) {
         console.error('Error al cargar datos:', error);
-        setError(error.response?.data?.error || 'Error al cargar la convocatoria');
+        setError(error.message || 'Error al cargar la convocatoria');
       } finally {
         setLoading(false);
       }
@@ -39,49 +51,98 @@ const ConvocatoriaDetalle = () => {
     fetchData();
   }, [id]);
 
+  const handleViewDocument = async (tipo = null) => {
+  try {
+    const endpoint = tipo 
+      ? `/convocatorias-archivos/${id}/ver-pdf/${tipo}`
+      : `/convocatorias-archivos/${id}/ver`;
+
+    const response = await api.get(endpoint, { responseType: 'blob' });
+    const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+
+    setDocumentoModal({
+      abierto: true,
+      url: url,
+      titulo: tipo ? 
+        `Documento: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}` : 
+        'Documento de Convocatoria'
+    });
+
+  } catch (error) {
+    console.error('Error al visualizar documento:', error);
+    setSnackbarMessage(`Error al visualizar el documento${tipo ? ` (${tipo})` : ''}`);
+    setSnackbarOpen(true);
+  }
+};
+
+  const handleDownloadDocument = async (tipo = null) => {
+    try {
+      const endpoint = tipo
+        ? `/convocatorias-archivos/${id}/descargar/${tipo}`
+        : `/convocatorias-archivos/${id}/ver`;
+      
+      const filename = tipo ? `${tipo}_${id}.pdf` : `convocatoria_${id}.pdf`;
+
+      const response = await api.get(endpoint, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setSnackbarMessage(`Descarga de ${tipo || 'convocatoria'} iniciada`);
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error al descargar documento:', error);
+      setSnackbarMessage(`Error al descargar el documento${tipo ? ` (${tipo})` : ''}`);
+      setSnackbarOpen(true);
+    }
+  };
+
+
+  const getAuthToken = () => {
+    return localStorage.getItem('token'); 
+  };
+  
+  const formatFecha = (fecha) => {
+  if (!fecha) return 'N/A';
+  const date = new Date(fecha);
+  return isNaN(date.getTime()) ? 'N/A' : format(date, 'dd/MM/yyyy');
+};
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  const handleViewPdf = async () => {
-    try {
-      const response = await api.get(`/pdf/combinado/ver/${id}`, {
-        responseType: 'blob'
-      });
-      
-      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      setPdfUrl(pdfUrl);
-      setPdfModalOpen(true);
-    } catch (error) {
-      console.error('Error al obtener el PDF:', error);
-      setSnackbarMessage('Error al cargar el PDF');
-      setSnackbarOpen(true);
-    }
-  };
 
   const handleDownloadPdf = async () => {
-    try {
-      const response = await api.get(`/pdf/download/${id}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `convocatoria_${id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      
-      setSnackbarMessage('Descarga iniciada');
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error('Error al descargar PDF:', error);
-      setSnackbarMessage('Error al descargar el PDF');
-      setSnackbarOpen(true);
-    }
-  };
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/convocatorias-archivos/${id}/ver`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `convocatoria_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setSnackbarMessage('Descarga iniciada');
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error('Error al descargar PDF:', error);
+    setSnackbarMessage('Error al descargar el PDF');
+    setSnackbarOpen(true);
+  }
+};
 
   const getEstadoColor = (estado) => {
     switch (estado) {
@@ -95,6 +156,32 @@ const ConvocatoriaDetalle = () => {
       default: return 'default';
     }
   };
+
+  const handleDescargarDocumento = async (tipo) => {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'}/convocatorias-archivos/${id}/descargar/${tipo}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${tipo}_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setSnackbarMessage(`Descarga de ${tipo} iniciada`);
+    setSnackbarOpen(true);
+  } catch (error) {
+    console.error('Error al descargar documento:', error);
+    setSnackbarMessage('Error al descargar el documento');
+    setSnackbarOpen(true);
+  }
+};
 
   if (loading) {
     return (
@@ -119,16 +206,6 @@ const ConvocatoriaDetalle = () => {
     );
   }
 
-  const handleVerDocumento = (tipo) => {
-  const base = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-  window.open(`${base}/convocatorias-archivos/${id}/ver-pdf/${tipo}`, '_blank');
-};
-
-const handleDescargarDocumento = (tipo) => {
-  const base = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-  window.open(`${base}/convocatorias-archivos/${id}/descargar/${tipo}`, '_blank');
-};
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
@@ -151,7 +228,7 @@ const handleDescargarDocumento = (tipo) => {
           <Button
             variant="outlined"
             startIcon={<Description />}
-            onClick={handleViewPdf}
+            onClick={handleViewDocument}
           >
             Ver PDF
           </Button>
@@ -253,15 +330,15 @@ const handleDescargarDocumento = (tipo) => {
                   <ListItem>
                     <ListItemText 
                       primary="Fecha de Inicio" 
-                      secondary={format(new Date(convocatoria.fecha_inicio), 'dd/MM/yyyy')} 
+                      secondary={formatFecha(convocatoria.fecha_inicio)} 
                     />
                   </ListItem>
                   <Divider component="li" />
                   
-                  <ListItem>
+                 <ListItem>
                     <ListItemText 
                       primary="Fecha de Fin" 
-                      secondary={convocatoria.fecha_fin ? format(new Date(convocatoria.fecha_fin), 'dd/MM/yyyy') : 'N/A'} 
+                      secondary={formatFecha(convocatoria.fecha_fin)} 
                     />
                   </ListItem>
                   <Divider component="li" />
@@ -334,115 +411,249 @@ const handleDescargarDocumento = (tipo) => {
       )}
       
       {activeTab === 2 && (
-        <Card>
-          <CardContent>
-            {convocatoria.archivos ? (
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={4}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Description fontSize="large" />
-                    <Typography variant="subtitle1">Documento de Convocatoria</Typography>
-                    <Button 
-                      size="small" 
-                      startIcon={<Visibility />}
-                      onClick={() => {/* Lógica para ver este documento */}}
-                    >
-                      Ver
-                    </Button>
-                  </Paper>
-                </Grid>
+  <Card>
+    <CardContent>
+      {convocatoria.archivos ? (
+        <Grid container spacing={2}>
+          {/* Documento de Convocatoria */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Documento de Convocatoria</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.doc_conv}
+                  onClick={() => handleViewDocument()}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.doc_conv}
+                  onClick={() => handleDownloadDocument()}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
                 
-                <Grid item xs={12} sm={6} md={4}>
-  <Paper sx={{ p: 2, textAlign: 'center' }}>
-    <Description fontSize="large" />
-    <Typography variant="subtitle1">Resolución</Typography>
-    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-      <Button 
-  size="small"
-  startIcon={<Visibility />}
-  disabled={!convocatoria.archivos.resolucion}
-  onClick={() => handleVerDocumento('resolucion')}
->
-         Ver
-</Button>
-<Button 
-  size="small"
-  startIcon={<Download />}
-  disabled={!convocatoria.archivos.resolucion}
-  onClick={() => handleDescargarDocumento('resolucion')}
->
-  Descargar
-</Button>
-    </Box>
-  </Paper>
-</Grid>
+                {/* Resolución */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Resolución</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.resolucion}
+                  onClick={() => handleViewDocument('resolucion')}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.resolucion}
+                  onClick={() => handleDownloadDocument('resolucion')}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
                 
-                <Grid item xs={12} sm={6} md={4}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Description fontSize="large" />
-                    <Typography variant="subtitle1">Dictamen</Typography>
-                    <Button 
-                      size="small" 
-                      startIcon={<Visibility />}
-                      disabled={!convocatoria.archivos.dictamen}
-                    >
-                      {convocatoria.archivos.dictamen ? 'Ver' : 'No disponible'}
-                    </Button>
-                  </Paper>
-                </Grid>
-              </Grid>
-            ) : (
-              <Alert severity="info">
-                No se han cargado documentos adicionales para esta convocatoria
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+                {/* Dictamen */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Dictamen</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.dictamen}
+                  onClick={() => handleViewDocument('dictamen')}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.dictamen}
+                  onClick={() => handleDownloadDocument('dictamen')}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+                
+                {/* Carta */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Carta</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.carta}
+                  onClick={() => handleViewDocument('carta')}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.carta}
+                  onClick={() => handleDownloadDocument('carta')}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+                
+                {/* Nota */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Nota</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.nota}
+                  onClick={() => handleViewDocument('nota')}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.nota}
+                  onClick={() => handleDownloadDocument('nota')}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+                
+                {/* Certificado Item */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Certificado Item</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.certificado_item}
+                  onClick={() => handleViewDocument('certificado_item')}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.certificado_item}
+                  onClick={() => handleDownloadDocument('certificado_item')}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+                
+                {/* Certificado Presupuestario */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <Description fontSize="large" />
+              <Typography variant="subtitle1">Certificado Presupuestario</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                <Button 
+                  size="small"
+                  startIcon={<Visibility />}
+                  disabled={!convocatoria.archivos.certificado_presupuestario}
+                  onClick={() => handleViewDocument('certificado_presupuestario')}
+                >
+                  Ver
+                </Button>
+                <Button 
+                  size="small"
+                  startIcon={<Download />}
+                  disabled={!convocatoria.archivos.certificado_presupuestario}
+                  onClick={() => handleDownloadDocument('certificado_presupuestario')}
+                >
+                  Descargar
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+      ) : (
+        <Alert severity="info">
+          No se han cargado documentos adicionales para esta convocatoria
+        </Alert>
       )}
-      
+    </CardContent>
+  </Card>
+)}
       <Dialog 
-        open={pdfModalOpen} 
-        onClose={() => setPdfModalOpen(false)}
-        maxWidth="lg"
-        fullWidth
-      >
+  open={documentoModal.abierto} 
+  onClose={() => setDocumentoModal({...documentoModal, abierto: false})}
+  maxWidth="lg"
+  fullWidth
+>
         <DialogTitle>
-          Vista previa del documento
-          <IconButton
-            aria-label="close"
-            onClick={() => setPdfModalOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
+    {documentoModal.titulo}
+    <IconButton
+      aria-label="close"
+      onClick={() => setDocumentoModal({...documentoModal, abierto: false})}
+      sx={{
+        position: 'absolute',
+        right: 8,
+        top: 8,
+        color: (theme) => theme.palette.grey[500],
+      }}
+    >
             <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ minHeight: '80vh' }}>
-          {pdfUrl && (
-            <iframe 
-              src={pdfUrl} 
-              width="100%" 
-              height="600px" 
-              style={{ border: 'none' }}
-              title="Documento de convocatoria"
-            />
-          )}
+    </IconButton>
+  </DialogTitle>
+  <DialogContent sx={{ minHeight: '80vh' }}>
+    {documentoModal.url && (
+      <iframe 
+        src={documentoModal.url} 
+        width="100%" 
+        height="600px" 
+        style={{ border: 'none' }}
+        title={documentoModal.titulo}
+      />
+    )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPdfModalOpen(false)}>Cerrar</Button>
-          <Button 
-            onClick={handleDownloadPdf}
-            startIcon={<Download />}
-            variant="contained"
-          >
-            Descargar
-          </Button>
-        </DialogActions>
-      </Dialog>
+  <DialogActions>
+    <Button onClick={() => setDocumentoModal({...documentoModal, abierto: false})}>
+      Cerrar
+    </Button>
+    <Button 
+      onClick={() => {
+        const tipo = documentoModal.titulo.includes('Convocatoria') ? null : 
+          documentoModal.titulo.split(': ')[1].toLowerCase();
+        handleDownloadDocument(tipo);
+      }}
+      startIcon={<Download />}
+      variant="contained"
+    >
+      Descargar
+    </Button>
+  </DialogActions>
+</Dialog>
       
       <Snackbar
         open={snackbarOpen}

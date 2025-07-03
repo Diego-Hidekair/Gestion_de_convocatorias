@@ -6,7 +6,8 @@ import { format } from 'date-fns';
 import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import api from '../../config/axiosConfig'
+import api from '../../config/axiosConfig';
+
 
 const ConvocatoriaList = () => {
   const navigate = useNavigate();
@@ -31,6 +32,8 @@ const ConvocatoriaList = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentConvocatoria, setCurrentConvocatoria] = useState(null);
   const [validating, setValidating] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [showPdfDialog, setShowPdfDialog] = useState(false);
     
   const theme = useTheme();
   // Campos de búsqueda disponibles
@@ -163,29 +166,37 @@ const ConvocatoriaList = () => {
 };
 
 // Función para descargar el PDF de la convocatoria
-const handleDownloadPdf = async (id) => {
+const handleDownloadPdf = async () => {
   try {
     const response = await api.get(`/convocatorias-archivos/${id}/descargar/convocatoria`, {
-      responseType: 'blob',
+      responseType: 'blob'
     });
+    
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', `convocatoria_${id}.pdf`);
     document.body.appendChild(link);
     link.click();
-    link.parentNode.removeChild(link);
+    link.remove();
+    
+    setSnackbarMessage('Descarga iniciada');
+    setSnackbarOpen(true);
   } catch (error) {
     console.error('Error al descargar PDF:', error);
-    showSnackbar('Error al descargar PDF', 'error');
+    setSnackbarMessage('Error al descargar el PDF');
+    setSnackbarOpen(true);
   }
 };
 
 // Función para abrir el PDF de la convocatoria en una nueva pestaña
-const handleViewPdf = (id) => {
-  const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-  const url = `${baseUrl}/convocatorias-archivos/${id}/ver-pdf/convocatoria`;
-  window.open(url, '_blank');
+const handleViewPdf = async () => {
+  const response = await api.get(`/convocatorias-archivos/${id}/ver-pdf/convocatoria`, {
+    responseType: 'blob'
+  });
+  const blobUrl = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+  setPdfUrl(blobUrl);
+  setShowPdfDialog(true);
 };
 
   const getEstadoColor = (estado) => {
@@ -566,6 +577,35 @@ const confirmEstadoChange = async () => {
           <Button onClick={handleDeleteConfirm} color="error">Eliminar</Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+  open={showPdfDialog}
+  onClose={() => {
+    setShowPdfDialog(false);
+    setPdfUrl(null);
+  }}
+  fullWidth
+  maxWidth="lg"
+>
+  <DialogTitle>Visualizador de PDF</DialogTitle>
+  <DialogContent dividers>
+    {pdfUrl ? (
+      <iframe
+        src={pdfUrl}
+        title="PDF"
+        width="100%"
+        height="600px"
+        style={{ border: 'none' }}
+      />
+    ) : (
+      <Typography>Cargando PDF...</Typography>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setShowPdfDialog(false)} color="primary">
+      Cerrar
+    </Button>
+  </DialogActions>
+</Dialog>
       
       {/* Diálogo para cambiar estado con comentario */}
       <Dialog 

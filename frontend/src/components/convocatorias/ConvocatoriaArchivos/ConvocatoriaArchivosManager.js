@@ -66,6 +66,25 @@ function ConvocatoriaArchivosManager() {
       setError('Error al generar el PDF');
     }
   };
+  
+  const handleDownloadByType = async (tipo) => {
+    try {
+      const response = await api.get(`/convocatorias-archivos/${id}/descargar/${tipo}`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${tipo}_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error(`Error al descargar ${tipo}:`, err);
+      setError(`No se pudo descargar el archivo: ${tipo}`);
+    }
+  };
 
   const handleTerminar = () => {
     navigate('/convocatorias');
@@ -127,6 +146,7 @@ function ConvocatoriaArchivosManager() {
                 convocatoriaId={id}
                 onError={setError}
                 onFilesUpdate={fetchFilesInfo}
+                onDownload={handleDownloadByType}
               />
             </CardContent>
             <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
@@ -142,3 +162,4 @@ function ConvocatoriaArchivosManager() {
 }
 
 export default ConvocatoriaArchivosManager;
+

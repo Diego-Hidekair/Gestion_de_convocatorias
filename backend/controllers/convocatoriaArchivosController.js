@@ -277,3 +277,52 @@ exports.handleMultipleUploads = async (req, res) => {
 };
 
 
+exports.obtenerDetalleConvocatoria = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const convocatoriaRes = await pool.query(`
+      SELECT c.*, tc.nombre_tipo_conv, p.programa AS nombre_programa, f.facultad AS nombre_facultad
+      FROM convocatorias c
+      JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+      JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+      JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+      WHERE c.id_convocatoria = $1
+    `, [id]);
+
+    if (convocatoriaRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Convocatoria no encontrada' });
+    }
+
+    const materiasRes = await pool.query(`
+      SELECT cm.*, m.materia, m.cod_materia
+      FROM convocatorias_materias cm
+      JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+      WHERE cm.id_convocatoria = $1
+    `, [id]);
+
+    const archivosRes = await pool.query(`
+      SELECT 
+        nombre_archivo,
+        doc_conv,
+        resolucion,
+        dictamen,
+        carta,
+        nota,
+        certificado_item,
+        certificado_presupuestario
+      FROM convocatorias_archivos
+      WHERE id_convocatoria = $1
+    `, [id]);
+
+    res.json({
+      convocatoria: convocatoriaRes.rows[0],
+      materias: materiasRes.rows,
+      archivos: archivosRes.rows[0] || {},
+    });
+  } catch (err) {
+    console.error('Error al obtener detalle de la convocatoria:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+

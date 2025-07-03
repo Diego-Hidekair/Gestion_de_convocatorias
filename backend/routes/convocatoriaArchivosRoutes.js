@@ -26,5 +26,7 @@ router.get('/:id/ver-pdf/:tipo', archivos.viewPDFbyType);
 router.get('/:id/descargar/:tipo', archivos.downloadPDFbyType);
 router.delete('/:id/eliminar/:tipo', secretariaOnly, archivos.deleteFileByType);
 router.post('/:id/subir-multiples', secretariaOnly, uploadMultiple, archivos.handleMultipleUploads);
+router.get('/:id/detalle', archivos.obtenerDetalleConvocatoria);
 
 module.exports = router;
+
