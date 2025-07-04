@@ -54,8 +54,8 @@ const getConvocatoriaCompleta = async (id) => {
         p.programa, 
         f.facultad,
         f.nombre_decano,
-vr.nombre_vicerector,
-  c.tipo_jornada
+        vr.nombre_vicerector,
+        c.tipo_jornada
       FROM convocatorias c
       JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
       JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
@@ -69,7 +69,6 @@ vr.nombre_vicerector,
 
     const conv = convRes.rows[0];
 
-    // Obtener las materias asociadas
     const materiasRes = await pool.query(`
       SELECT 
         cm.*, 
@@ -77,7 +76,8 @@ vr.nombre_vicerector,
         m.cod_materia,
         m.horas_teoria,
         m.horas_practica,
-        m.horas_laboratorio
+        m.horas_laboratorio,
+        (COALESCE(m.horas_teoria,0) + COALESCE(m.horas_practica,0) + COALESCE(m.horas_laboratorio,0)) AS total_horas
       FROM convocatorias_materias cm
       JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
       WHERE cm.id_convocatoria = $1
@@ -89,10 +89,11 @@ vr.nombre_vicerector,
       totalHoras: materiasRes.rows.reduce((acc, m) => acc + (m.total_horas || 0), 0)
     };
   } catch (error) {
-    console.error('Error al obtener datos completos de la convocatoria:', error);
+    console.error('❌ Error en getConvocatoriaCompleta:', error);
     throw error;
   }
 };
+
 
 exports.generateConvocatoriaPDF = async (req, res) => {
   const { id } = req.params;
