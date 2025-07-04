@@ -10,17 +10,30 @@ const generateConsultoresLineaHTML = require('../templates/consultoresLinea');
 const generateOrdinarioHTML = require('../templates/ordinario');
 const generateExtraordinarioHTML = require('../templates/extraordinario');
 
+
 const os = require('os');
 const BASE_DESKTOP = path.join(os.homedir(), 'Desktop', 'convocatorias');
 
 const safe = s => s.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
 
 const generarPDFBuffer = async html => {
-  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-  const page = await browser.newPage();
+  const browser = await puppeteer.launch({ 
+    headless: 'new', 
+    args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+  });
+const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
-  await new Promise(r => setTimeout(r, 500)); 
-  const buf = await page.pdf({ format: 'A4', printBackground: true });
+  await new Promise(r => setTimeout(r, 500));
+  const buf = await page.pdf({ 
+    format: 'A4', 
+    printBackground: true,
+    margin: {
+      top: '2cm',
+      right: '2cm',
+      bottom: '2cm',
+      left: '2cm'
+    }
+  });
   await browser.close();
   return buf;
 };
@@ -31,41 +44,98 @@ const getDirs = (facultad, programa, tipo, id) => {
   return { baseDir, pdfPath };
 };
 
+const getConvocatoriaCompleta = async (id) => {
+  try {
+    const convocatoriaQuery = `
+      SELECT 
+        c.*, 
+        tc.nombre_tipo_conv, 
+        tc.titulo_tipo_conv,
+        p.programa, 
+        f.facultad,
+        f.nombre_decano,
+vr.nombre_vicerector,
+  c.tipo_jornada
+      FROM convocatorias c
+      JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+      JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
+      JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+      JOIN vicerrector vr ON c.id_vicerector = vr.id_vicerector
+      WHERE c.id_convocatoria = $1
+    `;
+
+    const convRes = await pool.query(convocatoriaQuery, [id]);
+    if (convRes.rowCount === 0) return null;
+
+    const conv = convRes.rows[0];
+
+    // Obtener las materias asociadas
+    const materiasRes = await pool.query(`
+      SELECT 
+        cm.*, 
+        m.materia, 
+        m.cod_materia,
+        m.horas_teoria,
+        m.horas_practica,
+        m.horas_laboratorio
+      FROM convocatorias_materias cm
+      JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+      WHERE cm.id_convocatoria = $1
+    `, [id]);
+
+    return {
+      ...conv,
+      materias: materiasRes.rows,
+      totalHoras: materiasRes.rows.reduce((acc, m) => acc + (m.total_horas || 0), 0)
+    };
+  } catch (error) {
+    console.error('Error al obtener datos completos de la convocatoria:', error);
+    throw error;
+  }
+};
 
 exports.generateConvocatoriaPDF = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const convRes = await pool.query(`
-      SELECT c.*, tc.nombre_tipo_conv, p.programa, f.facultad
-      FROM convocatorias c
-      JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
-      JOIN datos_universidad.alm_programas p ON c.id_programa = p.id_programa
-      JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
-      WHERE c.id_convocatoria = $1
-    `, [id]);
-
-    if (convRes.rowCount === 0) return res.status(404).json({ error: 'Convocatoria no encontrada' });
-    const conv = convRes.rows[0];
-
-    const matRows = (await pool.query(`
-      SELECT cm.*, m.materia, m.cod_materia
-      FROM convocatorias_materias cm
-      JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
-      WHERE cm.id_convocatoria = $1
-    `, [id])).rows;0
-const totalHoras = matRows.reduce((acc, m) => acc + (m.total_horas || 0), 0);
-
-    let html;
-    switch (conv.id_tipoconvocatoria) {
-      case 1: html = await generateOrdinarioHTML(conv, matRows, totalHoras); break;
-      case 2: html = await generateExtraordinarioHTML(conv, matRows, totalHoras); break;
-      case 3: html = await generateConsultoresLineaHTML(conv, matRows, totalHoras); break;
-      default: return res.status(400).json({ error: 'Tipo de convocatoria inválido' });
+    // Obtener todos los datos necesarios de la convocatoria
+    const convocatoria = await getConvocatoriaCompleta(id);
+    if (!convocatoria) {
+      return res.status(404).json({ error: 'Convocatoria no encontrada' });
     }
 
+    // Seleccionar la plantilla adecuada según el nombre del tipo de convocatoria
+    const tipo = convocatoria.nombre_tipo_conv.trim().toUpperCase();
+
+let html;
+switch (tipo) {
+  case 'DOCENTE EN CALIDAD ORDINARIO':
+    html = await generateOrdinarioHTML(convocatoria);
+    break;
+  case 'DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA':
+    html = await generateConsultoresLineaHTML(convocatoria);
+    break;
+  case 'DOCENTE EN CALIDAD EXTRAORDINARIO':
+    html = await generateExtraordinarioHTML(convocatoria);
+    break;
+  default:
+    return res.status(400).json({
+      error: 'Tipo de convocatoria no soportado',
+      details: `Tipo recibido: ${convocatoria.nombre_tipo_conv}`
+    });
+}
+
+    // Generar el PDF
     const buffer = await generarPDFBuffer(html);
-    const { baseDir, pdfPath } = getDirs(conv.facultad, conv.programa, conv.nombre_tipo_conv, id);
+    
+    // Guardar el PDF en el sistema de archivos
+    const { baseDir, pdfPath } = getDirs(
+      convocatoria.facultad,
+      convocatoria.programa,
+      convocatoria.nombre_tipo_conv,
+      id
+    );
+    
     fs.mkdirSync(baseDir, { recursive: true });
     fs.writeFileSync(pdfPath, buffer);
 
@@ -76,14 +146,17 @@ const totalHoras = matRows.reduce((acc, m) => acc + (m.total_horas || 0), 0);
       WHERE id_convocatoria = $3
     `, [`convocatoria_${id}.pdf`, relPath, id]);
 
+    // Enviar el PDF como respuesta
    res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename=convocatoria_${id}.pdf`);
     res.send(buffer);
-//    console.log('PDF guardado en:', pdfPath);
 
   } catch (e) {
     console.error('Error al generar PDF:', e);
-    res.status(500).json({ error: 'Error generando el PDF' });
+    res.status(500).json({ 
+      error: 'Error generando el PDF',
+      details: process.env.NODE_ENV === 'development' ? e.message : undefined
+    });
   }
 };
 
@@ -295,12 +368,25 @@ exports.obtenerDetalleConvocatoria = async (req, res) => {
     }
 
     const materiasRes = await pool.query(`
-      SELECT cm.*, m.materia, m.cod_materia
-      FROM convocatorias_materias cm
-      JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
-      WHERE cm.id_convocatoria = $1
-    `, [id]);
+  SELECT 
+    cm.*, 
+    m.materia, 
+    m.cod_materia,
+    m.horas_teoria,
+    m.horas_practica,
+    m.horas_laboratorio
+  FROM convocatorias_materias cm
+  JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+  WHERE cm.id_convocatoria = $1
+`, [id]);
 
+const convocatoria = convocatoriaRes.rows[0];
+
+return {
+  ...convocatoria,
+  materias: materiasRes.rows,
+  totalHoras: materiasRes.rows.reduce((acc, m) => acc + (m.total_horas || 0), 0)
+};
     const archivosRes = await pool.query(`
       SELECT 
         nombre_archivo,

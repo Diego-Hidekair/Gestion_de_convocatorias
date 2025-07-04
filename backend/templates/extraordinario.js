@@ -1,4 +1,4 @@
-//backend/templates/extraordinario.js
+// backend/templates/extraordinario.js
 
 function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
   const fechaInicio = new Date(convocatoria.fecha_inicio);
@@ -8,9 +8,11 @@ function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
   const anioCreacion = new Date().getFullYear();
+
   const gestionTexto = convocatoria.gestion === 'GESTION 1'
     ? `GESTIÓN ACADÉMICA 1/${fechaInicio.toLocaleDateString('es-ES')}`
     : `GESTIÓN ACADÉMICA 2/${anioCreacion}`;
+
   const nombreCarrera = convocatoria.programa;
   const nombreFacultad = convocatoria.nombre_facultad;
   const tipoJornada = convocatoria.tipo_jornada;
@@ -21,7 +23,7 @@ function generateExtraordinarioHTML(convocatoria, materias, totalHoras) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <style>
     * {
       color: black;

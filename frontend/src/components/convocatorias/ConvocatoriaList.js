@@ -9,10 +9,8 @@ import { useTheme } from '@mui/material/styles';
 import api from '../../config/axiosConfig';
 
 
-const ConvocatoriaList = () => {
+  const ConvocatoriaList = () => {
   const navigate = useNavigate();
-///  const theme = useTheme();
-
   const [convocatorias, setConvocatorias] = useState([]);
   const [filteredConvocatorias, setFilteredConvocatorias] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -21,7 +21,7 @@ function generateConsultoresLineaHTML(convocatoria, materias, totalHoras) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <style>
     body {
       font-family: Arial, sans-serif;
