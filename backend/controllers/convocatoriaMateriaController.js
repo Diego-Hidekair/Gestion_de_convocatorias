@@ -21,16 +21,21 @@ const addMaterias = async (req, res) => {
             [id]
         );
         for (const materia of materias) {
-            await client.query(`
-                INSERT INTO convocatorias_materias 
-                (id_convocatoria, id_materia, total_horas)
-                VALUES ($1, $2, 
-                    CASE 
-                        WHEN $3 > 0 THEN $3 
-                        ELSE (SELECT m.total_horas FROM datos_universidad.pln_materias m WHERE m.id_materia = $2)
-                    END)
-                RETURNING *
-            `, [id, materia.id_materia, materia.total_horas]);
+            try {
+                await client.query(`
+                    INSERT INTO convocatorias_materias 
+                    (id_convocatoria, id_materia, total_horas)
+                    VALUES ($1, $2, 
+                        CASE 
+                            WHEN $3 > 0 THEN $3 
+                            ELSE (SELECT m.total_horas FROM datos_universidad.pln_materias m WHERE m.id_materia = $2)
+                        END)
+                    RETURNING *
+                `, [id, materia.id_materia, materia.total_horas]);
+            } catch (insertError) {
+                console.error('Error al insertar materia:', insertError);
+                throw new Error(`Error al asignar la materia ${materia.id_materia}: ${insertError.message}`);
+            }
         }
         await client.query('COMMIT');
         res.status(200).json({ 
@@ -40,7 +45,7 @@ const addMaterias = async (req, res) => {
             materiasCount: materias.length
         });
     } catch (error) {
-        await client.query('ROLLBA  K');
+        await client.query('ROLLBACK');
         console.error('Error al asignar materias:', error);
         res.status(500).json({
             error: error.message || 'Error al asignar materias',
@@ -51,7 +56,7 @@ const addMaterias = async (req, res) => {
     }
 };
 
-const getMateriasByConvocatoria = async (req, res) => {// obtener materias de una convocatoria
+const getMateriasByConvocatoria = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query(`
@@ -111,5 +116,101 @@ const getMateriasByPrograma = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener materias por programa' });
     }
 };
+const updateMateria = async (req, res) => {
+    const { id } = req.params;
+    const { operaciones } = req.body;
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Verificar que la convocatoria existe
+        const convocatoriaCheck = await client.query(
+            'SELECT id_convocatoria FROM convocatorias WHERE id_convocatoria = $1',
+            [id]
+        );
+        
+        if (convocatoriaCheck.rows.length === 0) {
+            throw new Error('La convocatoria no existe');
+        }
 
-module.exports = { addMaterias, getMateriasByConvocatoria,deleteMateria, getMateriasByPrograma};
+        const resultados = {
+            agregadas: [],
+            actualizadas: [],
+            eliminadas: []
+        };
+
+        // Procesar cada operación
+        for (const op of operaciones) {
+            switch (op.tipo) {
+                case 'agregar':
+                    const materiaAgregada = await client.query(`
+                        INSERT INTO convocatorias_materias 
+                        (id_convocatoria, id_materia, total_horas)
+                        VALUES ($1, $2, 
+                            CASE 
+                                WHEN $3 > 0 THEN $3 
+                                ELSE (SELECT m.total_horas FROM datos_universidad.pln_materias m WHERE m.id_materia = $2)
+                            END)
+                        ON CONFLICT (id_convocatoria, id_materia) 
+                        DO UPDATE SET total_horas = EXCLUDED.total_horas
+                        RETURNING *
+                    `, [id, op.id_materia, op.total_horas]);
+                    resultados.agregadas.push(materiaAgregada.rows[0]);
+                    break;
+
+                case 'actualizar':
+                    const materiaActualizada = await client.query(
+                        'UPDATE convocatorias_materias SET total_horas = $1 WHERE id_convocatoria = $2 AND id_materia = $3 RETURNING *',
+                        [op.total_horas, id, op.id_materia]
+                    );
+                    if (materiaActualizada.rows.length > 0) {
+                        resultados.actualizadas.push(materiaActualizada.rows[0]);
+                    }
+                    break;
+
+                case 'eliminar':
+                    const materiaEliminada = await client.query(
+                        'DELETE FROM convocatorias_materias WHERE id_convocatoria = $1 AND id_materia = $2 RETURNING *',
+                        [id, op.id_materia]
+                    );
+                    if (materiaEliminada.rows.length > 0) {
+                        resultados.eliminadas.push(materiaEliminada.rows[0]);
+                    }
+                    break;
+
+                default:
+                    throw new Error(`Tipo de operación no válido: ${op.tipo}`);
+            }
+        }
+
+        await client.query('COMMIT');
+        
+        // Obtener el estado final
+        const materiasActuales = await client.query(`
+            SELECT cm.id_materia, cm.total_horas, 
+                   m.materia, m.cod_materia
+            FROM convocatorias_materias cm
+            JOIN datos_universidad.pln_materias m ON cm.id_materia = m.id_materia
+            WHERE cm.id_convocatoria = $1
+        `, [id]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Operaciones completadas correctamente',
+            resultados,
+            materiasActuales: materiasActuales.rows
+        });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error al gestionar materias:', error);
+        res.status(500).json({
+            error: error.message || 'Error al gestionar materias',
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    } finally {
+        client.release();
+    }
+};
+
+module.exports = { addMaterias, getMateriasByConvocatoria,deleteMateria, getMateriasByPrograma, updateMateria};

@@ -192,16 +192,11 @@ const ConvocatoriaEdit = () => {
     await api.put(`/convocatorias/${id}`, payload);
     setSuccess('Convocatoria actualizada correctamente.');
     
-    // Regenerar PDF (cambia la ruta según lo indicado)
-    try {
-      await api.post(`/convocatorias-archivos/${id}/generar`);
-      setSuccess(prev => `${prev} PDF regenerado correctamente.`);
-    } catch (pdfError) {
-      console.error('Error al regenerar PDF:', pdfError);
-      setSuccess(prev => `${prev} (Error al regenerar PDF)`);
-    }
+    // Redirigir a la edición de materias después de 1.5 segundos
+    setTimeout(() => {
+      navigate(`/convocatoria-materias/${id}/materias`);
+    }, 1500);
 
-    setTimeout(() => navigate('/convocatorias'), 2000);
   } catch (error) {
     console.error('Error al actualizar:', error);
     setError(error.response?.data?.error || 'Error al actualizar la convocatoria.');
