@@ -98,18 +98,13 @@ const ConvocatoriaMateriasForm = () => {
         }
     };
 
-    const handleVolver = () => {
-        // Verificamos si venimos de edición o creación nueva
-        const isEditing = window.location.pathname.includes('/editar/');
-        
-        if (isEditing) {
-            // Si estamos editando, volvemos a la edición
-            navigate(`/convocatorias/editar/${id_convocatoria}`);
-        } else {
-            // Si estamos creando nueva, volvemos al formulario de creación
-            navigate(`/convocatorias/nueva`);
-        }
-    };
+     const handleVolver = () => {
+    console.log("Navegando a edición con ID:", id_convocatoria); 
+    navigate(`/convocatorias/edit/${id_convocatoria}`, { 
+        state: { fromMaterias: true },
+        replace: true
+    });
+};
 
     return (
         <Container maxWidth="md">
@@ -226,7 +221,7 @@ const ConvocatoriaMateriasForm = () => {
                         variant="outlined"
                         onClick={handleVolver}
                     >
-                        Volver a {window.location.pathname.includes('/editar/') ? 'Editar' : 'Crear'} Convocatoria
+                        Volver a Editar Convocatoria
                     </Button>
                     <Button
                         variant="contained"

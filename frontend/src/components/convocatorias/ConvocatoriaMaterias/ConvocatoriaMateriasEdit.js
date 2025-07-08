@@ -69,41 +69,42 @@ const ConvocatoriaMateriasEdit = () => {
         setMateriasSeleccionadas(prev => prev.filter(m => m.id_materia !== id));
     };
 
-   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    if (materiasSeleccionadas.length === 0) {
-        setError('Debe seleccionar al menos una materia');
-        return;
-    }
-    try {
-        setLoading(true);
-        // Usamos PUT en lugar de POST para la edición
-        await api.put(
-            `/convocatoria-materias/${id_convocatoria}/materias`,
-            {
-                materias: materiasSeleccionadas.map(m => ({
-                    id_materia: m.id_materia,
-                    total_horas: m.total_horas
-                }))
-            }
-        );
-        // Redirección a generación de PDF (igual que en Form)
-        navigate(`/convocatorias/${id_convocatoria}/archivos`);
-    } catch (err) {
-        console.error('Error en handleSubmit:', err);
-        if (err.response?.status === 200 || err.response?.data?.success) {
-            navigate(`/convocatorias/${id_convocatoria}/archivos`);
-        } else {
-            setError(
-                err.response?.data?.error ||
-                'Error al actualizar las materias'
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        
+        try {
+            setLoading(true);
+            
+            // Preparar las operaciones para el endpoint
+            const operaciones = materiasSeleccionadas.map(materia => ({
+                tipo: 'actualizar',
+                id_materia: materia.id_materia,
+                total_horas: materia.total_horas
+            }));
+            
+            // Enviar al endpoint de actualización masiva
+            await api.put(
+                `/convocatoria-materias/${id_convocatoria}/materias`,
+                { operaciones }
             );
+            
+            // Redirigir a la generación de PDF
+            navigate(`/convocatorias/${id_convocatoria}/archivos`);
+        } catch (err) {
+            console.error('Error en handleSubmit:', err);
+            if (err.response?.status === 200 || err.response?.data?.success) {
+                navigate(`/convocatorias/${id_convocatoria}/archivos`);
+            } else {
+                setError(
+                    err.response?.data?.error ||
+                    'Error al actualizar las materias'
+                );
+            }
+        } finally {
+            setLoading(false);
         }
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
     const handleVolver = () => {
         navigate(`/convocatorias/editar/${id_convocatoria}`);
@@ -250,11 +251,10 @@ const ConvocatoriaMateriasEdit = () => {
                     <Button
                         variant="contained"
                         onClick={handleSubmit}
-                        disabled={materiasSeleccionadas.length === 0 || loading}
+                        disabled={loading}
                     >
-                        {loading ? 'Guardando...' : 'actualizar Materias'}
+                        {loading ? 'Guardando...' : 'Guardar Cambios y Generar PDF'}
                     </Button>
-
                 </Box>
             </Paper>
         </Container>

@@ -186,7 +186,7 @@ const AuthWrapper = () => {
                 {userRole === 'secretaria_de_decanatura' && (
                   <>
                     <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                    <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
+                    <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} /> 
                     <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
                     <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
                     <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
@@ -205,7 +205,8 @@ const AuthWrapper = () => {
                 <Route path="/tipos-convocatorias/editar/:id" element={<TipoconvocatoriaEdit />} />
                 <Route path="/materias" element={<MateriaList />} />
                 <Route path="/convocatoria-materias/:id_convocatoria/materias" element={<ConvocatoriaMateriasForm />} />
-                <Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />
+                {/*<Route path="/convocatorias_materias/edit/:id_convocatoria/:id_materia" element={<ConvocatoriaMateriasEdit />} />*/}
+                <Route path="/convocatoria-materias/:id_convocatoria/edit" element={<ConvocatoriaMateriasEdit />} />
                 <Route path="/file-upload" element={<FileUpload />} />
                 <Route path="/usuarios/*" element={<UsuarioManager />} />
                 <Route path="/honorarios/new/:id_convocatoria/:id_materia" element={<HonorariosForm />} />
