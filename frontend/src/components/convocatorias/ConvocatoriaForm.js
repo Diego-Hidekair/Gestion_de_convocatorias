@@ -2,15 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../config/axiosConfig'; 
 import { useNavigate, useParams } from 'react-router-dom';
-import { Divider, Box,Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select } from '@mui/material';
+import { Divider, Box, Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO } from 'date-fns';
 import { addDays } from 'date-fns';
 
+
 const ConvocatoriaForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
 
   const [convocatoria, setConvocatoria] = useState({
     nombre: '',
@@ -303,7 +308,7 @@ const ConvocatoriaForm = () => {
                 <StaticDatePicker
                   value={convocatoria.fecha_inicio}
                   onChange={handleDateInicioChange}
-                  displayStaticWrapperAs="desktop"
+                  displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
                   slotProps={{
                     textField: {
                       fullWidth: true
@@ -324,7 +329,7 @@ const ConvocatoriaForm = () => {
                 <StaticDatePicker
                   value={convocatoria.fecha_fin}
                   readOnly
-                  displayStaticWrapperAs="desktop"
+                  displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -469,21 +474,23 @@ const ConvocatoriaForm = () => {
             {/* Botones */}
             <Grid item xs={12} textAlign="center">
               <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                size="large"
-                sx={{ px: 4 }}
-              >
+  variant="contained"
+  color="primary"
+  type="submit"
+  size="large"
+  fullWidth={isMobile}
+  sx={{ px: isMobile ? 0 : 4 }}
+>
                 {loading ? 'Procesando...' : (id ? 'Actualizar' : 'Siguiente')}
               </Button>
               <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => navigate('/convocatorias')}
-                size="large"
-                sx={{ ml: 2 }}
-              >
+  variant="outlined"
+  color="secondary"
+  onClick={() => navigate('/convocatorias')}
+  size="large"
+  fullWidth={isMobile}
+  sx={{ ml: isMobile ? 0 : 2, mt: isMobile ? 2 : 0 }}
+>
                 Cancelar
               </Button>
             </Grid>

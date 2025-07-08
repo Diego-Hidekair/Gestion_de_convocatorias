@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box, Typography } from '@mui/material';
-import { jwtDecode } from 'jwt-decode';
+import { Box, Typography, IconButton } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import {jwtDecode} from 'jwt-decode';
 import CarreraList from './components/CarreraList';
 import FacultadList from './components/FacultadList';
 import ConvocatoriaList from './components/convocatorias/ConvocatoriaList'; 
@@ -27,11 +28,10 @@ import HonorariosForm from './components/HonorariosForm';
 import NavBar from './components/NavBar';
 import ConvocatoriaArchivosManager from './components/convocatorias/ConvocatoriaArchivos/ConvocatoriaArchivosManager';
 import NotificacionesPage from './components/notificaciones/NotificacionesPage';
-import api from './config/axiosConfig';
 import DocenteList from './components/usuarios/DocenteList';
 import VicerrectorList from './components/usuarios/VicerrectorList';
 
-const drawerWidthExpanded = 200;
+const drawerWidthExpanded = 225;
 const drawerWidthCollapsed = 70;
 
 const theme = createTheme({
@@ -42,8 +42,8 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: 'Roboto, Arial, sans-serif',
-    h1: { fontWeight: 700, fontSize: '2.5rem' },
-    h2: { fontWeight: 600, fontSize: '2rem' },
+    h1: { fontWeight: 100, fontSize: '2.5rem' },
+    h2: { fontWeight: 100, fontSize: '2rem' },
   },
   components: {
     MuiCard: {
@@ -100,6 +100,7 @@ const AuthWrapper = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState('');
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -144,7 +145,7 @@ const AuthWrapper = () => {
     navigate('/login');
   };
 
-   return (
+  return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {isAuthenticated && (
         <NavBar
@@ -154,28 +155,59 @@ const AuthWrapper = () => {
           setIsExpanded={setIsExpanded}
           drawerWidthExpanded={drawerWidthExpanded}
           drawerWidthCollapsed={drawerWidthCollapsed}
+          isDrawerOpen={isDrawerOpen}
+          setIsDrawerOpen={setIsDrawerOpen}
         />
       )}
 
-      <Box component="main" sx={{
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: 0,
-        p: 3,
-        width: `calc(100% - ${isAuthenticated ? (isExpanded ? drawerWidthExpanded : drawerWidthCollapsed) : 0}px)`,
-        transition: (theme) => theme.transitions.create('margin', {
-          easing: theme.transitions.easing.sharp,
-          duration: theme.transitions.duration.leavingScreen,
-        }),
-        ml: `${isAuthenticated ? (isExpanded ? drawerWidthExpanded : drawerWidthCollapsed) : 0}px`,
-      }}>
+      {/* Botón hamburguesa para abrir Drawer en móvil */}
+      {isAuthenticated && (
+        <IconButton
+          onClick={() => setIsDrawerOpen(true)}
+          sx={{
+            position: 'fixed',
+            top: 16,
+            left: 16,
+            color: '#000',
+            zIndex: 1300,
+            backgroundColor: 'rgba(255,255,255,0.8)',
+            display: { xs: 'block', sm: 'none' }
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
+
+      <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            p: { xs: 1, sm: 2, md: 0 },
+            width: {
+              xs: '100%',     
+              sm: '83.3%',     
+            },
+            ml: isAuthenticated
+                    ? {
+                  xs: 0, 
+                  sm: isExpanded ? `${drawerWidthExpanded}px` : `${drawerWidthCollapsed}px`, 
+                }
+              : 0,
+            transition: (theme) =>
+              theme.transitions.create('margin', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
+          }}
+        >
         <HeaderSection isAuthenticated={isAuthenticated} />
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'auto' }}>
           <Routes>
             {isAuthenticated ? (
               <>
-                 <Route path="/" element={<Navigate to="/redirect" />} />
+                <Route path="/" element={<Navigate to="/redirect" />} />
                 <Route path="/redirect" element={<RedirectPage />} />
                 <Route path="/carreras" element={<CarreraList />} />
                 <Route path="/facultades" element={<FacultadList />} />
@@ -186,18 +218,18 @@ const AuthWrapper = () => {
                 {userRole === 'secretaria_de_decanatura' && (
                   <>
                     <Route path="/convocatorias/crear" element={<ConvocatoriaForm />} />
-                    <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} /> 
+                    <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                     <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
                     <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
                     <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
                   </>
                 )}
-              {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
-                <>
-                  <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
-                  <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
-                </>
-              )}
+                {(userRole === 'vicerrectorado' || userRole === 'tecnico_vicerrectorado') && (
+                  <>
+                    <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
+                    <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
+                  </>
+                )}
                 <Route path="/convocatorias" element={<ConvocatoriaList />} />
                 <Route path="/convocatorias/estado/:estado" element={<ConvocatoriaList />} />
                 <Route path="/tipos-convocatorias" element={<TipoconvocatoriaList />} />
