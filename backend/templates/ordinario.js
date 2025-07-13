@@ -28,16 +28,16 @@ function generateOrdinarioHTML(convocatoria) {
   <meta charset="UTF-8">
   <style>
     body {
-      font-family: 'Times New Roman', serif;
+      font-family: 'leelawadee', sans-serif;
       margin: 2cm;
       font-size: 12pt;
       line-height: 1.5;
     }
     h1, h2, h3 { text-align: center; font-weight: bold; }
-    h1 { font-size: 14pt; }
-    h2 { font-size: 13pt; }
+    h1 { font-size: 12pt; }
+    h2 { font-size: 12pt; }
     h3 { font-size: 12pt; text-align: left; }
-    p { text-align: justify; text-indent: 36pt; }
+    p { text-align: justify; text-indent: 36pt; font-size: 12pt; }
     table {
       width: 100%;
       border-collapse: collapse;

@@ -104,8 +104,28 @@ exports.generateConvocatoriaPDF = async (req, res) => {
     if (!convocatoria) {
       return res.status(404).json({ error: 'Convocatoria no encontrada' });
     }
+    const archivosObligatorios = await pool.query(`
+      SELECT resolucion, dictamen, certificado_presupuestario 
+      FROM convocatorias_archivos 
+      WHERE id_convocatoria = $1
+    `, [id]);
 
-    // Seleccionar la plantilla adecuada según el nombre del tipo de convocatoria
+    if (!archivosObligatorios.rowCount) {
+      return res.status(400).json({ error: 'No se encontraron archivos vinculados a la convocatoria.' });
+    }
+
+    const { resolucion, dictamen, certificado_presupuestario } = archivosObligatorios.rows[0];
+
+    if (!resolucion || !dictamen || !certificado_presupuestario) {
+      return res.status(400).json({
+        error: 'Faltan documentos obligatorios para generar el PDF',
+        faltantes: {
+          resolucion: !!resolucion,
+          dictamen: !!dictamen,
+          certificado_presupuestario: !!certificado_presupuestario
+        }
+      });
+    }
     const tipo = convocatoria.nombre_tipo_conv.trim().toUpperCase();
 
 let html;

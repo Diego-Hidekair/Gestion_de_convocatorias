@@ -116,19 +116,43 @@ const ConvocatoriaMateriasForm = () => {
                 {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
                 {convocatoriaData && (
-                    <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-                        <Typography variant="subtitle1" gutterBottom>
-                            <strong>Convocatoria:</strong> {convocatoriaData.nombre_conv}
-                        </Typography>
-                        <Typography variant="body2">
-                            <strong>Programa:</strong> {convocatoriaData.programa || convocatoriaData.nombre_programa}
-                        </Typography>
-                        <Typography variant="body2">
-                            <strong>Tipo:</strong> {convocatoriaData.nombre_tipoconvocatoria || convocatoriaData.nombre_tipo_conv}
-                        </Typography>
-                    </Box>
-                )}
+  <>
+    {(() => {
+      const tipo = convocatoriaData.tipo_jornada;
+      const totalHoras = materiasSeleccionadas.reduce((sum, m) => sum + (m.total_horas || 0), 0);
 
+      if (tipo === 'TIEMPO HORARIO' && totalHoras > 16) {
+        return (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            ⚠️ La suma total de horas es <strong>{totalHoras}</strong>, y no debe superar 16 horas para una convocatoria de <strong>TIEMPO HORARIO</strong>.
+          </Alert>
+        );
+      }
+
+      if (tipo === 'TIEMPO COMPLETO' && totalHoras < 20) {
+        return (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            ⚠️ La suma total de horas es <strong>{totalHoras}</strong>, pero debe ser al menos 20 horas para una convocatoria de <strong>TIEMPO COMPLETO</strong>.
+          </Alert>
+        );
+      }
+
+      return null;
+    })()}
+
+    <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+      <Typography variant="subtitle1" gutterBottom>
+        <strong>Convocatoria:</strong> {convocatoriaData.nombre_conv}
+      </Typography>
+      <Typography variant="body2">
+        <strong>Programa:</strong> {convocatoriaData.programa || convocatoriaData.nombre_programa}
+      </Typography>
+      <Typography variant="body2">
+        <strong>Tipo:</strong> {convocatoriaData.nombre_tipoconvocatoria || convocatoriaData.nombre_tipo_conv}
+      </Typography>
+    </Box>
+  </>
+)}
                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                     <FormControl fullWidth>
                         <InputLabel>Seleccionar Materia</InputLabel>
