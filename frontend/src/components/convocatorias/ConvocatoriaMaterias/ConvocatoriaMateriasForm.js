@@ -14,51 +14,66 @@ const ConvocatoriaMateriasForm = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [convocatoriaData, setConvocatoriaData] = useState(null);
+    const [horasAsignadasGlobal, setHorasAsignadasGlobal] = useState('');
+    const [soloUnaMateria, setSoloUnaMateria] = useState(false);
+
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                setLoading(true);
-                const convResponse = await api.get(`/convocatorias/${id_convocatoria}`);
-                setConvocatoriaData(convResponse.data);
-                
-                const materiasResponse = await api.get(
-                    `/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`
-                );
-                
-                const asignadasResponse = await api.get(
-                    `/convocatoria-materias/${id_convocatoria}/materias`
-                );
+        try {
+            setLoading(true);
+            const convResponse = await api.get(`/convocatorias/${id_convocatoria}`);
+            setConvocatoriaData(convResponse.data);
 
-                setMaterias(materiasResponse.data);
-                setMateriasSeleccionadas(asignadasResponse.data);
-                setLoading(false);
-
-            } catch (err) {
-                setError('Error al cargar los datos');
-                console.error(err);
-                setLoading(false);
+            const tipoConv = convResponse.data.nombre_tipo_conv?.trim().toUpperCase();
+            if (tipoConv === 'DOCENTE EN CALIDAD ORDINARIO') {
+            setSoloUnaMateria(true);
             }
+
+            const materiasResponse = await api.get(
+            `/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`
+            );
+
+            const asignadasResponse = await api.get(
+            `/convocatoria-materias/${id_convocatoria}/materias`
+            );
+
+            setMaterias(materiasResponse.data);
+            setMateriasSeleccionadas(asignadasResponse.data);
+            setLoading(false);
+        } catch (err) {
+            setError('Error al cargar los datos');
+            console.error(err);
+            setLoading(false);
+        }
         };
 
         fetchData();
     }, [id_convocatoria]);
 
     const handleAddMateria = () => {
-        if (!materiaSeleccionada) return;
+  setError(null);
 
-        const materia = materias.find(m => m.id_materia === materiaSeleccionada);
-        if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
-            setMateriasSeleccionadas(prev => [
-                ...prev,
-                {
-                    ...materia,
-                    total_horas: materia.horas_teoria + materia.horas_practica + materia.horas_laboratorio
-                }
-            ]);
-            setMateriaSeleccionada('');
-        }
-    };
+  if (!materiaSeleccionada) return;
+
+  if (soloUnaMateria && materiasSeleccionadas.length >= 1) {
+    setError('Solo se permite una materia para convocatorias de tipo Docente Ordinario');
+    return;
+  }
+
+  const materia = materias.find(m => m.id_materia === materiaSeleccionada);
+  if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
+    setMateriasSeleccionadas(prev => [
+      ...prev,
+      {
+        ...materia,
+        total_horas: materia.horas_teoria + materia.horas_practica + materia.horas_laboratorio,
+        horas_asignadas: ''
+      }
+    ]);
+    setMateriaSeleccionada('');
+  }
+};
 
     const handleRemoveMateria = (id) => {
         setMateriasSeleccionadas(prev => prev.filter(m => m.id_materia !== id));
@@ -73,14 +88,14 @@ const ConvocatoriaMateriasForm = () => {
         }
         try {
             setLoading(true);
-            await api.post(
-                `/convocatoria-materias/${id_convocatoria}/materias`,
-                {
-                    materias: materiasSeleccionadas.map(m => ({
-                        id_materia: m.id_materia,
-                        total_horas: m.total_horas
-                    }))
-                }
+           await api.post(
+            `/convocatoria-materias/${id_convocatoria}/materias`,
+            {
+                materias: materiasSeleccionadas.map(m => ({
+                id_materia: m.id_materia,
+                horas_asignadas: horasAsignadasGlobal
+                }))
+            }
             );
             navigate(`/convocatorias/${id_convocatoria}/archivos`);
         } catch (err) {
@@ -150,6 +165,11 @@ const ConvocatoriaMateriasForm = () => {
       <Typography variant="body2">
         <strong>Tipo:</strong> {convocatoriaData.nombre_tipoconvocatoria || convocatoriaData.nombre_tipo_conv}
       </Typography>
+      {soloUnaMateria && (
+  <Alert severity="info" sx={{ mb: 2 }}>
+    Esta convocatoria permite seleccionar <strong>solo una materia</strong> (Docente Ordinario).
+  </Alert>
+)}
     </Box>
   </>
 )}
@@ -203,25 +223,13 @@ const ConvocatoriaMateriasForm = () => {
                                             type="number"
                                             size="small"
                                             value={materia.total_horas}
-                                            onChange={(e) => {
-                                                const newValue = parseInt(e.target.value) || 0;
-                                                if (newValue > 0) {
-                                                    setMateriasSeleccionadas(prev =>
-                                                        prev.map(m =>
-                                                            m.id_materia === materia.id_materia
-                                                                ? { ...m, total_horas: newValue }
-                                                                : m
-                                                        )
-                                                    );
-                                                }
-                                            }}
+                                            InputProps={{ readOnly: true }}
                                             sx={{ width: '100px', mr: 2 }}
-                                            inputProps={{
-                                                min: 1,
-                                                title: "Horas totales (puede modificar este value)"
-                                            }}
                                             helperText="Horas totales"
-                                        />
+                                            inputProps={{
+                                                title: "La carga horaria no puede modificarse"
+                                            }}
+                                            />
                                         <IconButton
                                             edge="end"
                                             onClick={() => handleRemoveMateria(materia.id_materia)}
@@ -239,6 +247,21 @@ const ConvocatoriaMateriasForm = () => {
                         ))}
                     </List>
                 )}
+{materiasSeleccionadas.length > 0 && (
+  <Box sx={{ mt: 3 }}>
+    <Typography variant="subtitle1" gutterBottom>
+      Ingrese el número de <strong>horas asignadas</strong> para esta convocatoria:
+    </Typography>
+    <TextField
+      label="Horas asignadas"
+      type="number"
+      fullWidth
+      value={horasAsignadasGlobal}
+      onChange={(e) => setHorasAsignadasGlobal(e.target.value)}
+      inputProps={{ min: 0 }}
+      helperText="Ingrese el valor de horas designadas para un Item de convocatoria"
+    />
+  </Box>)}
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                     <Button

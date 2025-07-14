@@ -65,8 +65,9 @@ function generateOrdinarioHTML(convocatoria) {
 
 <h3><strong>1. MATERIA OBJETO DE LA ${convocatoria.etapa_convocatoria} CONVOCATORIA:</strong></h3>
 <p><strong>DOCENTES ORDINARIOS</strong></p>
-<p><strong>Ítem A ${convocatoria.tipo_jornada}</strong></p>
-
+<p><strong>ITEM “A” ${convocatoria.tipo_jornada}</strong>
+  ${convocatoria.horas_asignadas ? ` con una carga horaria de <strong>${convocatoria.horas_asignadas} hrs.</strong>` : ''}
+</p>
 <table>
   <tr>
     <th>SIGLA</th><th>ASIGNATURA</th><th>HORAS SEMANA</th><th>PERFIL PROFESIONAL</th>

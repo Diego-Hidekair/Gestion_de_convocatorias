@@ -17,6 +17,8 @@ const ConvocatoriaMateriasEdit = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [convocatoriaData, setConvocatoriaData] = useState(null);
+    const [soloUnaMateria, setSoloUnaMateria] = useState(false);
+    const [horasAsignadasGlobal, setHorasAsignadasGlobal] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -25,6 +27,10 @@ const ConvocatoriaMateriasEdit = () => {
                 // Obtener datos de la convocatoria
                 const convResponse = await api.get(`/convocatorias/${id_convocatoria}`);
                 setConvocatoriaData(convResponse.data);
+                const tipoConv = convResponse.data.nombre_tipo_conv?.trim().toUpperCase();
+                    if (tipoConv === 'DOCENTE EN CALIDAD ORDINARIO') {
+                    setSoloUnaMateria(true);
+                    }
                 
                 // Obtener todas las materias del programa
                 const materiasResponse = await api.get(
@@ -50,61 +56,65 @@ const ConvocatoriaMateriasEdit = () => {
     }, [id_convocatoria]);
 
     const handleAddMateria = () => {
-        if (!materiaSeleccionada) return;
+         setError(null);
 
+  if (!materiaSeleccionada) return;
+  if (soloUnaMateria && materiasSeleccionadas.length >= 1) {
+    setError('Solo se permite una materia para convocatorias de tipo Docente Ordinario');
+    return;
+  }
         const materia = materias.find(m => m.id_materia === materiaSeleccionada);
-        if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
-            setMateriasSeleccionadas(prev => [
-                ...prev,
-                {
-                    ...materia,
-                    total_horas: materia.horas_teoria + materia.horas_practica + materia.horas_laboratorio
-                }
-            ]);
-            setMateriaSeleccionada('');
-        }
-    };
+  if (materia && !materiasSeleccionadas.some(m => m.id_materia === materia.id_materia)) {
+    setMateriasSeleccionadas(prev => [
+      ...prev,
+      {
+        ...materia,
+        total_horas: materia.horas_teoria + materia.horas_practica + materia.horas_laboratorio,
+        horas_asignadas: ''
+      }
+    ]);
+    setMateriaSeleccionada('');
+  }
+};
 
     const handleRemoveMateria = (id) => {
         setMateriasSeleccionadas(prev => prev.filter(m => m.id_materia !== id));
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        
-        try {
-            setLoading(true);
-            
-            // Preparar las operaciones para el endpoint
-            const operaciones = materiasSeleccionadas.map(materia => ({
-                tipo: 'actualizar',
-                id_materia: materia.id_materia,
-                total_horas: materia.total_horas
-            }));
+  e.preventDefault();
+  setError(null);
+
+  if (materiasSeleccionadas.length === 0) {
+    setError('Debe seleccionar al menos una materia');
+    return;
+  }
+       try {
+    setLoading(true);
+
+    const operaciones = materiasSeleccionadas.map(materia => ({
+      tipo: 'agregar', // o 'actualizar' si prefieres sobreescribir
+      id_materia: materia.id_materia,
+      total_horas: materia.total_horas,
+      horas_asignadas: horasAsignadasGlobal
+    }));
             
             // Enviar al endpoint de actualización masiva
-            await api.put(
-                `/convocatoria-materias/${id_convocatoria}/materias`,
-                { operaciones }
-            );
+            await api.put(`/convocatoria-materias/${id_convocatoria}/materias`, { operaciones });
             
             // Redirigir a la generación de PDF
             navigate(`/convocatorias/${id_convocatoria}/archivos`);
-        } catch (err) {
-            console.error('Error en handleSubmit:', err);
-            if (err.response?.status === 200 || err.response?.data?.success) {
-                navigate(`/convocatorias/${id_convocatoria}/archivos`);
-            } else {
-                setError(
-                    err.response?.data?.error ||
-                    'Error al actualizar las materias'
-                );
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+  } catch (err) {
+    console.error('Error en handleSubmit:', err);
+    if (err.response?.status === 200 || err.response?.data?.success) {
+      navigate(`/convocatorias/${id_convocatoria}/archivos`);
+    } else {
+      setError(err.response?.data?.error || 'Error al actualizar las materias');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
     const handleVolver = () => {
         navigate(`/convocatorias/editar/${id_convocatoria}`);
@@ -238,6 +248,11 @@ const ConvocatoriaMateriasEdit = () => {
                                 />
                             </ListItem>
                         ))}
+                        {soloUnaMateria && (
+  <Alert severity="info" sx={{ mb: 2 }}>
+    Esta convocatoria permite seleccionar <strong>solo una materia</strong> (Docente Ordinario).
+  </Alert>
+)}
                     </List>
                 )}
 
@@ -248,6 +263,22 @@ const ConvocatoriaMateriasEdit = () => {
                     >
                         Volver a Editar Convocatoria
                     </Button>
+                    {materiasSeleccionadas.length > 0 && (
+  <Box sx={{ mt: 3 }}>
+    <Typography variant="subtitle1" gutterBottom>
+      Ingrese el número de <strong>horas asignadas</strong> para esta convocatoria:
+    </Typography>
+    <TextField
+      label="Horas asignadas"
+      type="number"
+      fullWidth
+      value={horasAsignadasGlobal}
+      onChange={(e) => setHorasAsignadasGlobal(e.target.value)}
+      inputProps={{ min: 0 }}
+      helperText="Ingrese el valor de horas designadas para un Item de convocatoria"
+    />
+  </Box>
+)}
                     <Button
                         variant="contained"
                         onClick={handleSubmit}

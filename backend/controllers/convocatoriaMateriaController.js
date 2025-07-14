@@ -9,28 +9,35 @@ const addMaterias = async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const convocatoriaCheck = await client.query(
-      'SELECT tipo_jornada FROM convocatorias WHERE id_convocatoria = $1',
-      [id]
-    );
+    const convocatoriaCheck = await client.query(`
+        SELECT tipo_jornada, tc.nombre_tipo_conv
+        FROM convocatorias c
+        JOIN tipos_convocatorias tc ON c.id_tipoconvocatoria = tc.id_tipoconvocatoria
+        WHERE c.id_convocatoria = $1
+        `, [id]);
 
-    if (convocatoriaCheck.rowCount === 0) {
-      throw new Error('La convocatoria no existe');
-    }
+        if (convocatoriaCheck.rowCount === 0) {
+        throw new Error('La convocatoria no existe');
+        }
 
-    const tipoJornada = convocatoriaCheck.rows[0].tipo_jornada;
+        const { tipo_jornada: tipoJornada, nombre_tipo_conv: tipoConvocatoria } = convocatoriaCheck.rows[0];
+        if (
+        tipoConvocatoria.trim().toUpperCase() === 'DOCENTE EN CALIDAD ORDINARIO' &&
+        materias.length > 1
+        ) {
+        throw new Error('Para convocatorias de Docente Ordinario solo se permite asignar una materia');
+        }
 
-    // Calcular suma total de horas
+    // Calcular suma total de horas reales (no las asignadas manualmente)
     let sumaHoras = 0;
     for (const materia of materias) {
-      const horas = materia.total_horas > 0
-        ? materia.total_horas
-        : (await client.query(
-            `SELECT COALESCE(horas_teoria,0) + COALESCE(horas_practica,0) + COALESCE(horas_laboratorio,0) AS total
-             FROM datos_universidad.pln_materias
-             WHERE id_materia = $1`,
-            [materia.id_materia]
-          )).rows[0]?.total || 0;
+      const result = await client.query(
+        `SELECT COALESCE(horas_teoria,0) + COALESCE(horas_practica,0) + COALESCE(horas_laboratorio,0) AS total
+         FROM datos_universidad.pln_materias
+         WHERE id_materia = $1`,
+        [materia.id_materia]
+      );
+      const horas = result.rows[0]?.total || 0;
       sumaHoras += horas;
     }
 
@@ -48,17 +55,20 @@ const addMaterias = async (req, res) => {
 
     // Insertar nuevas materias
     for (const materia of materias) {
-      await client.query(
-        `INSERT INTO convocatorias_materias 
-          (id_convocatoria, id_materia, total_horas)
-         VALUES ($1, $2, 
-           CASE 
-             WHEN $3 > 0 THEN $3 
-             ELSE (SELECT COALESCE(horas_teoria,0)+COALESCE(horas_practica,0)+COALESCE(horas_laboratorio,0)
-                   FROM datos_universidad.pln_materias WHERE id_materia = $2)
-           END)`,
-        [id, materia.id_materia, materia.total_horas]
+      const result = await client.query(
+        `SELECT COALESCE(horas_teoria,0) + COALESCE(horas_practica,0) + COALESCE(horas_laboratorio,0) AS total
+         FROM datos_universidad.pln_materias
+         WHERE id_materia = $1`,
+        [materia.id_materia]
       );
+      const total_horas = result.rows[0]?.total || 0;
+      const horas_asignadas = materia.horas_asignadas || null;
+
+      await client.query(
+        `INSERT INTO convocatorias_materias (id_convocatoria, id_materia, total_horas, horas_asignadas)
+        VALUES ($1, $2, $3, $4)`,
+        [id, materia.id_materia, total_horas, materia.horas_asignadas || null]
+        );
     }
 
     await client.query('COMMIT');
@@ -171,23 +181,29 @@ const updateMateria = async (req, res) => {
                 case 'agregar':
                     const materiaAgregada = await client.query(`
                         INSERT INTO convocatorias_materias 
-                        (id_convocatoria, id_materia, total_horas)
-                        VALUES ($1, $2, 
-                            CASE 
-                                WHEN $3 > 0 THEN $3 
-                                ELSE (SELECT m.total_horas FROM datos_universidad.pln_materias m WHERE m.id_materia = $2)
-                            END)
-                        ON CONFLICT (id_convocatoria, id_materia) 
-                        DO UPDATE SET total_horas = EXCLUDED.total_horas
-                        RETURNING *
-                    `, [id, op.id_materia, op.total_horas]);
+                        (id_convocatoria, id_materia, total_horas, horas_asignadas)
+                        VALUES (
+                        $1, 
+                        $2, 
+                        (SELECT COALESCE(horas_teoria,0)+COALESCE(horas_practica,0)+COALESCE(horas_laboratorio,0)
+                        FROM datos_universidad.pln_materias WHERE id_materia = $2),
+                        $3
+                        )
+                        ON CONFLICT (id_convocatoria, id_materia)
+                        DO UPDATE SET horas_asignadas = EXCLUDED.horas_asignadas
+                        RETURNING *`,
+                        [id, op.id_materia, op.horas_asignadas || null]
+                    );
                     resultados.agregadas.push(materiaAgregada.rows[0]);
                     break;
 
                 case 'actualizar':
                     const materiaActualizada = await client.query(
-                        'UPDATE convocatorias_materias SET total_horas = $1 WHERE id_convocatoria = $2 AND id_materia = $3 RETURNING *',
-                        [op.total_horas, id, op.id_materia]
+                        `UPDATE convocatorias_materias 
+                        SET horas_asignadas = $1 
+                        WHERE id_convocatoria = $2 AND id_materia = $3 
+                        RETURNING *`,
+                        [op.horas_asignadas, id, op.id_materia]
                     );
                     if (materiaActualizada.rows.length > 0) {
                         resultados.actualizadas.push(materiaActualizada.rows[0]);

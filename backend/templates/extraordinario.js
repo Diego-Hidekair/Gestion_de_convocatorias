@@ -62,7 +62,9 @@ function generateExtraordinarioHTML(convocatoria) {
 </p>
 
 <h3><strong>1. MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
-<p><strong>ITEM “A” ${convocatoria.tipo_jornada}</strong></p>
+<p><strong>ITEM “A” ${convocatoria.tipo_jornada}</strong>
+  ${convocatoria.horas_asignadas ? ` con una carga horaria de <strong>${convocatoria.horas_asignadas} hrs.</strong>` : ''}
+</p>
 
 <table>
   <tr>

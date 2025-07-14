@@ -83,10 +83,20 @@ const getConvocatoriaCompleta = async (id) => {
       WHERE cm.id_convocatoria = $1
     `, [id]);
 
+    const horasAsignadasRes = await pool.query(`
+      SELECT horas_asignadas
+      FROM convocatorias_materias
+      WHERE id_convocatoria = $1
+      AND horas_asignadas IS NOT NULL
+      LIMIT 1
+    `, [id]);
+
+    const horasAsignadas = horasAsignadasRes.rows[0]?.horas_asignadas || null;
     return {
       ...conv,
       materias: materiasRes.rows,
-      totalHoras: materiasRes.rows.reduce((acc, m) => acc + (m.total_horas || 0), 0)
+      totalHoras: materiasRes.rows.reduce((acc, m) => acc + (m.total_horas || 0), 0),
+      horas_asignadas: horasAsignadas
     };
   } catch (error) {
     console.error('❌ Error en getConvocatoriaCompleta:', error);

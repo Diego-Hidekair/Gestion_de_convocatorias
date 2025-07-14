@@ -8,13 +8,17 @@ import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO } from 'date-fns';
 import { addDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+
 
 
 const ConvocatoriaForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
-const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [tipoEsConsultor, setTipoEsConsultor] = useState(false);
+//  const [tipoNombreSeleccionado, setTipoNombreSeleccionado] = useState('');
 
 
   const [convocatoria, setConvocatoria] = useState({
@@ -75,22 +79,22 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
         }
 
         if (id) {
-          // Si es edición, traer la convocatoria
-          const response = await api.get(`/convocatorias/${id}`);
-          const data = response.data;
-          setConvocatoria({
-            ...data,
-            nombre: data.nombre_conv || '',
-            fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
-            fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
-            id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
-          });
+  const response = await api.get(`/convocatorias/${id}`);
+  const data = response.data;
+  setConvocatoria({
+    ...data,
+    nombre: data.nombre_conv || '',
+    fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
+    fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
+    id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
+  });
 
-          const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
-          if (programa) {
-            setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
-          }
-        } else {
+  const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
+  if (programa) {
+    setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
+  }
+   
+} else {
           // Nuevo registro, establecer programa por defecto del usuario
           const userPrograma = userData.id_programa?.trim() || '';
           setConvocatoria(prev => ({
@@ -122,6 +126,14 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   }));
 };
 
+useEffect(() => {
+  const tipoSeleccionado = tiposConvocatoria.find(
+    t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+  );
+  const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
+  setTipoEsConsultor(nombreTipo.includes('CONSULTORES'));
+}, [convocatoria.id_tipoconvocatoria, tiposConvocatoria]);
+
   useEffect(() => {
     const year = new Date().getFullYear();
     let nuevoNombre = '';
@@ -144,7 +156,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
       } else if (tipoNombre.includes('ORDINARIO')) {
         nuevoNombre += 'A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO ';
       } else if (tipoNombre.includes('CONSULTORES')) {
-        nuevoNombre += 'A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA ';
+        nuevoNombre += 'A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTE EN CALIDAD DE CONSULTORES DE LÍNEA ';
       } else if (tipoNombre) {
         nuevoNombre += `${tipoNombre} `;
       }
@@ -210,6 +222,14 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
       if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
         throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
       }
+      const tipoSeleccionado = tiposConvocatoria.find(
+          t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+        );
+        const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
+
+        if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
+          throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
+        }
 
       const payload = {
         ...convocatoria,
@@ -304,12 +324,13 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
               <Typography variant="subtitle1" gutterBottom>
                 Fecha de Publicación
               </Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
                 <StaticDatePicker
                   value={convocatoria.fecha_inicio}
                   onChange={handleDateInicioChange}
                   displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
                   slotProps={{
+                    actionBar: { actions: [] },
                     textField: {
                       fullWidth: true
                     }
@@ -420,22 +441,11 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Pago Mensual (Bs)"
-                name="pago_mensual"
-                type="number"
-                value={convocatoria.pago_mensual}
-                onChange={handleChange}
-                fullWidth
-                inputProps={{ min: 0 }}
-              />
-            </Grid>
-
+             
             {/* Resolución y Dictamen */}
             <Grid item xs={12} md={6}>
               <TextField
-                label="Resolución"
+                label="Resolución Facultativa"
                 name="resolucion"
                 value={convocatoria.resolucion}
                 onChange={handleChange}
@@ -446,7 +456,7 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
             <Grid item xs={12} md={6}>
               <TextField
-                label="Dictamen"
+                label="Dictamen de Carrera"
                 name="dictamen"
                 value={convocatoria.dictamen}
                 onChange={handleChange}
@@ -454,6 +464,19 @@ const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
                 required
               />
             </Grid>
+            {tipoEsConsultor && (
+  <Grid item xs={12} md={6}>
+    <TextField
+      label="Pago Mensual (Bs)"
+      name="pago_mensual"
+      type="number"
+      value={convocatoria.pago_mensual}
+      onChange={handleChange}
+      fullWidth
+      inputProps={{ min: 0 }}
+    />
+  </Grid>
+)}
 
             {/* Perfil Profesional */}
             <Grid item xs={12}>
