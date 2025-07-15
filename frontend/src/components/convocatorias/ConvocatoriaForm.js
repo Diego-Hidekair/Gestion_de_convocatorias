@@ -130,7 +130,7 @@ useEffect(() => {
   const tipoSeleccionado = tiposConvocatoria.find(
     t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
   );
-  const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
+  const nombreTipo = tipoSeleccionado?.nombre_convocatoria?.trim().toUpperCase() || '';
   setTipoEsConsultor(nombreTipo.includes('CONSULTORES'));
 }, [convocatoria.id_tipoconvocatoria, tiposConvocatoria]);
 
@@ -178,7 +178,7 @@ useEffect(() => {
       if (tipoNombre.includes('EXTRAORDINARIO')) {
         nuevoNombre += `SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
       } else {
-        nuevoNombre += `- GESTION ${year}`;
+        nuevoNombre += `- ${convocatoria.gestion} ${year}`;
       }
     }
 
@@ -259,18 +259,19 @@ useEffect(() => {
     }
   };
 
- return (
+return (
   <Container maxWidth="md">
-    <Card sx={{
-    borderRadius: 3,
-    backgroundColor: '#ffffff',
-    mt: 4,
-    boxShadow: '0 3px 10px rgba(0,0,0,0.1)'
-  }}
->
+    <Card
+      sx={{
+        borderRadius: 3,
+        backgroundColor: '#ffffff',
+        mt: 4,
+        boxShadow: '0 3px 10px rgba(0,0,0,0.1)',
+      }}
+    >
       <CardContent>
         <Typography variant="h5" align="center" gutterBottom>
-          {id ? 'Editar' : 'Registrar'} Convocatoria
+          Crear Convocatoria
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -278,6 +279,7 @@ useEffect(() => {
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <Grid container spacing={2}>
+
             {/* Tipo de Convocatoria */}
             <Grid item xs={12}>
               <FormControl fullWidth required>
@@ -290,7 +292,7 @@ useEffect(() => {
                 >
                   {tiposConvocatoria.map((tipo) => (
                     <MenuItem key={tipo.id_tipoconvocatoria} value={tipo.id_tipoconvocatoria}>
-                      {tipo.nombre_tipo_conv || tipo.nombre_convocatoria}
+                      {tipo.nombre_convocatoria}
                     </MenuItem>
                   ))}
                 </Select>
@@ -302,7 +304,7 @@ useEffect(() => {
               <TextField
                 label="Nombre de la Convocatoria"
                 name="nombre"
-                value={convocatoria.nombre || ''}
+                value={convocatoria.nombre}
                 fullWidth
                 InputProps={{
                   readOnly: true,
@@ -313,13 +315,15 @@ useEffect(() => {
                 helperText="El título se genera automáticamente al completar los campos"
               />
             </Grid>
+
+            {/* Fechas */}
             <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
               <Typography variant="h6" gutterBottom>
                 Fechas
               </Typography>
             </Grid>
-            {/* Fechas */}
+
             <Grid item xs={12} md={6}>
               <Typography variant="subtitle1" gutterBottom>
                 Fecha de Publicación
@@ -331,9 +335,7 @@ useEffect(() => {
                   displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
                   slotProps={{
                     actionBar: { actions: [] },
-                    textField: {
-                      fullWidth: true
-                    }
+                    textField: { fullWidth: true }
                   }}
                 />
               </LocalizationProvider>
@@ -344,19 +346,14 @@ useEffect(() => {
 
             <Grid item xs={12} md={6}>
               <Typography variant="subtitle1" gutterBottom>
-                Fecha de Finalizacion de la Convocatoria
+                Plazo final de la Convocatoria
               </Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
                 <StaticDatePicker
                   value={convocatoria.fecha_fin}
-                  readOnly
+                  onChange={(date) => setConvocatoria(prev => ({ ...prev, fecha_fin: date }))}
                   displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      InputProps: { readOnly: true }
-                    }
-                  }}
+                  slotProps={{ textField: { fullWidth: true } }}
                 />
               </LocalizationProvider>
               <Typography variant="caption" display="block">
@@ -364,7 +361,7 @@ useEffect(() => {
               </Typography>
             </Grid>
 
-            {/* Facultad y Programa */}
+            {/* Facultad y Carrera */}
             <Grid item xs={12} md={6}>
               <TextField
                 label="Facultad"
@@ -376,7 +373,7 @@ useEffect(() => {
 
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
-                <InputLabel>Programa</InputLabel>
+                <InputLabel>Carrera</InputLabel>
                 <Select
                   name="id_programa"
                   value={convocatoria.id_programa?.trim() || ''}
@@ -425,7 +422,7 @@ useEffect(() => {
               </FormControl>
             </Grid>
 
-            {/* Gestión y Pago */}
+            {/* Gestión */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
                 <InputLabel>Gestión</InputLabel>
@@ -437,11 +434,11 @@ useEffect(() => {
                 >
                   <MenuItem value="GESTION 1">Gestión 1</MenuItem>
                   <MenuItem value="GESTION 2">Gestión 2</MenuItem>
+                  <MenuItem value="GESTION 1 Y 2">Gestión 1 Y 2</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
-             
             {/* Resolución y Dictamen */}
             <Grid item xs={12} md={6}>
               <TextField
@@ -464,19 +461,21 @@ useEffect(() => {
                 required
               />
             </Grid>
+
+            {/* Pago Mensual si es consultor */}
             {tipoEsConsultor && (
-  <Grid item xs={12} md={6}>
-    <TextField
-      label="Pago Mensual (Bs)"
-      name="pago_mensual"
-      type="number"
-      value={convocatoria.pago_mensual}
-      onChange={handleChange}
-      fullWidth
-      inputProps={{ min: 0 }}
-    />
-  </Grid>
-)}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Pago Mensual (Bs)"
+                  name="pago_mensual"
+                  type="number"
+                  value={convocatoria.pago_mensual}
+                  onChange={handleChange}
+                  fullWidth
+                  inputProps={{ min: 0 }}
+                />
+              </Grid>
+            )}
 
             {/* Perfil Profesional */}
             <Grid item xs={12}>
@@ -497,26 +496,27 @@ useEffect(() => {
             {/* Botones */}
             <Grid item xs={12} textAlign="center">
               <Button
-  variant="contained"
-  color="primary"
-  type="submit"
-  size="large"
-  fullWidth={isMobile}
-  sx={{ px: isMobile ? 0 : 4 }}
->
-                {loading ? 'Procesando...' : (id ? 'Actualizar' : 'Siguiente')}
+                variant="contained"
+                color="primary"
+                type="submit"
+                size="large"
+                fullWidth={isMobile}
+                sx={{ px: isMobile ? 0 : 4 }}
+              >
+                {loading ? 'Procesando...' : 'SIGUIENTE'}
               </Button>
               <Button
-  variant="outlined"
-  color="secondary"
-  onClick={() => navigate('/convocatorias')}
-  size="large"
-  fullWidth={isMobile}
-  sx={{ ml: isMobile ? 0 : 2, mt: isMobile ? 2 : 0 }}
->
+                variant="outlined"
+                color="secondary"
+                onClick={() => navigate('/convocatorias')}
+                size="large"
+                fullWidth={isMobile}
+                sx={{ ml: isMobile ? 0 : 2, mt: isMobile ? 2 : 0 }}
+              >
                 Cancelar
               </Button>
             </Grid>
+
           </Grid>
         </Box>
       </CardContent>

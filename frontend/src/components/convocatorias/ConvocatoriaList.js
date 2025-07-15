@@ -7,7 +7,7 @@ import { Menu, MenuItem, ListItemIcon } from '@mui/material';
 import { Edit, Delete, Visibility, Download, Comment, Add, Search, Refresh, CheckCircle as CheckCircleIcon, Warning as WarningIcon, Error as ErrorIcon, Info as InfoIcon, Autorenew as AutorenewIcon, Send as SendIcon, ArrowDropDown as ArrowDropDownIcon} from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import api from '../../config/axiosConfig';
-
+import { useParams } from 'react-router-dom';
 
   const ConvocatoriaList = () => {
   const navigate = useNavigate();
@@ -33,6 +33,16 @@ import api from '../../config/axiosConfig';
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [userId, setUserId] = useState(null);
+  
+  const { estado } = useParams();
+useEffect(() => {
+  if (estado) {
+    const filtered = convocatorias.filter(c => c.estado.toLowerCase() === estado.toLowerCase());
+    setFilteredConvocatorias(filtered);
+  } else {
+    setFilteredConvocatorias(convocatorias);
+  }
+}, [estado, convocatorias]);
     
   const theme = useTheme();
   // Campos de búsqueda disponibles
@@ -67,19 +77,23 @@ import api from '../../config/axiosConfig';
 }, []);
 
   const fetchConvocatorias = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/convocatorias');
-      setConvocatorias(response.data);
-      setFilteredConvocatorias(response.data);
-      setError(null);
-    } catch (error) {
-      console.error('Error al obtener convocatorias:', error);
-      setError(error.response?.data?.error || 'Error al cargar convocatorias');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    const response = await api.get('/convocatorias');
+
+    // Ordenar por fecha_inicio descendente
+    const ordenadas = response.data.sort((a, b) => b.id_convocatoria - a.id_convocatoria);
+
+     setConvocatorias(ordenadas);
+    setFilteredConvocatorias(ordenadas);
+    setError(null);
+  } catch (error) {
+    console.error('Error al obtener convocatorias:', error);
+    setError(error.response?.data?.error || 'Error al cargar convocatorias');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (searchTerm === '') {
@@ -456,6 +470,7 @@ const confirmEstadoChange = async () => {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell><strong>ID</strong></TableCell>
               <TableCell>Nombre</TableCell>
               <TableCell>Programa</TableCell>
               <TableCell>Facultad</TableCell>
@@ -466,89 +481,82 @@ const confirmEstadoChange = async () => {
             </TableRow>
           </TableHead>
           
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  Cargando...
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ color: 'error.main' }}>
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : filteredConvocatorias.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No se encontraron convocatorias
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredConvocatorias.map((convocatoria) => (
-                <TableRow key={convocatoria.id_convocatoria}>
-<TableCell
-  sx={{ cursor: 'pointer', color: 'primary.main', fontWeight: 'bold' }}
-  onClick={() => navigate(`/convocatorias/${convocatoria.id_convocatoria}`)}
->
-  {convocatoria.nombre_conv}
-</TableCell>
-                  <TableCell>{convocatoria.nombre_programa}</TableCell>
-                  <TableCell>{convocatoria.nombre_facultad}</TableCell>
-                  <TableCell>
-                    {format(new Date(convocatoria.fecha_inicio), 'dd/MM/yyyy')}
-                  </TableCell>
-                  <TableCell>
-                    {convocatoria.fecha_fin ? format(new Date(convocatoria.fecha_fin), 'dd/MM/yyyy') : 'N/A'}
-                  </TableCell>
-                  
-                  <TableCell sx={{ minWidth: 200 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {renderEstadoActions(convocatoria)}
-                      
-                      {convocatoria.comentario_observado && (
-                        <Tooltip title="Ver comentario">
-                          <IconButton 
-                            size="small" 
-                            onClick={() => handleEditComentario(convocatoria)}
-                          >
-                            <Badge color="error" variant="dot">
-                              <Comment fontSize="small" />
-                            </Badge>
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
-                  </TableCell>
-                  
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      {userRole === 'secretaria_de_decanatura' && convocatoria.estado === 'Observado' && (
-                        <Tooltip title="Editar">
-                          <IconButton
-                            size="small"
-                            onClick={() => navigate(`/convocatorias/edit/${convocatoria.id_convocatoria}`)}
-                          >
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      <Tooltip title="Eliminar">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteClick(convocatoria.id_convocatoria)}
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))
+         <TableBody>
+  {loading ? (
+    <TableRow>
+      <TableCell colSpan={8} align="center">
+        Cargando...
+      </TableCell>
+    </TableRow>
+  ) : error ? (
+    <TableRow>
+      <TableCell colSpan={8} align="center" sx={{ color: 'error.main' }}>
+        {error}
+      </TableCell>
+    </TableRow>
+  ) : filteredConvocatorias.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={8} align="center">
+        No se encontraron convocatorias
+      </TableCell>
+    </TableRow>
+  ) : (
+    filteredConvocatorias.map((convocatoria) => (
+      <TableRow key={convocatoria.id_convocatoria}>
+        <TableCell>{convocatoria.id_convocatoria}</TableCell>
+        <TableCell
+          sx={{ cursor: 'pointer', color: 'primary.main', fontWeight: 'bold' }}
+          onClick={() => navigate(`/convocatorias/${convocatoria.id_convocatoria}`)}
+        >
+          {convocatoria.nombre_conv}
+        </TableCell>
+        <TableCell>{convocatoria.nombre_programa}</TableCell>
+        <TableCell>{convocatoria.nombre_facultad}</TableCell>
+        <TableCell>{format(new Date(convocatoria.fecha_inicio), 'dd/MM/yyyy')}</TableCell>
+        <TableCell>{convocatoria.fecha_fin ? format(new Date(convocatoria.fecha_fin), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+        <TableCell>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {renderEstadoActions(convocatoria)}
+            {convocatoria.comentario_observado && (
+              <Tooltip title="Ver comentario">
+                <IconButton size="small" onClick={() => handleEditComentario(convocatoria)}>
+                  <Badge color="error" variant="dot">
+                    <Comment fontSize="small" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
             )}
-          </TableBody>
+          </Box>
+        </TableCell>
+        <TableCell>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {userRole === 'secretaria_de_decanatura' && convocatoria.estado === 'Observado' && (
+              <Tooltip title="Editar">
+                <IconButton
+                  size="small"
+                  onClick={() => navigate(`/convocatorias/edit/${convocatoria.id_convocatoria}`)}
+                >
+                  <Edit fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!['Aprobado', 'Revisado'].includes(convocatoria.estado) && (
+              <Tooltip title="Eliminar">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDeleteClick(convocatoria.id_convocatoria)}
+                >
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
         </Table>
       </TableContainer>
       

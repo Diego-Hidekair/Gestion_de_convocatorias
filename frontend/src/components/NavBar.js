@@ -2,34 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Typography,
-  IconButton,
-  Box
-} from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Home as HomeIcon,
-  Book as BookIcon,
-  ContentPaste as ClipboardIcon,
-  CheckBox as CheckBoxIcon,
-  Person as PersonIcon,
-  People as PeopleIcon,
-  ExitToApp as ExitToAppIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-  Verified as VerifiedIcon,
-  Notifications as NotificationsIcon
-} from "@mui/icons-material";
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, IconButton, Box, Collapse } from "@mui/material";
+import { Menu as MenuIcon, Home as HomeIcon, Book as BookIcon, ContentPaste as ClipboardIcon, CheckBox as CheckBoxIcon, Person as  PersonIcon, People as PeopleIcon, ExitToApp as ExitToAppIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Verified as VerifiedIcon, Notifications as NotificationsIcon,ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import NotificacionBadge from './NotificacionBadge';
+
 
 const NavBar = ({
   onLogout,
@@ -46,6 +24,7 @@ const NavBar = ({
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [openEstadoMenu, setOpenEstadoMenu] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -86,8 +65,63 @@ const NavBar = ({
       backgroundColor: location.pathname === path ? "#fff" : "rgba(255, 255, 255, 0.1)",
     },
   });
+  const renderEstadoFilter = () => {
+    const estadosConvocatoria = [
+      'Para Revisión',
+      'En Revisión',
+      'Observado',
+      'Revisado',
+      'Aprobado',
+      'Devuelto'
+    ];
+    return (
+    <>
+      <ListItem button onClick={() => setOpenEstadoMenu(!openEstadoMenu)}>
+        <ListItemIcon>
+          <ClipboardIcon sx={{ color: "#fff" }} />
+        </ListItemIcon>
+        {isExpanded && <ListItemText primary="Filtrar por Estado" />}
+        {openEstadoMenu ? <ExpandLess sx={{ color: "#fff" }} /> : <ExpandMore sx={{ color: "#fff" }} />}
+      </ListItem>
+
+      <Collapse in={openEstadoMenu} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          {estadosConvocatoria.map((estado) => (
+            <ListItem
+              key={estado}
+              button
+              component={Link}
+              to={`/convocatorias/estado/${encodeURIComponent(estado)}`}
+              sx={{
+                pl: 4,
+                backgroundColor: location.pathname === `/convocatorias/estado/${estado}` ? "#fff" : "transparent",
+                color: location.pathname === `/convocatorias/estado/${estado}` ? "#000" : "#fff",
+                "&:hover": {
+                  backgroundColor: location.pathname === `/convocatorias/estado/${estado}` ? "#fff" : "rgba(255, 255, 255, 0.1)",
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: "inherit" }}>
+                <ClipboardIcon fontSize="small" />
+              </ListItemIcon>
+              {isExpanded && <ListItemText primary={estado} />}
+            </ListItem>
+          ))}
+        </List>
+      </Collapse>
+    </>
+  );
+};
 
   const renderMenuItems = () => {
+    const estadosConvocatoria = [
+      'Para Revisión',
+      'En Revisión',
+      'Observado',
+      'Revisado',
+      'Aprobado',
+      'Devuelto'
+    ];
     const commonItems = [
       role === "admin" && (
         <ListItem button component={Link} to="/usuarios" key="usuarios" sx={getItemStyle("/usuarios")}>
@@ -151,26 +185,29 @@ const NavBar = ({
         </ListItem>
       ],
       secretaria_de_decanatura: [
+        <ListItem button component={Link} to="/convocatorias/crear" key="crear-convocatoria" sx={getItemStyle("/convocatorias/crear")}>
+          <ListItemIcon sx={{ color: location.pathname === "/convocatorias/crear" ? "#000" : "#fff" }}>
+            <CheckBoxIcon />
+          </ListItemIcon>
+          {isExpanded && <ListItemText primary="Crear Convocatoria" />}
+        </ListItem>,        
         <ListItem button component={Link} to="/convocatorias" key="convocatorias" sx={getItemStyle("/convocatorias")}>
           <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
             <ClipboardIcon />
           </ListItemIcon>
           {isExpanded && <ListItemText primary="Convocatorias" />}
         </ListItem>,
-        <ListItem button component={Link} to="/convocatorias/crear" key="crear-convocatoria" sx={getItemStyle("/convocatorias/crear")}>
-          <ListItemIcon sx={{ color: location.pathname === "/convocatorias/crear" ? "#000" : "#fff" }}>
-            <CheckBoxIcon />
-          </ListItemIcon>
-          {isExpanded && <ListItemText primary="Crear Convocatoria" />}
-        </ListItem>
+       ...(isExpanded ? [renderEstadoFilter()] : [])
       ],
+
       tecnico_vicerrectorado: [
         <ListItem button component={Link} to="/convocatorias" key="convocatorias" sx={getItemStyle("/convocatorias")}>
           <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
             <ClipboardIcon />
           </ListItemIcon>
           {isExpanded && <ListItemText primary="Convocatorias" />}
-        </ListItem>
+        </ListItem>,
+      ...(isExpanded ? [renderEstadoFilter()] : [])
       ],
       vicerrectorado: [
         <ListItem button component={Link} to="/convocatorias" key="convocatorias" sx={getItemStyle("/convocatorias")}>
@@ -178,8 +215,8 @@ const NavBar = ({
             <VerifiedIcon />
           </ListItemIcon>
           {isExpanded && <ListItemText primary="Convocatorias Aprobadas" />}
-        </ListItem>
-      ],
+        </ListItem>,...(isExpanded ? [renderEstadoFilter()] : [])
+],
       personal_administrativo: [
         <ListItem button component={Link} to="/convocatorias" key="convocatorias" sx={getItemStyle("/convocatorias")}>
           <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>

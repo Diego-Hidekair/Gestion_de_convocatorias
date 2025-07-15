@@ -14,7 +14,7 @@ const validateConvocatoria = [
     check('id_tipoconvocatoria').isInt(),
     check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']),
     check('pago_mensual').optional().isInt({ min: 0 }),
-    check('gestion').isIn(['GESTION 1', 'GESTION 2'])
+    check('gestion').isIn(['GESTION 1', 'GESTION 2', 'GESTION 1 Y 2'])
 ];
 
 const getFullConvocatoria = async (id_convocatoria) => {
@@ -84,13 +84,13 @@ const createConvocatoria = async (req, res) => {
         
         let nombre_conv;
         if (tipo.includes('EXTRAORDINARIO')) {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO A ${tipo_jornada} PARA LA CARRERA DE ${programa} SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         } else if (tipo.includes('ORDINARIO')) {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO A ${tipo_jornada} PARA LA CARRERA DE ${programa} - GESTION ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         } else if (tipo.includes('CONSULTORES')) {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${tipo_jornada} PARA LA CARRERA DE ${programa} POR LA GESTIÓN ACADÉMICA ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         } else {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - GESTION ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         }
 
         const convResult = await client.query(
@@ -159,8 +159,8 @@ const getConvocatorias = async (req, res) => {
         
         if (req.user?.rol === 'vicerrectorado') {
             whereClauses.push(`c.estado = 'Revisado'`);
-        } else if (req.user?.rol === 'tecnico_vicerrectorado') {
-            whereClauses.push(`c.estado IN ('Para Revisión', 'En Revisión', 'Observado','Revisado', 'Devuelto')`);
+        /*} else if (req.user?.rol === 'tecnico_vicerrectorado') {
+            whereClauses.push(`c.estado IN ('Para Revisión', 'En Revisión', 'Observado','Revisado', 'Devuelto')`);*/
         } else if (req.user?.rol === 'personal_administrativo') {
             whereClauses.push(`c.estado = 'Aprobado'`);
         }
@@ -244,13 +244,13 @@ const updateConvocatoria = async (req, res) => {
         
         let nombre_conv;
         if (tipo.includes('EXTRAORDINARIO')) {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA PROVISION DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO A ${tipo_jornada} PARA LA CARRERA DE ${programa} SOLO POR LA GESTIÓN ACADÉMICA ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         } else if (tipo.includes('ORDINARIO')) {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS Y EXAMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO A ${tipo_jornada} PARA LA CARRERA DE ${programa} - GESTION ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         } else if (tipo.includes('CONSULTORES')) {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA A CONCURSO DE MERITOS PARA LA CONTRATACION DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${tipo_jornada} PARA LA CARRERA DE ${programa} POR LA GESTIÓN ACADÉMICA ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         } else {
-            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - GESTION ${year}`;
+            nombre_conv = `${etapa_convocatoria} CONVOCATORIA ${tipo} - ${programa} - ${gestion} ${year}`;
         }
 
         const convResult = await client.query(
@@ -597,7 +597,7 @@ const deleteConvocatoria = async (req, res) => {
         if (result.rows.length === 0) {
             throw new Error('Convocatoria no encontrada');
         }
-
+ 
         await client.query('COMMIT');
         res.json({ message: 'Convocatoria eliminada correctamente' });
     } catch (error) {

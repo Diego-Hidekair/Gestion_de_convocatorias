@@ -32,7 +32,7 @@ import DocenteList from './components/usuarios/DocenteList';
 import VicerrectorList from './components/usuarios/VicerrectorList';
 
 const drawerWidthExpanded = 225;
-const drawerWidthCollapsed = 70;
+const drawerWidthCollapsed = 100;
 
 const theme = createTheme({
   palette: {
