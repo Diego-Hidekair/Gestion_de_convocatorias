@@ -16,7 +16,6 @@ import FileList from './FileList';
 function ConvocatoriaArchivosManager() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [filesInfo, setFilesInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,7 +77,7 @@ function ConvocatoriaArchivosManager() {
     }
   }
 };
-  
+
   const handleDownloadByType = async (tipo) => {
     try {
       const response = await api.get(`/convocatorias-archivos/${id}/descargar/${tipo}`, {
@@ -105,11 +104,6 @@ function ConvocatoriaArchivosManager() {
   return (
     <Box sx={{ p: 3 }}>
       {error && <Alert severity="warning" sx={{ mb: 3 }}>{error}</Alert>}
-
-      <Button variant="contained" startIcon={<UploadIcon />} onClick={handleGenerarPDF}>
-        Generar PDF
-      </Button>
-
       <Box sx={{ display: 'flex', mt: 3, gap: 3 }}>
         {/* Vista previa del PDF */}
         <Box sx={{ flex: 2 }}>
@@ -165,8 +159,16 @@ function ConvocatoriaArchivosManager() {
               />
             </CardContent>
             <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-              <Button variant="contained" onClick={handleTerminar} startIcon={<CheckIcon />}>
-                Terminar
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={async () => {
+                  await handleGenerarPDF();
+                  navigate(`/convocatorias/${id}/pdf`);
+                }}
+                startIcon={<UploadIcon />}
+              >
+                Siguiente 
               </Button>
             </CardActions>
           </Card>

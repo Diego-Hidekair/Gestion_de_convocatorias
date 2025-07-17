@@ -27,7 +27,7 @@ const ConvocatoriaForm = () => {
     fecha_fin: null,
     id_tipoconvocatoria: '',
     id_programa: '',
-    tipo_jornada: 'TIEMPO COMPLETO',
+    tipo_jornada: 'TIEMPO HORARIO',
     etapa_convocatoria: 'PRIMERA',
     gestion: 'GESTION 1',
     resolucion: '',
