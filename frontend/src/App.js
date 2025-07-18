@@ -30,8 +30,6 @@ import ConvocatoriaArchivosManager from './components/convocatorias/Convocatoria
 import NotificacionesPage from './components/notificaciones/NotificacionesPage';
 import DocenteList from './components/usuarios/DocenteList';
 import VicerrectorList from './components/usuarios/VicerrectorList';
-import PdfPreviewPage from './components/convocatorias/ConvocatoriaArchivos/PdfPreviewPage';
-
 
 const drawerWidthExpanded = 225;
 const drawerWidthCollapsed = 100;
@@ -223,7 +221,6 @@ const AuthWrapper = () => {
                     <Route path="/convocatorias/edit/:id" element={<ConvocatoriaEdit />} />
                     <Route path="/convocatorias/:id/materias" element={<ConvocatoriaMaterias />} />
                     <Route path="/convocatorias/:id/archivos" element={<ConvocatoriaArchivosManager />} />
-                    <Route path="/convocatorias/:id/pdf" element={<PdfPreviewPage />} />
                     <Route path="/convocatorias/:id" element={<ConvocatoriaDetalle />} />
                   </>
                 )}

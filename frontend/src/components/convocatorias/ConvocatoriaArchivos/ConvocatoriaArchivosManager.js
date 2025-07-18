@@ -10,7 +10,7 @@ import {
   Upload as UploadIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
-import FileUploadForm from './FileUploadForm';
+//import FileUploadForm from './FileUploadForm';
 import FileList from './FileList';
 
 function ConvocatoriaArchivosManager() {
@@ -56,6 +56,17 @@ function ConvocatoriaArchivosManager() {
   }, [filesInfo]);
 
   const handleGenerarPDF = async () => {
+    const requiredFields = [
+      { key: 'has_resolucion', label: 'Resolución Facultativa' },
+      { key: 'has_dictamen', label: 'Dictamen de carrera' },
+      { key: 'has_certificado_presupuestario', label: 'Certificación Presupuestaria' }
+    ];
+    const faltantes = requiredFields.filter(field => !filesInfo[field.key]);
+      if (faltantes.length > 0) {
+      const nombres = faltantes.map(f => f.label).join(', ');
+      setError(`No se permite generar el PDF. Faltan los documentos: ${nombres}`);
+      return; // No continúa con la generación
+    }
   try {
     const response = await api.post(`/convocatorias-archivos/${id}/generar`, {}, { responseType: 'blob' });
     const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
@@ -120,7 +131,7 @@ function ConvocatoriaArchivosManager() {
             </>
           ) : (
             <Alert severity="info" sx={{ fontSize: '1rem', borderRadius: 2 }}>
-              Suba los documentos de: <strong>Resolución</strong>, <strong>Dictamen</strong> y <strong>Certificación Presupuestaria</strong> antes de generar el documento PDF.
+              Suba los documentos de: <strong>Resolución</strong>, <strong>Dictamen</strong> y <strong>Certificación Presupuestaria</strong> antes de generar el documento PDF. Tamaño maximo de los documentos megabytes
             </Alert>
           )}
         </Box>
@@ -130,25 +141,7 @@ function ConvocatoriaArchivosManager() {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6">Documentos Adjuntos</Typography>
-                <Button
-                  variant={showUploadForm ? 'outlined' : 'contained'}
-                  startIcon={showUploadForm ? <CloseIcon /> : <UploadIcon />}
-                  onClick={() => setShowUploadForm(!showUploadForm)}
-                >
-                  {showUploadForm ? 'Cancelar' : 'Subir'}
-                </Button>
               </Box>
-
-              {showUploadForm && (
-                <FileUploadForm
-                  convocatoriaId={id}
-                  onSuccess={() => {
-                    fetchFilesInfo();
-                    setShowUploadForm(false); 
-                  }}
-                  onError={setError}
-                />
-              )}
 
               <FileList
                 filesInfo={filesInfo}
@@ -157,18 +150,22 @@ function ConvocatoriaArchivosManager() {
                 onFilesUpdate={fetchFilesInfo}
                 onDownload={handleDownloadByType}
               />
+
             </CardContent>
             <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={async () => {
+                  const prevUrl = pdfUrl;
                   await handleGenerarPDF();
-                  navigate(`/convocatorias/${id}/pdf`);
+                  if (pdfUrl !== prevUrl) {
+                    navigate(`/convocatorias/${id}/pdf`);
+                  }
                 }}
                 startIcon={<UploadIcon />}
               >
-                Siguiente 
+                Siguiente
               </Button>
             </CardActions>
           </Card>

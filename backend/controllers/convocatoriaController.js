@@ -14,7 +14,10 @@ const validateConvocatoria = [
     check('id_tipoconvocatoria').isInt(),
     check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']),
     check('pago_mensual').optional().isInt({ min: 0 }),
-    check('gestion').isIn(['GESTION 1', 'GESTION 2', 'GESTION 1 Y 2'])
+    check('gestion').isIn(['GESTION 1', 'GESTION 2', 'GESTION 1 Y 2']),
+    check('apertura_sobres').optional().isISO8601().withMessage('Formato de fecha y hora inválido'),
+    check('plazo_presentacion_horas').optional().matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/).withMessage('Hora inválida'),
+
 ];
 
 const getFullConvocatoria = async (id_convocatoria) => {
@@ -60,7 +63,8 @@ const createConvocatoria = async (req, res) => {
         await client.query('BEGIN');
         
         const { tipo_jornada, fecha_fin, id_tipoconvocatoria, etapa_convocatoria, 
-                pago_mensual = 0, resolucion, dictamen, perfil_profesional, gestion } = req.body;
+        pago_mensual = 0, resolucion, dictamen, perfil_profesional, gestion,
+        apertura_sobres, plazo_presentacion_horas } = req.body;
 
         if (!req.user?.id_usuario) throw new Error('Usuario no autenticado');
         const id_usuario = req.user.id_usuario;
@@ -97,13 +101,16 @@ const createConvocatoria = async (req, res) => {
             `INSERT INTO convocatorias (
                 tipo_jornada, nombre_conv, fecha_inicio, fecha_fin, etapa_convocatoria, 
                 estado, gestion, pago_mensual, resolucion, dictamen, perfil_profesional,
-                id_vicerector, id_usuario, id_tipoconvocatoria, id_programa
-            ) VALUES ($1, $2, CURRENT_DATE, $3, $4, 'Para Revisión', $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                id_vicerector, id_usuario, id_tipoconvocatoria, id_programa,
+                apertura_sobres, plazo_presentacion_horas
+            ) VALUES ($1, $2, CURRENT_DATE, $3, $4, 'Para Revisión', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING id_convocatoria`,
             [tipo_jornada, nombre_conv, fecha_fin, etapa_convocatoria, gestion, 
             pago_mensual, resolucion, dictamen, perfil_profesional,
-            vicerrector.rows[0].id_vicerector, id_usuario, id_tipoconvocatoria, id_programa]
+            vicerrector.rows[0].id_vicerector, id_usuario, id_tipoconvocatoria, id_programa,
+            apertura_sobres, plazo_presentacion_horas]
         );
+
 
         await client.query('INSERT INTO convocatorias_archivos (id_convocatoria) VALUES ($1)', [convResult.rows[0].id_convocatoria]);
         await client.query('COMMIT');
@@ -225,7 +232,9 @@ const updateConvocatoria = async (req, res) => {
             resolucion,
             dictamen,
             perfil_profesional,
-            gestion
+            gestion,
+            apertura_sobres,
+            plazo_presentacion_horas
         } = req.body;
 
         const [convocatoriaActual, tipoConvocatoria, programaData] = await Promise.all([
@@ -255,33 +264,36 @@ const updateConvocatoria = async (req, res) => {
 
         const convResult = await client.query(
             `UPDATE convocatorias SET
-                tipo_jornada = $1, 
-                fecha_fin = $2,
-                etapa_convocatoria = $3, 
-                pago_mensual = $4,
-                resolucion = $5, 
-                dictamen = $6, 
-                perfil_profesional = $7,
-                gestion = $8,
-                id_tipoconvocatoria = $9,
-                nombre_conv = $10
-            WHERE id_convocatoria = $11
-            RETURNING *`,
-            [
-                tipo_jornada, 
-                fecha_fin,
-                etapa_convocatoria, 
-                pago_mensual, 
-                resolucion, 
-                dictamen,
-                perfil_profesional, 
-                gestion, 
-                id_tipoconvocatoria,
-                nombre_conv,
-                id
-            ]
-        );
-
+        tipo_jornada = $1, 
+        fecha_fin = $2,
+        etapa_convocatoria = $3, 
+        pago_mensual = $4,
+        resolucion = $5, 
+        dictamen = $6, 
+        perfil_profesional = $7,
+        gestion = $8,
+        id_tipoconvocatoria = $9,
+        nombre_conv = $10,
+        apertura_sobres = $11,
+        plazo_presentacion_horas = $12
+    WHERE id_convocatoria = $13
+    RETURNING *`,
+           [
+        tipo_jornada, 
+        fecha_fin,
+        etapa_convocatoria, 
+        pago_mensual, 
+        resolucion, 
+        dictamen,
+        perfil_profesional, 
+        gestion, 
+        id_tipoconvocatoria,
+        nombre_conv,
+        apertura_sobres,
+        plazo_presentacion_horas,
+        id
+    ]
+);
         if (convResult.rows.length === 0) {
             throw new Error('Convocatoria no encontrada');
         }

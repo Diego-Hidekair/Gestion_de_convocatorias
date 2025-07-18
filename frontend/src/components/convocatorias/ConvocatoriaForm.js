@@ -2,10 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../config/axiosConfig'; 
 import { useNavigate, useParams } from 'react-router-dom';
-import { Divider, Box, Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select, useMediaQuery } from '@mui/material';
+import { 
+  Divider, Box, Container, TextField, MenuItem, Button, Grid, 
+  Typography, Card, CardContent, Alert, FormControl, InputLabel, 
+  Select, useMediaQuery 
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { format, parseISO } from 'date-fns';
 import { addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -18,8 +24,6 @@ const ConvocatoriaForm = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tipoEsConsultor, setTipoEsConsultor] = useState(false);
-//  const [tipoNombreSeleccionado, setTipoNombreSeleccionado] = useState('');
-
 
   const [convocatoria, setConvocatoria] = useState({
     nombre: '',
@@ -33,7 +37,9 @@ const ConvocatoriaForm = () => {
     resolucion: '',
     dictamen: '',
     perfil_profesional: '',
-    pago_mensual: 0
+    pago_mensual: 0,
+    apertura_sobres: null,
+    plazo_presentacion_horas: null
   });
 
   const [tiposConvocatoria, setTiposConvocatoria] = useState([]);
@@ -78,25 +84,27 @@ const ConvocatoriaForm = () => {
           setNombreFacultad(userData.nombre_facultad);
         }
 
-        if (id) {
-  const response = await api.get(`/convocatorias/${id}`);
-  const data = response.data;
-  setConvocatoria({
-    ...data,
-    nombre: data.nombre_conv || '',
-    fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
-    fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
-    id_programa: data.id_programa?.trim() || userData.id_programa?.trim()
-  });
+       if (id) {
+          const response = await api.get(`/convocatorias/${id}`);
+          const data = response.data;
+          setConvocatoria({
+            ...data,
+            nombre: data.nombre_conv || '',
+            fecha_inicio: data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date(),
+            fecha_fin: data.fecha_fin ? parseISO(data.fecha_fin) : null,
+            id_programa: data.id_programa?.trim() || userData.id_programa?.trim(),
+            apertura_sobres: data.apertura_sobres ? parseISO(data.apertura_sobres) : null,
+            plazo_presentacion_horas: data.plazo_presentacion_horas ? 
+              new Date(`1970-01-01T${data.plazo_presentacion_horas}`) : null
+          });
 
   const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
-  if (programa) {
-    setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
-  }
-   
-} else {
+          if (programa) {
+            setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
+          }
+        } else {
           // Nuevo registro, establecer programa por defecto del usuario
-          const userPrograma = userData.id_programa?.trim() || '';
+           const userPrograma = userData.id_programa?.trim() || '';
           setConvocatoria(prev => ({
             ...prev,
             id_programa: userPrograma
@@ -114,25 +122,37 @@ const ConvocatoriaForm = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [id]);
 
   const handleDateInicioChange = (date) => {
-  setConvocatoria(prev => ({
-    ...prev,
-    fecha_inicio: date,
-    fecha_fin: addDays(date, 10) // calcula automáticamente 10 días después
-  }));
-};
+    setConvocatoria(prev => ({
+      ...prev,
+      fecha_inicio: date,
+      fecha_fin: addDays(date, 10) // calcula automáticamente 10 días después
+    }));
+  };
+
+  const handleAperturaSobresChange = (date) => {
+    setConvocatoria(prev => ({
+      ...prev,
+      apertura_sobres: date
+    }));
+  };
+  const handlePlazoPresentacionChange = (time) => {
+    setConvocatoria(prev => ({
+      ...prev,
+      plazo_presentacion_horas: time
+    }));
+  };
 
 useEffect(() => {
-  const tipoSeleccionado = tiposConvocatoria.find(
-    t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
-  );
-  const nombreTipo = tipoSeleccionado?.nombre_convocatoria?.trim().toUpperCase() || '';
-  setTipoEsConsultor(nombreTipo.includes('CONSULTORES'));
-}, [convocatoria.id_tipoconvocatoria, tiposConvocatoria]);
+    const tipoSeleccionado = tiposConvocatoria.find(
+      t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+    );
+    const nombreTipo = tipoSeleccionado?.nombre_convocatoria?.trim().toUpperCase() || '';
+    setTipoEsConsultor(nombreTipo.includes('CONSULTORES'));
+  }, [convocatoria.id_tipoconvocatoria, tiposConvocatoria]);
 
   useEffect(() => {
     const year = new Date().getFullYear();
@@ -215,21 +235,22 @@ useEffect(() => {
     try {
       setLoading(true);
 
-      if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
+     if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
         throw new Error('Por favor complete todos los campos requeridos');
       }
 
       if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
         throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
       }
+      
       const tipoSeleccionado = tiposConvocatoria.find(
-          t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
-        );
-        const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
+        t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+      );
+      const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
 
-        if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
-          throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
-        }
+      if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
+        throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
+      }
 
       const payload = {
         ...convocatoria,
@@ -238,7 +259,11 @@ useEffect(() => {
         fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
         id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
         pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
-        id_programa: convocatoria.id_programa.toString().trim()
+        id_programa: convocatoria.id_programa.toString().trim(),
+        apertura_sobres: convocatoria.apertura_sobres ? 
+          format(convocatoria.apertura_sobres, "yyyy-MM-dd'T'HH:mm:ss") : null,
+        plazo_presentacion_horas: convocatoria.plazo_presentacion_horas ? 
+          format(convocatoria.plazo_presentacion_horas, 'HH:mm:ss') : null
       };
 
       if (id) {
@@ -260,25 +285,25 @@ useEffect(() => {
   };
 
 return (
-  <Container maxWidth="md">
-    <Card
+    <Container maxWidth="md">
+      <Card
       sx={{
-        borderRadius: 3,
-        backgroundColor: '#ffffff',
-        mt: 4,
-        boxShadow: '0 3px 10px rgba(0,0,0,0.1)',
-      }}
-    >
-      <CardContent>
-        <Typography variant="h5" align="center" gutterBottom>
-          Crear Convocatoria
-        </Typography>
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          mt: 4,
+          boxShadow: '0 3px 10px rgba(0,0,0,0.1)',
+        }}
+      >
+        <CardContent>
+          <Typography variant="h5" align="center" gutterBottom>
+            {id ? 'Editar Convocatoria' : 'Crear Convocatoria'}
+          </Typography>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Grid container spacing={2}>
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Grid container spacing={2}>
 
             {/* Tipo de Convocatoria */}
             <Grid item xs={12}>
@@ -298,7 +323,43 @@ return (
                 </Select>
               </FormControl>
             </Grid>
+            
+            {/* Gestión */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Gestión</InputLabel>
+                <Select
+                  name="gestion"
+                  value={convocatoria.gestion}
+                  onChange={handleChange}
+                  label="Gestión"
+                >
+                  <MenuItem value="GESTION 1">Gestión 1</MenuItem>
+                  <MenuItem value="GESTION 2">Gestión 2</MenuItem>
+                  <MenuItem value="GESTION 1 Y 2">Gestión 1 Y 2</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
 
+             <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Carrera</InputLabel>
+                <Select
+                  name="id_programa"
+                  value={convocatoria.id_programa?.trim() || ''}
+                  onChange={handleChange}
+                  label="Programa"
+                  disabled={!!id}
+                >
+                  {carrerasFiltradas.map((p) => (
+                    <MenuItem key={p.id_programa} value={p.id_programa?.trim()}>
+                      {p.programa || p.nombre_carrera}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            
             {/* Nombre automático */}
             <Grid item xs={12}>
               <TextField
@@ -371,24 +432,7 @@ return (
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Carrera</InputLabel>
-                <Select
-                  name="id_programa"
-                  value={convocatoria.id_programa?.trim() || ''}
-                  onChange={handleChange}
-                  label="Programa"
-                  disabled={!!id}
-                >
-                  {carrerasFiltradas.map((p) => (
-                    <MenuItem key={p.id_programa} value={p.id_programa?.trim()}>
-                      {p.programa || p.nombre_carrera}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+           
 
             {/* Tipo de Jornada y Etapa */}
             <Grid item xs={12} md={6}>
@@ -418,23 +462,6 @@ return (
                   <MenuItem value="PRIMERA">Primera</MenuItem>
                   <MenuItem value="SEGUNDA">Segunda</MenuItem>
                   <MenuItem value="TERCERA">Tercera</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Gestión */}
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Gestión</InputLabel>
-                <Select
-                  name="gestion"
-                  value={convocatoria.gestion}
-                  onChange={handleChange}
-                  label="Gestión"
-                >
-                  <MenuItem value="GESTION 1">Gestión 1</MenuItem>
-                  <MenuItem value="GESTION 2">Gestión 2</MenuItem>
-                  <MenuItem value="GESTION 1 Y 2">Gestión 1 Y 2</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -476,7 +503,43 @@ return (
                 />
               </Grid>
             )}
+            <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Detalles Adicionales
+                </Typography>
+              </Grid>
 
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                  <DateTimePicker
+                    label="Fecha y Hora de Apertura de Sobres"
+                    value={convocatoria.apertura_sobres}
+                    onChange={handleAperturaSobresChange}
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                    ampm={false}
+                    inputFormat="dd/MM/yyyy HH:mm"
+                  />
+                </LocalizationProvider>
+                <Typography variant="caption" display="block">
+                  Fecha y hora para la apertura de sobres de postulantes
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                  <TimePicker
+                    label="Plazo de Presentación (Hora límite)"
+                    value={convocatoria.plazo_presentacion_horas}
+                    onChange={handlePlazoPresentacionChange}
+                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  />
+                </LocalizationProvider>
+                <Typography variant="caption" display="block">
+                  Hora límite para presentación de documentos
+                </Typography>
+              </Grid>
+              
             {/* Perfil Profesional */}
             <Grid item xs={12}>
               <TextField
@@ -495,35 +558,34 @@ return (
 
             {/* Botones */}
             <Grid item xs={12} textAlign="center">
-              <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                size="large"
-                fullWidth={isMobile}
-                sx={{ px: isMobile ? 0 : 4 }}
-              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  size="large"
+                  fullWidth={isMobile}
+                  sx={{ px: isMobile ? 0 : 4 }}
+                >
                 {loading ? 'Procesando...' : 'SIGUIENTE'}
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => navigate('/convocatorias')}
-                size="large"
-                fullWidth={isMobile}
-                sx={{ ml: isMobile ? 0 : 2, mt: isMobile ? 2 : 0 }}
-              >
-                Cancelar
-              </Button>
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => navigate('/convocatorias')}
+                  size="large"
+                  fullWidth={isMobile}
+                  sx={{ ml: isMobile ? 0 : 2, mt: isMobile ? 2 : 0 }}
+                >
+                  Cancelar
+                </Button>
+              </Grid>
+
             </Grid>
-
-          </Grid>
-        </Box>
-      </CardContent>
-    </Card>
-  </Container>
-);
-
+          </Box>
+        </CardContent>
+      </Card>
+    </Container>
+  );
 };
 
 export default ConvocatoriaForm;
