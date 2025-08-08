@@ -66,25 +66,58 @@ const NavBar = ({
     },
   });
   const renderEstadoFilter = () => {
-    const estadosConvocatoria = [
-      'Para Revisión',
-      'En Revisión',
-      'Observado',
-      'Revisado',
-      'Aprobado',
-      'Devuelto'
+  let estadosConvocatoria = [];
+
+  if (role === "secretaria_de_decanatura") {
+    estadosConvocatoria = [
+      "Para Revisión",
+      "En Revisión",
+      "Observado",
+      "Revisado"
     ];
-    return (
+  } else if (role === "tecnico_vicerrectorado") {
+    estadosConvocatoria = [
+      "Para Revisión",
+      "En Revisión",
+      "Observado",
+      "Revisado",
+      "Devuelto"
+    ];
+  } else if (role === "vicerrectorado") {
+    estadosConvocatoria = [
+      "Aprobado",
+      "Devuelto"
+    ];
+  } else if (role === "personal_administrativo") {
+    estadosConvocatoria = [
+      "Aprobado"
+    ];
+  } else {
+    estadosConvocatoria = [
+      "Para Revisión",
+      "En Revisión",
+      "Observado",
+      "Revisado",
+      "Aprobado",
+      "Devuelto"
+    ];
+  }
+
+     return (
     <>
       <ListItem button onClick={() => setOpenEstadoMenu(!openEstadoMenu)}>
         <ListItemIcon>
           <ClipboardIcon sx={{ color: "#fff" }} />
         </ListItemIcon>
         {isExpanded && <ListItemText primary="Filtrar por Estado" />}
-        {openEstadoMenu ? <ExpandLess sx={{ color: "#fff" }} /> : <ExpandMore sx={{ color: "#fff" }} />}
+        {openEstadoMenu ? (
+          <ExpandLess sx={{ color: "#fff" }} />
+        ) : (
+          <ExpandMore sx={{ color: "#fff" }} />
+        )}
       </ListItem>
 
-      <Collapse in={openEstadoMenu} timeout="auto" unmountOnExit>
+       <Collapse in={openEstadoMenu} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {estadosConvocatoria.map((estado) => (
             <ListItem
@@ -158,12 +191,6 @@ const NavBar = ({
             <BookIcon />
           </ListItemIcon>
           {isExpanded && <ListItemText primary="Carreras" />}
-        </ListItem>,
-        <ListItem button component={Link} to="/convocatorias" key="convocatorias" sx={getItemStyle("/convocatorias")}>
-          <ListItemIcon sx={{ color: location.pathname.startsWith("/convocatorias") ? "#000" : "#fff" }}>
-            <ClipboardIcon />
-          </ListItemIcon>
-          {isExpanded && <ListItemText primary="Convocatorias" />}
         </ListItem>,
         <ListItem button component={Link} to="/tipos-convocatorias" key="tipos-convocatorias" sx={getItemStyle("/tipos-convocatorias")}>
           <ListItemIcon sx={{ color: location.pathname === "/tipos-convocatorias" ? "#000" : "#fff" }}>

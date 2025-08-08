@@ -106,13 +106,41 @@ const getConvocatoriaCompleta = async (id) => {
 
 
 exports.generateConvocatoriaPDF = async (req, res) => {
+  
   const { id } = req.params;
-
   try {
     // Obtener todos los datos necesarios de la convocatoria
     const convocatoria = await getConvocatoriaCompleta(id);
     if (!convocatoria) {
       return res.status(404).json({ error: 'Convocatoria no encontrada' });
+    }
+    if (convocatoria.apertura_sobres) {
+      const apertura = new Date(convocatoria.apertura_sobres);
+      const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+      convocatoria.apertura_formateada = {
+        dia_semana: diasSemana[apertura.getDay()],
+        dia: apertura.getDate(),
+        mes: meses[apertura.getMonth()],
+        anio: apertura.getFullYear(),
+        hora: apertura.toTimeString().substring(0, 5)
+      };
+    }
+      if (convocatoria.plazo_presentacion_horas) {
+      convocatoria.plazo_presentacion_horas_formateado = convocatoria.plazo_presentacion_horas.substring(0, 5);
+    }
+    if (convocatoria.fecha_inicio) {
+      const inicio = new Date(convocatoria.fecha_inicio);
+      const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+      convocatoria.inicio_formateado = {
+        dia_semana: diasSemana[inicio.getDay()],
+        dia: inicio.getDate(),
+        mes: meses[inicio.getMonth()],
+        anio: inicio.getFullYear()
+      };
     }
     const archivosObligatorios = await pool.query(`
       SELECT resolucion, dictamen, certificado_presupuestario 
@@ -133,11 +161,12 @@ exports.generateConvocatoriaPDF = async (req, res) => {
           resolucion: !!resolucion,
           dictamen: !!dictamen,
           certificado_presupuestario: !!certificado_presupuestario
-        }
+        } 
       });
     }
     const tipo = convocatoria.nombre_tipo_conv.trim().toUpperCase();
-
+convocatoria.nombre_facultad = convocatoria.facultad;
+convocatoria.nombre_programa = convocatoria.programa;
 let html;
 switch (tipo) {
   case 'DOCENTE EN CALIDAD ORDINARIO':

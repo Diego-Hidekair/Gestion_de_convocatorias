@@ -15,13 +15,8 @@ function generateConsultoresLineaHTML(convocatoria) {
   const diaFin = fechaFin.getDate().toString().padStart(2, '0');
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
-  const fechaInicio = new Date(convocatoria.fecha_inicio);
-  const diaInicio = fechaInicio.toLocaleDateString('es-ES', { weekday: 'long' });
-  const diaNumInicio = fechaInicio.getDate().toString().padStart(2, '0');
-  const mesInicio = fechaInicio.toLocaleDateString('es-ES', { month: 'long' });
-  const anioInicio = fechaInicio.getFullYear();
-  const hoy = new Date();
-  const fechaHoy = hoy.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  
+  
 
   const tablaMaterias = convocatoria.materias.map(m => `
     <tr>
@@ -117,7 +112,7 @@ function generateConsultoresLineaHTML(convocatoria) {
 </h1>
 
 <p>
-  Por determinación del Consejo de Carrera de ${convocatoria.programa}, mediante Dictamen N°${convocatoria.dictamen}; homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de ${convocatoria.nombre_facultad}; se convoca a los profesionales en ${convocatoria.perfil_profesional}, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Consultor de Línea</strong> a ${convocatoria.tipo_jornada}, para la gestión académica ${convocatoria.gestion}/${anioFin}.
+  Por determinación del Consejo de Carrera de ${convocatoria.programa}, mediante Dictamen N°${convocatoria.dictamen}; homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de <strong>${convocatoria.nombre_facultad}; </strong>se convoca a los profesionales en ${convocatoria.perfil_profesional}, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Consultor de Línea</strong> a ${convocatoria.tipo_jornada}, para la gestión académica ${convocatoria.gestion}/${anioFin}.
 </p>
 
 <h3><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
@@ -197,10 +192,11 @@ function generateConsultoresLineaHTML(convocatoria) {
       Celular y/o teléfono:
       Presente
 </pre>
-<p>El plazo para la presentación de postulación fenece a horas 12:00 del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong> procediéndose con la apertura de sobres a horas 14:30 en oficinas de la Dirección Administrativa y Financiera D.A.F., las postulaciones presentadas fuera de plazo no serán tomadas en cuenta. </p>
+<p style="margin-top: 2em;"> 
+  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
+</p>
 
-<p class="centrado">Potosí, ${diaInicio} ${diaNumInicio} de ${mesInicio} de ${anioInicio}</p>
-
+<p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
 
 
 

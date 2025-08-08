@@ -371,7 +371,7 @@ const UserController = {
         error: 'Error al obtener usuario actual',
         details: process.env.NODE_ENV === 'development' ? error.message : null
       });
-    }
+    } 
   }
 };
 

@@ -152,22 +152,31 @@ function ConvocatoriaArchivosManager() {
               />
 
             </CardContent>
-            <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={async () => {
-                  const prevUrl = pdfUrl;
-                  await handleGenerarPDF();
-                  if (pdfUrl !== prevUrl) {
-                    navigate(`/convocatorias/${id}/pdf`);
-                  }
-                }}
-                startIcon={<UploadIcon />}
-              >
-                Siguiente
-              </Button>
-            </CardActions>
+            <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
+  <Button
+    variant="outlined"
+    color="error"
+    onClick={() => navigate('/convocatorias')}
+    startIcon={<CloseIcon />}
+  >
+    Finalizar
+  </Button>
+
+  <Button
+    variant="contained"
+    color="secondary"
+    onClick={async () => {
+      const prevUrl = pdfUrl;
+      await handleGenerarPDF();
+      if (pdfUrl !== prevUrl) {
+        navigate(`/convocatorias/${id}/pdf`);
+      }
+    }}
+    startIcon={<UploadIcon />}
+  >
+    Generar PDF
+  </Button>
+</CardActions>
           </Card>
         </Box>
       </Box>

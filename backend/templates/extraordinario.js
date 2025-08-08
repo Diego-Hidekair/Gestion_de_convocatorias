@@ -13,16 +13,7 @@ function generateExtraordinarioHTML(convocatoria) {
   const diaFin = fechaFin.getDate().toString().padStart(2, '0');
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
-  const fechaInicio = new Date(convocatoria.fecha_inicio);
-  const diaInicio = fechaInicio.toLocaleDateString('es-ES', { weekday: 'long' });
-  const diaNumInicio = fechaInicio.getDate().toString().padStart(2, '0');
-  const mesInicio = fechaInicio.toLocaleDateString('es-ES', { month: 'long' });
-  const anioInicio = fechaInicio.getFullYear();
-  const fechaHoy = new Date().toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });     
+  
 
   const tablaMaterias = convocatoria.materias.map(m => `
     <tr>
@@ -70,7 +61,7 @@ function generateExtraordinarioHTML(convocatoria) {
 </h1>
 
 <p>
-  Por determinación de la Comisión de Estudios de la Carrera de ${convocatoria.programa}, mediante Dictamen N°${convocatoria.dictamen}/${anioFin} homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion}/${anioFin} de la Facultad de ${convocatoria.nombre_facultad}; se convoca a los profesionales <strong>${convocatoria.perfil_profesional}</strong>, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Extraordinario en calidad de Interino</strong> a ${convocatoria.tipo_jornada}, solo por la gestión académica ${anioFin}.
+  Por determinación de la Comisión de Estudios de la Carrera de ${convocatoria.programa}, mediante Dictamen N°${convocatoria.dictamen}/${anioFin} homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion}/${anioFin} de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>; se convoca a los profesionales <strong>${convocatoria.perfil_profesional}</strong>, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Extraordinario en calidad de Interino</strong> a ${convocatoria.tipo_jornada}, solo por la gestión académica ${anioFin}.
 </p>
 
 <h3><strong>1. MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
@@ -144,9 +135,12 @@ Presente
 
 
 
-<p>El plazo para la presentación de postulación fenece a horas 12:00 del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres a 15:00 del mismo día en oficinas de la Decanatura, Las postulaciones presentadas fuera de plazo no serán tomadas en cuenta.</p>
+<p style="margin-top: 2em;"> 
+  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
+</p>
 
-<p class="centrado">Potosí, ${diaInicio} ${diaNumInicio} de ${mesInicio} de ${anioInicio}</p>
+
+<p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
 
 <pre>
   

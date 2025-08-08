@@ -37,6 +37,7 @@ router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateCome
 router.patch( '/:id/estado', authenticateToken, authorizeRoles(['tecnico_vicerrectorado', 'vicerrectorado', 'admin']), convocatoriaController.updateEstadoConvocatoria);
 router.post( '/validar-aprobadas', authenticateToken, authorizeRoles(['vicerrectorado']), convocatoriaController.validarConvocatoriasAprobadas );
 router.delete('/:id', authorizeRoles(['admin', 'secretaria_de_decanatura']), convocatoriaController.deleteConvocatoria);
+router.get('/convocatorias', authenticateToken, convocatoriaController.listarConvocatorias);
 //router.delete('/:id', secretariaOnly, convocatoriaController.deleteConvocatoria);
 
 

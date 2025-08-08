@@ -14,17 +14,7 @@ function generateOrdinarioHTML(convocatoria) {
   const diaFin = fechaFin.getDate().toString().padStart(2, '0');
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
-  const fechaInicio = new Date(convocatoria.fecha_inicio);
-  const diaInicio = fechaInicio.toLocaleDateString('es-ES', { weekday: 'long' });
-  const diaNumInicio = fechaInicio.getDate().toString().padStart(2, '0');
-  const mesInicio = fechaInicio.toLocaleDateString('es-ES', { month: 'long' });
-  const anioInicio = fechaInicio.getFullYear();
-  const hoy = new Date();
-  const fechaHoy = hoy.toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+
   
 
   const tablaMaterias = convocatoria.materias.map(m => `
@@ -97,7 +87,7 @@ function generateOrdinarioHTML(convocatoria) {
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES</strong></h3>
 <ul>
-    <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad ${convocatoria.nombre_facultad} especificando la asignatura y sigla a la que postula.</li>
+    <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>especificando la asignatura y sigla a la que postula.</li>
     <li><strong>b)</strong> Curriculum vitae debidamente documentado, adjuntando fotocopias simples. El convocante se reservará el derecho de solicitar la presentación de los documentos originales. (Incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).</li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana. (Art. 77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana)<strong>ACTUALIZADA</strong>conforme a la Resolución Rectoral N° 410/2019.</li>
     <li><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las Universidades del Sistema de la Universidad Boliviana. (Art.77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>conforme a la Resolución Rectoral N° 410/2019.</li>
@@ -141,13 +131,14 @@ Presente
 
 
 
-<p style=" margin-top: 2em;">
- El plazo para la presentación de postulación fenece a horas 12:00 del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres a horas 14:30 del mismo día en oficinas de la Decanatura, las postulaciones íhtadas fuera de plazo, no serán tomadas en cuenta. 
+<p style="margin-top: 2em;"> 
+  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
 </p>
 
 
 
-<p class="centrado">Potosí, ${diaInicio} ${diaNumInicio} de ${mesInicio} de ${anioInicio}</p>
+
+<p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
 
 
 
