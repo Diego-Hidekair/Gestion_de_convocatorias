@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 const ConvocatoriaPDFView = () => {
   const { id } = useParams();
 
-  const pdfUrl = `http://192.168.1.11:5000/convocatorias-archivos/view-pdf/${id}`;
+  const pdfUrl = `http://192.168.1.15:5000/convocatorias-archivos/view-pdf/${id}`;
 
   return (
     <div style={{ padding: 20 }}>

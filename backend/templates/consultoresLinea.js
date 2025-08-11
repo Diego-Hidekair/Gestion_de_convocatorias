@@ -36,6 +36,8 @@ function generateConsultoresLineaHTML(convocatoria) {
     font-size: 11pt;
     margin: 2pt;
     line-height: 16pt;
+     position: relative; 
+    }
   } p {
     text-align: justify;
     text-indent: 36pt;
@@ -103,10 +105,19 @@ function generateConsultoresLineaHTML(convocatoria) {
   .subrayado {
     text-decoration: underline;
   }
+  .numero-convocatoria {
+      position: absolute;
+      top: 1cm;
+      right: 1cm;
+      font-size: 10pt;
+      color: #555;
+    }
 </style>
 </head>
 <body>
-
+<div style="text-align: right; margin-bottom: 10px;">
+  <strong>CONV_N° ${convocatoria.id_convocatoria}</strong>
+</div>
 <h1 class="centrado bold">
   ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA CONTRATACIÓN DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${convocatoria.tipo_jornada} PARA LA CARRERA DE ${convocatoria.programa} POR LA GESTIÓN ACADÉMICA ${convocatoria.gestion}/${anioFin}
 </h1>

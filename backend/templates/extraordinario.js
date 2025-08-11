@@ -33,6 +33,8 @@ function generateExtraordinarioHTML(convocatoria) {
       margin: 2cm;
       font-size: 12pt;
       line-height: 1.5;
+      position: relative; 
+    }
     }
     h1, h2, h3 { text-align: center; font-weight: bold; }
     h1 { font-size: 12pt; }
@@ -52,10 +54,19 @@ function generateExtraordinarioHTML(convocatoria) {
     .centrado { text-align: center; }
     .bold { font-weight: bold; }
     .subrayado { text-decoration: underline; }
+    .numero-convocatoria {
+      position: absolute;
+      top: 1cm;
+      right: 1cm;
+      font-size: 10pt;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-
+<div style="text-align: right; margin-bottom: 10px;">
+  <strong>CON_N° ${convocatoria.id_convocatoria}</strong>
+</div>
 <h1 class="centrado bold">
   ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA PROVISIÓN DE DOCENTE EXTRAORDINARIO EN CALIDAD INTERINO A ${convocatoria.tipo_jornada} DE LA ${convocatoria.programa} SOLO POR LA GESTIÓN ACADÉMICA ${convocatoria.gestion}/${anioFin}
 </h1>

@@ -35,6 +35,7 @@ function generateOrdinarioHTML(convocatoria) {
       margin: 2cm;
       font-size: 12pt;
       line-height: 1.5;
+      position: relative;
     }
     h1, h2, h3 { text-align: center; font-weight: bold; }
     h1 { font-size: 12pt; }
@@ -54,9 +55,20 @@ function generateOrdinarioHTML(convocatoria) {
     ul { margin-top: 0; padding-left: 20pt; }
     .centrado { text-align: center; }
     .bold { font-weight: bold; }
+    .numero-convocatoria {
+      position: absolute;
+      top: 1cm;
+      right: 1cm;
+      font-size: 10pt;
+      color: #555;
+    }
   </style>
 </head>
 <body>
+  
+<div style="text-align: right; margin-bottom: 10px;">
+  <strong>CON_N° ${convocatoria.id_convocatoria}</strong>
+</div>
 
 <h1 class="centrado bold">
   ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS Y EXÁMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO PARA LA CARRERA DE ${convocatoria.programa} - GESTIÓN ${anioFin}

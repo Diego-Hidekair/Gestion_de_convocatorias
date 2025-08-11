@@ -18,7 +18,7 @@ pool.connect()
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ['http://192.168.1.11:3000'],
+  origin: ['http://192.168.1.15:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'] 
 }));
@@ -93,5 +93,5 @@ process.on('SIGINT', shutdown);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {  
-    console.log(`Servidor corriendo en http://192.168.1.11:${PORT}`);
+    console.log(`Servidor corriendo en http://192.168.1.15:${PORT}`);
 });
