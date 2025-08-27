@@ -1,7 +1,8 @@
+//frontend\src\pages\ConvocatoriaPDFView.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://192.168.1.15:5000', 
+  baseURL: process.env.REACT_APP_API_URL || 'http://192.168.1.8:5000', 
   withCredentials: true 
 });
 
@@ -10,7 +11,7 @@ api.interceptors.request.use(config => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
+  return config;  
 });
 
 api.interceptors.response.use(

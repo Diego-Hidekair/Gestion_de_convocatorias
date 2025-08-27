@@ -131,7 +131,12 @@ function ConvocatoriaArchivosManager() {
             </>
           ) : (
             <Alert severity="info" sx={{ fontSize: '1rem', borderRadius: 2 }}>
-              Suba los documentos de: <strong>Resolución</strong>, <strong>Dictamen</strong> y <strong>Certificación Presupuestaria</strong> antes de generar el documento PDF. Tamaño maximo de los documentos megabytes
+              Subir los documentos obligatorios: 
+              <strong> Resolución Facultativa</strong>, 
+              <strong> Dictamen de carrera</strong> y 
+              <strong> Certificación Presupuestaria</strong> antes de generar el PDF.
+              <br />
+              Solo se permiten archivos PDF. Tamaño máximo: <strong>5 MB por documento</strong>.
             </Alert>
           )}
         </Box>

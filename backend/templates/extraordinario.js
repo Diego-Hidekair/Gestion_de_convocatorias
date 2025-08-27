@@ -7,13 +7,34 @@ function capitalizarNombrePropio(nombre) {
     .map(p => p.charAt(0).toUpperCase() + p.slice(1))
     .join(' ');
 }
+
+// Convierte todo a minúsculas
+function toMinusculas(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  return texto.toLowerCase();
+}
+
+// Convierte solo la primera letra de la frase a mayúscula
+function capitalizarPrimeraLetra(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+}
+
 function generateExtraordinarioHTML(convocatoria) {
   const fechaFin = new Date(convocatoria.fecha_fin);
   const diaSemana = fechaFin.toLocaleDateString('es-ES', { weekday: 'long' });
   const diaFin = fechaFin.getDate().toString().padStart(2, '0');
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
-  
+
+  let textoGestion = "";
+  if (convocatoria.gestion === "GESTION 1") {
+    textoGestion = `SOLO POR LA GESTION 1/${anioFin}`;
+  } else if (convocatoria.gestion === "GESTION 2") {
+    textoGestion = `SOLO POR LA GESTION 2/${anioFin}`;
+  } else if (convocatoria.gestion === "GESTION 1 Y 2") {
+    textoGestion = `POR LA GESTION/${anioFin}`;
+  }
 
   const tablaMaterias = convocatoria.materias.map(m => `
     <tr>
@@ -67,17 +88,18 @@ function generateExtraordinarioHTML(convocatoria) {
 <div style="text-align: right; margin-bottom: 10px;">
   <strong>CON_N° ${convocatoria.id_convocatoria}</strong>
 </div>
+
 <h1 class="centrado bold">
-  ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA PROVISIÓN DE DOCENTE EXTRAORDINARIO EN CALIDAD INTERINO A ${convocatoria.tipo_jornada} DE LA ${convocatoria.programa} SOLO POR LA GESTIÓN ACADÉMICA ${convocatoria.gestion}/${anioFin}
+  ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA PROVISIÓN DE DOCENTE EXTRAORDINARIO EN CALIDAD INTERINO A ${convocatoria.tipo_jornada} DE LA CARRERA DE ${convocatoria.programa} ${textoGestion}
 </h1>
 
+
 <p>
-  Por determinación de la Comisión de Estudios de la Carrera de ${convocatoria.programa}, mediante Dictamen N°${convocatoria.dictamen}/${anioFin} homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion}/${anioFin} de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>; se convoca a los profesionales <strong>${convocatoria.perfil_profesional}</strong>, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Extraordinario en calidad de Interino</strong> a ${convocatoria.tipo_jornada}, solo por la gestión académica ${anioFin}.
+  Por determinación de la Comisión de Estudios de la Carrera de ${capitalizarNombrePropio(convocatoria.programa)}, mediante Dictamen N°${convocatoria.dictamen}/${anioFin} homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion}/${anioFin} de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}</strong>; se convoca a los profesionales "<strong>${toMinusculas(convocatoria.perfil_profesional)}</strong>", al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Extraordinario en calidad de Interino</strong> a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}, solo por la gestión académica ${anioFin}.
 </p>
 
 <h3><strong>1. MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
 <p><strong>ITEM “A” ${convocatoria.tipo_jornada}</strong>
-  ${convocatoria.horas_asignadas ? ` con una carga horaria de <strong>${convocatoria.horas_asignadas} hrs.</strong>` : ''}
 </p>
 
 <table>
@@ -131,13 +153,13 @@ function generateExtraordinarioHTML(convocatoria) {
   <li><strong>2)</strong> Certificado actualizado de no tener antecedentes penales (REJAP) emitido  por el Consejo de la Magistratura.</li>
 </ul>
 
-<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en la Secretaría de la Facultad de ${convocatoria.nombre_facultad}, en sobre cerrado dirigido al señor Decano de la Facultad de ${convocatoria.nombre_facultad}; ,  adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
+<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en la Secretaría de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, en sobre cerrado dirigido al señor Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}; ,  adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
 
 <pre>
 Señor
-Decano de la Facultad de ${convocatoria.nombre_facultad}
+Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}
 Postulación a Concurso de Méritos para Provisión de Docente Extraordinario en Calidad 
-de Interino para la Carrera de ${convocatoria.programa} sede Uncía Gestión Académica ${anioFin}
+de Interino para la Carrera de ${capitalizarNombrePropio(convocatoria.programa)} sede Uncía Gestión Académica ${anioFin}
 Ítem al cual postula:
 Nombre del Postulante:
 Celular y/o teléfono:
@@ -156,9 +178,6 @@ Presente
 <pre>
   
   
-
-
-
 </pre>
 
 <p style="text-align: left;"><strong>${capitalizarNombrePropio(convocatoria.nombre_decano)}</strong></p>

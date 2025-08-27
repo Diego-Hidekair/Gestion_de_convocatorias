@@ -2,30 +2,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../config/axiosConfig';
-import { 
-  Container, TextField, Button, Typography, Card, CardContent, 
-  Grid, Box, FormControl, InputLabel, Select, MenuItem, 
-  Alert, CircularProgress, Divider, useMediaQuery 
-} from '@mui/material';
+import { Container, TextField, Button, Typography, Card, CardContent, Grid, Box, FormControl, InputLabel, Select, MenuItem, Alert, CircularProgress, Divider, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { 
-  LocalizationProvider, 
-  StaticDatePicker,
-  DateTimePicker,
-  TimePicker 
-} from '@mui/x-date-pickers';
+import { LocalizationProvider, StaticDatePicker, DateTimePicker, TimePicker} from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, parseISO, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { InputAdornment } from '@mui/material';
+import EventIcon from '@mui/icons-material/Event';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const ConvocatoriaEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const [tipoEsConsultor, setTipoEsConsultor] = useState(false);
   const [nombreFacultad, setNombreFacultad] = useState('');
+  const currentYear = new Date().getFullYear();
 
   const [convocatoria, setConvocatoria] = useState({
     nombre: '',
@@ -36,8 +30,8 @@ const ConvocatoriaEdit = () => {
     tipo_jornada: 'TIEMPO COMPLETO',
     etapa_convocatoria: 'PRIMERA',
     gestion: 'GESTION 1',
-    resolucion: '',
-    dictamen: '',
+    resolucion: `/${new Date().getFullYear()}`,
+    dictamen: `/${new Date().getFullYear()}`,
     perfil_profesional: '',
     pago_mensual: 0,
     apertura_sobres: null,
@@ -80,7 +74,7 @@ const ConvocatoriaEdit = () => {
           const data = response.data;
 
           const fechaInicio = data.fecha_inicio ? parseISO(data.fecha_inicio) : new Date();
-          const fechaFin = data.fecha_fin ? parseISO(data.fecha_fin) : addDays(fechaInicio, 10);
+          const fechaFin = data.fecha_fin ? parseISO(data.fecha_fin) : addDays(fechaInicio, 8);
 
           const programa = carreras.find(p => p.id_programa === data.id_programa?.trim());
           if (programa) setProgramaSeleccionado(programa.programa || programa.nombre_carrera);
@@ -127,20 +121,39 @@ const ConvocatoriaEdit = () => {
     }
   };
 
+  const handleResolucionChange = (e) => {
+    const value = e.target.value;
+    const numero = value.split('/')[0] || '';
+    setConvocatoria(prev => ({
+      ...prev,
+      resolucion: `${numero}/${currentYear}`
+    }));
+  };
+
+  const handleDictamenChange = (e) => {
+    const value = e.target.value;
+    const numero = value.split('/')[0] || '';
+    setConvocatoria(prev => ({
+      ...prev,
+      dictamen: `${numero}/${currentYear}`
+    }));
+  };
+
   const handleDateInicioChange = (date) => {
     setConvocatoria(prev => ({
       ...prev,
       fecha_inicio: date,
-      fecha_fin: addDays(date, 10)
+      fecha_fin: addDays(date, 8)
     }));
   };
 
   const handleAperturaSobresChange = (date) => {
-    setConvocatoria(prev => ({
-      ...prev,
-      apertura_sobres: date
-    }));
-  };
+  setConvocatoria(prev => ({
+    ...prev,
+    apertura_sobres: date
+  }));
+  setError(null);
+};
   const handlePlazoPresentacionChange = (time) => {
     setConvocatoria(prev => ({
       ...prev,
@@ -195,62 +208,75 @@ const ConvocatoriaEdit = () => {
     }
 
     setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre.trim() }));
-  }, [
-    convocatoria.id_tipoconvocatoria,
-    convocatoria.tipo_jornada,
-    convocatoria.etapa_convocatoria,
-    programaSeleccionado,
-    convocatoria.gestion,
-    tiposConvocatoria
-  ]);
+  }, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, convocatoria.tipo_jornada, tiposConvocatoria, convocatoria.gestion]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+  try {
+    setLoading(true);
 
     if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
-      setError('La fecha de fin debe ser posterior a la fecha de inicio');
-      return;
+      throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
     }
+    if (convocatoria.apertura_sobres && convocatoria.fecha_fin) {
+      const fechaFinDate = new Date(convocatoria.fecha_fin);
+      const aperturaDate = new Date(convocatoria.apertura_sobres);
+      
+      fechaFinDate.setHours(0, 0, 0, 0);
+      aperturaDate.setHours(0, 0, 0, 0);
+      
+      if (aperturaDate < fechaFinDate) {
+        throw new Error('La fecha de apertura de sobres no puede ser anterior al plazo final de la convocatoria');
+      }
+    }
+    
     const tipoSeleccionado = tiposConvocatoria.find(
       t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
     );
     const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
 
     if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
-      setError('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
-      return;
+      throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
     }
 
-  try {
-      setLoading(true);
-      setError(null);
+    const payload = {
+      ...convocatoria,
+      nombre_conv: convocatoria.nombre,
+      fecha_inicio: format(convocatoria.fecha_inicio, 'yyyy-MM-dd'),
+      fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
+      id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
+      pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
+      id_programa: convocatoria.id_programa?.trim(),
+      resolucion: convocatoria.resolucion,
+      dictamen: convocatoria.dictamen,
+      apertura_sobres: convocatoria.apertura_sobres ? 
+        format(convocatoria.apertura_sobres, "yyyy-MM-dd'T'HH:mm:ss") : null,
+      plazo_presentacion_horas: convocatoria.plazo_presentacion_horas ? 
+        format(convocatoria.plazo_presentacion_horas, 'HH:mm:ss') : null
+    };
 
-      const payload = {
-        ...convocatoria,
-        nombre_conv: convocatoria.nombre,
-        fecha_inicio: format(convocatoria.fecha_inicio, 'yyyy-MM-dd'),
-        fecha_fin: format(convocatoria.fecha_fin, 'yyyy-MM-dd'),
-        id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
-        pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
-        id_programa: convocatoria.id_programa?.trim(),
-        apertura_sobres: convocatoria.apertura_sobres ? 
-          format(convocatoria.apertura_sobres, "yyyy-MM-dd'T'HH:mm:ss") : null,
-        plazo_presentacion_horas: convocatoria.plazo_presentacion_horas ? 
-          format(convocatoria.plazo_presentacion_horas, 'HH:mm:ss') : null
-      };
+    console.log('Enviando payload:', payload);
+    const response = await api.put(`/convocatorias/${id}`, payload);
 
-    await api.put(`/convocatorias/${id}`, payload);
-      setSuccess('Convocatoria actualizada correctamente.');
+    if (response.status === 200) {
+      setSuccess('Convocatoria actualizada correctamente');
       setTimeout(() => {
         navigate(`/convocatoria-materias/${id}/materias`);
       }, 1500);
-    } catch (error) {
-      console.error('Error al actualizar:', error);
-      setError(error.response?.data?.error || 'Error al actualizar la convocatoria.');
-    } finally {
-      setLoading(false);
+    } else {
+      throw new Error(response.data?.message || 'Error al actualizar');
     }
-  };
+  } catch (error) {
+    console.error('Error completo:', error);
+    console.error('Respuesta del servidor:', error.response?.data);
+    setError(error.response?.data?.error || error.message || 'Error al actualizar la convocatoria');
+  } finally {
+    setLoading(false);
+  }
+};
 
  return (
     <Container maxWidth="md">
@@ -380,7 +406,7 @@ const ConvocatoriaEdit = () => {
                   />
                 </LocalizationProvider>
                 <Typography variant="caption" display="block">
-                  Esta fecha se calcula automáticamente 10 días después de la fecha de publicación
+                  Esta fecha se calcula automáticamente 8 días después de la fecha de publicación
                 </Typography>
               </Grid>
 
@@ -422,25 +448,31 @@ const ConvocatoriaEdit = () => {
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <TextField 
-                  label="Resolución Facultativa" 
-                  name="resolucion" 
-                  value={convocatoria.resolucion} 
-                  onChange={handleChange} 
-                  fullWidth 
-                  required 
+                <TextField
+                  label="Resolución Facultativa"
+                  name="resolucion"
+                  value={convocatoria.resolucion.split('/')[0]} 
+                  onChange={handleResolucionChange} 
+                  fullWidth
+                  required
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">/{currentYear}</InputAdornment>,
+                  }}
                 />
               </Grid>
-
+            
               {/* Dictamen y Pago (si es consultor) */}
               <Grid item xs={12} md={6}>
-                <TextField 
-                  label="Dictamen de Carrera" 
-                  name="dictamen" 
-                  value={convocatoria.dictamen} 
-                  onChange={handleChange} 
-                  fullWidth 
-                  required 
+                <TextField
+                  label="Dictamen de Carrera"
+                  name="dictamen"
+                  value={convocatoria.dictamen.split('/')[0]} 
+                  onChange={handleDictamenChange} 
+                  fullWidth
+                  required
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">/{currentYear}</InputAdornment>,
+                  }}
                 />
               </Grid>
 
@@ -468,16 +500,36 @@ const ConvocatoriaEdit = () => {
 
               <Grid item xs={12} md={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                  <DateTimePicker
-                    label="Fecha y Hora de Apertura de Sobres"
-                    value={convocatoria.apertura_sobres}
-                    onChange={handleAperturaSobresChange}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                    ampm={false}
-                    inputFormat="dd/MM/yyyy HH:mm"
-                  />
+                 <DateTimePicker
+                  label="Fecha y Hora de Apertura de Sobres"
+                  value={convocatoria.apertura_sobres}
+                  onChange={handleAperturaSobresChange}
+                  minDate={
+                    convocatoria.fecha_fin
+                      ? new Date(new Date(convocatoria.fecha_fin).setHours(0, 0, 0, 0))
+                      : null
+                  }
+                  shouldDisableDate={(date) => {
+                    if (!convocatoria.fecha_fin) return false;
+                    const fechaFin = new Date(convocatoria.fecha_fin).setHours(0, 0, 0, 0);
+                    return date < fechaFin; // deshabilita solo días anteriores
+                  }}
+                  renderInput={(params) => (
+                    <TextField 
+                      {...params} 
+                      fullWidth 
+                      error={error && error.includes('apertura de sobres')}
+                      helperText={error && error.includes('apertura de sobres') ? error : ''}
+                    />
+                  )}
+                  ampm={false}
+                  inputFormat="dd/MM/yyyy HH:mm"
+                  components={{
+                    OpenPickerIcon: () => <EventIcon />,
+                  }}
+                />
                 </LocalizationProvider>
-                <Typography variant="caption" display="block">
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                   Fecha y hora para la apertura de sobres de postulantes
                 </Typography>
               </Grid>
@@ -489,9 +541,12 @@ const ConvocatoriaEdit = () => {
                     value={convocatoria.plazo_presentacion_horas}
                     onChange={handlePlazoPresentacionChange}
                     renderInput={(params) => <TextField {...params} fullWidth />}
+                    components={{
+                      OpenPickerIcon: () => <AccessTimeIcon />,
+                    }}
                   />
                 </LocalizationProvider>
-                <Typography variant="caption" display="block">
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                   Hora límite para presentación de documentos
                 </Typography>
               </Grid>

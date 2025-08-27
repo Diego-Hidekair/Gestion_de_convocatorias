@@ -13,6 +13,7 @@ router.get('/', convocatoriaController.getConvocatorias);
 router.get('/facultad/actual', convocatoriaController.getConvocatoriasByFacultad);
 router.get('/facultad/estado/:estado', convocatoriaController.getConvocatoriasByFacultadAndEstado);
 router.get('/:id', convocatoriaController.getConvocatoriaById);
+router.get('/programas-facultad', convocatoriaController.getProgramasByFacultadUsuario); 
 router.post('/', secretariaOnly, convocatoriaController.validateConvocatoria,
     (req, res, next) => {
         const errors = validationResult(req);
@@ -23,7 +24,7 @@ router.post('/', secretariaOnly, convocatoriaController.validateConvocatoria,
     },
     convocatoriaController.createConvocatoria
 );
-router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
+router.put('/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -33,13 +34,12 @@ router.put( '/:id', secretariaOnly, convocatoriaController.validateConvocatoria,
     },
     convocatoriaController.updateConvocatoria
 );
+
 router.put('/:id/comentario', vicerrectorOnly, convocatoriaController.updateComentarioObservado);
-router.patch( '/:id/estado', authenticateToken, authorizeRoles(['tecnico_vicerrectorado', 'vicerrectorado', 'admin']), convocatoriaController.updateEstadoConvocatoria);
-router.post( '/validar-aprobadas', authenticateToken, authorizeRoles(['vicerrectorado']), convocatoriaController.validarConvocatoriasAprobadas );
+router.patch('/:id/estado', authenticateToken, authorizeRoles(['tecnico_vicerrectorado', 'vicerrectorado', 'admin']), convocatoriaController.updateEstadoConvocatoria);
+router.post('/validar-aprobadas', authenticateToken, authorizeRoles(['vicerrectorado']), convocatoriaController.validarConvocatoriasAprobadas);
 router.delete('/:id', authorizeRoles(['admin', 'secretaria_de_decanatura']), convocatoriaController.deleteConvocatoria);
 router.get('/convocatorias', authenticateToken, convocatoriaController.listarConvocatorias);
 //router.delete('/:id', secretariaOnly, convocatoriaController.deleteConvocatoria);
 
-
-
-module.exports = router;
+module.exports = router;    

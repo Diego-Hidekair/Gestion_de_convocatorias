@@ -19,37 +19,47 @@ const ConvocatoriaMateriasForm = () => {
 
 
     useEffect(() => {
-        const fetchData = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
             const convResponse = await api.get(`/convocatorias/${id_convocatoria}`);
             setConvocatoriaData(convResponse.data);
 
-            const tipoConv = convResponse.data.nombre_tipo_conv?.trim().toUpperCase();
+            // Usa nombre_tipoconvocatoria en lugar de nombre_tipo_conv
+            const tipoConv = convResponse.data.nombre_tipoconvocatoria?.trim().toUpperCase();
             if (tipoConv === 'DOCENTE EN CALIDAD ORDINARIO') {
-            setSoloUnaMateria(true);
+                setSoloUnaMateria(true);
             }
 
-            const materiasResponse = await api.get(
-            `/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`
-            );
+            try {
+                const materiasResponse = await api.get(
+                    `/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`
+                );
+                setMaterias(materiasResponse.data);
+            } catch (materiasError) {
+                if (materiasError.response?.status === 404) {
+                    setMaterias([]);
+                    console.log('No se encontraron materias para este programa');
+                } else {
+                    throw materiasError;
+                }
+            }
 
             const asignadasResponse = await api.get(
-            `/convocatoria-materias/${id_convocatoria}/materias`
+                `/convocatoria-materias/${id_convocatoria}/materias`
             );
-
-            setMaterias(materiasResponse.data);
             setMateriasSeleccionadas(asignadasResponse.data);
-            setLoading(false);
+            
         } catch (err) {
-            setError('Error al cargar los datos');
-            console.error(err);
+            console.error('Error completo:', err);
+            setError('Error al cargar los datos: ' + (err.response?.data?.error || err.message));
+        } finally {
             setLoading(false);
         }
-        };
+    };
 
-        fetchData();
-    }, [id_convocatoria]);
+    fetchData();
+}, [id_convocatoria]);
 
     const handleAddMateria = () => {
   setError(null);
@@ -158,9 +168,6 @@ const ConvocatoriaMateriasForm = () => {
     <Box sx={{ mb: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
       <Typography variant="subtitle1" gutterBottom>
         <strong>Convocatoria:</strong> {convocatoriaData.nombre_conv}
-      </Typography>
-      <Typography variant="body2">
-        <strong>Programa:</strong> {convocatoriaData.programa || convocatoriaData.nombre_programa}
       </Typography>
       <Typography variant="body2">
         <strong>Tipo:</strong> {convocatoriaData.nombre_tipoconvocatoria || convocatoriaData.nombre_tipo_conv}

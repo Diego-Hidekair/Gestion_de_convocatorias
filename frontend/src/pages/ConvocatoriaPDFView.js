@@ -5,9 +5,9 @@ import { useParams } from 'react-router-dom';
 const ConvocatoriaPDFView = () => {
   const { id } = useParams();
 
-  const pdfUrl = `http://192.168.1.15:5000/convocatorias-archivos/view-pdf/${id}`;
+  const pdfUrl = `${process.env.REACT_APP_API_URL}/convocatorias-archivos/view-pdf/${id}`;
 
-  return (
+ return (
     <div style={{ padding: 20 }}>
       <h2>PDF generado de la convocatoria #{id}</h2>
       <iframe

@@ -8,6 +8,18 @@ function capitalizarNombrePropio(texto) {
     .map(p => p.charAt(0).toUpperCase() + p.slice(1))
     .join(' ');
 }
+// Convierte todo a minúsculas
+function toMinusculas(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  return texto.toLowerCase();
+}
+
+// Convierte solo la primera letra de la frase a mayúscula
+function capitalizarPrimeraLetra(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+}
+
 function generateOrdinarioHTML(convocatoria) {
   const fechaFin = new Date(convocatoria.fecha_fin);
   const diaSemana = fechaFin.toLocaleDateString('es-ES', { weekday: 'long' });
@@ -75,13 +87,12 @@ function generateOrdinarioHTML(convocatoria) {
 </h1>
 
 <p>
-  En aplicación de la Nota de Instrucción N° 001/2023 y N° 043/2023 emitidas por el Señor Rector de la Universidad, y por Dictamen de la Comisión Académica N° 10/2023 homologado por la Resolución del Honorable Consejo Universitario N° 09/2024 y cumpliendo con la normativa universitaria se convoca a los profesionales <strong>${convocatoria.perfil_profesional}</strong>, a la <strong>${convocatoria.etapa_convocatoria} CONVOCATORIA DE MÉRITOS Y EXÁMENES DE COMPETENCIA</strong> para optar por la docencia universitaria en la categoría de <strong>Docente Ordinario</strong> en aplicación del Art. 70 del Reglamento del Régimen Académico Docente de la Universidad Boliviana, ingresando el ganador como docente Contratado, conforme lo dispone el Art. 72 del mismo cuerpo normativo, para luego ser sometido a evaluación continua y pasar a la categoría de titular, tal como lo establece el Art. 73 del Reglamento referido, como <strong>Docente Ordinario</strong> en la siguiente asignatura:
+  En aplicación de la Nota de Instrucción N° 001/2023 y N° 043/2023 emitidas por el Señor Rector de la Universidad, y por Dictamen de la Comisión Académica N° 10/2023 homologado por la Resolución del Honorable Consejo Universitario N° 09/2024 y cumpliendo con la normativa universitaria se convoca a los profesionales <strong>${capitalizarNombrePropio(convocatoria.perfil_profesional)}</strong>, a la <strong>${convocatoria.etapa_convocatoria} CONVOCATORIA DE MÉRITOS Y EXÁMENES DE COMPETENCIA</strong> para optar por la docencia universitaria en la categoría de <strong>Docente Ordinario</strong> en aplicación del Art. 70 del Reglamento del Régimen Académico Docente de la Universidad Boliviana, ingresando el ganador como docente Contratado, conforme lo dispone el Art. 72 del mismo cuerpo normativo, para luego ser sometido a evaluación continua y pasar a la categoría de titular, tal como lo establece el Art. 73 del Reglamento referido, como <strong>Docente Ordinario</strong> en la siguiente asignatura:
 </p>
 
 <h3><strong>1. MATERIA OBJETO DE LA ${convocatoria.etapa_convocatoria} CONVOCATORIA:</strong></h3>
 <p><strong>DOCENTES ORDINARIOS</strong></p>
 <p><strong>ITEM “A” ${convocatoria.tipo_jornada}</strong>
-  ${convocatoria.horas_asignadas ? ` con una carga horaria de <strong>${convocatoria.horas_asignadas} hrs.</strong>` : ''}
 </p>
 <table>
   <tr>
@@ -99,7 +110,7 @@ function generateOrdinarioHTML(convocatoria) {
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES</strong></h3>
 <ul>
-    <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>especificando la asignatura y sigla a la que postula.</li>
+    <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}</strong> especificando la asignatura y sigla a la que postula.</li>
     <li><strong>b)</strong> Curriculum vitae debidamente documentado, adjuntando fotocopias simples. El convocante se reservará el derecho de solicitar la presentación de los documentos originales. (Incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).</li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana. (Art. 77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana)<strong>ACTUALIZADA</strong>conforme a la Resolución Rectoral N° 410/2019.</li>
     <li><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las Universidades del Sistema de la Universidad Boliviana. (Art.77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>conforme a la Resolución Rectoral N° 410/2019.</li>

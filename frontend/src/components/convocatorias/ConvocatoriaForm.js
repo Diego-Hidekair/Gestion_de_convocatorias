@@ -2,11 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../config/axiosConfig'; 
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  Divider, Box, Container, TextField, MenuItem, Button, Grid, 
-  Typography, Card, CardContent, Alert, FormControl, InputLabel, 
-  Select, useMediaQuery 
-} from '@mui/material';
+import { Divider, Box, Container, TextField, MenuItem, Button, Grid, Typography, Card, CardContent, Alert, FormControl, InputLabel, Select, useMediaQuery, InputAdornment  } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { StaticDatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -15,7 +11,8 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { format, parseISO } from 'date-fns';
 import { addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-
+import EventIcon from '@mui/icons-material/Event';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 
 const ConvocatoriaForm = () => {
@@ -24,6 +21,8 @@ const ConvocatoriaForm = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tipoEsConsultor, setTipoEsConsultor] = useState(false);
+  const currentYear = new Date().getFullYear();
+  const [userData, setUserData] = useState(null); 
 
   const [convocatoria, setConvocatoria] = useState({
     nombre: '',
@@ -34,8 +33,8 @@ const ConvocatoriaForm = () => {
     tipo_jornada: 'TIEMPO HORARIO',
     etapa_convocatoria: 'PRIMERA',
     gestion: 'GESTION 1',
-    resolucion: '',
-    dictamen: '',
+    resolucion: `/${new Date().getFullYear()}`,
+    dictamen: `/${new Date().getFullYear()}`,
     perfil_profesional: '',
     pago_mensual: 0,
     apertura_sobres: null,
@@ -129,7 +128,7 @@ const ConvocatoriaForm = () => {
     setConvocatoria(prev => ({
       ...prev,
       fecha_inicio: date,
-      fecha_fin: addDays(date, 10) // calcula automáticamente 10 días después
+      fecha_fin: addDays(date, 8) // calcula automáticamente 10 días después
     }));
   };
 
@@ -138,7 +137,27 @@ const ConvocatoriaForm = () => {
       ...prev,
       apertura_sobres: date
     }));
+    setError(null);
   };
+
+  const handleResolucionChange = (e) => {
+    const value = e.target.value;
+    const numero = value.split('/')[0] || '';
+    setConvocatoria(prev => ({
+      ...prev,
+      resolucion: `${numero}/${currentYear}`
+    }));
+  };
+
+  const handleDictamenChange = (e) => {
+    const value = e.target.value;
+    const numero = value.split('/')[0] || '';
+    setConvocatoria(prev => ({
+      ...prev,
+      dictamen: `${numero}/${currentYear}`
+    }));
+  };
+
   const handlePlazoPresentacionChange = (time) => {
     setConvocatoria(prev => ({
       ...prev,
@@ -203,8 +222,7 @@ useEffect(() => {
     }
 
     setConvocatoria(prev => ({ ...prev, nombre: nuevoNombre.trim() }));
-  }, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, convocatoria.tipo_jornada, tiposConvocatoria]);
-
+  }, [convocatoria.id_tipoconvocatoria, programaSeleccionado, convocatoria.etapa_convocatoria, convocatoria.tipo_jornada, tiposConvocatoria, convocatoria.gestion]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setConvocatoria(prev => ({
@@ -235,22 +253,34 @@ useEffect(() => {
     try {
       setLoading(true);
 
+
      if (!convocatoria.id_tipoconvocatoria || !convocatoria.id_programa || !convocatoria.fecha_fin) {
-        throw new Error('Por favor complete todos los campos requeridos');
+      throw new Error('Por favor complete todos los campos requeridos');
       }
 
       if (convocatoria.fecha_fin <= convocatoria.fecha_inicio) {
         throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
       }
       
-      const tipoSeleccionado = tiposConvocatoria.find(
-        t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
-      );
-      const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
+     const tipoSeleccionado = tiposConvocatoria.find(
+      t => t.id_tipoconvocatoria.toString() === convocatoria.id_tipoconvocatoria.toString()
+    );
+    const nombreTipo = tipoSeleccionado?.nombre_tipo_conv?.trim().toUpperCase() || '';
 
-      if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
-        throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
+    if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
+      throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
+    }
+    if (convocatoria.apertura_sobres && convocatoria.fecha_fin) {
+      const fechaFinDate = new Date(convocatoria.fecha_fin);
+      const aperturaDate = new Date(convocatoria.apertura_sobres);
+      
+      fechaFinDate.setHours(0, 0, 0, 0);
+      aperturaDate.setHours(0, 0, 0, 0);
+      
+      if (aperturaDate < fechaFinDate) {
+        throw new Error('La fecha de apertura de sobres no puede ser anterior al plazo final de la convocatoria');
       }
+    }
 
       const payload = {
         ...convocatoria,
@@ -260,6 +290,8 @@ useEffect(() => {
         id_tipoconvocatoria: parseInt(convocatoria.id_tipoconvocatoria),
         pago_mensual: parseInt(convocatoria.pago_mensual) || 0,
         id_programa: convocatoria.id_programa.toString().trim(),
+        resolucion: convocatoria.resolucion,
+        dictamen: convocatoria.dictamen,
         apertura_sobres: convocatoria.apertura_sobres ? 
           format(convocatoria.apertura_sobres, "yyyy-MM-dd'T'HH:mm:ss") : null,
         plazo_presentacion_horas: convocatoria.plazo_presentacion_horas ? 
@@ -418,7 +450,7 @@ return (
                 />
               </LocalizationProvider>
               <Typography variant="caption" display="block">
-                Esta fecha se calcula automáticamente 10 días después de la fecha de publicación
+                Esta fecha se calcula automáticamente 8 días después de la fecha de publicación
               </Typography>
             </Grid>
 
@@ -471,10 +503,13 @@ return (
               <TextField
                 label="Resolución Facultativa"
                 name="resolucion"
-                value={convocatoria.resolucion}
-                onChange={handleChange}
+                value={convocatoria.resolucion.split('/')[0]} 
+                onChange={handleResolucionChange} 
                 fullWidth
                 required
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">/{currentYear}</InputAdornment>,
+                }}
               />
             </Grid>
 
@@ -482,10 +517,13 @@ return (
               <TextField
                 label="Dictamen de Carrera"
                 name="dictamen"
-                value={convocatoria.dictamen}
-                onChange={handleChange}
+                value={convocatoria.dictamen.split('/')[0]} 
+                onChange={handleDictamenChange} 
                 fullWidth
                 required
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">/{currentYear}</InputAdornment>,
+                }}
               />
             </Grid>
 
@@ -504,27 +542,11 @@ return (
               </Grid>
             )}
             <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Detalles Adicionales
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                  <DateTimePicker
-                    label="Fecha y Hora de Apertura de Sobres"
-                    value={convocatoria.apertura_sobres}
-                    onChange={handleAperturaSobresChange}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                    ampm={false}
-                    inputFormat="dd/MM/yyyy HH:mm"
-                  />
-                </LocalizationProvider>
-                <Typography variant="caption" display="block">
-                  Fecha y hora para la apertura de sobres de postulantes
-                </Typography>
-              </Grid>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Detalles Adicionales
+              </Typography>
+            </Grid>
 
               <Grid item xs={12} md={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
@@ -533,10 +555,48 @@ return (
                     value={convocatoria.plazo_presentacion_horas}
                     onChange={handlePlazoPresentacionChange}
                     renderInput={(params) => <TextField {...params} fullWidth />}
+                    components={{
+                      OpenPickerIcon: () => <AccessTimeIcon />,
+                    }}
                   />
                 </LocalizationProvider>
-                <Typography variant="caption" display="block">
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                   Hora límite para presentación de documentos
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                 <DateTimePicker
+                    label="Fecha y Hora de Apertura de Sobres"
+                    value={convocatoria.apertura_sobres}
+                    onChange={handleAperturaSobresChange}
+                    minDate={
+                      convocatoria.fecha_fin
+                        ? new Date(new Date(convocatoria.fecha_fin).setHours(0, 0, 0, 0))
+                        : null
+                    }
+                    shouldDisableDate={(date) => {
+                      if (!convocatoria.fecha_fin) return false;
+                      const fechaFin = new Date(convocatoria.fecha_fin).setHours(0,0,0,0);
+                      return date < fechaFin; // deshabilita solo días anteriores
+                    }}
+                    renderInput={(params) => (
+                      <TextField 
+                        {...params} 
+                        fullWidth 
+                        error={error && error.includes('apertura de sobres')}
+                        helperText={error && error.includes('apertura de sobres') ? error : ''}
+                      />
+                    )}
+                    ampm={false}
+                    inputFormat="dd/MM/yyyy HH:mm"
+                    components={{
+                      OpenPickerIcon: () => <EventIcon />,
+                    }}
+                  />
+                </LocalizationProvider>
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                  Fecha y hora para la apertura de sobres de postulantes
                 </Typography>
               </Grid>
               

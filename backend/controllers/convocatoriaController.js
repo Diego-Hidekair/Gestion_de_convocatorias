@@ -4,20 +4,29 @@ const { check, validationResult } = require('express-validator');
 const NotificacionModel = require('../models/notificacionModel');
 
 const validateConvocatoria = [
-    check('tipo_jornada').isIn(['TIEMPO COMPLETO', 'TIEMPO HORARIO']),
-    check('fecha_fin').custom((value, { req }) => {
-        if (new Date(value) <= new Date(req.body.fecha_inicio)) {
-            throw new Error('La fecha fin debe ser posterior a la fecha inicio');
-        }
-        return true; 
-    }),
-    check('id_tipoconvocatoria').isInt(),
-    check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']),
-    check('pago_mensual').optional().isInt({ min: 0 }),
-    check('gestion').isIn(['GESTION 1', 'GESTION 2', 'GESTION 1 Y 2']),
-    check('apertura_sobres').optional().isISO8601().withMessage('Formato de fecha y hora inválido'),
-    check('plazo_presentacion_horas').optional().matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/).withMessage('Hora inválida'),
-
+    check('tipo_jornada').isIn(['TIEMPO COMPLETO', 'TIEMPO HORARIO']).withMessage('Tipo de jornada inválida'),
+    check('fecha_inicio').isISO8601().withMessage('Fecha inicio inválida').notEmpty(),
+    check('fecha_fin').isISO8601().withMessage('Fecha fin inválida')
+        .custom((value, { req }) => {
+            if (new Date(value) <= new Date(req.body.fecha_inicio)) {
+                throw new Error('La fecha fin debe ser posterior a la fecha inicio');
+            }
+            return true;
+        }),
+    check('id_tipoconvocatoria').isInt().withMessage('ID de tipo convocatoria inválido'),
+    check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']).withMessage('Etapa inválida'),
+    check('pago_mensual').optional().isInt({ min: 0 }).withMessage('Pago mensual debe ser un número positivo'),
+    check('gestion').isIn(['GESTION 1', 'GESTION 2', 'GESTION 1 Y 2']).withMessage('Gestión inválida'),
+    check('apertura_sobres').optional().isISO8601().withMessage('Formato de fecha y hora inválido para apertura de sobres'),
+    check('plazo_presentacion_horas').optional()
+        .matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/).withMessage('Formato de hora inválido (HH:MM o HH:MM:SS)'),
+    check('id_programa')
+  .custom((value) => {
+    if (typeof value === 'string' && value.length >= 1 && value.length <= 3) {
+      return true;
+    }
+    throw new Error('El ID de programa debe ser un código de 1 a 3 caracteres');
+  })
 ];
 
 const getFullConvocatoria = async (id_convocatoria) => {
@@ -54,6 +63,30 @@ const getFullConvocatoria = async (id_convocatoria) => {
     };
 };
 
+const getProgramasByFacultadUsuario = async (req, res) => {
+    try {
+        if (!req.user?.id_usuario) {
+            return res.status(401).json({ error: 'Usuario no autenticado' });
+        }
+
+        const result = await pool.query(`
+            SELECT p.id_programa, p.programa 
+            FROM usuarios u
+            JOIN datos_universidad.alm_programas pu ON u.id_programa = pu.id_programa
+            JOIN datos_universidad.alm_programas_facultades fu ON pu.id_facultad = fu.id_facultad
+            JOIN datos_universidad.alm_programas p ON fu.id_facultad = p.id_facultad
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            WHERE u.id_usuario = $1
+            ORDER BY p.programa
+        `, [req.user.id_usuario]);
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error al obtener programas por facultad:', err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
 const createConvocatoria = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -63,31 +96,62 @@ const createConvocatoria = async (req, res) => {
         await client.query('BEGIN');
         
         const { 
-    tipo_jornada, 
-    fecha_inicio,  // Añade esta línea
-    fecha_fin, 
-    id_tipoconvocatoria, 
-    etapa_convocatoria, 
-    pago_mensual = 0, 
-    resolucion, 
-    dictamen, 
-    perfil_profesional, 
-    gestion,
-    apertura_sobres, 
-    plazo_presentacion_horas 
-} = req.body;
+            tipo_jornada, 
+            fecha_inicio,
+            fecha_fin, 
+            id_tipoconvocatoria, 
+            etapa_convocatoria, 
+            pago_mensual = 0, 
+            resolucion, 
+            dictamen, 
+            perfil_profesional, 
+            gestion,
+            apertura_sobres, 
+            plazo_presentacion_horas,
+            id_programa  // Ahora viene del body
+        } = req.body;
 
         if (!req.user?.id_usuario) throw new Error('Usuario no autenticado');
         const id_usuario = req.user.id_usuario;
-        const id_programa = req.user.id_programa?.trim();
-        if (!id_programa) throw new Error('El usuario no tiene programa asociado');
+        
+        // Verificar que el programa pertenezca a la facultad del usuario
+        const facultadUsuario = await client.query(`
+            SELECT f.id_facultad 
+            FROM usuarios u
+            JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            WHERE u.id_usuario = $1
+        `, [id_usuario]);
+        
+        if (facultadUsuario.rows.length === 0) {
+            throw new Error('No se pudo determinar la facultad del usuario');
+        }
+        
+        const id_facultad_usuario = facultadUsuario.rows[0].id_facultad;
+        
+        const programaValido = await client.query(`
+            SELECT 1 
+            FROM datos_universidad.alm_programas p
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            WHERE p.id_programa = $1 AND f.id_facultad = $2
+            `, [id_programa, id_facultad_usuario]);
+        
+        if (programaValido.rows.length === 0) {
+            throw new Error('El programa seleccionado no pertenece a tu facultad');
+        }
 
         const [programaData, tipoConvocatoria, vicerrector] = await Promise.all([
-            client.query('SELECT p.programa, f.facultad FROM datos_universidad.alm_programas p JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad WHERE p.id_programa = $1', [id_programa]),
-            client.query('SELECT id_tipoconvocatoria, nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [id_tipoconvocatoria]),
+            client.query(`
+                SELECT p.programa, f.facultad 
+                FROM datos_universidad.alm_programas p 
+                JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad 
+                WHERE p.id_programa = $1`, 
+                [id_programa]),
+            client.query(
+                'SELECT id_tipoconvocatoria, nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', 
+                [id_tipoconvocatoria]),
             client.query('SELECT id_vicerector FROM vicerrector LIMIT 1')
         ]);
-
 
         if (!programaData.rows[0] || !tipoConvocatoria.rows[0] || !vicerrector.rows[0]) {
             throw new Error('Datos requeridos no encontrados');
@@ -109,40 +173,42 @@ const createConvocatoria = async (req, res) => {
         }
 
         const convResult = await client.query(
-    `INSERT INTO convocatorias (
-        tipo_jornada, nombre_conv, fecha_inicio, fecha_fin, etapa_convocatoria, 
-        estado, gestion, pago_mensual, resolucion, dictamen, perfil_profesional,
-        id_vicerector, id_usuario, id_tipoconvocatoria, id_programa,
-        apertura_sobres, plazo_presentacion_horas
-    ) VALUES ($1, $2, $3, $4, $5, 'Para Revisión', $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-    RETURNING id_convocatoria`,
-    [
-        tipo_jornada, 
-        nombre_conv, 
-        fecha_inicio,  
-        fecha_fin,     
-        etapa_convocatoria,
-        gestion,       
-        pago_mensual,  
-        resolucion,    
-        dictamen,      
-        perfil_profesional, 
-        vicerrector.rows[0].id_vicerector, 
-        id_usuario,    
-        id_tipoconvocatoria,
-        id_programa,   
-        apertura_sobres, 
-        plazo_presentacion_horas 
-    ]
-);
-
+            `INSERT INTO convocatorias (
+                tipo_jornada, nombre_conv, fecha_inicio, fecha_fin, etapa_convocatoria, 
+                estado, gestion, pago_mensual, resolucion, dictamen, perfil_profesional,
+                id_vicerector, id_usuario, id_tipoconvocatoria, id_programa,
+                apertura_sobres, plazo_presentacion_horas
+            ) VALUES ($1, $2, $3, $4, $5, 'Para Revisión', $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+            RETURNING id_convocatoria`,
+            [
+                tipo_jornada, 
+                nombre_conv, 
+                fecha_inicio,  
+                fecha_fin,     
+                etapa_convocatoria,
+                gestion,       
+                pago_mensual,  
+                resolucion,    
+                dictamen,      
+                perfil_profesional, 
+                vicerrector.rows[0].id_vicerector, 
+                id_usuario,    
+                id_tipoconvocatoria,
+                id_programa,   
+                apertura_sobres, 
+                plazo_presentacion_horas 
+            ]
+        );
 
         await client.query('INSERT INTO convocatorias_archivos (id_convocatoria) VALUES ($1)', [convResult.rows[0].id_convocatoria]);
         await client.query('COMMIT');
+        
+        // Notificar a vicerrectores
         const vicerrectores = await pool.query(
             'SELECT id_usuario FROM usuarios WHERE rol = $1', 
             ['vicerrectorado']
         );
+        
         for (const vicerrector of vicerrectores.rows) {
             await generarNotificacion(
                 convResult.rows[0].id_convocatoria,
@@ -154,11 +220,18 @@ const createConvocatoria = async (req, res) => {
         
         res.status(201).json({
             id_convocatoria: convResult.rows[0].id_convocatoria,
-            message: 'Convocatoria creada exitosamente'
+            message: 'Convocatoria creada exitosamente',
+            nombre_conv,
+            programa,
+            facultad: programaData.rows[0].facultad
         });
     } catch (error) {
         await client.query('ROLLBACK');
-        res.status(500).json({ error: error.message });
+        console.error('Error al crear convocatoria:', error);
+        res.status(500).json({ 
+            error: 'Error al crear convocatoria',
+            details: error.message 
+        });
     } finally {
         client.release();
     }
@@ -243,9 +316,10 @@ const getConvocatoriaById = async (req, res) => {
     }
 }; 
 
-const updateConvocatoria = async (req, res) => {
+    const updateConvocatoria = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        console.log('Errores de validación:', errors.array());
         return res.status(400).json({ errors: errors.array() });
     }
 
@@ -256,27 +330,78 @@ const updateConvocatoria = async (req, res) => {
         await client.query('BEGIN');
         
         const { 
-    tipo_jornada, 
-    fecha_inicio,  // Añade esto
-    fecha_fin, 
-    id_tipoconvocatoria,
-    etapa_convocatoria,
-    pago_mensual = 0,
-    resolucion,
-    dictamen,
-    perfil_profesional,
-    gestion,
-    apertura_sobres,
-    plazo_presentacion_horas
-} = req.body;
+            tipo_jornada, 
+            fecha_inicio, 
+            fecha_fin, 
+            id_tipoconvocatoria,
+            etapa_convocatoria,
+            pago_mensual = 0,
+            resolucion,
+            dictamen,
+            perfil_profesional,
+            gestion,
+            apertura_sobres,
+            plazo_presentacion_horas,
+            id_programa 
+        } = req.body;
 
-        const [convocatoriaActual, tipoConvocatoria, programaData] = await Promise.all([
-            client.query('SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1', [id]),
-            client.query('SELECT nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', [id_tipoconvocatoria]),
-            client.query('SELECT programa FROM datos_universidad.alm_programas WHERE id_programa = (SELECT id_programa FROM convocatorias WHERE id_convocatoria = $1)', [id])
+        // Obtener datos actuales de la convocatoria
+        const convocatoriaActual = await client.query(
+            'SELECT id_programa, id_usuario FROM convocatorias WHERE id_convocatoria = $1', 
+            [id]
+        );
+        
+        if (convocatoriaActual.rows.length === 0) {
+            throw new Error('Convocatoria no encontrada');
+        }
+
+        // Verificar que el usuario que edita es el creador o tiene permisos
+        if (req.user.rol === 'secretaria_de_decanatura' && 
+            convocatoriaActual.rows[0].id_usuario !== req.user.id_usuario) {
+            throw new Error('No tienes permisos para editar esta convocatoria');
+        }
+
+        // Verificar que el nuevo programa pertenece a la facultad del usuario
+        const facultadUsuario = await client.query(`
+            SELECT f.id_facultad 
+            FROM usuarios u
+            JOIN datos_universidad.alm_programas p ON u.id_programa = p.id_programa
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            WHERE u.id_usuario = $1
+        `, [req.user.id_usuario]);
+        
+        if (facultadUsuario.rows.length === 0) {
+            throw new Error('No se pudo determinar la facultad del usuario');
+        }
+        
+        const id_facultad_usuario = facultadUsuario.rows[0].id_facultad;
+        
+        // Verificar que el programa seleccionado pertenece a la facultad del usuario
+        const programaValido = await client.query(`
+            SELECT 1 
+            FROM datos_universidad.alm_programas p
+            JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad
+            WHERE p.id_programa = $1 AND f.id_facultad = $2
+        `, [id_programa, id_facultad_usuario]);
+
+        if (programaValido.rows.length === 0) {
+            throw new Error('El programa seleccionado no pertenece a tu facultad');
+        }
+
+        const [programaData, tipoConvocatoria] = await Promise.all([
+            client.query(
+                'SELECT p.programa, f.facultad FROM datos_universidad.alm_programas p ' +
+                'JOIN datos_universidad.alm_programas_facultades f ON p.id_facultad = f.id_facultad ' +
+                'WHERE p.id_programa = $1', 
+                [id_programa]
+            ),
+            client.query(
+                'SELECT nombre_tipo_conv FROM tipos_convocatorias WHERE id_tipoconvocatoria = $1', 
+                [id_tipoconvocatoria]
+            )
         ]);
 
-        if (!convocatoriaActual.rows[0] || !tipoConvocatoria.rows[0] || !programaData.rows[0]) {
+        if (!programaData.rows[0] || !tipoConvocatoria.rows[0]) {
             throw new Error('Datos requeridos no encontrados');
         }
 
@@ -297,50 +422,60 @@ const updateConvocatoria = async (req, res) => {
 
         const convResult = await client.query(
             `UPDATE convocatorias SET
-        tipo_jornada = $1, 
-        fecha_inicio = $2,  // Añade esto
-        fecha_fin = $3,
-        etapa_convocatoria = $4, 
-        pago_mensual = $5,
-        resolucion = $6, 
-        dictamen = $7, 
-        perfil_profesional = $8,
-        gestion = $9,
-        id_tipoconvocatoria = $10,
-        nombre_conv = $11,
-        apertura_sobres = $12,
-        plazo_presentacion_horas = $13
-    WHERE id_convocatoria = $14
-    RETURNING *`,
-    [
-        tipo_jornada, 
-        fecha_inicio,  // Añade esto
-        fecha_fin,
-        etapa_convocatoria, 
-        pago_mensual, 
-        resolucion, 
-        dictamen,
-        perfil_profesional, 
-        gestion, 
-        id_tipoconvocatoria,
-        nombre_conv,
-        apertura_sobres,
-        plazo_presentacion_horas,
-        id
-    ]
-);
+                tipo_jornada = $1, 
+                fecha_inicio = $2, 
+                fecha_fin = $3,
+                etapa_convocatoria = $4, 
+                pago_mensual = $5,
+                resolucion = $6, 
+                dictamen = $7, 
+                perfil_profesional = $8,
+                gestion = $9,
+                id_tipoconvocatoria = $10,
+                nombre_conv = $11,
+                apertura_sobres = $12,
+                plazo_presentacion_horas = $13,
+                id_programa = $14,
+                estado = CASE 
+                    WHEN estado = 'Observado' THEN 'Para Revisión'
+                    ELSE estado
+                END
+            WHERE id_convocatoria = $15
+            RETURNING *`,
+            [
+                tipo_jornada, 
+                fecha_inicio,
+                fecha_fin,
+                etapa_convocatoria, 
+                pago_mensual, 
+                resolucion, 
+                dictamen,
+                perfil_profesional, 
+                gestion, 
+                id_tipoconvocatoria,
+                nombre_conv,
+                apertura_sobres,
+                plazo_presentacion_horas,
+                id_programa,
+                id
+            ]
+        );
+
         if (convResult.rows.length === 0) {
             throw new Error('Convocatoria no encontrada');
         }
 
         await client.query('COMMIT');
-        const convocatoriaActualizada = await getFullConvocatoria(id);
+        
+        // Notificar al creador sobre la actualización
         await generarNotificacion(
             id,
-            convocatoriaActualizada.id_usuario,
-            `Se han actualizado los datos de tu convocatoria`,
+            convocatoriaActual.rows[0].id_usuario,
+            `Se han actualizado los datos de tu convocatoria: ${nombre_conv}`,
             'actualizacion'
         );
+        
+        const convocatoriaActualizada = await getFullConvocatoria(id);
         res.json(convocatoriaActualizada);
     } catch (error) {
         await client.query('ROLLBACK');
@@ -682,4 +817,4 @@ const listarConvocatorias = async (req, res) => {
   }
 };
 
-module.exports = { listarConvocatorias,validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria, validarConvocatoriasAprobadas, deleteConvocatoria};
+module.exports = { listarConvocatorias,validateConvocatoria, createConvocatoria, getConvocatorias, getConvocatoriaById, updateConvocatoria, updateEstadoConvocatoria, updateComentarioObservado, getFullConvocatoria, getConvocatoriasByFacultad, getConvocatoriasByEstado, getConvocatoriasByFacultadAndEstado, getTiposConvocatoria, validarConvocatoriasAprobadas, deleteConvocatoria, getProgramasByFacultadUsuario };

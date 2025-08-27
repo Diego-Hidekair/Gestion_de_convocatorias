@@ -80,7 +80,7 @@ const Login = ({ setAuth }) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://192.168.1.15:5000/api/auth/login', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         id_usuario: formData.id_usuario,
         contrasena: formData.Contrasena
       }, {

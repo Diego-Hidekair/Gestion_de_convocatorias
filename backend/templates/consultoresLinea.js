@@ -8,6 +8,17 @@ function capitalizarNombrePropio(nombre) {
     .map(p => p.charAt(0).toUpperCase() + p.slice(1))
     .join(' ');
 }
+// Convierte todo a minúsculas
+function toMinusculas(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  return texto.toLowerCase();
+}
+
+// Convierte solo la primera letra de la frase a mayúscula
+function capitalizarPrimeraLetra(texto) {
+  if (!texto || typeof texto !== 'string') return '';
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+}
 
 function generateConsultoresLineaHTML(convocatoria) {
   const fechaFin = new Date(convocatoria.fecha_fin);
@@ -15,9 +26,16 @@ function generateConsultoresLineaHTML(convocatoria) {
   const diaFin = fechaFin.getDate().toString().padStart(2, '0');
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
-  
-  
 
+  let textoGestion = "";
+  if (convocatoria.gestion === "GESTION 1") {
+    textoGestion = `SOLO POR LA GESTION 1/${anioFin}`;
+  } else if (convocatoria.gestion === "GESTION 2") {
+    textoGestion = `SOLO POR LA GESTION 2/${anioFin}`;
+  } else if (convocatoria.gestion === "GESTION 1 Y 2") {
+    textoGestion = `POR LA GESTION/${anioFin}`;
+  }
+  
   const tablaMaterias = convocatoria.materias.map(m => `
     <tr>
       <td>${m.cod_materia}</td>
@@ -119,16 +137,15 @@ function generateConsultoresLineaHTML(convocatoria) {
   <strong>CONV_N° ${convocatoria.id_convocatoria}</strong>
 </div>
 <h1 class="centrado bold">
-  ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA CONTRATACIÓN DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${convocatoria.tipo_jornada} PARA LA CARRERA DE ${convocatoria.programa} POR LA GESTIÓN ACADÉMICA ${convocatoria.gestion}/${anioFin}
+  ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA CONTRATACIÓN DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${convocatoria.tipo_jornada} PARA LA CARRERA DE ${convocatoria.programa} ${textoGestion}
 </h1>
 
 <p>
-  Por determinación del Consejo de Carrera de ${convocatoria.programa}, mediante Dictamen N°${convocatoria.dictamen}; homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de <strong>${convocatoria.nombre_facultad}; </strong>se convoca a los profesionales en ${convocatoria.perfil_profesional}, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Consultor de Línea</strong> a ${convocatoria.tipo_jornada}, para la gestión académica ${convocatoria.gestion}/${anioFin}.
+  Por determinación del Consejo de Carrera de ${capitalizarNombrePropio(convocatoria.programa)}, mediante Dictamen N°${convocatoria.dictamen}; homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}; </strong>se convoca a los profesionales en ${capitalizarNombrePropio(convocatoria.perfil_profesional)}, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Consultor de Línea</strong> a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}, para la gestión académica ${convocatoria.gestion}/${anioFin}.
 </p>
 
 <h3><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
 <p><strong>ITEM “1” ${convocatoria.tipo_jornada}</strong>
-    ${convocatoria.horas_asignadas ? ` con una carga horaria de <strong>${convocatoria.horas_asignadas} hrs.</strong>` : ''}
 </p>
 <table>
   <tr>
@@ -143,7 +160,7 @@ function generateConsultoresLineaHTML(convocatoria) {
 </table>
 
 <p>Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
-<p class="subrayado">Nota.- Se deja claramente establecido que NO podrán participar Profesionales que presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y profesionales que trabajen en instituciones privadas a Tiempo Completo.</p>
+<p class="subrayado">Nota.- Se deja claramente establecido que NO podrán participar Profesionales que presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y profesionales que trabajen en instituciones privadas a {capitalizarNombrePropio(convocatoria.tipo_jornada)}.</p>
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES INDISPENSABLES:</strong></h3>
   <ul>
@@ -192,7 +209,7 @@ function generateConsultoresLineaHTML(convocatoria) {
 <p>Los honorarios del Consultor serán cancelados en forma mensual, previa presentación de los requisitos exigidos por la División de Tesoro dependiente de la Dirección Administrativa y Financiera. </p>
 <p>El Pago de los impuestos de ley es responsabilidad exclusiva del consultor, debiendo presentar factura o una fotocopia de su declaración jurada trimestral en Impuestos Nacionales, caso contrario se realizará la retención correspondiente a los impuestos de ley. El consultor será responsable de realizar los pagos de los aportes establecidos en la ley 065 de Pensiones y su Reglamentación. </p>
 <h3><strong>5. POSTULACIONES.</strong></h3>
-<p>Las postulaciones deberán ser presentadas en Secretaria de Rectorado, Edificio Administrativo, 4to. Piso de la Universidad Autónoma “Tomás Frías” ubicada en Av. Cívica esquina Serrudo, en sobre cerrado dirigido al señor Rector, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
+<p>Las postulaciones deberán ser presentadas en Secretaria de Rectoradodecanatura de la facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, de la Universidad Autónoma “Tomás Frías”, en un sobre cerrado dirigido al señor Rector, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
 <pre>
       Señor:
       Rector de la Universidad Autónoma “Tomás Frías”

@@ -116,7 +116,7 @@ const ConvocatoriaDetalle = () => {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
-
+ 
 
   const handleDownloadPdf = async () => {
   try {
@@ -125,7 +125,7 @@ const ConvocatoriaDetalle = () => {
       headers: {
         'Authorization': `Bearer ${token}`
       }
-    });
+    }); 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
