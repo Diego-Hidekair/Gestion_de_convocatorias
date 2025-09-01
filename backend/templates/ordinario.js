@@ -29,13 +29,24 @@ function generateOrdinarioHTML(convocatoria) {
 
   
 
-  const tablaMaterias = convocatoria.materias.map(m => `
-    <tr>
-      <td>${m.cod_materia}</td>
-      <td>${m.materia}</td>
-      <td>${m.total_horas}</td>
-      <td>${convocatoria.perfil_profesional}</td>
-    </tr>`).join('');
+  const tablaMaterias = convocatoria.materias.map((m, index) => {
+  if (index === 0) {
+    return `
+      <tr>
+        <td>${m.cod_materia}</td>
+        <td>${m.materia}</td>
+        <td>${m.total_horas}</td>
+        <td rowspan="${convocatoria.materias.length}">${convocatoria.perfil_profesional}</td>
+      </tr>`;
+    } else {
+      return `
+        <tr>
+          <td>${m.cod_materia}</td>
+          <td>${m.materia}</td>
+          <td>${m.total_horas}</td>
+        </tr>`;
+    }
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -44,16 +55,23 @@ function generateOrdinarioHTML(convocatoria) {
   <style>
     body {
       font-family: 'leelawadee', sans-serif;
-      margin: 2cm;
-      font-size: 12pt;
-      line-height: 1.5;
-      position: relative;
+      font-size: 11pt;
+      margin: 2pt;
+      line-height: 16pt;
+      position: relative; 
+      text-align: justify;
     }
     h1, h2, h3 { text-align: center; font-weight: bold; }
     h1 { font-size: 12pt; }
     h2 { font-size: 12pt; }
     h3 { font-size: 12pt; text-align: left; }
-    p { text-align: justify; text-indent: 36pt; font-size: 12pt; }
+    p, li, pre {
+      text-align: justify;
+      text-indent: 36pt;
+      font-size: 11pt;
+      margin-bottom: 2pt;
+      line-height: 16pt;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -110,7 +128,7 @@ function generateOrdinarioHTML(convocatoria) {
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES</strong></h3>
 <ul>
-    <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}</strong> especificando la asignatura y sigla a la que postula.</li>
+    <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de <strong>${convocatoria.nombre_facultad}</strong>especificando la asignatura y sigla a la que postula.</li>
     <li><strong>b)</strong> Curriculum vitae debidamente documentado, adjuntando fotocopias simples. El convocante se reservará el derecho de solicitar la presentación de los documentos originales. (Incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana).</li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana. (Art. 77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana)<strong>ACTUALIZADA</strong>conforme a la Resolución Rectoral N° 410/2019.</li>
     <li><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las Universidades del Sistema de la Universidad Boliviana. (Art.77 inc. C.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>conforme a la Resolución Rectoral N° 410/2019.</li>
@@ -139,7 +157,7 @@ function generateOrdinarioHTML(convocatoria) {
 <p>Se deja claramente establecido que la documentación presentada no será devuelta.</p>
 <p>Queda plenamente establecido que, en aplicación de la Matriz de Cumplimiento suscrita por la Universidad con el Gobierno del Estado Plurinacional de Solivia, el proceso de categorización o recategorización, estará sujeta a los resultados de dicha matriz, en el tiempo establecido en dicho documento.</p>
 
-<p>Las postulaciones deberán ser presentadas en Secretaría de la Facultad de ${convocatoria.nombre_facultad},Dirigido al Decano de la Facultad de ${convocatoria.nombre_facultad}, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo:</p>
+<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en Secretaría de la Facultad de ${convocatoria.nombre_facultad},Dirigido al Decano de la Facultad de ${convocatoria.nombre_facultad}, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo:</p>
 
 <pre>
 Señor

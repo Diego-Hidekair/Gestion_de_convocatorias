@@ -270,6 +270,9 @@ useEffect(() => {
     if (nombreTipo.includes('CONSULTORES') && (!convocatoria.pago_mensual || convocatoria.pago_mensual <= 0)) {
       throw new Error('Debe ingresar un pago mensual válido para convocatorias de consultores de línea');
     }
+    if (nombreTipo.includes('CONSULTORES') && (convocatoria.pago_mensual > 45000)) {
+      throw new Error('El pago mensual no puede superar los 45000 Bs');
+    }
     if (convocatoria.apertura_sobres && convocatoria.fecha_fin) {
       const fechaFinDate = new Date(convocatoria.fecha_fin);
       const aperturaDate = new Date(convocatoria.apertura_sobres);
@@ -408,53 +411,7 @@ return (
                 helperText="El título se genera automáticamente al completar los campos"
               />
             </Grid>
-
-            {/* Fechas */}
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Fechas
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                Fecha de Publicación
-              </Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                <StaticDatePicker
-                  value={convocatoria.fecha_inicio}
-                  onChange={handleDateInicioChange}
-                  displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
-                  slotProps={{
-                    actionBar: { actions: [] },
-                    textField: { fullWidth: true }
-                  }}
-                />
-              </LocalizationProvider>
-              <Typography variant="caption" display="block">
-                Puedes seleccionar la fecha en que se publicará la convocatoria
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                Plazo final de la Convocatoria
-              </Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                <StaticDatePicker
-                  value={convocatoria.fecha_fin}
-                  onChange={(date) => setConvocatoria(prev => ({ ...prev, fecha_fin: date }))}
-                  displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-              <Typography variant="caption" display="block">
-                Esta fecha se calcula automáticamente 8 días después de la fecha de publicación
-              </Typography>
-            </Grid>
-
-            {/* Facultad y Carrera */}
+             {/* Facultad y Carrera */}
             <Grid item xs={12} md={6}>
               <TextField
                 label="Facultad"
@@ -481,7 +438,6 @@ return (
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
                 <InputLabel>Etapa</InputLabel>
@@ -528,7 +484,7 @@ return (
             </Grid>
 
             {/* Pago Mensual si es consultor */}
-            {tipoEsConsultor && (
+            { tipoEsConsultor && (
               <Grid item xs={12} md={6}>
                 <TextField
                   label="Pago Mensual (Bs)"
@@ -537,10 +493,60 @@ return (
                   value={convocatoria.pago_mensual}
                   onChange={handleChange}
                   fullWidth
-                  inputProps={{ min: 0 }}
+                  inputProps={{ min: 0, max: 45000 }}
+                  helperText="El pago mensual debe estar entre 0 y 45000 Bs"
                 />
               </Grid>
             )}
+
+            {/* Fechas */}
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                Fechas
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle1" gutterBottom>
+                Fecha de Publicación
+              </Typography>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                <StaticDatePicker
+                  value={convocatoria.fecha_inicio}
+                  onChange={handleDateInicioChange}
+                  displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
+                  slotProps={{
+                    actionBar: { actions: [] },
+                    textField: { fullWidth: true }
+                  }}
+                />
+              </LocalizationProvider>
+              <Typography variant="caption" display="block">
+                Puedes seleccionar la fecha en que se publicará la convocatoria
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle1" gutterBottom>
+                Plazo final de la Convocatoria
+              </Typography>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                <StaticDatePicker
+                  value={convocatoria.fecha_fin}
+                  onChange={(date) => setConvocatoria(prev => ({ ...prev, fecha_fin: date }))}
+                  displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'}
+                  slotProps={{ textField: { fullWidth: true } }}
+                />
+              </LocalizationProvider>
+              <Typography variant="caption" display="block">
+                Esta fecha se calcula automáticamente 8 días después de la fecha de publicación
+              </Typography>
+            </Grid>
+
+           
+
+            
             <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
               <Typography variant="h6" gutterBottom>

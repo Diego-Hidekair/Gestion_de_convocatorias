@@ -363,53 +363,6 @@ const ConvocatoriaEdit = () => {
                 />
               </Grid>
 
-              {/* Fechas */}
-              <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Fechas
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Fecha de Publicación
-                </Typography>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                  <StaticDatePicker 
-                    value={convocatoria.fecha_inicio} 
-                    onChange={handleDateInicioChange} 
-                    displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'} 
-                    slotProps={{
-                      actionBar: { actions: [] },
-                      textField: { fullWidth: true } 
-                    }} 
-                  />
-                </LocalizationProvider>
-                <Typography variant="caption" display="block">
-                  Puedes seleccionar la fecha en que se publicará la convocatoria
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Plazo final de la Convocatoria
-                </Typography>
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                  <StaticDatePicker 
-                    value={convocatoria.fecha_fin} 
-                    onChange={(date) => setConvocatoria(prev => ({ ...prev, fecha_fin: date }))} 
-                    displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'} 
-                    slotProps={{ 
-                      textField: { fullWidth: true }
-                    }}
-                  />
-                </LocalizationProvider>
-                <Typography variant="caption" display="block">
-                  Esta fecha se calcula automáticamente 8 días después de la fecha de publicación
-                </Typography>
-              </Grid>
-
               {/* Facultad y Tipo de Jornada */}
               <Grid item xs={12} md={6}>
                 <TextField label="Facultad" value={nombreFacultad} fullWidth InputProps={{ readOnly: true }} />
@@ -489,6 +442,55 @@ const ConvocatoriaEdit = () => {
                   />
                 </Grid>
               )}
+
+              {/* Fechas */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Fechas
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Fecha de Publicación
+                </Typography>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                  <StaticDatePicker 
+                    value={convocatoria.fecha_inicio} 
+                    onChange={handleDateInicioChange} 
+                    displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'} 
+                    slotProps={{
+                      actionBar: { actions: [] },
+                      textField: { fullWidth: true } 
+                    }} 
+                  />
+                </LocalizationProvider>
+                <Typography variant="caption" display="block">
+                  Puedes seleccionar la fecha en que se publicará la convocatoria
+                </Typography>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Plazo final de la Convocatoria
+                </Typography>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                  <StaticDatePicker 
+                    value={convocatoria.fecha_fin} 
+                    onChange={(date) => setConvocatoria(prev => ({ ...prev, fecha_fin: date }))} 
+                    displayStaticWrapperAs={isMobile ? 'mobile' : 'desktop'} 
+                    slotProps={{ 
+                      textField: { fullWidth: true }
+                    }}
+                  />
+                </LocalizationProvider>
+                <Typography variant="caption" display="block">
+                  Esta fecha se calcula automáticamente 8 días después de la fecha de publicación
+                </Typography>
+              </Grid>
+
+              
 
               {/* Detalles Adicionales */}
               <Grid item xs={12}>

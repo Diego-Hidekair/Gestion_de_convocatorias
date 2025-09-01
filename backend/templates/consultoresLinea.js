@@ -36,13 +36,24 @@ function generateConsultoresLineaHTML(convocatoria) {
     textoGestion = `POR LA GESTION/${anioFin}`;
   }
   
-  const tablaMaterias = convocatoria.materias.map(m => `
-    <tr>
-      <td>${m.cod_materia}</td>
-      <td>${m.materia}</td>
-      <td>${m.total_horas}</td>
-      <td>${convocatoria.perfil_profesional}</td>
-    </tr>`).join('');
+  const tablaMaterias = convocatoria.materias.map((m, index) => {
+  if (index === 0) {
+    return `
+      <tr>
+        <td>${m.cod_materia}</td>
+        <td>${m.materia}</td>
+        <td>${m.total_horas}</td>
+        <td rowspan="${convocatoria.materias.length}">${convocatoria.perfil_profesional}</td>
+      </tr>`;
+  } else {
+    return `
+      <tr>
+        <td>${m.cod_materia}</td>
+        <td>${m.materia}</td>
+        <td>${m.total_horas}</td>
+      </tr>`;
+  }
+}).join('');
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -50,19 +61,20 @@ function generateConsultoresLineaHTML(convocatoria) {
   <meta charset="UTF-8">
   <style>
     body {
-    font-family: 'leelawadee', sans-serif;
-    font-size: 11pt;
-    margin: 2pt;
-    line-height: 16pt;
-     position: relative; 
+      font-family: 'leelawadee', sans-serif;
+      font-size: 11pt;
+      margin: 2pt;
+      line-height: 16pt;
+      position: relative; 
+      text-align: justify; /* 👈 fuerza la justificación en todo */
     }
-  } p {
-    text-align: justify;
-    text-indent: 36pt;
-    font-size: 11pt;
-    margin-bottom: 2pt;
-    line-height: 16pt;
-  }
+  } p, li, pre {
+      text-align: justify;
+      text-indent: 36pt;
+      font-size: 11pt;
+      margin-bottom: 2pt;
+      line-height: 16pt;
+    }
 
   h1, h2, h3 {
     text-align: center;
@@ -164,7 +176,7 @@ function generateConsultoresLineaHTML(convocatoria) {
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES INDISPENSABLES:</strong></h3>
   <ul>
-    <li><strong>a)</strong> Carta de postulación <strong>dirigida al señor Rector</strong>, especificando el ítem y las asignaturas a la que postula.</li>
+    <li><strong>a)</strong> Carta de postulación <strong>dirigida al señor decano de la facultad ${convocatoria.nombre_facultad}</strong>, especificando el ítem y las asignaturas a la que postula.</li>
     <li><strong>b)</strong> Currículum vitae debidamente documentado, adjuntando fotocopias simples(incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). La Universidad se reservará el derecho de solicitar la presentación de los documentos originales en cualquier momento del proceso de contratación y de manera obligatoria la presentación para la firma de contrato.</li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>.</li>
     <li><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>.</li>
@@ -209,7 +221,7 @@ function generateConsultoresLineaHTML(convocatoria) {
 <p>Los honorarios del Consultor serán cancelados en forma mensual, previa presentación de los requisitos exigidos por la División de Tesoro dependiente de la Dirección Administrativa y Financiera. </p>
 <p>El Pago de los impuestos de ley es responsabilidad exclusiva del consultor, debiendo presentar factura o una fotocopia de su declaración jurada trimestral en Impuestos Nacionales, caso contrario se realizará la retención correspondiente a los impuestos de ley. El consultor será responsable de realizar los pagos de los aportes establecidos en la ley 065 de Pensiones y su Reglamentación. </p>
 <h3><strong>5. POSTULACIONES.</strong></h3>
-<p>Las postulaciones deberán ser presentadas en Secretaria de Rectoradodecanatura de la facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, de la Universidad Autónoma “Tomás Frías”, en un sobre cerrado dirigido al señor Rector, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
+<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en Secretaria de Rectorado de decanatura de la facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, de la Universidad Autónoma “Tomás Frías”, en un sobre cerrado dirigido al señor Rector, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
 <pre>
       Señor:
       Rector de la Universidad Autónoma “Tomás Frías”

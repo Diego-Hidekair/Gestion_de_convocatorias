@@ -159,15 +159,6 @@ function ConvocatoriaArchivosManager() {
             </CardContent>
             <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
   <Button
-    variant="outlined"
-    color="error"
-    onClick={() => navigate('/convocatorias')}
-    startIcon={<CloseIcon />}
-  >
-    Finalizar
-  </Button>
-
-  <Button
     variant="contained"
     color="secondary"
     onClick={async () => {
@@ -180,6 +171,14 @@ function ConvocatoriaArchivosManager() {
     startIcon={<UploadIcon />}
   >
     Generar PDF
+  </Button>
+  <Button
+    variant="contained"
+    color="success"
+    onClick={() => navigate('/convocatorias')}
+    startIcon={<CloseIcon />}
+  >
+    Crear Convocatoria
   </Button>
 </CardActions>
           </Card>

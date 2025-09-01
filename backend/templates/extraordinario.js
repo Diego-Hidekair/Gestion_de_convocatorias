@@ -36,13 +36,24 @@ function generateExtraordinarioHTML(convocatoria) {
     textoGestion = `POR LA GESTION/${anioFin}`;
   }
 
-  const tablaMaterias = convocatoria.materias.map(m => `
-    <tr>
-      <td>${m.cod_materia}</td>
-      <td>${m.materia}</td>
-      <td>${m.total_horas}</td>
-      <td>${convocatoria.perfil_profesional}</td>
-    </tr>`).join('');
+  const tablaMaterias = convocatoria.materias.map((m, index) => {
+  if (index === 0) {
+      return `
+        <tr>
+          <td>${m.cod_materia}</td>
+          <td>${m.materia}</td>
+          <td>${m.total_horas}</td>
+          <td rowspan="${convocatoria.materias.length}">${convocatoria.perfil_profesional}</td>
+        </tr>`;
+    } else {
+      return `
+        <tr>
+          <td>${m.cod_materia}</td>
+          <td>${m.materia}</td>
+          <td>${m.total_horas}</td>
+        </tr>`;
+    }
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -50,17 +61,24 @@ function generateExtraordinarioHTML(convocatoria) {
   <meta charset="UTF-8">
   <style>
     body {
-      font-family: 'leelawadee', sans-serif;
-      margin: 2cm;
-      font-size: 12pt;
-      line-height: 1.5;
-      position: relative; 
-    }
+        font-family: 'leelawadee', sans-serif;
+        font-size: 11pt;
+        margin: 2pt;
+        line-height: 16pt;
+        position: relative; 
+        text-align: justify; 
+      }
     }
     h1, h2, h3 { text-align: center; font-weight: bold; }
     h1 { font-size: 12pt; }
     h3 { font-size: 12pt; text-align: left; }
-    p { text-align: justify; text-indent: 36pt; font-size: 12pt;}
+    p, li, pre {
+        text-align: justify;
+        text-indent: 36pt;
+        font-size: 11pt;
+        margin-bottom: 2pt;
+        line-height: 16pt;
+      }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -117,7 +135,7 @@ function generateExtraordinarioHTML(convocatoria) {
 <p>Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los siguientes requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES:</strong></h3>
-  <ul>
+  <ul> 
     <li><strong>a)</strong> Carta de solicitud de postulación dirigida al señor Decano de la Facultad de ${convocatoria.nombre_facultad}, especificando la(s) asignatura(s) a la(s) que postula.</li>
     <li><strong>b)</strong> Curriculum vitae debidamente documentado, adjuntando fotocopias simples. El convocante se reservará el derecho de solicitar la presentación de los documentos originales. (Incisos c.i y c.6 del Art 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). </li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaria General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana. (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong></li>
@@ -159,7 +177,7 @@ function generateExtraordinarioHTML(convocatoria) {
 Señor
 Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}
 Postulación a Concurso de Méritos para Provisión de Docente Extraordinario en Calidad 
-de Interino para la Carrera de ${capitalizarNombrePropio(convocatoria.programa)} sede Uncía Gestión Académica ${anioFin}
+de Interino para la Carrera de ${capitalizarNombrePropio(convocatoria.programa)} Gestión Académica ${anioFin}
 Ítem al cual postula:
 Nombre del Postulante:
 Celular y/o teléfono:
