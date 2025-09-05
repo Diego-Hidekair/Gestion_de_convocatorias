@@ -1,5 +1,4 @@
 // backend/templates/ordinario.js
-
 function capitalizarNombrePropio(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto
@@ -8,13 +7,12 @@ function capitalizarNombrePropio(texto) {
     .map(p => p.charAt(0).toUpperCase() + p.slice(1))
     .join(' ');
 }
-// Convierte todo a minúsculas
+
 function toMinusculas(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto.toLowerCase();
 }
 
-// Convierte solo la primera letra de la frase a mayúscula
 function capitalizarPrimeraLetra(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
@@ -27,26 +25,60 @@ function generateOrdinarioHTML(convocatoria) {
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
 
-  
-
-  const tablaMaterias = convocatoria.materias.map((m, index) => {
-  if (index === 0) {
-    return `
-      <tr>
-        <td>${m.cod_materia}</td>
-        <td>${m.materia}</td>
-        <td>${m.total_horas}</td>
-        <td rowspan="${convocatoria.materias.length}">${convocatoria.perfil_profesional}</td>
-      </tr>`;
-    } else {
-      return `
-        <tr>
-          <td>${m.cod_materia}</td>
-          <td>${m.materia}</td>
-          <td>${m.total_horas}</td>
-        </tr>`;
+  // Agrupar materias por ítem
+  const materiasPorItem = {};
+  convocatoria.materias.forEach(materia => {
+    const item = materia.item || 'A'; // Default a 'A' si no tiene item
+    if (!materiasPorItem[item]) {
+      materiasPorItem[item] = [];
     }
+    materiasPorItem[item].push(materia);
+  });
+
+  // Generar tablas separadas por ítem
+  const tablasPorItem = Object.entries(materiasPorItem).map(([item, materias]) => {
+    const tablaMaterias = materias.map((m, index) => {
+      if (index === 0) {
+        return `
+          <tr>
+            <td>${m.cod_materia}</td>
+            <td>${m.materia}</td>
+            <td>${m.total_horas}</td>
+            <td rowspan="${materias.length}">${convocatoria.perfil_profesional}</td>
+          </tr>`;
+      } else {
+        return `
+          <tr>
+            <td>${m.cod_materia}</td>
+            <td>${m.materia}</td>
+            <td>${m.total_horas}</td>
+          </tr>`;
+      }
+    }).join('');
+
+    const totalHorasItem = materias.reduce((sum, m) => sum + (m.total_horas || 0), 0);
+
+    return `
+      <p><strong>ITEM "${item}" - ${convocatoria.tipo_jornada}</strong></p>
+      <table>
+        <tr>
+          <th>SIGLA</th>
+          <th>ASIGNATURA</th>
+          <th>HORAS SEMANA</th>
+          <th>PERFIL PROFESIONAL</th>
+        </tr>
+        ${tablaMaterias}
+        <tr>
+          <td colspan="2"><strong>TOTAL HORAS ITEM ${item}</strong></td>
+          <td><strong>${totalHorasItem}</strong></td>
+          <td></td>
+        </tr>
+      </table>
+    `;
   }).join('');
+
+  // Calcular total general de horas
+  const totalHorasGeneral = convocatoria.materias.reduce((sum, m) => sum + (m.total_horas || 0), 0);
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -76,6 +108,7 @@ function generateOrdinarioHTML(convocatoria) {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
+      margin-bottom: 15px;
     }
     th, td {
       border: 1px solid #000;
@@ -91,6 +124,11 @@ function generateOrdinarioHTML(convocatoria) {
       right: 1cm;
       font-size: 10pt;
       color: #555;
+    }
+    .total-general {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: right;
     }
   </style>
 </head>
@@ -110,19 +148,11 @@ function generateOrdinarioHTML(convocatoria) {
 
 <h3><strong>1. MATERIA OBJETO DE LA ${convocatoria.etapa_convocatoria} CONVOCATORIA:</strong></h3>
 <p><strong>DOCENTES ORDINARIOS</strong></p>
-<p><strong>ITEM “A” ${convocatoria.tipo_jornada}</strong>
-</p>
-<table>
-  <tr>
-    <th>SIGLA</th><th>ASIGNATURA</th><th>HORAS SEMANA</th><th>PERFIL PROFESIONAL</th>
-  </tr>
-  ${tablaMaterias}
-  <tr>
-    <td colspan="2"><strong>Total Horas</strong></td>
-    <td><strong>${convocatoria.totalHoras}</strong></td>
-    <td></td>
-  </tr>
-</table>
+${tablasPorItem}
+
+<div class="total-general">
+  <strong>TOTAL GENERAL DE HORAS: ${totalHorasGeneral}</strong>
+</div>
 
 <p>Podrán participar todos ios profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los siguientes requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
 
@@ -146,7 +176,7 @@ function generateOrdinarioHTML(convocatoria) {
 <ul>
   <li><strong>a)</strong>Documentos que acredite la participación en la vida universitaria del sistema de la Universidad Boliviana.</li>
   <li><strong>b)</strong> Producción intelectual (libros, ensayos, folletos, artículos de revistas y otros) que será valorado en el proceso de calificación.</li>
-  <li>La no presentación de uno de los requisitos (con negrilla por favor " MÍNIMOS HABILITANTES ) dará lugar a la inhabilitación de la postulación.</li>
+  <li>La no presentación de uno de los requisitos <strong>MÍNIMOS HABILITANTES</strong> dará lugar a la inhabilitación de la postulación.</li>
 </ul>
 <p> El profesional que resulte ganador tiene la obligación de presentar de manera obligatoria para la firma de contrato, la siguiente documentación:</p>
 <ul>
@@ -170,18 +200,11 @@ Sigla y materia a la que postula:
 Presente
 </pre>
 
-
-
 <p style="margin-top: 2em;"> 
   El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
 </p>
 
-
-
-
 <p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
-
-
 
 <pre>
 

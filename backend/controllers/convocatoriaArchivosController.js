@@ -84,14 +84,12 @@ const getConvocatoriaCompleta = async (id) => {
     `, [id]);
 
     const horasAsignadasRes = await pool.query(`
-      SELECT horas_asignadas
+      SELECT SUM(total_horas) AS horas_asignadas
       FROM convocatorias_materias
       WHERE id_convocatoria = $1
-      AND horas_asignadas IS NOT NULL
-      LIMIT 1
     `, [id]);
 
-    const horasAsignadas = horasAsignadasRes.rows[0]?.horas_asignadas || null;
+    const horasAsignadas = horasAsignadasRes.rows[0]?.horas_asignadas || 0;
     return {
       ...conv,
       materias: materiasRes.rows,

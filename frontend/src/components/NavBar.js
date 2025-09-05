@@ -122,7 +122,7 @@ const NavBar = ({
           {estadosConvocatoria.map((estado) => (
             <ListItem
               key={`estado-${estado}`}
-              button="true" 
+              button 
               component={Link}
               to={`/convocatorias/estado/${encodeURIComponent(estado)}`}
               sx={{
@@ -157,20 +157,20 @@ const NavBar = ({
     ];
     const commonItems = [
       role === "admin" && (
-        <ListItem button="true" component={Link} to="/usuarios" key="usuarios" sx={getItemStyle("/usuarios")}>
+        <ListItem button component={Link} to="/usuarios" key="usuarios" sx={getItemStyle("/usuarios")}>
           <ListItemIcon sx={{ color: location.pathname === "/usuarios" ? "#000" : "#fff" }}>
             <PeopleIcon />
           </ListItemIcon>
           {isExpanded && <ListItemText primary="Usuarios" />}
         </ListItem>
       ),
-      <ListItem button="true" component={Link} to="/usuarios/me" key="perfil" sx={getItemStyle("/usuarios/me")}>
+      <ListItem button component={Link} to="/usuarios/me" key="perfil" sx={getItemStyle("/usuarios/me")}>
         <ListItemIcon sx={{ color: location.pathname === "/usuarios/me" ? "#000" : "#fff" }}>
           <PersonIcon />
         </ListItemIcon>
         {isExpanded && <ListItemText primary="Perfil" />}
       </ListItem>,
-      <ListItem button="true" component={Link} to="/notificaciones" key="notificaciones" sx={getItemStyle("/notificaciones")}>
+      <ListItem button component={Link} to="/notificaciones" key="notificaciones" sx={getItemStyle("/notificaciones")}>
           <ListItemIcon sx={{ color: location.pathname === "/notificaciones" ? "#000" : "#fff" }}>
             <NotificationsIcon />
           </ListItemIcon>
@@ -180,13 +180,13 @@ const NavBar = ({
 
     const roleSpecificItems = {
       admin: [
-        <ListItem button="true" component={Link} to="/facultades" key="facultades" sx={getItemStyle("/facultades")}>
+        <ListItem button component={Link} to="/facultades" key="facultades" sx={getItemStyle("/facultades")}>
           <ListItemIcon sx={{ color: location.pathname === "/facultades" ? "#000" : "#fff" }}>
             <HomeIcon />
           </ListItemIcon>
           {isExpanded && <ListItemText primary="Facultades" />}
         </ListItem>,
-         <ListItem button="true" component={Link} to="/carreras" key="carreras" sx={getItemStyle("/carreras")}>
+         <ListItem button component={Link} to="/carreras" key="carreras" sx={getItemStyle("/carreras")}>
           <ListItemIcon sx={{ color: location.pathname === "/carreras" ? "#000" : "#fff" }}>
             <BookIcon />
           </ListItemIcon>
@@ -212,7 +212,7 @@ const NavBar = ({
         </ListItem>
       ],
       secretaria_de_decanatura: [
-        <ListItem button="true" component={Link} to="/convocatorias/crear" key="crear-convocatoria" sx={getItemStyle("/convocatorias/crear")}>
+        <ListItem button  component={Link} to="/convocatorias/crear" key="crear-convocatoria" sx={getItemStyle("/convocatorias/crear")}>
           <ListItemIcon sx={{ color: location.pathname === "/convocatorias/crear" ? "#000" : "#fff" }}>
             <CheckBoxIcon />
           </ListItemIcon>
@@ -258,7 +258,7 @@ const NavBar = ({
       ...(roleSpecificItems[role] || []),
       ...commonItems.filter(Boolean),
       <Divider key="divider" />,
-      <ListItem button="true" onClick={handleLogout} key="logout" sx={getItemStyle("/logout")}>
+      <ListItem button onClick={handleLogout} key="logout" sx={getItemStyle("/logout")}>
         <ListItemIcon sx={{ color: "#fff" }}>
           <ExitToAppIcon />
         </ListItemIcon>

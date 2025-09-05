@@ -1,5 +1,4 @@
 // backend/templates/consultoresLinea.js
-
 function capitalizarNombrePropio(nombre) {
   if (!nombre || typeof nombre !== 'string') return '';
   return nombre
@@ -8,13 +7,12 @@ function capitalizarNombrePropio(nombre) {
     .map(p => p.charAt(0).toUpperCase() + p.slice(1))
     .join(' ');
 }
-// Convierte todo a minúsculas
+
 function toMinusculas(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto.toLowerCase();
 }
 
-// Convierte solo la primera letra de la frase a mayúscula
 function capitalizarPrimeraLetra(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
@@ -36,24 +34,60 @@ function generateConsultoresLineaHTML(convocatoria) {
     textoGestion = `POR LA GESTION/${anioFin}`;
   }
   
-  const tablaMaterias = convocatoria.materias.map((m, index) => {
-  if (index === 0) {
+  // Agrupar materias por ítem
+  const materiasPorItem = {};
+  convocatoria.materias.forEach(materia => {
+    const item = materia.item || '1'; // Default a '1' si no tiene item
+    if (!materiasPorItem[item]) {
+      materiasPorItem[item] = [];
+    }
+    materiasPorItem[item].push(materia);
+  });
+
+  // Generar tablas separadas por ítem
+  const tablasPorItem = Object.entries(materiasPorItem).map(([item, materias]) => {
+    const tablaMaterias = materias.map((m, index) => {
+      if (index === 0) {
+        return `
+          <tr>
+            <td>${m.cod_materia}</td>
+            <td>${m.materia}</td>
+            <td>${m.total_horas}</td>
+            <td rowspan="${materias.length}">${convocatoria.perfil_profesional}</td>
+          </tr>`;
+      } else {
+        return `
+          <tr>
+            <td>${m.cod_materia}</td>
+            <td>${m.materia}</td>
+            <td>${m.total_horas}</td>
+          </tr>`;
+      }
+    }).join('');
+
+    const totalHorasItem = materias.reduce((sum, m) => sum + (m.total_horas || 0), 0);
+
     return `
-      <tr>
-        <td>${m.cod_materia}</td>
-        <td>${m.materia}</td>
-        <td>${m.total_horas}</td>
-        <td rowspan="${convocatoria.materias.length}">${convocatoria.perfil_profesional}</td>
-      </tr>`;
-  } else {
-    return `
-      <tr>
-        <td>${m.cod_materia}</td>
-        <td>${m.materia}</td>
-        <td>${m.total_horas}</td>
-      </tr>`;
-  }
-}).join('');
+      <p><strong>ITEM "${item}" - ${convocatoria.tipo_jornada}</strong></p>
+      <table>
+        <tr>
+          <th>SIGLA</th>
+          <th>MATERIA</th>
+          <th>HORAS SEMANA</th>
+          <th>PERFIL REQUERIDO</th>
+        </tr>
+        ${tablaMaterias}
+        <tr>
+          <td colspan="2"><strong>TOTAL HORAS ITEM ${item}</strong></td>
+          <td><strong>${totalHorasItem}</strong></td>
+          <td></td>
+        </tr>
+      </table>
+    `;
+  }).join('');
+
+  // Calcular total general de horas
+  const totalHorasGeneral = convocatoria.materias.reduce((sum, m) => sum + (m.total_horas || 0), 0);
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -68,81 +102,77 @@ function generateConsultoresLineaHTML(convocatoria) {
       position: relative; 
       text-align: justify; /* 👈 fuerza la justificación en todo */
     }
-  } p, li, pre {
+    p, li, pre {
       text-align: justify;
       text-indent: 36pt;
       font-size: 11pt;
       margin-bottom: 2pt;
       line-height: 16pt;
     }
-
-  h1, h2, h3 {
-    text-align: center;
-    font-weight: bold;
-    font-size: 11pt;
-    line-height: 16pt;
-    margin-bottom: 4pt;
-  }
-
-  h3 {
-    text-align: left;
-  }
-
-  ul, ol {
-    margin-top: 0;
-    margin-bottom: 2pt;
-    padding-left: 20pt;
-    line-height: 16pt;
-  }
-
-  li {
-    margin-bottom: 2pt;
-    line-height: 16pt;
-    text-align: justify;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    line-height: 16pt;
-  }
-
-  th, td {
-    border: 1px solid #000;
-    padding: 6px;
-    text-align: center;
-    font-size: 11pt;
-    line-height: 16pt;
-  }
-
-  pre {
-    white-space: pre-wrap;
-    text-align: justify;
-    font-size: 11pt;
-    margin-bottom: 2pt;
-    line-height: 16pt;
-  }
-
-  .centrado {
-    text-align: center;
-  }
-
-  .bold {
-    font-weight: bold;
-  }
-
-  .subrayado {
-    text-decoration: underline;
-  }
-  .numero-convocatoria {
+    h1, h2, h3 {
+      text-align: center;
+      font-weight: bold;
+      font-size: 11pt;
+      line-height: 16pt;
+      margin-bottom: 4pt;
+    }
+    h3 {
+      text-align: left;
+    }
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 2pt;
+      padding-left: 20pt;
+      line-height: 16pt;
+    }
+    li {
+      margin-bottom: 2pt;
+      line-height: 16pt;
+      text-align: justify;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      line-height: 16pt;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: center;
+      font-size: 11pt;
+      line-height: 16pt;
+    }
+    pre {
+      white-space: pre-wrap;
+      text-align: justify;
+      font-size: 11pt;
+      margin-bottom: 2pt;
+      line-height: 16pt;
+    }
+    .centrado {
+      text-align: center;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .subrayado {
+      text-decoration: underline;
+    }
+    .numero-convocatoria {
       position: absolute;
       top: 1cm;
       right: 1cm;
       font-size: 10pt;
       color: #555;
     }
-</style>
+    .total-general {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
 <div style="text-align: right; margin-bottom: 10px;">
@@ -157,36 +187,28 @@ function generateConsultoresLineaHTML(convocatoria) {
 </p>
 
 <h3><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
-<p><strong>ITEM “1” ${convocatoria.tipo_jornada}</strong>
-</p>
-<table>
-  <tr>
-    <th>SIGLA</th><th>MATERIA</th><th>HORAS SEMANA</th><th>PERFIL REQUERIDO</th>
-  </tr>
-  ${tablaMaterias}
-  <tr>
-    <td colspan="2"><strong>TOTAL HORAS</strong></td>
-    <td><strong>${convocatoria.totalHoras}</strong></td>
-    <td></td>
-  </tr>
-</table>
+${tablasPorItem}
+
+<div class="total-general">
+  <strong>TOTAL GENERAL DE HORAS: ${totalHorasGeneral}</strong>
+</div>
 
 <p>Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
-<p class="subrayado">Nota.- Se deja claramente establecido que NO podrán participar Profesionales que presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y profesionales que trabajen en instituciones privadas a {capitalizarNombrePropio(convocatoria.tipo_jornada)}.</p>
+<p class="subrayado">Nota.- Se deja claramente establecido que NO podrán participar Profesionales que presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y profesionales que trabajen en instituciones privadas a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}.</p>
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES INDISPENSABLES:</strong></h3>
   <ul>
     <li><strong>a)</strong> Carta de postulación <strong>dirigida al señor decano de la facultad ${convocatoria.nombre_facultad}</strong>, especificando el ítem y las asignaturas a la que postula.</li>
-    <li><strong>b)</strong> Currículum vitae debidamente documentado, adjuntando fotocopias simples(incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). La Universidad se reservará el derecho de solicitar la presentación de los documentos originales en cualquier momento del proceso de contratación y de manera obligatoria la presentación para la firma de contrato.</li>
+    <li><strong>b)</strong> Currículum vitae debidamente documentado, adjuntando fotocopias simples(incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). La Universidad se reservará el derecho de solicitar la presentación de los documentos originales en cualquier momento del proceso de contratación.</li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>.</li>
     <li><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>.</li>
-    <li><strong>e)</strong> Fotocopia de la Cédula de Identidad, con verificación de datos por Secretaría General de la Universidad Autónoma “Tomás Frías” <strong>ACTUALIZADA</strong>.</li>
+    <li><strong>e)</strong> Fotocopia de la Cédula de Identidad, con verificación de datos por Secretaría General de la Universidad Autónoma "Tomás Frías" <strong>ACTUALIZADA</strong>.</li>
     <li><strong>f)</strong> Fotocopia del Título de Maestría o Doctorado y/o Certificado de Diplomado en Educación Superior como mínimo, dictado o reconocido por una de las Universidades del Sistema de la Universidad Boliviana. (art. 71 inc. e y art. 77 inc. c.4 del Reglamento del Régimen Académico Docente de la Universidad Boliviana), legalizado por la Universidad que confirió dicho documento <strong>ACTUALIZADA</strong>.</li>
     <li><strong>g)</strong> Acreditar experiencia profesional no menor a dos años, computable a partir de la obtención del Título en Provisión Nacional. (Art. 71 inc. c y art. 77 inc. c.3 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). </li>
-    <li><strong>h)</strong> Certificación actualizada de no tener procesos Universitarios otorgado por la Secretaria General de la Universidad Autónoma “Tomás Frías”. </li>
-    <li><strong>i)</strong> Certificación actualizada de no tener antecedentes anti autonomistas, en nuestra Universidad, otorgado por la Secretaria General de la Universidad Autónoma “Tomás Frías”. </li>
-    <li><strong>j)</strong> Plan de trabajo correspondiente a las materias que postula con un enfoque basado en competencias en la modalidad presencial, semipresencial de acuerdo a las características de las asignaturas de la Carrera, este plan debe ser factible para los  recursos con que cuenta la Universidad Autónoma “Tomás Frías” (art. 77 inc. c.8 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). </li>
-    <li><strong>k)</strong> Certificación actualizada de no tener cuentas pendientes con la Carrera o Universidad Autónoma “Tomás Frías” (cursos de Postgrado y otras obligaciones pendientes de pago o rendición de cuentas). Expedido por la Dirección Administrativa Financiera. </li>
+    <li><strong>h)</strong> Certificación actualizada de no tener procesos Universitarios otorgado por la Secretaria General de la Universidad Autónoma "Tomás Frías". </li>
+    <li><strong>i)</strong> Certificación actualizada de no tener antecedentes anti autonomistas, en nuestra Universidad, otorgado por la Secretaria General de la Universidad Autónoma "Tomás Frías". </li>
+    <li><strong>j)</strong> Plan de trabajo correspondiente a las materias que postula con un enfoque basado en competencias en la modalidad presencial, semipresencial de acuerdo a las características de las asignaturas de la Carrera, este plan debe ser factible para los  recursos con que cuenta la Universidad Autónoma "Tomás Frías" (art. 77 inc. c.8 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). </li>
+    <li><strong>k)</strong> Certificación actualizada de no tener cuentas pendientes con la Carrera o Universidad Autónoma "Tomás Frías" (cursos de Postgrado y otras obligaciones pendientes de pago o rendición de cuentas). Expedido por la Dirección Administrativa Financiera. </li>
     <li><strong>l)</strong> Declaración jurada, actualizada, ante Notario de Fe Pública que especifique los siguientes extremos: </li>
         <ul>
           <li>1. No estar comprendido en: las incompatibilidades establecidas por el Reglamento de Incompatibilidades aprobado por el Honorable Consejo Universitario (Resolución N° 86-2007 del HCU). </li>
@@ -218,13 +240,13 @@ function generateConsultoresLineaHTML(convocatoria) {
   </tr>
 </table>
 
-<p>Los honorarios del Consultor serán cancelados en forma mensual, previa presentación de los requisitos exigidos por la División de Tesoro dependiente de la Dirección Administrativa y Financiera. </p>
+<p>Los honorarios del Consultor serán cancelados en forma mensual, previa presentación de los requisitos exigidos por la División de Tesoro dependiente de la Dirección Administrativa Financiera. </p>
 <p>El Pago de los impuestos de ley es responsabilidad exclusiva del consultor, debiendo presentar factura o una fotocopia de su declaración jurada trimestral en Impuestos Nacionales, caso contrario se realizará la retención correspondiente a los impuestos de ley. El consultor será responsable de realizar los pagos de los aportes establecidos en la ley 065 de Pensiones y su Reglamentación. </p>
 <h3><strong>5. POSTULACIONES.</strong></h3>
-<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en Secretaria de Rectorado de decanatura de la facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, de la Universidad Autónoma “Tomás Frías”, en un sobre cerrado dirigido al señor Rector, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
+<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en Secretaria de Rectorado de decanatura de la facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, de la Universidad Autónoma "Tomás Frías", en un sobre cerrado dirigido al señor Rector, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo: </p>
 <pre>
       Señor:
-      Rector de la Universidad Autónoma “Tomás Frías”
+      Rector de la Universidad Autónoma "Tomás Frías"
       Postulación a la ${convocatoria.etapa_convocatoria}  Concurso de Méritos para Provisión de Docente 
       para la Carrera ${convocatoria.programa} en calidad de Consultor de Línea Gestión Académica Gestión Académica ${convocatoria.gestion}/${anioFin} 
       Ítem 1 ${convocatoria.tipo_jornada}
@@ -238,10 +260,8 @@ function generateConsultoresLineaHTML(convocatoria) {
 
 <p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
 
-
-
 <pre>
-  
+
   
 
 
