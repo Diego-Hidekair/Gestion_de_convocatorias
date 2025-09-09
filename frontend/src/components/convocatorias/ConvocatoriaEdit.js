@@ -28,7 +28,7 @@ const ConvocatoriaEdit = () => {
     id_tipoconvocatoria: '',
     id_programa: '',
     tipo_jornada: 'TIEMPO COMPLETO',
-    etapa_convocatoria: 'PRIMERA',
+    etapa_convocatoria: 'PRIMERA CONVOCATORIA',
     gestion: 'GESTION 1',
     resolucion: `/${new Date().getFullYear()}`,
     dictamen: `/${new Date().getFullYear()}`,
@@ -86,7 +86,7 @@ const ConvocatoriaEdit = () => {
             id_tipoconvocatoria: data.id_tipoconvocatoria || '',
             id_programa: data.id_programa?.trim() || '',
             tipo_jornada: data.tipo_jornada || 'TIEMPO COMPLETO',
-            etapa_convocatoria: data.etapa_convocatoria || 'PRIMERA',
+            etapa_convocatoria: data.etapa_convocatoria || 'PRIMERA CONVOCATORIA',
             gestion: data.gestion || 'GESTION 1',
             resolucion: data.resolucion || '',
             dictamen: data.dictamen || '',
@@ -293,7 +293,7 @@ const ConvocatoriaEdit = () => {
             <Grid container spacing={2}>
 
               {/* Tipo de Convocatoria */}
-              <Grid item xs={12}>
+              <Grid item xs={12} md={6}>
                 <FormControl fullWidth required>
                   <InputLabel>Tipo de Convocatoria</InputLabel>
                   <Select 
@@ -307,6 +307,23 @@ const ConvocatoriaEdit = () => {
                         {tipo.nombre_convocatoria}
                       </MenuItem>
                     ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Etapa y Resolución */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Etapa</InputLabel>
+                  <Select
+                    name="etapa_convocatoria"
+                    value={convocatoria.etapa_convocatoria}
+                    onChange={handleChange}
+                    label="Etapa"
+                  >
+                    <MenuItem value="PRIMERA CONVOCATORIA">Primera convocatoria</MenuItem>
+                    <MenuItem value="SEGUNDA CONVOCATORIA">Segunda convocatoria</MenuItem>
+                    <MenuItem value="TERCERA CONVOCATORIA">Tercera convocatoria</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -383,23 +400,6 @@ const ConvocatoriaEdit = () => {
                 </FormControl>
               </Grid>
 
-              {/* Etapa y Resolución */}
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Etapa</InputLabel>
-                  <Select
-                    name="etapa_convocatoria"
-                    value={convocatoria.etapa_convocatoria}
-                    onChange={handleChange}
-                    label="Etapa"
-                  >
-                    <MenuItem value="PRIMERA">Primera</MenuItem>
-                    <MenuItem value="SEGUNDA">Segunda</MenuItem>
-                    <MenuItem value="TERCERA">Tercera</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-
               <Grid item xs={12} md={6}>
                 <TextField
                   label="Resolución Facultativa"
@@ -439,6 +439,7 @@ const ConvocatoriaEdit = () => {
                     onChange={handleChange} 
                     fullWidth 
                     inputProps={{ min: 0 }} 
+                    helperText="El pago mensual debe ser mayor a 0 Bs"
                   />
                 </Grid>
               )}

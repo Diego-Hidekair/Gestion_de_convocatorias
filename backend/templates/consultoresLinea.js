@@ -1,4 +1,11 @@
 // backend/templates/consultoresLinea.js
+
+function compararFechas(fecha1, fecha2) {
+  const strFecha1 = `${fecha1.anio}-${fecha1.mes}-${fecha1.dia}`;
+  const strFecha2 = `${fecha2.anio}-${fecha2.mes}-${fecha2.dia}`;
+  
+  return strFecha1 === strFecha2;
+}
 function capitalizarNombrePropio(nombre) {
   if (!nombre || typeof nombre !== 'string') return '';
   return nombre
@@ -27,11 +34,11 @@ function generateConsultoresLineaHTML(convocatoria) {
 
   let textoGestion = "";
   if (convocatoria.gestion === "GESTION 1") {
-    textoGestion = `SOLO POR LA GESTION 1/${anioFin}`;
+    textoGestion = `SOLO POR EL SEMESTRE 1/${anioFin}`;
   } else if (convocatoria.gestion === "GESTION 2") {
-    textoGestion = `SOLO POR LA GESTION 2/${anioFin}`;
+    textoGestion = `SOLO POR EL SEMESTRE 2/${anioFin}`;
   } else if (convocatoria.gestion === "GESTION 1 Y 2") {
-    textoGestion = `POR LA GESTION/${anioFin}`;
+    textoGestion = `POR LA GESTION ACADÉMICA ${anioFin}`;
   }
   
   // Agrupar materias por ítem
@@ -94,13 +101,16 @@ function generateConsultoresLineaHTML(convocatoria) {
 <head>
   <meta charset="UTF-8">
   <style>
+    @page {
+      margin: 2.54cm; 
+    }
     body {
-      font-family: 'leelawadee', sans-serif;
-      font-size: 11pt;
-      margin: 2pt;
+      font-family: 'Georgia', serif; 
+      font-size: 12pt;
+      margin: 0;
       line-height: 16pt;
       position: relative; 
-      text-align: justify; /* 👈 fuerza la justificación en todo */
+      text-align: justify; 
     }
     p, li, pre {
       text-align: justify;
@@ -119,6 +129,18 @@ function generateConsultoresLineaHTML(convocatoria) {
     h3 {
       text-align: left;
     }
+
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+      }
+    ul li {
+      text-indent: 0; /* Elimina la sangría */
+      padding-left: 0; /* Elimina el padding izquierdo */
+    }
+
+
     ul, ol {
       margin-top: 0;
       margin-bottom: 2pt;
@@ -179,26 +201,22 @@ function generateConsultoresLineaHTML(convocatoria) {
   <strong>CONV_N° ${convocatoria.id_convocatoria}</strong>
 </div>
 <h1 class="centrado bold">
-  ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA CONTRATACIÓN DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${convocatoria.tipo_jornada} PARA LA CARRERA DE ${convocatoria.programa} ${textoGestion}
+  ${convocatoria.etapa_convocatoria} A CONCURSO DE MÉRITOS PARA LA CONTRATACIÓN DE DOCENTES EN CALIDAD DE CONSULTORES DE LÍNEA A ${convocatoria.tipo_jornada} PARA LA CARRERA DE ${convocatoria.programa} ${textoGestion}.
 </h1>
 
 <p>
-  Por determinación del Consejo de Carrera de ${capitalizarNombrePropio(convocatoria.programa)}, mediante Dictamen N°${convocatoria.dictamen}; homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}; </strong>se convoca a los profesionales en ${capitalizarNombrePropio(convocatoria.perfil_profesional)}, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Consultor de Línea</strong> a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}, para la gestión académica ${convocatoria.gestion}/${anioFin}.
+  Por determinación del Consejo de Carrera de ${capitalizarNombrePropio(convocatoria.programa)}, mediante Dictamen N°${convocatoria.dictamen}; homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}; </strong>se convoca a los profesionales con grado de ${capitalizarNombrePropio(convocatoria.perfil_profesional)}, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Consultor de Línea</strong> a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}, para la gestión académica ${convocatoria.gestion}/${anioFin}.
 </p>
 
 <h3><strong>1) MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
 ${tablasPorItem}
-
-<div class="total-general">
-  <strong>TOTAL GENERAL DE HORAS: ${totalHorasGeneral}</strong>
-</div>
 
 <p>Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
 <p class="subrayado">Nota.- Se deja claramente establecido que NO podrán participar Profesionales que presten sus servicios en otras instituciones públicas (incisos a) y d) de la Ley 856 y profesionales que trabajen en instituciones privadas a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}.</p>
 
 <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES INDISPENSABLES:</strong></h3>
   <ul>
-    <li><strong>a)</strong> Carta de postulación <strong>dirigida al señor decano de la facultad ${convocatoria.nombre_facultad}</strong>, especificando el ítem y las asignaturas a la que postula.</li>
+    <li><strong>a)</strong> Carta de postulación <strong>dirigida al señor decano de la facultad ${capitalizarNombrePropio(convocatoria.nombre_facultad)}</strong>, especificando el ítem y las asignaturas a la que postula.</li>
     <li><strong>b)</strong> Currículum vitae debidamente documentado, adjuntando fotocopias simples(incisos c.1 y c.6 del Art. 77 del Reglamento del Régimen Académico Docente de la Universidad Boliviana). La Universidad se reservará el derecho de solicitar la presentación de los documentos originales en cualquier momento del proceso de contratación.</li>
     <li><strong>c)</strong> Fotocopia legalizada del Diploma Académico por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>.</li>
     <li><strong>d)</strong> Fotocopia legalizada del Título en Provisión Nacional por Secretaría General de la Universidad que confirió dicho documento, el cual debe ser otorgado por una de las universidades del Sistema de la Universidad Boliviana (Art. 77 inc. c.2 Reglamento del Régimen Académico Docente de la Universidad Boliviana) <strong>ACTUALIZADA</strong>.</li>
@@ -224,11 +242,14 @@ ${tablasPorItem}
 <p>
   El profesional que resulte ganador tiene la obligación de presentar de manera obligatoria para la firma de contrato, la siguiente documentación: 
 </p>
-  <p style="text-align: center;"> 1) Certificado CENVI emitida por el Consejo de la Magistratura.</p>
-  <p style="text-align: center;"> 2) Certificado actualizado de no tener antecedentes penales (REJAP) emitido por el Consejo de la Magistratura.</p>
+  <li> 1) Certificado CENVI emitida por el Consejo de la Magistratura.</li>
+  <li> 2) Certificado actualizado de no tener antecedentes penales (REJAP) emitido por el Consejo de la Magistratura.</li>
 <p> Se deja claramente establecido que la documentación presentada no será devuelta.</p>
 
 <h3><strong>4. HONORARIOS</strong></h3>
+<p>
+  La consultoría será cancelada con recursos institucionales y/o propios, a partir de fecha fijada en Contrato con el siguiente detalle:
+</p>
 <table>
   <tr>
     <th>Docente consultor de Línea</th>
@@ -255,19 +276,22 @@ ${tablasPorItem}
       Presente
 </pre>
 <p style="margin-top: 2em;"> 
-  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
+  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres a horas <strong>${convocatoria.apertura_formateada.hora}</strong>  ${compararFechas(
+      {dia: diaFin, mes: mesFin, anio: anioFin},
+      {dia: convocatoria.apertura_formateada.dia, mes: convocatoria.apertura_formateada.mes, anio: convocatoria.apertura_formateada.anio}
+    ) ? 'del mismo día' : `el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong>`} en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
 </p>
 
 <p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
 
 <pre>
-
-  
-
-
-
 </pre>
-
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
 <p style="text-align: left;"><strong>${capitalizarNombrePropio(convocatoria.nombre_decano)}</strong></p>
 <p style="text-align: left;">Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}</p>
 

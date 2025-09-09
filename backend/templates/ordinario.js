@@ -1,4 +1,10 @@
 // backend/templates/ordinario.js
+function compararFechas(fecha1, fecha2) {
+  const strFecha1 = `${fecha1.anio}-${fecha1.mes}-${fecha1.dia}`;
+  const strFecha2 = `${fecha2.anio}-${fecha2.mes}-${fecha2.dia}`;
+  
+  return strFecha1 === strFecha2;
+}
 function capitalizarNombrePropio(texto) {
   if (!texto || typeof texto !== 'string') return '';
   return texto
@@ -24,6 +30,14 @@ function generateOrdinarioHTML(convocatoria) {
   const diaFin = fechaFin.getDate().toString().padStart(2, '0');
   const mesFin = fechaFin.toLocaleDateString('es-ES', { month: 'long' });
   const anioFin = fechaFin.getFullYear();
+    let textoGestion = "";
+  if (convocatoria.gestion === "GESTION 1") {
+    textoGestion = `SOLO POR SEMESTRE 1/${anioFin}`;S
+  } else if (convocatoria.gestion === "GESTION 2") {
+    textoGestion = `SOLO POR EL SEMESTRE 2/${anioFin}`;
+  } else if (convocatoria.gestion === "GESTION 1 Y 2") {
+    textoGestion = `POR LA GESTION ACADÉMICA ${anioFin}`;
+  }
 
   // Agrupar materias por ítem
   const materiasPorItem = {};
@@ -86,7 +100,7 @@ function generateOrdinarioHTML(convocatoria) {
   <meta charset="UTF-8">
   <style>
     body {
-      font-family: 'leelawadee', sans-serif;
+      font-family: 'Georgia', serif;
       font-size: 11pt;
       margin: 2pt;
       line-height: 16pt;
@@ -125,6 +139,15 @@ function generateOrdinarioHTML(convocatoria) {
       font-size: 10pt;
       color: #555;
     }
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+      }
+    ul li {
+      text-indent: 0; /* Elimina la sangría */
+      padding-left: 0; /* Elimina el padding izquierdo */
+    }
+    
     .total-general {
       margin-top: 15px;
       font-weight: bold;
@@ -139,20 +162,18 @@ function generateOrdinarioHTML(convocatoria) {
 </div>
 
 <h1 class="centrado bold">
-  ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS Y EXÁMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO PARA LA CARRERA DE ${convocatoria.programa} - GESTIÓN ${anioFin}
+  ${convocatoria.etapa_convocatoria} A CONCURSO DE MÉRITOS Y EXÁMENES DE COMPETENCIA PARA LA PROVISIÓN DE DOCENTE ORDINARIO PARA LA CARRERA DE ${convocatoria.programa} ${textoGestion}.
 </h1>
 
 <p>
-  En aplicación de la Nota de Instrucción N° 001/2023 y N° 043/2023 emitidas por el Señor Rector de la Universidad, y por Dictamen de la Comisión Académica N° 10/2023 homologado por la Resolución del Honorable Consejo Universitario N° 09/2024 y cumpliendo con la normativa universitaria se convoca a los profesionales <strong>${capitalizarNombrePropio(convocatoria.perfil_profesional)}</strong>, a la <strong>${convocatoria.etapa_convocatoria} CONVOCATORIA DE MÉRITOS Y EXÁMENES DE COMPETENCIA</strong> para optar por la docencia universitaria en la categoría de <strong>Docente Ordinario</strong> en aplicación del Art. 70 del Reglamento del Régimen Académico Docente de la Universidad Boliviana, ingresando el ganador como docente Contratado, conforme lo dispone el Art. 72 del mismo cuerpo normativo, para luego ser sometido a evaluación continua y pasar a la categoría de titular, tal como lo establece el Art. 73 del Reglamento referido, como <strong>Docente Ordinario</strong> en la siguiente asignatura:
+  En aplicación de la Nota de Instrucción N° 001/2023 y N° 043/2023 emitidas por el Señor Rector de la Universidad, y por Dictamen de la Comisión Académica ${convocatoria.dictamen} homologado por la Resolución del Honorable Consejo Universitario N°${convocatoria.resolucion} y cumpliendo con la normativa universitaria se convoca a los profesionales con grado de ${capitalizarNombrePropio(convocatoria.perfil_profesional)}, a la <strong>${convocatoria.etapa_convocatoria} DE MÉRITOS Y EXÁMENES DE COMPETENCIA</strong> para optar por la docencia universitaria en la categoría de <strong>Docente Ordinario</strong> en aplicación del Art. 70 del Reglamento del Régimen Académico Docente de la Universidad Boliviana, ingresando el ganador como docente Contratado, conforme lo dispone el Art. 72 del mismo cuerpo normativo, para luego ser sometido a evaluación continua y pasar a la categoría de titular, tal como lo establece el Art. 73 del Reglamento referido, como <strong>Docente Ordinario</strong> en la siguiente asignatura:
 </p>
 
-<h3><strong>1. MATERIA OBJETO DE LA ${convocatoria.etapa_convocatoria} CONVOCATORIA:</strong></h3>
+<h3><strong>1. MATERIA OBJETO DE LA ${convocatoria.etapa_convocatoria}:</strong></h3>
 <p><strong>DOCENTES ORDINARIOS</strong></p>
 ${tablasPorItem}
 
-<div class="total-general">
-  <strong>TOTAL GENERAL DE HORAS: ${totalHorasGeneral}</strong>
-</div>
+
 
 <p>Podrán participar todos ios profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los siguientes requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
 
@@ -182,17 +203,18 @@ ${tablasPorItem}
 <ul>
   <li><strong>1)</strong> Certificado CENVI emitida por el Consejo de la Magistratura.</li>
   <li><strong>2)</strong>Certificado actualizado de no tener antecedentes penales (REJAP) emitido por el Consejo de la Magistratura..</li>
+  <p>Se deja claramente establecido que la documentación presentada no será devuelta.</p>
 </ul>
 
 <p>Se deja claramente establecido que la documentación presentada no será devuelta.</p>
 <p>Queda plenamente establecido que, en aplicación de la Matriz de Cumplimiento suscrita por la Universidad con el Gobierno del Estado Plurinacional de Solivia, el proceso de categorización o recategorización, estará sujeta a los resultados de dicha matriz, en el tiempo establecido en dicho documento.</p>
 
-<p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en Secretaría de la Facultad de ${convocatoria.nombre_facultad},Dirigido al Decano de la Facultad de ${convocatoria.nombre_facultad}, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo:</p>
+<p>Las postulaciones deberán ser presentadas en Secretaría de la Facultad de ${convocatoria.nombre_facultad},Dirigido al Decano de la Facultad de ${convocatoria.nombre_facultad}, adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo:</p>
 
 <pre>
 Señor
 Decano de la Facultad de ${convocatoria.nombre_facultad}
-Postulación a ${convocatoria.etapa_convocatoria} Convocatoria a Concurso de Méritos y Examen de Competencia para 
+Postulación a ${capitalizarNombrePropio(convocatoria.etapa_convocatoria)} Convocatoria a Concurso de Méritos y Examen de Competencia para 
 Provisión de Docente Ordinario para la Carrera de ${convocatoria.programa}
 Nombre del Postulante:
 Celular y/o teléfono:
@@ -201,19 +223,22 @@ Presente
 </pre>
 
 <p style="margin-top: 2em;"> 
-  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
+  El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres a horas <strong>${convocatoria.apertura_formateada.hora}</strong> ${compararFechas(
+      {dia: diaFin, mes: mesFin, anio: anioFin},
+      {dia: convocatoria.apertura_formateada.dia, mes: convocatoria.apertura_formateada.mes, anio: convocatoria.apertura_formateada.anio}
+    ) ? 'del mismo día' : `el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong>`} en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
 </p>
 
 <p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
 
 <pre>
-
-  
-
-
-
 </pre>
-
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
 <p style="text-align: left;"><strong>${capitalizarNombrePropio(convocatoria.nombre_decano)}</strong></p>
 <p style="text-align: left;">Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}</p>
 

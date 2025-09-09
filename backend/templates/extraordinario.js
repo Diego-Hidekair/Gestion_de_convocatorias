@@ -1,4 +1,10 @@
 // backend/templates/extraordinario.js
+function compararFechas(fecha1, fecha2) {
+  const strFecha1 = `${fecha1.anio}-${fecha1.mes}-${fecha1.dia}`;
+  const strFecha2 = `${fecha2.anio}-${fecha2.mes}-${fecha2.dia}`;
+  
+  return strFecha1 === strFecha2;
+}
 function capitalizarNombrePropio(nombre) {
   if (!nombre || typeof nombre !== 'string') return '';
   return nombre
@@ -27,17 +33,17 @@ function generateExtraordinarioHTML(convocatoria) {
 
   let textoGestion = "";
   if (convocatoria.gestion === "GESTION 1") {
-    textoGestion = `SOLO POR LA GESTION 1/${anioFin}`;
+    textoGestion = `SOLO POR EL SEMESTRE 1/${anioFin}`;
   } else if (convocatoria.gestion === "GESTION 2") {
-    textoGestion = `SOLO POR LA GESTION 2/${anioFin}`;
+    textoGestion = `SOLO POR EL SEMESTRE 2/${anioFin}`;
   } else if (convocatoria.gestion === "GESTION 1 Y 2") {
-    textoGestion = `POR LA GESTION/${anioFin}`;
+    textoGestion = `POR LA GESTION ACADEMICA ${anioFin}`;
   }
 
   // Agrupar materias por ítem
   const materiasPorItem = {};
   convocatoria.materias.forEach(materia => {
-    const item = materia.item || 'A'; // Default a 'A' si no tiene item
+    const item = materia.item || 'A'; 
     if (!materiasPorItem[item]) {
       materiasPorItem[item] = [];
     }
@@ -93,7 +99,7 @@ function generateExtraordinarioHTML(convocatoria) {
   <meta charset="UTF-8">
   <style>
     body {
-      font-family: 'leelawadee', sans-serif;
+      font-family: 'Georgia', serif;
       font-size: 11pt;
       margin: 2pt;
       line-height: 16pt;
@@ -133,6 +139,15 @@ function generateExtraordinarioHTML(convocatoria) {
       margin-top: 0;
       padding-left: 20pt;
     }
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+      }
+    ul li {
+      text-indent: 0; /* Elimina la sangría */
+      padding-left: 0; /* Elimina el padding izquierdo */
+    }
     .centrado {
       text-align: center;
     }
@@ -162,21 +177,17 @@ function generateExtraordinarioHTML(convocatoria) {
   </div>
   
   <h1 class="centrado bold">
-    ${convocatoria.etapa_convocatoria} CONVOCATORIA A CONCURSO DE MÉRITOS PARA LA PROVISIÓN DE DOCENTE EXTRAORDINARIO EN CALIDAD INTERINO A ${convocatoria.tipo_jornada} DE LA CARRERA DE ${convocatoria.programa} ${textoGestion}
+    ${convocatoria.etapa_convocatoria} A CONCURSO DE MÉRITOS PARA LA PROVISIÓN DE DOCENTE EXTRAORDINARIO EN CALIDAD DE INTERINO A ${convocatoria.tipo_jornada} PARA LA CARRERA DE ${convocatoria.programa} ${textoGestion}.
   </h1>
   
   <p>
-    Por determinación de la Comisión de Estudios de la Carrera de ${capitalizarNombrePropio(convocatoria.programa)}, mediante Dictamen N°${convocatoria.dictamen}/${anioFin} homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion}/${anioFin} de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}</strong>; se convoca a los profesionales "<strong>${toMinusculas(convocatoria.perfil_profesional)}</strong>", al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Extraordinario en calidad de Interino</strong> a ${capitalizarNombrePropio(convocatoria.tipo_jornada)}, solo por la gestión académica ${anioFin}.
+    Por determinación de la Comisión de Estudios de la Carrera de ${capitalizarNombrePropio(convocatoria.programa)}, mediante Dictamen N°${convocatoria.dictamen} homologado por Resolución del Consejo Facultativo N°${convocatoria.resolucion} de la Facultad de <strong>${capitalizarNombrePropio(convocatoria.nombre_facultad)}</strong>; se convoca a los profesionales <strong>${toMinusculas(convocatoria.perfil_profesional)}</strong>, al <strong>CONCURSO DE MÉRITOS</strong> para optar por la docencia universitaria, como <strong>Docente Extraordinario en calidad de Interino</strong> a<strong> ${capitalizarNombrePropio(convocatoria.tipo_jornada)}</strong>, solo por la gestión académica ${toMinusculas(textoGestion)}.
   </p>
   
   <h3><strong>1. MATERIAS OBJETO DE LA CONVOCATORIA:</strong></h3>
   
   ${tablasPorItem}
-  
-  <div class="total-general">
-    <strong>TOTAL GENERAL DE HORAS: ${totalHorasGeneral}</strong>
-  </div>
-  
+    
   <p>Podrán participar todos los profesionales con Título en Provisión Nacional otorgado por la Universidad Boliviana que cumplan los siguientes requisitos mínimos habilitantes de acuerdo al XII Congreso Nacional de Universidades.</p>
   
   <h3><strong>2. REQUISITOS MÍNIMOS HABILITANTES:</strong></h3>
@@ -202,16 +213,17 @@ function generateExtraordinarioHTML(convocatoria) {
     <p class="subrayado">La no presentación de uno de los requisitos MÍNIMOS HABILITANTES, dará lugar a la inhabilitación de su postulación.</p>
     <p>El profesional que resulte ganador tiene la obligación de presentar de manera obligatoria para la firma de contrato, la siguiente documentación:</p>
   </ul>
-  <ul>
+  
     <li><strong>1)</strong> Certificado CENVI emitida por el Consejo de la Magistratura.</li>
     <li><strong>2)</strong> Certificado actualizado de no tener antecedentes penales (REJAP) emitido por el Consejo de la Magistratura.</li>
-  </ul>
+    <p>Se deja claramente establecido que la documentación presentada no será devuelta.</p>
   
-  <p>Se deja claramente establecido que la documentación presentada no será devuelta. Las postulaciones deberán ser presentadas en la Secretaría de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, en sobre cerrado dirigido al señor Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}; , adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo:</p>
   
+  <p> 
+    Las postulaciones deberán ser presentadas en la Secretaría de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}, en sobre cerrado dirigido al señor Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}; , adjuntando los requisitos exigidos debidamente foliados, con el siguiente rótulo:</p>
   <pre>
-Señor Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}
-Postulación a Concurso de Méritos para Provisión de Docente Extraordinario en Calidad de Interino para la Carrera de ${capitalizarNombrePropio(convocatoria.programa)}
+Señor: </br>Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}
+Postulación a Concurso de Méritos para Provisión de Docente Extraordinario en Calidad de Interino para la Carrera de ${capitalizarNombrePropio(convocatoria.programa)}  ${convocatoria.tipo_jornada}
 Gestión Académica ${anioFin}
 Ítem al cual postula: 
 Nombre del Postulante: 
@@ -220,13 +232,21 @@ Presente
   </pre>
   
   <p style="margin-top: 2em;">
-    El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong> a horas <strong>${convocatoria.apertura_formateada.hora}</strong> en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
+    El plazo para la presentación de postulación fenece a horas <strong>${convocatoria.plazo_presentacion_horas_formateado}</strong> del día <strong>${diaSemana} ${diaFin} de ${mesFin} de ${anioFin}</strong>, procediéndose con la apertura de sobres a horas ${convocatoria.apertura_formateada.hora}</strong>  ${compararFechas(
+      {dia: diaFin, mes: mesFin, anio: anioFin},
+      {dia: convocatoria.apertura_formateada.dia, mes: convocatoria.apertura_formateada.mes, anio: convocatoria.apertura_formateada.anio}
+    ) ? 'del mismo día' : `el día <strong>${convocatoria.apertura_formateada.dia_semana} ${convocatoria.apertura_formateada.dia} de ${convocatoria.apertura_formateada.mes} de ${convocatoria.apertura_formateada.anio}</strong>`} en oficinas de la Decanatura. Las postulaciones ingresadas fuera de plazo no serán tomadas en cuenta.
   </p>
   
   <p class="centrado">Potosí, ${convocatoria.inicio_formateado.dia_semana} ${convocatoria.inicio_formateado.dia} de ${convocatoria.inicio_formateado.mes} de ${convocatoria.inicio_formateado.anio}</p>
   
   <pre> </pre>
-  
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
   <p style="text-align: left;"><strong>${capitalizarNombrePropio(convocatoria.nombre_decano)}</strong></p>
   <p style="text-align: left;">Decano de la Facultad de ${capitalizarNombrePropio(convocatoria.nombre_facultad)}</p>
   

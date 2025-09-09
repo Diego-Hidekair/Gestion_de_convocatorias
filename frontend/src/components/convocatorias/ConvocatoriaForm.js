@@ -31,7 +31,7 @@ const ConvocatoriaForm = () => {
     id_tipoconvocatoria: '',
     id_programa: '',
     tipo_jornada: 'TIEMPO HORARIO',
-    etapa_convocatoria: 'PRIMERA',
+    etapa_convocatoria: 'PRIMERA CONVOCATORIA',
     gestion: 'GESTION 1',
     resolucion: `/${new Date().getFullYear()}`,
     dictamen: `/${new Date().getFullYear()}`,
@@ -341,7 +341,7 @@ return (
             <Grid container spacing={2}>
 
             {/* Tipo de Convocatoria */}
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
                 <InputLabel>Tipo de Convocatoria</InputLabel>
                 <Select
@@ -355,6 +355,23 @@ return (
                       {tipo.nombre_convocatoria}
                     </MenuItem>
                   ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth required>
+                <InputLabel>Etapa</InputLabel>
+                <Select
+                  name="etapa_convocatoria"
+                  value={convocatoria.etapa_convocatoria}
+                  onChange={handleChange}
+                  label="Etapa"
+                >
+                  <MenuItem value="PRIMERA CONVOCATORIA">Primera Convocatoria</MenuItem>
+                  <MenuItem value="SEGUNDA CONVOCATORIA">Segunda Convocatoria</MenuItem>
+                  <MenuItem value="TERCERA CONVOCATORIA">Tercera Convocatoria</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -438,21 +455,6 @@ return (
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Etapa</InputLabel>
-                <Select
-                  name="etapa_convocatoria"
-                  value={convocatoria.etapa_convocatoria}
-                  onChange={handleChange}
-                  label="Etapa"
-                >
-                  <MenuItem value="PRIMERA">Primera</MenuItem>
-                  <MenuItem value="SEGUNDA">Segunda</MenuItem>
-                  <MenuItem value="TERCERA">Tercera</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
 
             {/* Resolución y Dictamen */}
             <Grid item xs={12} md={6}>
@@ -494,7 +496,7 @@ return (
                   onChange={handleChange}
                   fullWidth
                   inputProps={{ min: 0, max: 45000 }}
-                  helperText="El pago mensual debe estar entre 0 y 45000 Bs"
+                  helperText="El pago mensual debe ser mayor a 0 Bs"
                 />
               </Grid>
             )}

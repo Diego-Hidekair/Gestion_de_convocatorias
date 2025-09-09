@@ -14,7 +14,7 @@ const validateConvocatoria = [
             return true;
         }),
     check('id_tipoconvocatoria').isInt().withMessage('ID de tipo convocatoria inválido'),
-    check('etapa_convocatoria').isIn(['PRIMERA', 'SEGUNDA', 'TERCERA']).withMessage('Etapa inválida'),
+    check('etapa_convocatoria').isIn(['PRIMERA CONVOCATORIA', 'SEGUNDA CONVOCATORIA', 'TERCERA CONVOCATORIA']).withMessage('Etapa inválida'),
     check('pago_mensual').optional().isInt({ min: 0 }).withMessage('Pago mensual debe ser un número positivo'),
     check('gestion').isIn(['GESTION 1', 'GESTION 2', 'GESTION 1 Y 2']).withMessage('Gestión inválida'),
     check('apertura_sobres').optional().isISO8601().withMessage('Formato de fecha y hora inválido para apertura de sobres'),
