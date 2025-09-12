@@ -17,6 +17,7 @@ const ConvocatoriaMateriasForm = () => {
   const [loading, setLoading] = useState(true);
   const [convocatoriaData, setConvocatoriaData] = useState(null);
   const [soloUnaMateria, setSoloUnaMateria] = useState(false);
+  const [maxHorasGlobal, setMaxHorasGlobal] = useState(0); // Nuevo estado para horas máximas
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,13 +31,20 @@ const ConvocatoriaMateriasForm = () => {
           setSoloUnaMateria(true);
         }
 
+        // Establecer máximo de horas según el tipo de jornada
+        const tipoJornada = convResponse.data.tipo_jornada;
+        if (tipoJornada === 'TIEMPO HORARIO') {
+          setMaxHorasGlobal(16);
+        } else if (tipoJornada === 'TIEMPO COMPLETO') {
+          setMaxHorasGlobal(); // O el valor que corresponda
+        }
+
         // Cargar materias ya asignadas a la convocatoria
         try {
           const materiasAsignadasResponse = await api.get(
             `/convocatoria-materias/${id_convocatoria}`
           );
           
-          // Si hay materias asignadas, organizarlas por ítem
           if (materiasAsignadasResponse.data && Object.keys(materiasAsignadasResponse.data).length > 0) {
             const nuevosItems = [];
             Object.keys(materiasAsignadasResponse.data).forEach(itemKey => {
@@ -86,31 +94,54 @@ const ConvocatoriaMateriasForm = () => {
 
     if (!materiaSeleccionada) return;
 
+    // Validar solo una materia para docentes ordinarios
     if (soloUnaMateria && items.reduce((total, it) => total + it.materias.length, 0) >= 1) {
       setError('Solo se permite una materia para convocatorias de tipo Docente Ordinario');
       return;
     }
 
     const materia = materias.find(m => m.id_materia === parseInt(materiaSeleccionada));
-    if (materia && !items[itemIndex].materias.some(m => m.id_materia === materia.id_materia)) {
-      setItems(prev =>
-        prev.map((it, idx) =>
-          idx === itemIndex
-            ? {
-              ...it,
-              materias: [
-                ...it.materias,
-                {
-                  ...materia,
-                  total_horas: (materia.horas_teoria || 0) + (materia.horas_practica || 0) + (materia.horas_laboratorio || 0)
-                }
-              ]
-            }
-            : it
-        )
-      );
-      setMateriaSeleccionada('');
+    if (!materia) return;
+
+    // Validar que la materia no esté ya agregada en ningún ítem
+    const materiaYaAgregada = items.some(it => 
+      it.materias.some(m => m.id_materia === materia.id_materia)
+    );
+    
+    if (materiaYaAgregada) {
+      setError('Esta materia ya ha sido agregada en otro ítem');
+      return;
     }
+
+    // Calcular horas totales si se agrega esta materia
+    const nuevasHorasMateria = (materia.horas_teoria || 0) + (materia.horas_practica || 0) + (materia.horas_laboratorio || 0);
+    const horasGlobalesActuales = calcularHorasGlobales();
+    const horasGlobalesFuturas = horasGlobalesActuales + nuevasHorasMateria;
+
+    // Validar máximo de horas globales
+    if (maxHorasGlobal > 0 && horasGlobalesFuturas > maxHorasGlobal) {
+      setError(`No se puede superar el máximo de ${maxHorasGlobal} horas globales. Horas actuales: ${horasGlobalesActuales}, horas de la materia: ${nuevasHorasMateria}`);
+      return;
+    }
+
+    // Agregar la materia
+    setItems(prev =>
+      prev.map((it, idx) =>
+        idx === itemIndex
+          ? {
+            ...it,
+            materias: [
+              ...it.materias,
+              {
+                ...materia,
+                total_horas: nuevasHorasMateria
+              }
+            ]
+          }
+          : it
+      )
+    );
+    setMateriaSeleccionada('');
   };
 
   const handleRemoveMateria = (itemIndex, id) => {
@@ -124,11 +155,21 @@ const ConvocatoriaMateriasForm = () => {
   };
 
   const handleAddItem = () => {
+    // Validar que no se puedan agregar más ítems si es solo una materia
+    if (soloUnaMateria) {
+      setError('Solo se permite un ítem con una materia para convocatorias de tipo Docente Ordinario');
+      return;
+    }
+    
     const nuevoItem = Math.max(...items.map(it => it.item), 0) + 1;
     setItems([...items, { item: nuevoItem, materias: [] }]);
   };
 
   const handleRemoveItem = (index) => {
+    if (items.length <= 1) {
+      setError('Debe haber al menos un ítem');
+      return;
+    }
     setItems(prev => prev.filter((_, idx) => idx !== index));
   };
 
@@ -143,16 +184,21 @@ const ConvocatoriaMateriasForm = () => {
       return;
     }
 
+    // Validación final de horas globales
+    const horasGlobales = calcularHorasGlobales();
+    if (maxHorasGlobal > 0 && horasGlobales > maxHorasGlobal) {
+      setError(`No se puede superar el máximo de ${maxHorasGlobal} horas globales. Horas actuales: ${horasGlobales}`);
+      return;
+    }
+
     try {
       setLoading(true);
       
-      // Preparar datos para enviar al backend
       const datosParaEnviar = {
         items: items.map(it => ({
           item: it.item,
           materias: it.materias.map(m => ({
             id_materia: m.id_materia
-            // total_horas se calculará en el backend
           }))
         }))
       };
@@ -181,6 +227,18 @@ const ConvocatoriaMateriasForm = () => {
           Asignar Materias a la Convocatoria
         </Typography>
 
+        {soloUnaMateria && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Convocatoria de tipo Docente Ordinario: Solo se permite UNA materia
+          </Alert>
+        )}
+
+        {maxHorasGlobal > 0 && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Límite máximo: {maxHorasGlobal} horas
+          </Alert>
+        )}
+
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         {convocatoriaData && (
@@ -193,13 +251,13 @@ const ConvocatoriaMateriasForm = () => {
               if (tipo === 'TIEMPO HORARIO' && totalHorasItem > 16) {
                 alerta = (
                   <Alert severity="warning" sx={{ mt: 2 }}>
-                    ⚠️ El ítem {it.item} tiene {totalHorasItem} horas, y no debe superar 16 horas para TIEMPO HORARIO.
+                     El ítem {it.item} tiene {totalHorasItem} horas, y no debe superar 16 horas para TIEMPO HORARIO.
                   </Alert>
                 );
               } else if (tipo === 'TIEMPO COMPLETO' && totalHorasItem < 20) {
                 alerta = (
                   <Alert severity="warning" sx={{ mt: 2 }}>
-                    ⚠️ El ítem {it.item} tiene {totalHorasItem} horas, pero debe tener al menos 20 horas para TIEMPO COMPLETO.
+                    El ítem {it.item} tiene {totalHorasItem} horas, pero debe tener al menos 20 horas para TIEMPO COMPLETO.
                   </Alert>
                 );
               }
@@ -224,6 +282,7 @@ const ConvocatoriaMateriasForm = () => {
                         value={materiaSeleccionada}
                         onChange={(e) => setMateriaSeleccionada(e.target.value)}
                         label="Seleccionar Materia"
+                        disabled={soloUnaMateria && items.reduce((total, it) => total + it.materias.length, 0) >= 1}
                       >
                         <MenuItem value=""><em>Seleccione una materia</em></MenuItem>
                         {materias.map(materia => (
@@ -241,7 +300,7 @@ const ConvocatoriaMateriasForm = () => {
                     <Button
                       variant="contained"
                       onClick={() => handleAddMateria(itemIndex)}
-                      disabled={!materiaSeleccionada}
+                      disabled={!materiaSeleccionada || (soloUnaMateria && items.reduce((total, it) => total + it.materias.length, 0) >= 1)}
                     >
                       Agregar
                     </Button>
@@ -284,40 +343,15 @@ const ConvocatoriaMateriasForm = () => {
           </>
         )}
 
-        <Button variant="outlined" onClick={handleAddItem} sx={{ mb: 3 }}>
-          ➕ Agregar Ítem
-        </Button>
+        {!soloUnaMateria && (
+          <Button variant="outlined" onClick={handleAddItem} sx={{ mb: 3 }}>
+            ➕ Agregar Ítem
+          </Button>
+        )}
 
         <Divider sx={{ my: 2 }} />
 
-        {items.some(it => it.materias.length > 0) && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              p: 1.5,
-              border: '1px dashed',
-              borderColor: 'primary.light',
-              borderRadius: 2,
-              backgroundColor: 'rgba(25, 118, 210, 0.04)'
-            }}>
-              <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
-                Horas totales globales:
-              </Typography>
-              <Chip
-                label={calcularHorasGlobales()}
-                color="primary"
-                variant="filled"
-                sx={{ fontWeight: 'bold', fontSize: '1rem' }}
-              />
-              <Tooltip title="Suma de horas de todas las materias en todos los ítems">
-                <InfoOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-              </Tooltip>
-            </Box>
-          </Box>
-        )}
-
+        
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
           <Button variant="outlined" onClick={handleVolver}>
             Volver a Editar Convocatoria
@@ -325,7 +359,7 @@ const ConvocatoriaMateriasForm = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={loading || (maxHorasGlobal > 0 && calcularHorasGlobales() > maxHorasGlobal)}
           >
             {loading ? 'Guardando...' : 'Guardar Materias'}
           </Button>

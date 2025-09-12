@@ -12,7 +12,8 @@ const generateExtraordinarioHTML = require('../templates/extraordinario');
 
 
 const os = require('os');
-const BASE_DESKTOP = path.join(os.homedir(), 'Desktop', 'convocatorias');
+//const BASE_DESKTOP = path.join(os.homedir(), 'Desktop', 'convocatorias');
+const BASE_DOCUMENTS = path.join(os.homedir(), 'Documents', 'convocatorias');
 
 const safe = s => s.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
 
@@ -39,7 +40,7 @@ const page = await browser.newPage();
 };
 
 const getDirs = (facultad, programa, tipo, id) => {
-  const baseDir = path.join(BASE_DESKTOP, safe(facultad), safe(programa), safe(tipo), `convocatoria_${id}`);
+  const baseDir = path.join(BASE_DOCUMENTS, safe(facultad), safe(programa), safe(tipo), `convocatoria_${id}`);
   const pdfPath = path.join(baseDir, `convocatoria_${id}.pdf`);
   return { baseDir, pdfPath };
 };
@@ -197,7 +198,7 @@ switch (tipo) {
     fs.mkdirSync(baseDir, { recursive: true });
     fs.writeFileSync(pdfPath, buffer);
 
-    const relPath = path.relative(BASE_DESKTOP, pdfPath).replace(/\\/g, '/');
+    const relPath = path.relative(BASE_DOCUMENTS, pdfPath).replace(/\\/g, '/');
     await pool.query(`
       UPDATE convocatorias_archivos
       SET nombre_archivo = $1, doc_conv = $2
@@ -228,7 +229,7 @@ exports.viewConvocatoriaPDF = async (req, res) => {
 
    if (!row?.doc_conv) return res.status(404).json({ error: 'PDF no generado aún' });
 
-    const file = path.join(BASE_DESKTOP, row.doc_conv); // CAMBIO AQUI
+    const file = path.join(BASE_DOCUMENTS, row.doc_conv); // CAMBIO AQUI
     if (!fs.existsSync(file)) return res.status(404).json({ error: 'Archivo no encontrado en disco' });
 
 
@@ -271,7 +272,7 @@ exports.handleUploadByType = async (req, res) => {
     const filePath = path.join(baseDir, filename);
     fs.writeFileSync(filePath, buffer);
 
-    const relPath = path.relative(BASE_DESKTOP, filePath).replace(/\\/g, '/');
+    const relPath = path.relative(BASE_DOCUMENTS, filePath).replace(/\\/g, '/');
     await pool.query(`
       UPDATE convocatorias_archivos
       SET ${tipo} = $1
@@ -295,7 +296,7 @@ exports.viewPDFbyType = async (req, res) => {
 
   if (!row?.[tipo]) return res.status(404).json({ error: 'Archivo no disponible' });
 
-  const file = path.join(BASE_DESKTOP, row[tipo]);
+  const file = path.join(BASE_DOCUMENTS, row[tipo]);
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'Archivo no encontrado' });
 
 //  console.log('PDF guardado en:', pdfPath);
@@ -315,7 +316,7 @@ exports.downloadPDFbyType = async (req, res) => {
 
   if (!row?.[tipo]) return res.status(404).json({ error: 'Archivo no disponible' });
 
-  const file = path.join(BASE_DESKTOP, row[tipo]);
+  const file = path.join(BASE_DOCUMENTS, row[tipo]);
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'Archivo no encontrado' });
 
   res.setHeader('Content-Type', 'application/pdf');
@@ -332,7 +333,7 @@ exports.deleteFileByType = async (req, res) => {
   `, [id])).rows[0];
 
   if (row?.[tipo]) {
-    const file = path.join(BASE_DESKTOP, row[tipo]);
+    const file = path.join(BASE_DOCUMENTS, row[tipo]);
     if (fs.existsSync(file)) fs.unlinkSync(file);
 
     await pool.query(`UPDATE convocatorias_archivos SET ${tipo} = NULL WHERE id_convocatoria = $1`, [id]);
@@ -395,7 +396,7 @@ exports.handleMultipleUploads = async (req, res) => {
       const filePath = path.join(baseDir, filename);
       fs.writeFileSync(filePath, file.buffer);
 
-      const relPath = path.relative(BASE_DESKTOP, filePath).replace(/\\/g, '/');
+      const relPath = path.relative(BASE_DOCUMENTS, filePath).replace(/\\/g, '/');
       await pool.query(`UPDATE convocatorias_archivos SET ${tipo} = $1 WHERE id_convocatoria = $2`, [relPath, id]);
     }
 

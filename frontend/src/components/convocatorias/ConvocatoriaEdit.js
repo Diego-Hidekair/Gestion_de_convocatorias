@@ -565,7 +565,7 @@ const ConvocatoriaEdit = () => {
                   multiline 
                   rows={4} 
                   required
-                  placeholder="Ejemplo: Profesional en Ingeniería de Sistemas con especialización en..."
+                  placeholder="Por ejemplo: licenciado en Ingeniero de Sistemas, licenciado matematico, ingeniero civil, etc."
                   helperText="Describa los requisitos profesionales necesarios para el cargo"
                 />
               </Grid>

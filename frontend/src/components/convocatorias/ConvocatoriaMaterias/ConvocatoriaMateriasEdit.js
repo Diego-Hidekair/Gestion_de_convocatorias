@@ -21,7 +21,7 @@ const ConvocatoriaMateriasEdit = () => {
   const [soloUnaMateria, setSoloUnaMateria] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [horasAsignadasGlobal, setHorasAsignadasGlobal] = useState('');
+  const [maxHorasGlobal, setMaxHorasGlobal] = useState(0); // Agregar este estado
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +33,14 @@ const ConvocatoriaMateriasEdit = () => {
 
         const tipoConv = convResponse.data.nombre_tipoconvocatoria?.trim().toUpperCase();
         if (tipoConv === 'DOCENTE EN CALIDAD ORDINARIO') setSoloUnaMateria(true);
+
+        // Establecer máximo de horas según el tipo de jornada
+        const tipoJornada = convResponse.data.tipo_jornada;
+        if (tipoJornada === 'TIEMPO HORARIO') {
+          setMaxHorasGlobal(16);
+        } else if (tipoJornada === 'TIEMPO COMPLETO') {
+          setMaxHorasGlobal(40); // O el valor que corresponda
+        }
 
         // Cargar materias disponibles del programa
         const materiasResponse = await api.get(`/convocatoria-materias/programa/${convResponse.data.id_programa}/materias`);
@@ -76,32 +84,54 @@ const ConvocatoriaMateriasEdit = () => {
     setError(null);
     if (!materiaSeleccionada) return;
 
-    const totalMaterias = items.reduce((sum, it) => sum + it.materias.length, 0);
-    if (soloUnaMateria && totalMaterias >= 1) {
+    // Validar solo una materia para docentes ordinarios
+    if (soloUnaMateria && items.reduce((total, it) => total + it.materias.length, 0) >= 1) {
       setError('Solo se permite una materia para convocatorias de tipo Docente Ordinario');
       return;
     }
 
     const materia = materias.find(m => m.id_materia === parseInt(materiaSeleccionada));
-    if (materia && !items[itemIndex].materias.some(m => m.id_materia === materia.id_materia)) {
-      setItems(prev =>
-        prev.map((it, idx) =>
-          idx === itemIndex
-            ? {
-                ...it,
-                materias: [
-                  ...it.materias,
-                  {
-                    ...materia,
-                    total_horas: (materia.horas_teoria || 0) + (materia.horas_practica || 0) + (materia.horas_laboratorio || 0)
-                  }
-                ]
-              }
-            : it
-        )
-      );
-      setMateriaSeleccionada('');
+    if (!materia) return;
+
+    // Validar que la materia no esté ya agregada en ningún ítem
+    const materiaYaAgregada = items.some(it => 
+      it.materias.some(m => m.id_materia === materia.id_materia)
+    );
+    
+    if (materiaYaAgregada) {
+      setError('Esta materia ya ha sido agregada en otro ítem');
+      return;
     }
+
+    // Calcular horas totales si se agrega esta materia
+    const nuevasHorasMateria = (materia.horas_teoria || 0) + (materia.horas_practica || 0) + (materia.horas_laboratorio || 0);
+    const horasGlobalesActuales = calcularHorasGlobales();
+    const horasGlobalesFuturas = horasGlobalesActuales + nuevasHorasMateria;
+
+    // Validar máximo de horas globales
+    if (maxHorasGlobal > 0 && horasGlobalesFuturas > maxHorasGlobal) {
+      setError(`No se puede superar el máximo de ${maxHorasGlobal} horas globales. Horas actuales: ${horasGlobalesActuales}, horas de la materia: ${nuevasHorasMateria}`);
+      return;
+    }
+
+    // Agregar la materia
+    setItems(prev =>
+      prev.map((it, idx) =>
+        idx === itemIndex
+          ? {
+              ...it,
+              materias: [
+                ...it.materias,
+                {
+                  ...materia,
+                  total_horas: nuevasHorasMateria
+                }
+              ]
+            }
+          : it
+      )
+    );
+    setMateriaSeleccionada('');
   };
 
   const handleRemoveMateria = (itemIndex, id) => {
@@ -115,11 +145,21 @@ const ConvocatoriaMateriasEdit = () => {
   };
 
   const handleAddItem = () => {
+    // Validar que no se puedan agregar más ítems si es solo una materia
+    if (soloUnaMateria) {
+      setError('Solo se permite un ítem con una materia para convocatorias de tipo Docente Ordinario');
+      return;
+    }
+    
     const nuevoItem = Math.max(...items.map(it => it.item), 0) + 1;
     setItems([...items, { item: nuevoItem, materias: [] }]);
   };
 
   const handleRemoveItem = (index) => {
+    if (items.length <= 1) {
+      setError('Debe haber al menos un ítem');
+      return;
+    }
     setItems(prev => prev.filter((_, idx) => idx !== index));
   };
 
@@ -130,6 +170,13 @@ const ConvocatoriaMateriasEdit = () => {
     const todasMaterias = items.flatMap(it => it.materias);
     if (todasMaterias.length === 0) {
       setError('Debe seleccionar al menos una materia');
+      return;
+    }
+
+    // Validación final de horas globales
+    const horasGlobales = calcularHorasGlobales();
+    if (maxHorasGlobal > 0 && horasGlobales > maxHorasGlobal) {
+      setError(`No se puede superar el máximo de ${maxHorasGlobal} horas globales. Horas actuales: ${horasGlobales}`);
       return;
     }
 
@@ -175,6 +222,18 @@ const ConvocatoriaMateriasEdit = () => {
       <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
         <Typography variant="h5" gutterBottom>Editar Materias de la Convocatoria</Typography>
 
+        {soloUnaMateria && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Convocatoria de tipo Docente Ordinario: Solo se permite UNA materia
+          </Alert>
+        )}
+
+        {maxHorasGlobal > 0 && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Límite máximo: {maxHorasGlobal} horas
+          </Alert>
+        )}
+
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         {convocatoriaData && (
@@ -190,9 +249,9 @@ const ConvocatoriaMateriasEdit = () => {
           let alerta = null;
           const tipo = convocatoriaData.tipo_jornada;
           if (tipo === 'TIEMPO HORARIO' && totalHorasItem > 16) {
-            alerta = <Alert severity="warning" sx={{ mt: 2 }}>⚠️ Ítem {it.item}: {totalHorasItem} horas (máx. 16 para TIEMPO HORARIO)</Alert>;
+            alerta = <Alert severity="warning" sx={{ mt: 2 }}>Ítem {it.item}: {totalHorasItem} horas (máx. 16 para TIEMPO HORARIO)</Alert>;
           } else if (tipo === 'TIEMPO COMPLETO' && totalHorasItem < 20) {
-            alerta = <Alert severity="warning" sx={{ mt: 2 }}>⚠️ Ítem {it.item}: {totalHorasItem} horas (mín. 20 para TIEMPO COMPLETO)</Alert>;
+            alerta = <Alert severity="warning" sx={{ mt: 2 }}>Ítem {it.item}: {totalHorasItem} horas (mín. 20 para TIEMPO COMPLETO)</Alert>;
           }
 
           return (
@@ -211,6 +270,7 @@ const ConvocatoriaMateriasEdit = () => {
                     value={materiaSeleccionada}
                     onChange={(e) => setMateriaSeleccionada(e.target.value)}
                     label="Seleccionar Materia"
+                    disabled={soloUnaMateria && items.reduce((total, it) => total + it.materias.length, 0) >= 1}
                   >
                     <MenuItem value=""><em>Seleccione una materia</em></MenuItem>
                     {materias.map(materia => (
@@ -224,7 +284,13 @@ const ConvocatoriaMateriasEdit = () => {
                     ))}
                   </Select>
                 </FormControl>
-                <Button variant="contained" onClick={() => handleAddMateria(itemIndex)} disabled={!materiaSeleccionada}>Agregar</Button>
+                <Button 
+                  variant="contained" 
+                  onClick={() => handleAddMateria(itemIndex)} 
+                  disabled={!materiaSeleccionada || (soloUnaMateria && items.reduce((total, it) => total + it.materias.length, 0) >= 1)}
+                >
+                  Agregar
+                </Button>
               </Box>
 
               <List dense>
@@ -254,17 +320,32 @@ const ConvocatoriaMateriasEdit = () => {
           );
         })}
 
-        <Button variant="outlined" onClick={handleAddItem} sx={{ mb: 3 }}>➕ Agregar Ítem</Button>
+        {!soloUnaMateria && (
+          <Button variant="outlined" onClick={handleAddItem} sx={{ mb: 3 }}>➕ Agregar Ítem</Button>
+        )}
 
         {items.some(it => it.materias.length > 0) && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <Box sx={{
               display: 'flex', alignItems: 'center', gap: 1, p: 1.5,
-              border: '1px dashed', borderColor: 'primary.light', borderRadius: 2,
-              backgroundColor: 'rgba(25, 118, 210, 0.04)'
+              border: '1px dashed', 
+              borderColor: maxHorasGlobal > 0 && calcularHorasGlobales() > maxHorasGlobal ? 'error.main' : 'primary.light', 
+              borderRadius: 2,
+              backgroundColor: maxHorasGlobal > 0 && calcularHorasGlobales() > maxHorasGlobal ? 
+                'rgba(211, 47, 47, 0.08)' : 'rgba(25, 118, 210, 0.04)'
             }}>
               <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Horas totales globales:</Typography>
-              <Chip label={calcularHorasGlobales()} color="primary" variant="filled" sx={{ fontWeight: 'bold', fontSize: '1rem' }} />
+              <Chip 
+                label={calcularHorasGlobales()} 
+                color={maxHorasGlobal > 0 && calcularHorasGlobales() > maxHorasGlobal ? 'error' : 'primary'} 
+                variant="filled" 
+                sx={{ fontWeight: 'bold', fontSize: '1rem' }} 
+              />
+              {maxHorasGlobal > 0 && (
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  / {maxHorasGlobal} máximo
+                </Typography>
+              )}
               <Tooltip title="Suma de horas de todas las materias en todos los ítems">
                 <InfoOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
               </Tooltip>
@@ -274,7 +355,11 @@ const ConvocatoriaMateriasEdit = () => {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
           <Button variant="outlined" onClick={handleVolver}>Volver a Editar Convocatoria</Button>
-          <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+          <Button 
+            variant="contained" 
+            onClick={handleSubmit} 
+            disabled={loading || (maxHorasGlobal > 0 && calcularHorasGlobales() > maxHorasGlobal)}
+          >
             {loading ? 'Guardando...' : 'Guardar Cambios y Generar PDF'}
           </Button>
         </Box>
