@@ -190,7 +190,7 @@ function ConvocatoriaArchivosManager() {
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                  📄 Documentos Adjuntos
+                  ?? Documentos Adjuntos
                 </Typography>
               </Box>
 
